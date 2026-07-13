@@ -8,6 +8,7 @@
 
 ## 已完成
 
+- [2026-07-13] 📄 R2 實作切片規劃 — 建立 `docs/implementation-slices.md`,將 74 REQ 切成 5 個可獨立實作/驗收的功能片(`foundation-core` → `meta-progression`),定義每片走 specs 三件套 + `/pipeline` 的銜接流程;切片藍圖與 §14 追溯矩陣 74 REQ 一對一。
 - [2026-07-13] 📄 R1 專案初始化 — 建立 PROGRESS.md、專案層 CLAUDE.md、README.md,git init;技術棧定為 Godot 4.7 + GDScript。既有 `docs/game-architecture/` 架構規格(74 REQ / 78 AC / 追溯矩陣 / Claude 複檢契約)保持不動。
 
 ## 進行中
@@ -17,7 +18,7 @@
 ## 待辦
 
 - 補文件驗證器腳本(讀 spec manifest,一鍵驗 12 檔的計數 / section 錨點 / ID 唯一性 / 跨檔連結 / 追溯覆蓋)—— 對應 spec 檢驗建議 1,把 §16 完成定義變成可執行。
-- 規劃 REQ → 功能切片對應,為首個切片建 `specs/<切片名>/` 三件套,接上 `/pipeline` 實作 —— 對應 spec 檢驗建議 4。
+- 為選定切片走 specs 三件套 + `/pipeline` 實作(切片藍圖見 `docs/implementation-slices.md`,建議首片 `foundation-core`)—— 對應 spec 檢驗建議 4;切片規劃已完成,實作依當前選擇暫緩。
 - 完成架構規格 v0.1 的外部複檢(依 §15 Claude 複檢契約)。
 
 ## 已知問題

@@ -1,0 +1,20 @@
+# Godot 4+
+.godot/
+
+# Godot 匯出產物
+/build/
+/export/
+export_presets.cfg
+
+# Godot 3 遺留 import cache（保留無害）
+.import/
+
+# 自動生成的翻譯檔
+*.translation
+
+# OS / 編輯器
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

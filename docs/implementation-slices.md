@@ -52,4 +52,6 @@
 
 ## 狀態
 
-規劃階段,尚未實作任何切片。第一片(建議 `foundation-core`)的三件套待未來啟動。
+- S1 `foundation-core`：已完成；三件套位於 `specs/foundation-core/`，完整 headless gate 通過。
+- S2 `combat-core`：下一個建議切片，尚未建立三件套或程式實作。
+- S3–S5：維持規劃階段。

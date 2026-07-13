@@ -1,0 +1,12 @@
+{
+  "godot": {
+    "version": "4.7.stable.official",
+    "sha256": "b2ca888d5115a6cedee564764a2ee494a625f2ec2edbabd010fe33c9a88a6bf8"
+  },
+  "gut": {
+    "version": "9.7.1",
+    "tree_sha256": "94cfb2346fa189bb358a499179161cabf6c3602485ce7f592683d5d3bb7f18d2",
+    "source": "vendored"
+  }
+}
+

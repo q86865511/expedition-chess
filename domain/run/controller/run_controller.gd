@@ -1,0 +1,212 @@
+class_name RunController
+extends RefCounted
+
+signal view_published(view_state: RunViewState)
+
+var _session: RunSession
+var _save_repository: SaveRepository
+var _validator: RunStateValidator
+var _save_root_factory: RunSaveRootFactory
+var _transaction_active: bool = false
+
+func _init(
+	p_session: RunSession,
+	p_save_repository: SaveRepository,
+	p_validator: RunStateValidator = null,
+	p_save_root_factory: RunSaveRootFactory = null
+) -> void:
+	_session = p_session
+	_save_repository = p_save_repository
+	_validator = p_validator if p_validator != null else RunStateValidator.new()
+	_save_root_factory = (
+		p_save_root_factory
+		if p_save_root_factory != null
+		else RunSaveRootFactory.new()
+	)
+
+func transition(event: RunEvent) -> RunTransitionResult:
+	var phase := _session.view_state().run_phase
+	if event == null or not event.is_concrete():
+		return RunTransitionResult.failure(
+			RunTransitionError.new(RunTransitionError.INVALID_EVENT, phase, &"event")
+		)
+	if not can_transition(event):
+		return RunTransitionResult.failure(
+			RunTransitionError.new(RunTransitionError.INVALID_EDGE, phase, &"run_phase")
+		)
+	if _transaction_active:
+		return RunTransitionResult.failure(
+			RunTransitionError.new(RunTransitionError.TRANSACTION_BUSY, phase, &"transaction")
+		)
+	_transaction_active = true
+	var draft := _session.run_snapshot()
+	var pinned_content_snapshot := draft.content_snapshot.deep_clone()
+	var apply_result := event.apply_to(draft)
+	if not apply_result.ok or apply_result.draft == null:
+		_transaction_active = false
+		var field_path := apply_result.error.field_path if apply_result.error != null else &"event"
+		var source_code := apply_result.error.code if apply_result.error != null else &"RUN_APPLY_RESULT_INVALID"
+		var diagnostics: Array[DiagnosticValue] = [
+			DiagnosticValue.from_string(&"source_code", String(source_code)),
+		]
+		return RunTransitionResult.failure(
+			RunTransitionError.new(
+				RunTransitionError.APPLY_FAILED,
+				phase,
+				field_path,
+				null,
+				diagnostics
+			)
+		)
+	draft = apply_result.draft.deep_clone()
+	draft.run_phase = event.target_phase
+	var commit_result := _commit_draft(draft, pinned_content_snapshot)
+	if not commit_result.ok:
+		_transaction_active = false
+		return RunTransitionResult.failure(_transition_error_from_commit(phase, commit_result.error))
+	view_published.emit(commit_result.view_state.deep_clone())
+	_transaction_active = false
+	return RunTransitionResult.success(commit_result.view_state)
+
+func dispatch(command: RunCommand) -> CommandResult:
+	var phase := _session.view_state().run_phase
+	if command == null or not command.is_concrete():
+		return CommandResult.failure(
+			CommandError.new(CommandError.INVALID_COMMAND, phase, &"command")
+		)
+	if _transaction_active:
+		return CommandResult.failure(
+			CommandError.new(CommandError.TRANSACTION_BUSY, phase, &"transaction")
+		)
+	_transaction_active = true
+	var draft := _session.run_snapshot()
+	var pinned_content_snapshot := draft.content_snapshot.deep_clone()
+	var apply_result := command.apply_to(draft)
+	if not apply_result.ok or apply_result.draft == null:
+		_transaction_active = false
+		var field_path := apply_result.error.field_path if apply_result.error != null else &"command"
+		var source_code := apply_result.error.code if apply_result.error != null else &"RUN_APPLY_RESULT_INVALID"
+		var diagnostics: Array[DiagnosticValue] = [
+			DiagnosticValue.from_string(&"source_code", String(source_code)),
+		]
+		return CommandResult.failure(
+			CommandError.new(
+				CommandError.APPLY_FAILED,
+				phase,
+				field_path,
+				null,
+				diagnostics
+			)
+		)
+	var commit_result := _commit_draft(apply_result.draft, pinned_content_snapshot)
+	if not commit_result.ok:
+		_transaction_active = false
+		return CommandResult.failure(_command_error_from_commit(phase, commit_result.error))
+	view_published.emit(commit_result.view_state.deep_clone())
+	_transaction_active = false
+	return CommandResult.success(commit_result.view_state)
+
+func view_state() -> RunViewState:
+	return _session.view_state()
+
+func can_transition(event: RunEvent) -> bool:
+	if event == null or not event.is_concrete():
+		return false
+	return _edge_is_allowed(_session.view_state().run_phase, event.target_phase)
+
+func _commit_draft(
+	draft: RunState,
+	pinned_content_snapshot: ContentSnapshotState
+) -> RunCommitResult:
+	if not _session.has_catalog_pin():
+		return RunCommitResult.failure(
+			RunCommitError.new(
+				RunCommitError.Kind.VALIDATION,
+				&"content_snapshot.manifest_digest",
+				&"RUN_CONTENT_CATALOG_PIN_MISSING"
+			)
+		)
+	if not _session.can_publish():
+		return RunCommitResult.failure(
+			RunCommitError.new(
+				RunCommitError.Kind.SERIAL_EXHAUSTED,
+				&"publication_serial",
+				&"RUN_PUBLICATION_SERIAL_EXHAUSTED"
+			)
+		)
+	if draft == null \
+		or draft.content_snapshot == null \
+		or not draft.content_snapshot.canonical_equals(pinned_content_snapshot):
+		return RunCommitResult.failure(
+			RunCommitError.new(
+				RunCommitError.Kind.VALIDATION,
+				&"content_snapshot",
+				&"RUN_CONTENT_SNAPSHOT_IMMUTABLE"
+			)
+		)
+	var validation_result := _validator.validate_run(draft, 1, 1)
+	if not validation_result.ok:
+		return RunCommitResult.failure(
+			RunCommitError.new(
+				RunCommitError.Kind.VALIDATION,
+				validation_result.error.field_path,
+				validation_result.error.code
+			)
+		)
+	var candidate := _save_root_factory.build(_session.profile_snapshot(), draft)
+	var save_result := _save_repository.save(candidate)
+	if not save_result.ok:
+		var save_field := save_result.error.field_path if save_result.error != null else &"save"
+		var save_code := save_result.error.code if save_result.error != null else &"SAVE_UNKNOWN"
+		return RunCommitResult.failure(
+			RunCommitError.new(RunCommitError.Kind.SAVE, save_field, save_code)
+		)
+	return RunCommitResult.success(_session._commit_saved_draft(draft))
+
+func _edge_is_allowed(from_phase: RunState.RunPhase, to_phase: RunState.RunPhase) -> bool:
+	match from_phase:
+		RunState.RunPhase.MAP:
+			return to_phase == RunState.RunPhase.PREPARE
+		RunState.RunPhase.PREPARE:
+			return to_phase == RunState.RunPhase.COMBAT
+		RunState.RunPhase.COMBAT:
+			return to_phase == RunState.RunPhase.REWARD \
+				or to_phase == RunState.RunPhase.MAP \
+				or to_phase == RunState.RunPhase.PREPARE
+		RunState.RunPhase.REWARD:
+			return to_phase == RunState.RunPhase.MAP
+	return false
+
+func _transition_error_from_commit(
+	phase: RunState.RunPhase,
+	error: RunCommitError
+) -> RunTransitionError:
+	var code := RunTransitionError.SAVE_FAILED
+	match error.kind:
+		RunCommitError.Kind.VALIDATION:
+			code = RunTransitionError.VALIDATION_FAILED
+		RunCommitError.Kind.SERIAL_EXHAUSTED:
+			code = RunTransitionError.PUBLICATION_SERIAL_EXHAUSTED
+		RunCommitError.Kind.BUSY:
+			code = RunTransitionError.TRANSACTION_BUSY
+	var diagnostics: Array[DiagnosticValue] = [
+		DiagnosticValue.from_string(&"source_code", String(error.source_code)),
+	]
+	return RunTransitionError.new(code, phase, error.field_path, null, diagnostics)
+
+func _command_error_from_commit(
+	phase: RunState.RunPhase,
+	error: RunCommitError
+) -> CommandError:
+	var code := CommandError.SAVE_FAILED
+	match error.kind:
+		RunCommitError.Kind.VALIDATION:
+			code = CommandError.VALIDATION_FAILED
+		RunCommitError.Kind.SERIAL_EXHAUSTED:
+			code = CommandError.PUBLICATION_SERIAL_EXHAUSTED
+		RunCommitError.Kind.BUSY:
+			code = CommandError.TRANSACTION_BUSY
+	var diagnostics: Array[DiagnosticValue] = [
+		DiagnosticValue.from_string(&"source_code", String(error.source_code)),
+	]
+	return CommandError.new(code, phase, error.field_path, null, diagnostics)

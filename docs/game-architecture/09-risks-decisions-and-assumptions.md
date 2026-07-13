@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：風險、決策與假設
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Ready for external review`  
+> 文件狀態：`v0.1 / Approved`
 > 本檔範圍：第 12–13 章
 
 ---

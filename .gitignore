@@ -18,3 +18,8 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# 測試執行產物
+artifacts/test/*
+!artifacts/test/.gitkeep
+*.tmp

@@ -1,6 +1,6 @@
 # PVE 自走棋 Roguelite 主體架構規格
 
-> 文件狀態：`v0.1 / Ready for external review`  
+> 文件狀態：`v0.1 / Approved`
 > 目標專案：`E:\ClaudeWorkingPlace\Game`  
 > 單一事實來源：本索引所列的完整文件集
 
@@ -12,7 +12,7 @@
 - 所有列入清單的章節共同構成同一份規格，任何單一章節都不得脫離其餘章節獨立解讀。
 - REQ、DEC、ASM、RSK 與 AC 僅在正文定義一次；追溯矩陣仍是需求到驗收的權威映射。
 - 外部複檢必須讀取本索引列出的全部檔案，並以 `file:line` 指向證據。
-- 本次僅重構文件結構，未改變任何遊戲規則、技術決策、初始數值或驗收語意。
+- 文件集已完成使用者安排的外部複檢；repository 不保存不存在的複檢報告。S1 的機器驗證只核對本索引明列的 12 份正文。
 
 ## 文件清單
 
@@ -36,9 +36,9 @@
 <!-- spec-manifest:start -->
 ```json
 {
-  "manifest_schema_version": 1,
+  "manifest_schema_version": 2,
   "spec_version": "0.1",
-  "status": "Ready for external review",
+  "status": "Approved",
   "files": [
     "game-architecture/00-document-control-and-glossary.md",
     "game-architecture/01-product-and-scope.md",
@@ -52,7 +52,45 @@
     "game-architecture/09-risks-decisions-and-assumptions.md",
     "game-architecture/10-traceability-matrix.md",
     "game-architecture/11-claude-review-and-references.md"
-  ]
+  ],
+  "expected": {
+    "file_count": 12,
+    "section_count": 18,
+    "mermaid_count": 3,
+    "ids": {
+      "REQ": 74,
+      "AC": 78,
+      "DEC": 13,
+      "ASM": 6,
+      "RSK": 12
+    },
+    "autoloads": {
+      "ContentRegistry": "res://content/registry/content_registry_service.gd",
+      "SaveService": "res://services/save/save_repository.gd",
+      "SettingsService": "res://services/settings/settings_repository.gd",
+      "AudioService": "res://services/audio/audio_coordinator.gd",
+      "SceneRouter": "res://services/scene/scene_router_service.gd"
+    },
+    "public_apis": [
+      {"class": "ContentRegistryService", "method": "resolve", "return": "ContentResolveResult"},
+      {"class": "ContentRegistryService", "method": "try_resolve", "return": "ContentDefinitionView"},
+      {"class": "ContentRegistryService", "method": "validate_all", "return": "ContentValidationReport"},
+      {"class": "RunController", "method": "transition", "return": "RunTransitionResult"},
+      {"class": "RunController", "method": "dispatch", "return": "CommandResult"},
+      {"class": "RunController", "method": "view_state", "return": "RunViewState"},
+      {"class": "RunController", "method": "can_transition", "return": "bool"},
+      {"class": "SaveRepository", "method": "save", "return": "SaveResult"},
+      {"class": "SaveRepository", "method": "load", "return": "LoadResult"},
+      {"class": "SaveRepository", "method": "migrate", "return": "MigrationResult"},
+      {"class": "RngService", "method": "derive_stream", "return": "RngDeriveResult"}
+    ],
+    "deferred_class_names": [
+      "ShopService",
+      "BattleSimulation",
+      "EffectResolver"
+    ]
+  },
+  "aggregate_sha256": "e6c4984613f1588833b2a5d2a217afe9d58c216769d06155c458880eb90cc9a2"
 }
 ```
 <!-- spec-manifest:end -->
@@ -88,10 +126,10 @@
 - 驗收情境：78 個 AC
 - 決策／假設／風險：13 個 DEC、6 個 ASM、12 個 RSK
 - Mermaid 圖：3 張
-- 拆分前規格 SHA-256：`df629251ab6d9b945f44986c4d0290c8c58275b3e771b3258647df581196ba64`
-- 拆分後的驗證必須同時檢查檔案清單、跨檔連結、ID 唯一性、追溯完整性與內容守恆。
+- 12 章 aggregate SHA-256：`e6c4984613f1588833b2a5d2a217afe9d58c216769d06155c458880eb90cc9a2`。
+- 聚合雜湊只涵蓋 Manifest 依序列出的 12 份正文；索引與其他文件不納入。驗證器同時檢查檔案清單、跨檔連結、ID 唯一性、追溯完整性與內容守恆。
 
-## 外部複檢入口
+## 外部複檢契約與狀態
 
-複檢格式、分級、證據要求與禁止事項定義於 [Claude 複檢契約](game-architecture/11-claude-review-and-references.md#section-15)。
+使用者已確認外部複檢完成。複檢格式、分級、證據要求與禁止事項仍以 [Claude 複檢契約](game-architecture/11-claude-review-and-references.md#section-15) 為準；本 repository 不虛構或代寫外部報告。
 

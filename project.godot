@@ -1,0 +1,35 @@
+; Engine configuration file.
+; Edit through reviewed patches so autoload and deterministic settings remain auditable.
+
+config_version=5
+
+[application]
+
+config/name="遠征棋"
+config/description="PVE 自走棋 Roguelite"
+config/version="0.1.0"
+run/main_scene="res://app/main.tscn"
+
+[autoload]
+
+ContentRegistry="*res://content/registry/content_registry_service.gd"
+SaveService="*res://services/save/save_repository.gd"
+SettingsService="*res://services/settings/settings_repository.gd"
+AudioService="*res://services/audio/audio_coordinator.gd"
+SceneRouter="*res://services/scene/scene_router_service.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+textures/canvas_textures/default_texture_filter=0
+

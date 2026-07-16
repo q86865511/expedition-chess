@@ -33,6 +33,7 @@ static func build_valid(add_fourth_population_source: bool = false) -> ContentVa
 	definitions.append_array(_map_nodes(add_fourth_population_source))
 	definitions.append_array(_unlocks())
 	definitions.append(_economy())
+	definitions.append(_combat_config())
 	definitions.append(_meta_reward())
 	return ContentValidationInput.new(definitions, [], [], FakeContentDependencyPort.new(), 9)
 
@@ -358,6 +359,7 @@ static func _boss_encounter(index: int) -> EncounterDef:
 	var phase := BossPhaseDef.new()
 	phase.phase_index = 0
 	phase.hp_threshold_bps = 10000
+	phase.source_spawn_key = spawn.spawn_key
 	phase.effect_refs = [&"effect.general"]
 	value.boss_phases = [phase]
 	return value
@@ -458,6 +460,11 @@ static func _economy() -> EconomyConfigDef:
 		cost.key_u32 = tier
 		cost.value_u32 = tier
 		value.unit_costs_by_tier.append(cost)
+	return value
+
+static func _combat_config() -> CombatConfigDef:
+	var value := CombatConfigDef.new()
+	_common(value, &"config.combat_default")
 	return value
 
 static func _meta_reward() -> MetaRewardTableDef:

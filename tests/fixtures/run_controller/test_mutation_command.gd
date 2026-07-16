@@ -31,6 +31,7 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 				snapshot.content_version_value(),
 				snapshot.enabled_content_ids_copy(),
 				snapshot.economy_config_id_value(),
+				snapshot.combat_config_id_value(),
 				snapshot.reward_table_ids_copy(),
 				snapshot.map_node_def_ids_copy(),
 				snapshot.challenge_unlock_def_ids_copy(),

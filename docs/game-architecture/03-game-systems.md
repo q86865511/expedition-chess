@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：遊戲系統
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 5 章
 
 ---
@@ -94,6 +94,10 @@
 - 畫面幀率只影響插值，不得改變模擬步數、順序或結果。
 - `BattleSimulation` 不得依賴 `Node`、`SceneTree` 順序、動畫回呼或物理碰撞。
 
+攻擊與移動使用獨立的整數 progress accumulator。門檻固定為 `tick_rate × progress_scale=20,000`，sim v1 cap 固定為門檻兩倍。有效速度 `<=0` 時初值為 0、不得累加或行動；正速度初值為 `max(0, threshold-speed)`，每 tick 決策前以 checked i64 累加並 clamp cap，使正速度單位首 tick可行動。成功攻擊或移動只扣一次門檻並保留餘數；速度歸零時保留既有 progress，每單位每 tick最多一次主要行動。
+
+有效 stat 重算固定為 `add_total=sum(add)`、`multiplier_bps=clamp(10000+sum(each_multiplier-10000),0,100000)`、`effective=floor((base+add_total)*multiplier_bps/10000)`；attack與兩種 speed clamp 0..i32max，armor/magic resist clamp i32。不得依 Dictionary 順序逐筆乘算或 rounding。
+
 #### 5.6.2 鎖敵與尋路
 
 預設鎖敵排序：
@@ -114,6 +118,10 @@
 - 同一處理批次先計算所有命中，再統一處理死亡，避免 SceneTree 順序造成先後差。
 - 召喚物找不到合法出生格時，召喚失敗並產生可觀察事件，不得覆蓋其他實體。
 
+普攻 raw damage 恰為當下有效 `attack`，並一律視為物理傷害；`melee`、`ranged`、`magic_projectile` 只選擇呈現 profile。正護甲／魔抗 `r` 的 multiplier basis points 為 `floor(1,000,000 / (100 + r))`；負值為 `20,000 - floor(1,000,000 / (100 - r))`。物理／魔法傷害為 `floor(raw × multiplier_bps / 10,000)`，正 raw damage 至少造成 1；真實傷害不減免。護盾依套用 sequence 由舊到新吸收，再扣生命。
+
+成功普攻後攻擊者依 snapshot 的 `attack_mana_gain` 回魔並 clamp。有 entity source 且實際造成正承傷時，承傷者依 snapshot 的 factor/min/max 計算 `clamp(ceil(actual_damage × factor / max_health),min,max)`；沒有 entity source 的決勝傷害不回魔。滿法力且技能目標合法時施法優先、不要求或消耗 attack/move progress，但算一次主要行動；沒有合法目標時不抽 RNG、不扣 mana並繼續一般決策。施法在 tick T 鎖定目標、立即歸零並於 `T+cast_ticks` resolve；目標失效或 caster 提前死亡只發 fizzle，不重鎖、不退款。`cast_ticks` 為 1..1800，施法期間 progress 照常累積但不可執行其他主行動。
+
 #### 5.6.4 觸發優先序
 
 戰前固定順序：
@@ -131,16 +139,22 @@
 
 單 tick 固定順序：
 
-1. 狀態持續時間與週期效果。
+1. 狀態持續時間與週期效果；符合決勝 schedule 時排入無 entity source 的真實傷害 batch。
 2. AI 決策與移動申請。
 3. 普攻與施法申請。
 4. 命中、傷害、護盾與治療批次。
 5. 死亡與 `on_death`。
 6. 召喚與延遲事件。
-7. 勝負及超時判定。
+7. 勝負及超時判定；不得在此階段才直接套用尚未經死亡 trigger 的傷害。
 
 - **[REQ-COMBAT-002]** 相同內容版本、BattleSetup、亂數版本與種子必須產生相同的 BattleResult 和事件摘要。
 - **[REQ-COMBAT-003]** 模擬必須使用固定觸發與 tie-break 順序，禁止以容器迭代順序決定結果。
+
+所有同一 FIFO wave 的 raw/mitigation/eligibility 以 wave-start snapshot 計算。既存盾依 applied sequence、傷害依 work sequence 吸收；本 wave 新盾不能吸收本 wave傷害。health damage 聚合後一次扣除，接著 heal 依 work sequence 從 post-damage health逐筆套用且可救回單位，最後只對 health>0 者套新盾，再於 phase 5 標記仍為 0 者死亡。killer 取本 wave 實際 health damage 最大的 entity source，同值依 source ID、work sequence；無 entity source則 null。duration N 在套用 tick T 有效到 T+N-1，T+N phase 1移除。`on_death`／`kill` 產生的新 wave 全部完成後才進勝負判定。Boss phase 必須引用 EncounterDef 中明確的 source spawn；preview 與 setup 保存該 spawn 派生的 instance ID，禁止以 SceneTree、陣列第一筆或存活者猜測階段來源。
+
+全域work/event order固定為：initial spawn依side→cell→ID；首tick battle-start effects依challenge→commander→relic slot→trait ID→encounter affix→equipment owner cell/slot→unit side/cell/ID，再依effect/operation/target；phase1依timer/periodic、due delayed job、overtime system batch；entity decision依phase-start cell→ID；hit batch依建立序且batch內依target cell/ID→source/effect/operation；死亡依cell→ID且kill先於death；召喚依source cell/ID→effect/operation/request serial；Boss phase依source ID→phase index。phase4–6以FIFO wave處理新trigger，事件只在operation成功套用時取得下一sequence，battle_finished永遠最後。
+
+Action內事件順序亦固定：cast start為mana reset→cast(start)；attack為attack event→建立attack-trigger work→attack mana→建立basic hit；successful cast為cast(resolve)→cast trigger→ability effects，fizzle不觸發效果；damage wave完成代數後依work順序發damage及緊接的damaged mana，再把hit triggers、damaged triggers依序放入下一wave，之後才發heal/shield等事件；死亡時先fizzle未完成cast，再建立kill/death trigger work，最後death event。Outcome固定後battle_end在v1只收run intents、不發presentation，最後發唯一battle_finished。
 
 ### 5.7 戰鬥時間與結果
 
@@ -151,6 +165,8 @@
 - 戰敗扣除遠征生命；遠征生命不會因單場勝利自動恢復。
 
 - **[REQ-COMBAT-004]** 每場戰鬥必須在 1,800 tick 內產生唯一結果，且所有平局情境有固定裁決。
+
+`BattleResult` 固定保存 codec/simulation version、battle setup hash、outcome、final tick、排序 survivor IDs、遠征傷害、排序 proposal descriptors、summary hash 與 full-result hash。`summary_hash` 是 `SHA-256("BRS1" + setup hash raw bytes + length-framed ordered BattleEventCodec v1 bytes)`；只在 simulation finalizer／receipt 發行時以完整 transcript 重算。正式 save 不保存 transcript，因此 load 只驗 summary digest 格式；`result_hash` 是 `SHA-256("BRH1" + 除自身 hash 外的 BattleResultCodec v1 canonical preimage)` 並在 decode/提交時重算。倍速、暫停、畫面掉幀與重載不得進入任一 hash。
 
 ### 5.8 遠征生命與戰敗
 
@@ -298,6 +314,8 @@
 - 菁英詞綴只透過資料修改既有遭遇，不複製整份敵人定義。
 - Boss 可有階段轉換，但每個階段、觸發門檻及特殊規則都在敵情預覽中顯示。
 - 遭遇強度由幕、節點深度、挑戰階級及遭遇模板決定，不以玩家當前陣容即時作弊式剋制。
+
+Encounter compiler 只接受 manifest digest、已選定 encounter ID、node ID、幕／深度／挑戰，不接受玩家 build 或 RNG snapshot。任何模板隨機分支都由 MapService 使用既有 `map` stream 先選定並提交 chosen spawn keys；compiler 不建立額外 stream，也不在備戰時重抽。
 
 - **[REQ-ENEMY-001]** 遭遇生成不得讀取玩家具體羈絆或裝備後動態替換成針對性剋制敵隊。
 - **[REQ-ENEMY-002]** 玩家預覽與實戰必須引用同一份 EncounterDef、UnitDef、TraitDef 與 AbilityDef。

@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：測試策略與驗收條件
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 11 章
 
 ---
@@ -47,6 +47,8 @@
 - 解鎖圖無循環、基礎 profile 至少有一條合法構築。
 - 當前內容最大可達人口及最大可能同時實體數。
 - 所有公開效果的 trigger、condition、operation 與參數範圍合法。
+- 唯一 `config.combat_default` 存在且所有整數公式／安全 budget 在範圍內；Boss phase source spawn 可解析且唯一。
+- Effect trigger graph 不含未由有限 `max_uses_per_battle` 截斷的可重入循環；首版所有 target/scaling/damage/move/summon/AI enum 均在白名單。
 - 所有 runtime key tuple／digest 全域一致且唯一，serial 不回退；戰鬥來源 RunMutationProposal 僅使用第 8.10 節 scalar 白名單。
 
 ### 11.3 Canonical fixture
@@ -60,6 +62,10 @@
 - `fixture.boss_retry`：扣血、無收入重戰、崩潰恢復。
 - `fixture.simultaneous_death`：同 tick 全滅裁決。
 - `fixture.path_tie`：尋路與鎖敵 tie-break。
+- `fixture.boss_phase`：phase source spawn、threshold 與事件順序。
+- `fixture.random_target`：PCG bounded target 與 stream counter。
+- `fixture.effect_matrix`：全部 trigger／condition／operation／stacking 與 rollback。
+- `fixture.overtime`：60–90 秒決勝傷害與 hard-timeout 裁決。
 - `fixture.rng_stream_isolation`：某 stream 多抽不影響其他 stream。
 
 ### 11.4 固定 Headless 入口
@@ -75,6 +81,8 @@
 | 文件追溯／API | `godot --headless --path . --script res://tests/runners/spec_contract_runner.gd -- --manifest=res://docs/game-architecture-spec.md --report=res://artifacts/test/spec-contract.json` | 2 分鐘 | ID、TRACE-GAP、公開 API／Autoload 碰撞報告 |
 
 `spec_contract_runner.gd` 必須讀取 `--manifest` 指向索引中的 `spec-manifest` JSON 區塊，依陣列順序解析全部規範檔；缺檔、重複路徑、清單外規範檔、非法相對路徑或失效跨檔連結皆以退出碼 `2` 回報。
+
+S2 可先以同一 `-Suite Soak` 入口執行 10,000 個純 battle seed，但 `soak.json` 必須明列 `scope=combat-core` 與 `global_ac_030=downstream`；在 S3/QA 擴充為全地圖、多構築、資源與獎勵驗證前，不得把 S2 artifact 視為本節完整 Headless soak 或 AC-030 pass。
 
 runner 腳本以 `SceneTree` 作入口，從 `_init()` 啟動明確的 main coroutine；GUT 與場景測試可以 `await process_frame`、signal 或受控測試完成事件，但不得進入無退出條件的 idle loop。成功、失敗與基礎設施例外都必須在 artifact flush 後主動 `quit(code)`；`0` 表示通過、`2` 表示可重現的測試／驗證失敗、`3` 表示 runner／fixture／參數基礎設施錯誤，外部 timeout 記為 `124`。CI 必須保存 `res://artifacts/test/`。Godot 執行檔由 toolchain lock 解析為 4.7 stable，runner 必須在報告中寫出 engine、app、schema、content、rng 與 hash version。
 

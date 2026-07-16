@@ -47,8 +47,11 @@ func transition(event: RunEvent) -> RunTransitionResult:
 		var field_path := apply_result.error.field_path if apply_result.error != null else &"event"
 		var source_code := apply_result.error.code if apply_result.error != null else &"RUN_APPLY_RESULT_INVALID"
 		var diagnostics: Array[DiagnosticValue] = [
-			DiagnosticValue.from_string(&"source_code", String(source_code)),
+			DiagnosticValue.from_string(&"apply_code", String(source_code)),
 		]
+		if apply_result.error != null:
+			for diagnostic: DiagnosticValue in apply_result.error.diagnostic_values:
+				diagnostics.append(diagnostic.deep_clone())
 		return RunTransitionResult.failure(
 			RunTransitionError.new(
 				RunTransitionError.APPLY_FAILED,
@@ -87,8 +90,11 @@ func dispatch(command: RunCommand) -> CommandResult:
 		var field_path := apply_result.error.field_path if apply_result.error != null else &"command"
 		var source_code := apply_result.error.code if apply_result.error != null else &"RUN_APPLY_RESULT_INVALID"
 		var diagnostics: Array[DiagnosticValue] = [
-			DiagnosticValue.from_string(&"source_code", String(source_code)),
+			DiagnosticValue.from_string(&"apply_code", String(source_code)),
 		]
+		if apply_result.error != null:
+			for diagnostic: DiagnosticValue in apply_result.error.diagnostic_values:
+				diagnostics.append(diagnostic.deep_clone())
 		return CommandResult.failure(
 			CommandError.new(
 				CommandError.APPLY_FAILED,
@@ -108,6 +114,9 @@ func dispatch(command: RunCommand) -> CommandResult:
 
 func view_state() -> RunViewState:
 	return _session.view_state()
+
+func committed_combat_snapshot() -> CombatCommittedSnapshot:
+	return _session.committed_combat_snapshot().deep_clone()
 
 func can_transition(event: RunEvent) -> bool:
 	if event == null or not event.is_concrete():

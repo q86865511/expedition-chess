@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：Stable ID、亂數與存檔
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 9 章
 
 ---
@@ -53,7 +53,7 @@ Golden vector：
 | run | `000000056b3a72756e00000022683a303031313232333334343535363637373838393961616262636364646565666600000012753a30303030303030303030303030303261` | `run_ec13b8c584b94fc6d1fb15852ee35573bc8e02739b120f218ce91c361e947cbb` |
 | node | `000000066b3a6e6f646500000046733a72756e5f6563313362386335383462393466633664316662313538353265653335353733626338653032373339623132306632313863653931633336316539343763626200000003693a3200000006653a626f737300000003693a3500000003693a30` | `node_d94992320541276dfd384a614e280c0e1e0f804931a3ba6ec8e59fd467a033bc` |
 
-`next_transaction_serial` 只在候選交易成功存檔時遞增；同一 pending command 的 retry 必須重用原 tuple。`source_instance_or_slot` 對棋子／裝備使用 run-global instance ID，對遺物使用槽位，對羈絆／指揮官使用 stable source ID，確保兩個外觀相同但不同來源的 operation 不碰撞。`income_claimed_node_ids` 必須保存上述 run-global node ID。內容驗證、存檔載入與 property test 必須拒絕重複 tuple、重複 key、digest 不符、serial 回退或同一 receipt 對應不同 payload；serial 溢位時拒絕建立新交易並顯示錯誤，不 wraparound。
+`next_transaction_serial` 只在候選交易成功存檔時遞增；同一 pending command 的 retry 必須重用原 tuple。`ProposalSourceCodec v1` 將 `source_instance_or_slot` 限為strict ASCII互斥token：`u/<run-unit-id>`、`c/<commander-stable-id>`、`r/<0..4>`、`t/<trait-stable-id>`、`eq/<owner-run-unit-id>/<0..2>`；數字無前導零，內嵌ID先走各自validator，整體再走RuntimeKey stable-ascii validator。RMP2與S3 claim共用同一token，不得轉寫；enemy/summon battle ID不可成為claim source。`income_claimed_node_ids` 必須保存上述 run-global node ID。內容驗證、存檔載入與 property test 必須拒絕重複 tuple、重複 key、digest 不符、serial 回退或同一 receipt 對應不同 payload；serial 溢位時拒絕建立新交易並顯示錯誤，不 wraparound。
 
 - **[REQ-DATA-007]** 所有收入、reservation、交易、效果 claim 與局外結算的冪等識別必須由 RuntimeKeyCodec v1 的完整 canonical tuple 產生，且在載入與提交時驗證唯一性。
 
@@ -160,13 +160,21 @@ JSON 不得把任何持久 unsigned 64-bit 值存成 number。`run_seed`、每�
 1. 從 `RosterState`、等級、指揮官、羈絆、遺物及事件 modifier 推導當前人口。
 2. 驗證人口、位置、重疊、裝備、instance reference、overflow 與其他 roster invariant；失敗即回傳完整錯誤並停留 PREPARE。
 3. 從當下玩家狀態和既存 `EncounterPreviewSnapshot` 建立 `BattleSetupInputs`。
-4. 以 `CanonicalBattleCodec v1` 序列化 inputs，計算 SHA-256 `battle_setup_hash`。
+4. 依 `setup_schema_version` 使用對應 canonical codec 序列化 inputs，計算 SHA-256 `battle_setup_hash`；S2 正式流程使用 v2，S1 v1 codec/golden 永久保留作 migration 與 regression 證據。
 5. 以 `combat` stream 與 `context_id = encounter_id + \":\" + battle_setup_hash` 派生初始 combat RNG。
-6. 組成 `BattleSetup(inputs, hash_version, battle_setup_hash, rng_version, combat_rng_snapshot)`，與 `ResolutionState.combat_pending` 原子存檔；成功後才進 COMBAT。
+6. 組成 `BattleSetup(inputs, hash_version, battle_setup_hash, rng_version, combat_rng_snapshot, battle_setup_envelope_digest)`，與 `ResolutionState.combat_pending` 原子存檔；成功後才進 COMBAT。
 
-`BattleSetupInputs` 不得包含 combat seed、RNG state、setup hash、動畫、語系、音量、UI 狀態或時間。必備欄位依固定順序為：`setup_schema_version`、`content_version`、`manifest_digest`、`encounter_snapshot`、`player_units`、`player_active_traits`、`player_equipment_effects`、`player_relic_effects`、`commander_effects`、`challenge_modifiers`、`battle_rules`。敵方單位、站位、羈絆、詞綴與階段只存在 `encounter_snapshot`，不得再複製成第二權威欄位。雙方 snapshot 內的單位陣列各依 `side → logical_y → logical_x → instance_id` 排序；效果與 modifier 依 `priority → source_stable_id → effect_index` 排序；target ID 集合排序且去重。所有內容先解析成戰鬥所需的不可變數值快照，重播不再讀取可變 Resource。
+BattleSetup envelope 另保存 `battle_setup_envelope_digest = SHA256("BSE1" + hash_version u32-be + setup raw digest + rng_version u32-be + state/inc/counter 各 u64-be)`。每次 StartCombat與reload都從 run_seed及 combat context重新 derive初始 snapshot逐位比對；seed/RNG不進 setup hash，但 stale或竄改 snapshot不得進 simulation。BattleResult receipt 綁 setup hash、envelope digest與result hash。
 
-`CanonicalBattleCodec v1` 使用無 BOM UTF-8、無多餘空白、上述固定欄位順序；整數採無前導零十進位（零只寫 `0`）、boolean 為 `true/false`、字串採 JSON escape、缺少的 optional 以規定的 `null` 或空 typed array 表示。禁止浮點數、NaN、Infinity、Dictionary 迭代順序與未定義欄位。SHA-256 輸出為 64 字元小寫 hex。任何 codec 或欄位語意改變都必須提高 `setup_schema_version` 或 `hash_version` 並更新 canonical fixture。
+`BattleSetupInputs`不得包含combat seed、RNG state、setup hash、動畫、語系、音量、UI狀態或時間。必備欄位固定為：`setup_schema_version`、`content_version`、`manifest_digest`、`encounter_snapshot`、`player_units`、`player_active_traits`、`player_equipment_effects`、`player_relic_effects`、`commander_effects`、`challenge_modifiers`、`battle_rules`。敵方資料只在`encounter_snapshot`。Unit陣列依side→y→x→instance；effect source先依category rank，再用challenge/commander stable ID、relic slot、trait/affix side→stable ID、equipment owner cell→slot→ID、unit side→cell→ID，最後接priority→source ID→effect index→effect ID→target cell/ID；targets排序去重。所有內容先解析為不可變snapshot，重播不讀Resource。
+
+`CanonicalBattleCodec v1/v2`都使用無BOM UTF-8、無多餘空白與固定欄位順序；整數無前導零、boolean為true/false、字串JSON escape、optional依規定為null或空typed array。禁止float、Dictionary迭代順序與未知欄位。v2頂層仍恰為上述11欄，但同時擴充`BattleRulesSnapshot`及nested Effect/Unit/Trait snapshots；所有新增欄都進setup hash。正式S2只接受`(setup2,hash1,rng1,simulation1,event1,result1)`；v1只作S1 golden。欄位／順序改變升setup schema，規則語意改變升simulation；unknown組合具名拒絕或incompatible-preserved。
+
+`BattleRulesSnapshot` v2 scalar/collection exact order為 `simulation_version,event_codec_version,result_codec_version,combat_config_id,tick_rate,board_width,board_height,soft_limit_ticks,hard_limit_ticks,progress_scale,resistance_base,basis_points,overtime_interval_ticks,main_actions_per_tick,attack_mana_gain,damage_mana_factor,damage_mana_min,damage_mana_max,overtime_step_bps,overtime_cap_bps,act1_base_damage,act2_base_damage,act3_base_damage,survivor_damage,boss_damage,effect_resolution_budget,operation_budget,event_budget,entity_budget,act_index,encounter_kind,ability_rules,effect_rules,summoned_unit_templates`。前三個version都進setup hash，是combat_pending的唯一replay tuple authority；只接受exact `(setup2,hash1,rng1,simulation1,event1,result1)`。Ability rules依ID排序，欄位為 `ability_id,target_rule,cast_ticks,effect_ids`；Effect rules依ID排序，欄位為 `effect_id,trigger,periodic_interval_ticks,sorted conditions,indexed battle operations,indexed run operations,stacking,max_stacks,duration_ticks`。Summoned unit templates依unit ID排序，保存star=1、trait IDs、完整numeric stats、ability、AI/basic-attack profile與 `unit_effect_assignments(priority,source_stable_id,effect_index,effect_id)` canonical array；setup builder以pinned catalog對所有可達summon refs做transitive closure。Simulation只能讀此closure，缺ref、循環未受限、超entity budget或需要latest catalog皆拒絕。
+
+Setup v2所有effect來源使用hashed `BattleEffectSourceAssignmentSnapshot(priority,source_category,source_side,source_stable_id,source_instance_id?,source_slot,effect_index,effect_id,targets,int/id params)`。category order為challenge→commander→relic→trait→encounter_affix→equipment→unit。challenge/commander/relic/equipment各只能出現在對應頂層array；trait/unit assignments嵌在其snapshot；affix只在encounter。equipment owner必存在於player units且slot0..2，relic slot0..4，unit owner恰為自身instance；globals owner=null。location/category/side/owner/slot與stable source交叉驗證失敗即拒絕setup，reload只從此DTO重建source order及ProposalSource token，不讀RunState或latest catalog。
+
+Enemy/summon IDs 不擴充 RuntimeKeyCodec v1。`BattleEntityIdCodec v1` 敵軍使用 `e_ + first16hex(SHA256("BEI1" + framed node_id + framed spawn_key))`；召喚使用 `s_ + first16hex(SHA256("BSI1" + setup raw digest + framed summoner/effect IDs + operation index u32-be + per-source request serial u32-be))`。所有 framed ID/key皆為 u32-be byte length＋strict ASCII；`spawn_key` 必須符合 `[a-z][a-z0-9_]{0,63}`。Preview/simulation對所有 ID collision直接失敗、不重抽；summon serial每 request加一且只隨成功 step提交，rollback不前進。
 
 - **[REQ-DATA-005]** BattleSetup 必須在最終備戰狀態驗證後，依本節唯一 canonical codec 建立；setup hash 不得包含由自身派生的 seed，敵方資料不得偏離已提交 preview。
 
@@ -176,7 +184,7 @@ JSON 不得把任何持久 unsigned 64-bit 值存成 number。`run_seed`、每�
 
 ```json
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "content_version": "slice-0.1",
   "app_version": "0.1.0",
   "rng_version": 1,
@@ -187,7 +195,11 @@ JSON 不得把任何持久 unsigned 64-bit 值存成 number。`run_seed`、每�
 }
 ```
 
-`run` 為 null 表示沒有進行中遠征。時間只供診斷，不得影響遊戲亂數或獎勵。
+`run` 為 null 表示沒有進行中遠征。時間只供診斷，不得影響遊戲亂數或獎勵。schema 2 將 `RunMutationProposal` 由 schema 1 的預綁 `claim_key` 改為第 8.10 節 claim descriptor。migration 固定逐版執行 `0→1→2`，對已是 2 的 canonical input完全冪等。profile／run=null 可直接遷移；active run只允許 idle MAP、current_node=null且所有 encounter preview皆null，PREPARE或已提交preview一律不換 generation。registry 必須持有 old v1 generation、allowlisted CombatConfig及排序的 `encounter_id/phase_index/source_spawn_key` Boss mapping；mapping canonical digest也須allowlist且引用同 encounter唯一 spawn。逐筆轉碼、套用 mapping、加入 config並發行 `(old,new,config,boss-mapping,codec1→2)` receipt後才原子更新 snapshot。缺任何 generation/config/mapping/digest，或 schema 1 有preview、PREPARE、reward/combat/result pending，皆保留 profile與原檔並標 `incompatible_preserved`；不得讀 latest、猜第一敵人、猜 seed或重編 setup。
+
+Boss mapping entry exact為 `encounter_id,phase_index:u32,source_spawn_key`，依encounter ordinal→phase排序、identity唯一，spawn key符合`[a-z][a-z0-9_]{0,63}`。`BSM1` bytes為magic＋count u32-be＋每entry兩個u32-framed strict-ASCII字串與phase u32-be；SHA-256為mapping digest，且old generation每個Boss phase恰有一筆、不得extra。
+
+Migration pack exact保存source/target content versions、source/expected-target manifest digests、canonical v2 CombatConfig entry bytes/digest、mapping entries/digest、codec 1→2與pack digest。`CGM1` preimage依序為兩個u32-framed strict-UTF8 versions、source/target/config/mapping raw32 digests、from/to u32-be；allowlist key為source version＋source digest＋pack digest。成功receipt exact保存source/target/config/mapping/pack digests、from/to與 `receipt_digest=SHA256("CGR1" + 五個raw32 digest + from/to u32-be)`。所有digest重算、target manifest比對與allowlist成功後才交換；golden與逐欄破壞fixture鎖定BSM1/CGM1/CGR1。
 
 ### 9.5 必要 RunState 欄位
 
@@ -202,18 +214,20 @@ JSON 不得把任何持久 unsigned 64-bit 值存成 number。`run_seed`、每�
 - `reservation_owners` 與已提交 transaction／claim receipts。
 - 唯一 `resolution_state` tagged union；不得另存互相獨立的 pending boolean 或重複 payload。
 
-`ContentSnapshotState` 是純 DTO，不是 Resource，固定包含 `content_version`、排序且去重的 `enabled_content_ids`、`economy_config_id`、`reward_table_ids`、`map_node_def_ids`、`challenge_unlock_def_ids`、`meta_reward_table_id` 與 SHA-256 `manifest_digest`。manifest digest 由這些 ID 及其版本化內容摘要依 stable ID 排序後計算。遠征建立後 snapshot 不可變；熱重載、局外解鎖或目前 registry 的不同版本都不得改寫它。
+`ContentSnapshotState` 是純 DTO，不是 Resource，固定包含 `content_version`、排序且去重的 `enabled_content_ids`、`economy_config_id`、`reward_table_ids`、`map_node_def_ids`、`challenge_unlock_def_ids`、`meta_reward_table_id` 與 SHA-256 `manifest_digest`。manifest digest 由這些 ID 及其版本化內容摘要依 stable ID 排序後計算。遠征建立後 gameplay、熱重載、局外解鎖或目前 registry 的不同版本都不得改寫 snapshot；唯一例外是本節具allowlist、old/new generations與migration receipt的逐版save migration，且必須在draft內原子轉碼、validate、save/read-back成功後才交換，失敗保留舊snapshot與原檔。
 
 `ResolutionState` 的 `kind` 只能是：
 
 | kind | 唯一 payload | 合法來源／去向 |
 |---|---|---|
 | `idle` | 無 | MAP／PREPARE 或完成所有獎勵後 |
-| `combat_pending` | `BattleSetup` | 開戰提交後；重播至 battle_result_pending |
-| `battle_result_pending` | setup hash、`BattleResult` | 模擬完成後；原子套用戰果並轉 loss destination 或 reward_pending |
+| `combat_pending` | 唯一完整 `BattleSetup` v2 envelope；不得另存重複 RNG/setup hash | CombatCoordinator 重播；模擬完成後只提交 BattleResult |
+| `battle_result_pending` | 唯一完整 canonical `BattleResult`（內含version tuple/setup/result hashes）；不得另存重複 hash | 不得重跑戰鬥；S3 原子套用戰果並轉 loss destination 或 reward_pending |
 | `reward_pending` | `PendingRewardState` | 勝利候選或事件給予已提交；解決後轉下一 stage 或 idle |
 
 `PendingRewardState` 固定具有 `node_id`、`stage_id`（`standard`、`relic` 或 `event_grant`）、`phase`（`choosing`、`unit_resolution`、`item_resolution`、`relic_resolution`、`ready_to_advance`）、`offers`、`reserved_copies`、nullable `selected_choice_id`、nullable `selected_unit_reservation` 與 `transaction_id`。同一時間只能有一個 active stage；菁英的 standard stage 完成且所有 subphase 解決後才原子建立 relic stage，Boss 直接建立 relic stage。事件的棋子／物品給予在選項本身先提交後建立單一 `event_grant` stage，沿用同一 overflow 與 reservation 規則。`RosterState.pending_item_overflow` 與這個 phase 一起驗證：只要 unit／item／relic 尚未解決，就不得建立下一 stage 或離場。不存在「兩組候選各自 pending」的表示法。
+
+S2的`RecordBattleResultCommand`固定攜帶expected setup/result hashes、BattleResult與simulation-issued validation receipt。RunController要求pending setup hash、result內setup hash與expected setup三者相同，重派生RNG並驗setup envelope digest，再要求 `expected_result_hash == result.result_hash == recomputed_result_hash == receipt.result_hash`；receipt另綁setup hash與envelope digest。任一不符時draft、RNG、事件與committed save全不變。receipt不序列化；result提交前crash則從committed envelope重播取得相同result/hash與新receipt。逐欄negative含stale expected hash。
 
 ### 9.6 存檔時點
 
@@ -261,7 +275,7 @@ JSON 不得把任何持久 unsigned 64-bit 值存成 number。`run_seed`、每�
 
 ### 9.9 戰鬥與獎勵恢復
 
-- 進戰前先保存 `ResolutionState.combat_pending`、完整 `BattleSetup`、combat stream state 與 setup hash。
+- 進戰前先保存 `ResolutionState.combat_pending` 的唯一完整 `BattleSetup` envelope；combat RNG snapshot、setup hash與envelope digest只存在該DTO，不建立第二份權威欄位。
 - 崩潰或離開後載入時，以保存 setup 重播；不恢復至可重抽敵人或 seed 的狀態。
 - 戰果先寫入 `ResolutionState.battle_result_pending`，再顯示勝負動畫。載入此狀態只可繼續同一戰果交易，不重跑戰鬥。
 - 勝利時，戰果交易只套用第 8.10 節白名單內的 scalar `RunMutationProposal`，再建立第一個 `reward_pending`；候選先存檔再顯示。每個 stage 的 choice 先轉入需要的 unit／item／relic resolution subphase；全部解決後，菁英 standard 原子轉成 relic stage但保留 shop，普通戰才執行 final node-exit，Boss 的 relic stage 解決後才做 final node-exit 與幕結算。每次轉移都沿用 node ID 與唯一 transaction／claim receipt。

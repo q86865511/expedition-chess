@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：產品定位、範圍與非目標
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 2–3 章
 
 ---

@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：風險、決策與假設
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 12–13 章
 
 ---
@@ -48,6 +48,14 @@
 | **[DEC-011]** | 純 domain 固定 tick 模擬 | 支援測試、重現、倍速與畫面分離 |
 | **[DEC-012]** | PCG32 命名 stream＋版本化 JSON | 防止隨機污染、save-scum 漂移與版本壞檔 |
 | **[DEC-013]** | 原創奇幻冒險 IP | 建立自身辨識度並降低侵權風險 |
+| **[DEC-014]** | 整數累加戰鬥＋版本化 CombatConfig；戰鬥 proposal 延後至 S3 綁定 node claim key | 鎖定跨幀率重播、可資料調整的 TUNE 與純 Domain 模擬；避免 result 尚未結算就偽造節點 claim |
+
+### 13.1 DEC-014 相容性結果
+
+- content codec 升為 2，加入 `CombatConfigDef` 與 Boss phase source spawn；v1 codec/golden 保留。
+- save schema 升為 2，proposal 改存 claim descriptor；schema 1 非戰鬥資料可逐版遷移，無正式產生路徑的 v1 combat pending 只隔離保留。
+- BattleSetup schema 升為 2，但頂層 11 欄不變；simulation/Event/Result codec 首版皆為 1。
+- CombatConfig 可調整數值，但任何公式、排序、資料所有權或 failure/no-partial 語意的改變都必須新增 DEC 並提高相應版本。
 
 ### 13.2 規劃假設
 

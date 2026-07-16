@@ -1,12 +1,14 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Spec', 'RunnerContract')]
+    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Spec', 'RunnerContract')]
     [string]$Suite = 'All',
     [string]$TestPath = '',
     [string]$Case = '',
     [string]$GodotPath = '',
     [ValidateRange(1, 3600)]
-    [int]$TimeoutSeconds = 180
+    [int]$TimeoutSeconds = 180,
+    [ValidateRange(1, 1000000)]
+    [int]$SeedCount = 10000
 )
 
 $ErrorActionPreference = 'Stop'
@@ -411,6 +413,9 @@ function Write-ExecutionArtifact {
     if ($Suite -eq 'All') {
         Write-FoundationAcceptanceArtifact -AllExitCode $ExitCode -Toolchain $Toolchain
     }
+    if ($Suite -in @('All', 'Soak')) {
+        Write-CombatAcceptanceArtifact -Toolchain $Toolchain
+    }
 }
 
 function Get-FoundationEvidenceEvaluation {
@@ -519,7 +524,7 @@ function Get-FoundationEvidenceEvaluation {
         'test_existing_committed_copy_survives_each_second_save_fault',
         'test_all_declared_app_edges_are_accepted_with_repository_proofs',
         'test_declared_run_phase_edge_matrix',
-        'test_schema_one_round_trip_is_byte_identical',
+        'test_schema_two_round_trip_is_byte_identical',
         'test_alias_probe_compiles_new_pinned_receipt',
         'test_required_tombstone_never_guesses_safe_replacement',
         'test_receipt_failure_preserves_profile_and_marks_run_incompatible',
@@ -542,11 +547,11 @@ function Get-FoundationEvidenceEvaluation {
         'AC-026' = @('gut:test_invalid_main_loads_backup_and_repairs_without_moving_only_backup_first', 'gut:test_existing_committed_copy_survives_each_second_save_fault')
         'AC-036' = @('toolchain:locked', 'runner:import', 'runner:contract')
         'AC-039' = @('smoke:minimal_boot', 'gut:test_all_declared_app_edges_are_accepted_with_repository_proofs', 'gut:test_declared_run_phase_edge_matrix')
-        'AC-040' = @('gut:test_schema_one_round_trip_is_byte_identical', 'spec:source_contracts')
+        'AC-040' = @('gut:test_schema_two_round_trip_is_byte_identical', 'spec:source_contracts')
         'AC-051' = @('content:alias_migration', 'gut:test_alias_probe_compiles_new_pinned_receipt')
         'AC-052' = @('content:tombstone_preservation', 'gut:test_required_tombstone_never_guesses_safe_replacement')
         'AC-054' = @('spec:source_contracts')
-        'AC-055' = @('gut:test_valid_fixture_and_deep_clone_isolation', 'gut:test_view_projection_does_not_share_nested_state', 'gut:test_schema_one_round_trip_is_byte_identical')
+        'AC-055' = @('gut:test_valid_fixture_and_deep_clone_isolation', 'gut:test_view_projection_does_not_share_nested_state', 'gut:test_schema_two_round_trip_is_byte_identical')
         'AC-063' = @('canonical:U64Bits/stable-id', 'canonical:PCG32/RNG-v1', 'gut:test_every_u64_boundary_uses_fixed_lowercase_hex')
         'AC-064' = @('canonical:CanonicalBattleCodec-v1')
         'AC-068' = @('smoke:autoload_set', 'spec:source_contracts')
@@ -687,6 +692,137 @@ function Write-FoundationAcceptanceArtifact {
     }
 }
 
+function Get-CombatEvidenceEvaluation {
+    $observed = @{}
+    $gutCases = @{}
+    $gutPath = Join-Path $artifactRoot 'gut.xml'
+    if (Test-Path -LiteralPath $gutPath -PathType Leaf) {
+        try {
+            [xml]$gutDocument = Get-Content -LiteralPath $gutPath -Raw -Encoding UTF8
+            $gutRoot = $gutDocument.SelectSingleNode('/testsuites')
+            if ($null -ne $gutRoot -and
+                [int]$gutRoot.GetAttribute('failures') -eq 0 -and
+                [int]$gutRoot.GetAttribute('errors') -eq 0 -and
+                [int]$gutRoot.GetAttribute('orphans') -eq 0) {
+                foreach ($testCase in $gutDocument.SelectNodes('//testcase')) {
+                    if ([string]$testCase.GetAttribute('status') -eq 'pass') {
+                        $gutCases[[string]$testCase.GetAttribute('name')] = $true
+                    }
+                }
+            }
+        }
+        catch { $gutCases = @{} }
+    }
+    foreach ($testName in $gutCases.Keys) {
+        $observed['gut:' + $testName] = $true
+    }
+
+    foreach ($artifactName in @('combat-runner.json', 'canonical.json', 'soak.json', 'spec-contract.json')) {
+        $path = Join-Path $artifactRoot $artifactName
+        $artifact = $null
+        if (Test-Path -LiteralPath $path -PathType Leaf) {
+            try { $artifact = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json }
+            catch { $artifact = $null }
+        }
+        $observed['artifact:' + $artifactName] = (
+            $null -ne $artifact -and [bool]$artifact.passed -and @($artifact.failures).Count -eq 0
+        )
+        if ($null -ne $artifact) {
+            foreach ($scope in @($artifact.completed_scopes)) {
+                $observed['scope:' + $artifactName + ':' + [string]$scope] = [bool]$artifact.passed
+            }
+            if ($artifactName -eq 'soak.json') {
+                $observed['soak:10000'] = (
+                    [bool]$artifact.passed -and [int]$artifact.seed_count -ge 10000 -and
+                    [int]$artifact.maximum_final_tick -le 1800
+                )
+            }
+        }
+    }
+
+    $rules = [ordered]@{
+        'S2-AC-001' = @('gut:test_board_validator_collects_and_sorts_all_errors')
+        'S2-AC-002' = @('gut:test_twelve_deployed_units_fit_capacity_and_thirteen_do_not', 'gut:test_all_thirty_two_player_half_cells_are_a_valid_physical_bound')
+        'S2-AC-003' = @('gut:test_bench_compaction_preserves_player_relative_order', 'gut:test_command_compacts_validates_and_returns_complete_draft')
+        'S2-AC-004' = @('gut:test_nine_one_star_units_chain_to_one_three_star_and_conserve_copies', 'gut:test_board_presence_then_cell_order_choose_primary_before_instance_id')
+        'S2-AC-005' = @('gut:test_equipment_moves_by_consumed_unit_and_slot_with_inventory_overflow')
+        'S2-AC-006' = @('gut:test_compile_is_deterministic_and_persists_boss_source_id', 'gut:test_lab_proxy_factory_builds_normal_and_source_bound_two_phase_boss')
+        'S2-AC-007' = @('gut:test_v2_round_trip_hash_envelope_and_v1_golden_compatibility', 'gut:test_v2_effect_source_location_and_owner_are_hashed_and_strict')
+        'S2-AC-008' = @('gut:test_same_setup_produces_identical_result_and_summary_hash', 'gut:test_speed_one_and_four_publish_identical_committed_result', 'gut:test_reload_of_committed_result_never_initializes_or_steps_simulation')
+        'S2-AC-009' = @('gut:test_path_tie_uses_fixed_direction_order_and_blocks_corner_cutting')
+        'S2-AC-010' = @('gut:test_integer_resistance_true_damage_and_minimum_damage_vectors', 'gut:test_simultaneous_lethal_attacks_resolve_both_deaths_as_player_loss', 'gut:test_damage_wave_uses_shared_final_health_and_deterministic_killer', 'gut:test_full_mana_cast_has_priority_and_applies_resolved_damage_next_tick', 'gut:test_boss_phase_uses_explicit_source_instance_and_fixed_phase_order')
+        'S2-AC-011' = @('gut:test_progress_damage_mana_and_overtime_use_fixed_integer_thresholds', 'gut:test_overtime_starts_at_1200_and_forces_result_before_hard_limit')
+        'S2-AC-012' = @('gut:test_boss_loss_uses_act_snapshot_and_encounter_survivor_formula_without_mutation')
+        'S2-AC-013' = @('gut:test_all_nine_triggers_and_four_stacking_modes_are_accepted', 'gut:test_all_ten_conditions_have_matching_positive_fixture', 'gut:test_all_nine_battle_operations_produce_typed_atomic_operations', 'gut:test_unknown_operation_and_budget_failure_return_no_partial_resolution', 'gut:test_replace_uses_larger_amount_then_duration_canonical_tuple', 'gut:test_refresh_keeps_amount_and_only_extends_duration', 'gut:test_add_stacks_clamps_count_amount_and_takes_longer_duration', 'gut:test_independent_preserves_separate_application_sequences')
+        'S2-AC-014' = @('gut:test_reactive_damage_cycle_requires_finite_max_uses_guard', 'gut:test_rmp2_payload_digest_golden_and_restore_are_exact', 'gut:test_runtime_dispatches_all_non_cast_triggers_and_persists_battle_end_intent', 'gut:test_fatal_effect_budget_rolls_back_tick_rng_events_and_enters_failed_lifecycle')
+        'S2-AC-015' = @('scope:canonical.json:BattleResult/EventCodec-v1', 'gut:test_all_fourteen_event_payloads_round_trip_canonical_bytes', 'gut:test_unknown_type_wrong_payload_and_noncanonical_bytes_are_rejected', 'gut:test_same_setup_produces_identical_result_and_summary_hash')
+        'S2-AC-016' = @('gut:test_start_combat_builds_committed_v2_setup_from_preview_and_roster', 'gut:test_record_result_requires_exact_setup_result_and_receipt_hashes', 'gut:test_result_commit_failure_hides_terminal_then_retry_publishes_once', 'gut:test_schema_one_prepare_and_pending_runs_preserve_profile_and_original_bytes', 'gut:test_schema_one_idle_map_migrates_generation_atomically_and_is_idempotent', 'gut:test_bsm1_cgm1_and_cgr1_golden_vectors_are_stable', 'gut:test_cgr1_rejects_tampering_of_every_receipt_field')
+        'S2-AC-017' = @('gut:test_lab_builds_64_cells_nine_bench_slots_and_starts_proxy_battle', 'gut:test_lab_proxy_factory_builds_normal_and_source_bound_two_phase_boss', 'gut:test_presenter_returns_clone_isolated_setup_events_and_result')
+        'S2-AC-018' = @('scope:combat-runner.json:battle_32v32_64_entity_stress', 'soak:10000')
+    }
+    $evaluations = [ordered]@{}
+    $missingAll = New-Object System.Collections.Generic.List[string]
+    foreach ($acceptanceId in $rules.Keys) {
+        $missing = New-Object System.Collections.Generic.List[string]
+        foreach ($key in @($rules[$acceptanceId])) {
+            if (-not $observed.ContainsKey($key) -or -not [bool]$observed[$key]) {
+                $missing.Add($key)
+                $missingAll.Add($acceptanceId + ':' + $key)
+            }
+        }
+        $evaluations[$acceptanceId] = [pscustomobject]@{
+            Verified = ($missing.Count -eq 0)
+            Required = @($rules[$acceptanceId])
+            Missing = $missing.ToArray()
+        }
+    }
+    return [pscustomobject]@{
+        Verified = ($missingAll.Count -eq 0)
+        Evaluations = $evaluations
+        Missing = $missingAll.ToArray()
+    }
+}
+
+function Write-CombatAcceptanceArtifact {
+    param([object]$Toolchain)
+
+    $evaluation = Get-CombatEvidenceEvaluation
+    $items = New-Object System.Collections.Generic.List[object]
+    foreach ($acceptanceId in $evaluation.Evaluations.Keys) {
+        $item = $evaluation.Evaluations[$acceptanceId]
+        $items.Add([ordered]@{
+            acceptance_id = $acceptanceId
+            status = if ($item.Verified) { 'pass' } else { 'not_verified' }
+            required_evidence = $item.Required
+            missing_evidence = $item.Missing
+        })
+    }
+    $payload = [ordered]@{
+        schema_version = 2
+        scope = 'combat-core'
+        suite = $Suite
+        evidence_verified = [bool]$evaluation.Verified
+        evidence_failures = $evaluation.Missing
+        generated_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        toolchain = $Toolchain
+        global_downstream = @(
+            'S3: expedition HP/income/reward/Boss retry settlement exactly-once',
+            'S4: formal trait/equipment/relic population and effect sources',
+            'G1/G2: minimum-PC 60 FPS presentation acceptance',
+            'AC-030: full-run soak remains downstream'
+        )
+        acceptance = $items.ToArray()
+    }
+    $path = Join-Path $artifactRoot 'combat-acceptance.json'
+    $temporaryPath = $path + '.tmp'
+    [IO.File]::WriteAllText($temporaryPath, ($payload | ConvertTo-Json -Depth 12), (New-Object Text.UTF8Encoding($false)))
+    Move-Item -LiteralPath $temporaryPath -Destination $path -Force
+    $roundTrip = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ([int]$roundTrip.acceptance.Count -ne 18 -or [int]$roundTrip.schema_version -ne 2) {
+        throw 'combat-acceptance.json read-back validation failed.'
+    }
+}
+
 $toolchainEvidence = $null
 try {
     New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
@@ -714,7 +850,7 @@ try {
         $failureMessage = [string]$toolchain.Message
     }
     else {
-        $selected = if ($Suite -eq 'All') { @('Import', 'RunnerContract', 'Smoke', 'Gut', 'Content', 'Canonical', 'Spec') } else { @($Suite) }
+        $selected = if ($Suite -eq 'All') { @('Import', 'RunnerContract', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Spec') } else { @($Suite) }
         $finalExitCode = 0
         foreach ($name in $selected) {
             if ($name -eq 'Import') {
@@ -748,10 +884,13 @@ try {
                     'Smoke' { 'smoke_runner.gd' }
                     'Content' { 'content_validation_runner.gd' }
                     'Canonical' { 'canonical_runner.gd' }
+                    'Combat' { 'combat_runner.gd' }
+                    'Soak' { 'soak_runner.gd' }
                     'Spec' { 'spec_contract_runner.gd' }
                 }
                 $userArgs = @()
                 if (-not [string]::IsNullOrWhiteSpace($Case)) { $userArgs += @('--case', $Case) }
+                if ($name -eq 'Soak') { $userArgs += @('--seed-count', [string]$SeedCount) }
                 $code = Invoke-RunnerScript -Executable $resolvedGodot -Name $name -ScriptPath ('res://tests/runners/' + $scriptName) -UserArguments $userArgs
             }
             if ($code -ne 0) {

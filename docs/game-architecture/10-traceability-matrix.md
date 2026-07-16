@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：需求追溯矩陣
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 14 章
 
 ---
@@ -24,7 +24,7 @@
 | REQ-UNIT-001、REQ-UNIT-002 | DEC-005、DEC-007 | 5.3、5.9 | AC-013、AC-014、AC-017、AC-060 | 單元／整合 |
 | REQ-TRAIT-001、REQ-TRAIT-002 | DEC-007 | 5.4 | AC-015、AC-024 | 單元／canonical |
 | REQ-COMBAT-001 | DEC-002 | 5.5、10 | AC-006、AC-024 | UI／整合 |
-| REQ-COMBAT-002、REQ-COMBAT-003、REQ-COMBAT-004 | DEC-011、DEC-012 | 5.6、5.7、8、9 | AC-007、AC-008 | Canonical／soak |
+| REQ-COMBAT-002、REQ-COMBAT-003、REQ-COMBAT-004 | DEC-011、DEC-012、DEC-014 | 5.6、5.7、8、9 | AC-007、AC-008 | Canonical／soak |
 | REQ-COMBAT-005、REQ-COMBAT-006 | DEC-003、DEC-006 | 5.8 | AC-009、AC-010、AC-035 | 單元／存讀整合 |
 | REQ-ECON-001 | DEC-005 | 5.9 | AC-011、AC-013、AC-048 | 單元／property |
 | REQ-ECON-002 | DEC-006 | 5.9 | AC-012、AC-035 | 單元／整合 |
@@ -49,12 +49,12 @@
 | REQ-DATA-002 | DEC-010、DEC-011 | 8.9 | AC-040 | 序列化／靜態分析 |
 | REQ-DATA-003 | DEC-012 | 9.1 | AC-025、AC-026、AC-051、AC-052 | Migration |
 | REQ-DATA-004 | DEC-011 | 8.9、9.5 | AC-055 | Round-trip／ownership |
-| REQ-DATA-005 | DEC-011、DEC-012 | 9.3 | AC-041、AC-064 | Canonical／hash |
+| REQ-DATA-005 | DEC-011、DEC-012、DEC-014 | 9.3 | AC-041、AC-064 | Canonical／hash |
 | REQ-DATA-006 | DEC-009、DEC-012 | 9.5、9.8 | AC-023、AC-070、AC-078 | 相容性／存讀 |
 | REQ-DATA-007 | DEC-011、DEC-012 | 9.1、9.5 | AC-073 | Property／存讀 |
 | REQ-DATA-008 | DEC-010、DEC-011 | 8.8、8.9 | AC-024、AC-075、AC-078 | Mutation／catalog generation |
-| REQ-EFFECT-001 | DEC-006、DEC-011 | 8.10、9.9 | AC-059、AC-067、AC-073、AC-074 | 效果／Boss 整合 |
-| REQ-EFFECT-002 | DEC-011 | 8.8–8.10 | AC-067、AC-074 | 型別／內容驗證 |
+| REQ-EFFECT-001 | DEC-006、DEC-011、DEC-014 | 8.10、9.9 | AC-059、AC-067、AC-073、AC-074 | 效果／Boss 整合 |
+| REQ-EFFECT-002 | DEC-011、DEC-014 | 8.8–8.10 | AC-067、AC-074 | 型別／內容驗證 |
 | REQ-RNG-001 | DEC-012 | 9.2、9.3 | AC-007、AC-027、AC-041、AC-064 | Stream isolation／canonical |
 | REQ-RNG-002 | DEC-012 | 9.2 | AC-063 | Golden／邊界 vectors |
 | REQ-SAVE-001 | DEC-012 | 9.4、9.7 | AC-026、AC-069 | Atomic I/O |

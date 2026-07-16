@@ -1,8 +1,16 @@
 class_name ContentDefinitionCompiler
 extends RefCounted
 
-var _codec := ContentCanonicalCodecV1.new()
+var _codec: ContentCanonicalCodecV1
+var _content_codec_version: int
 var _compile_error_path: StringName
+
+func _init(
+	p_codec: ContentCanonicalCodecV1 = null,
+	p_content_codec_version: int = 1
+) -> void:
+	_codec = p_codec if p_codec != null else ContentCanonicalCodecV1.new()
+	_content_codec_version = p_content_codec_version
 
 func compile(definition: ContentDefinition) -> ContentEntryCompileResult:
 	_compile_error_path = &""
@@ -39,11 +47,15 @@ func collect_references(definition: ContentDefinition) -> Array[StringName]:
 	if definition is UnitDef:
 		result.append_array(definition.trait_refs)
 		if definition.has_ability_ref: result.append(definition.ability_ref)
+		if _content_codec_version == 2: result.append_array(definition.effect_refs)
 	elif definition is TraitDef:
 		for threshold in definition.thresholds: result.append_array(threshold.effect_refs)
 	elif definition is AbilityDef:
 		result.append_array(definition.effect_refs)
 	elif definition is EffectDef:
+		for condition in definition.conditions:
+			if condition.has_stable_id_value:
+				result.append(condition.stable_id_value)
 		for operation in definition.battle_operations:
 			if operation is SummonOperationDef: result.append(operation.unit_ref)
 			elif operation is ApplyStatusOperationDef: result.append(operation.status_id)
@@ -109,21 +121,38 @@ func _compile_specifics(definition: ContentDefinition) -> Array[ContentValue]:
 	if definition is UnlockDef: return [ContentValue.enum_value(definition.unlock_kind), ContentValue.u32(definition.challenge_level), _stable_set(definition.prerequisite_refs), ContentValue.u32(definition.currency_cost), _stable_set(definition.unlocked_content_refs), _stable_set(definition.modifier_refs)]
 	if definition is EconomyConfigDef: return _compile_economy(definition)
 	if definition is MetaRewardTableDef: return [_enum_int_set(definition.node_scores), ContentValue.i32(definition.completion_reward), ContentValue.i32(definition.failure_reward), _challenge_multiplier_set(definition.challenge_multiplier_bps)]
+	if definition is CombatConfigDef and _content_codec_version == 2:
+		return _compile_combat_config(definition)
 	return []
 
 func _compile_unit(value: UnitDef) -> Array[ContentValue]:
 	var stats: ContentValue = null
 	if value.base_stats != null: stats = _unit_stats(value.base_stats)
 	if stats == null: return []
-	return [
+	var result: Array[ContentValue] = [
 		ContentValue.u32(value.cost_tier), _stable_set(value.trait_refs), stats,
 		_star_scaling_set(value.star_scalings),
 		ContentValue.optional(ContentValue.stable_id(value.ability_ref) if value.has_ability_ref else null),
 		ContentValue.enum_value(value.ai_profile), ContentValue.enum_value(value.basic_attack_profile),
 		ContentValue.enum_value(value.availability), ContentValue.enum_value(value.shop_condition)
 	]
+	if _content_codec_version == 2:
+		result.append(_stable_list(value.effect_refs))
+	return result
 
 func _compile_effect(value: EffectDef) -> Array[ContentValue]:
+	if _content_codec_version == 2:
+		return [
+			ContentValue.enum_value(value.content_role),
+			ContentValue.enum_value(value.trigger),
+			ContentValue.u32(value.periodic_interval_ticks),
+			_condition_set(value.conditions),
+			_battle_operation_list(value.battle_operations, &"battle_operations"),
+			_run_operation_list(value.run_operations, &"run_operations"),
+			ContentValue.enum_value(value.stacking),
+			ContentValue.u32(value.max_stacks),
+			ContentValue.u32(value.duration_ticks),
+		]
 	return [ContentValue.enum_value(value.content_role), ContentValue.enum_value(value.trigger), _condition_set(value.conditions),
 		_battle_operation_list(value.battle_operations, &"battle_operations"), _run_operation_list(value.run_operations, &"run_operations"),
 		ContentValue.enum_value(value.stacking), ContentValue.u32(value.max_stacks), ContentValue.u32(value.duration_ticks)]
@@ -134,6 +163,36 @@ func _compile_economy(value: EconomyConfigDef) -> Array[ContentValue]:
 		ContentValue.u32(value.xp_buy_cost), ContentValue.u32(value.xp_buy_amount), _u32_pair_set(value.streak_rewards),
 		_u32_pair_set(value.loss_subsidy), _shop_odds_set(value.shop_odds_by_level), _u32_pair_set(value.pool_copies_by_tier),
 		_u32_pair_set(value.unit_costs_by_tier), _u32_pair_set(value.xp_thresholds)]
+
+func _compile_combat_config(value: CombatConfigDef) -> Array[ContentValue]:
+	return [
+		ContentValue.u32(value.simulation_version),
+		ContentValue.u32(value.tick_rate),
+		ContentValue.u32(value.board_width),
+		ContentValue.u32(value.board_height),
+		ContentValue.u32(value.soft_limit_ticks),
+		ContentValue.u32(value.hard_limit_ticks),
+		ContentValue.u32(value.progress_scale),
+		ContentValue.u32(value.resistance_base),
+		ContentValue.u32(value.basis_points),
+		ContentValue.u32(value.overtime_interval_ticks),
+		ContentValue.u32(value.main_actions_per_tick),
+		ContentValue.u32(value.attack_mana_gain),
+		ContentValue.u32(value.damage_mana_factor),
+		ContentValue.u32(value.damage_mana_min),
+		ContentValue.u32(value.damage_mana_max),
+		ContentValue.u32(value.overtime_step_bps),
+		ContentValue.u32(value.overtime_cap_bps),
+		ContentValue.u32(value.act1_base_damage),
+		ContentValue.u32(value.act2_base_damage),
+		ContentValue.u32(value.act3_base_damage),
+		ContentValue.u32(value.survivor_damage),
+		ContentValue.u32(value.boss_damage),
+		ContentValue.u32(value.effect_resolution_budget),
+		ContentValue.u32(value.operation_budget),
+		ContentValue.u32(value.event_budget),
+		ContentValue.u32(value.entity_budget),
+	]
 
 func _unit_stats(value: UnitStatsDef) -> ContentValue:
 	return _record(0x2000, [ContentValue.i32(value.health), ContentValue.i32(value.attack), ContentValue.i32(value.armor),
@@ -239,7 +298,20 @@ func _enemy_spawn_set(values: Array[EnemySpawnDef]) -> ContentValue:
 
 func _boss_phase_list(values: Array[BossPhaseDef]) -> ContentValue:
 	var result: Array[ContentValue] = []
-	for value in values: result.append(_record(0x2007, [ContentValue.u32(value.phase_index), ContentValue.u32(value.hp_threshold_bps), _stable_list(value.effect_refs)]))
+	for value in values:
+		if _content_codec_version == 2:
+			result.append(_record(0x2007, [
+				ContentValue.u32(value.phase_index),
+				ContentValue.u32(value.hp_threshold_bps),
+				ContentValue.text(value.source_spawn_key),
+				_stable_list(value.effect_refs),
+			]))
+		else:
+			result.append(_record(0x2007, [
+				ContentValue.u32(value.phase_index),
+				ContentValue.u32(value.hp_threshold_bps),
+				_stable_list(value.effect_refs),
+			]))
 	return ContentValue.ordered_list(result)
 
 func _reward_candidate_set(values: Array[RewardCandidateDef]) -> ContentValue:

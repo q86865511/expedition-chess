@@ -7,7 +7,7 @@ config_version=5
 
 config/name="遠征棋"
 config/description="PVE 自走棋 Roguelite"
-config/version="0.1.0"
+config/version="0.2.0"
 run/main_scene="res://app/main.tscn"
 
 [autoload]
@@ -32,4 +32,3 @@ renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/default_filters/use_nearest_mipmap_filter=false
 textures/canvas_textures/default_texture_filter=0
-

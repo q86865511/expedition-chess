@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/combat_lab/combat_lab.gd" id="1"]
+
+[node name="CombatLab" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Columns" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Left" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Margin/Columns/Left"]
+layout_mode = 2
+text = "S2 Combat Lab｜8×8 灰盒"
+
+[node name="BoardGrid" type="GridContainer" parent="Margin/Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 8
+
+[node name="BenchTitle" type="Label" parent="Margin/Columns/Left"]
+layout_mode = 2
+text = "板凳（9 格，自動緊縮）"
+
+[node name="BenchRow" type="HBoxContainer" parent="Margin/Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Controls" type="HBoxContainer" parent="Margin/Columns/Left"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="Margin/Columns/Left/Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "開戰"
+
+[node name="EncounterButton" type="Button" parent="Margin/Columns/Left/Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "普通"
+
+[node name="PauseButton" type="Button" parent="Margin/Columns/Left/Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "暫停"
+
+[node name="Speed1" type="Button" parent="Margin/Columns/Left/Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "1×"
+
+[node name="Speed2" type="Button" parent="Margin/Columns/Left/Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "2×"
+
+[node name="Speed4" type="Button" parent="Margin/Columns/Left/Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "4×"
+
+[node name="DetailLabel" type="Label" parent="Margin/Columns/Left"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "單位資訊"
+
+[node name="Right" type="VBoxContainer" parent="Margin/Columns"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PreviewLabel" type="RichTextLabel" parent="Margin/Columns/Right"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+bbcode_enabled = true
+
+[node name="LogTitle" type="Label" parent="Margin/Columns/Right"]
+layout_mode = 2
+text = "BattleEvent Log"
+
+[node name="EventLog" type="RichTextLabel" parent="Margin/Columns/Right"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+scroll_following = true

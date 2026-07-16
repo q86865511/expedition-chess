@@ -44,12 +44,22 @@ func _compile_migrated_probe(probe: ContentSnapshotProbe) -> CatalogCompileResul
 		enabled.append(mapped.resolved_id)
 		changed = changed or mapped.resolved_id != content_id
 	var economy := _map_required_id(probe.economy_config_id, &"economy_config")
+	var combat := _map_required_id(probe.combat_config_id, &"combat_config")
 	var meta := _map_required_id(probe.meta_reward_table_id, &"meta_reward_table")
 	if economy.kind in [ContentMigrationLookup.Kind.MISSING, ContentMigrationLookup.Kind.TOMBSTONE]:
 		return CatalogCompileResult.failure(&"PINNED_CATALOG_REFERENCE_MISSING", &"economy_config_id", probe.economy_config_id)
+	if combat.kind in [ContentMigrationLookup.Kind.MISSING, ContentMigrationLookup.Kind.TOMBSTONE] \
+		or combat.resolved_id != &"config.combat_default":
+		return CatalogCompileResult.failure(
+			&"PINNED_CATALOG_REFERENCE_MISSING",
+			&"combat_config_id",
+			probe.combat_config_id
+		)
 	if meta.kind in [ContentMigrationLookup.Kind.MISSING, ContentMigrationLookup.Kind.TOMBSTONE]:
 		return CatalogCompileResult.failure(&"PINNED_CATALOG_REFERENCE_MISSING", &"meta_reward_table_id", probe.meta_reward_table_id)
-	changed = changed or economy.resolved_id != probe.economy_config_id or meta.resolved_id != probe.meta_reward_table_id
+	changed = changed or economy.resolved_id != probe.economy_config_id \
+		or combat.resolved_id != probe.combat_config_id \
+		or meta.resolved_id != probe.meta_reward_table_id
 	var rewards_result := _map_required_ids(probe.reward_table_ids, &"reward_table")
 	var maps_result := _map_required_ids(probe.map_node_def_ids, &"map_node")
 	var challenges_result := _map_required_ids(probe.challenge_unlock_def_ids, &"unlock")
@@ -60,7 +70,11 @@ func _compile_migrated_probe(probe: ContentSnapshotProbe) -> CatalogCompileResul
 	if not changed:
 		return CatalogCompileResult.failure(&"PINNED_CATALOG_MANIFEST_MISMATCH", &"manifest_digest")
 	_sort_unique(enabled)
-	var selection := CatalogSelection.new(latest.value.content_version, enabled, economy.resolved_id,
+	var selection := CatalogSelection.new(
+		latest.value.content_version,
+		enabled,
+		economy.resolved_id,
+		combat.resolved_id,
 		rewards_result, maps_result, challenges_result, meta.resolved_id)
 	return _registry.compile_pinned_generation(selection)
 
@@ -93,6 +107,7 @@ func _receipt_matches_probe(receipt: PinnedCatalogBuildReceipt, probe: ContentSn
 	return receipt.content_version == probe.content_version \
 		and receipt.active_entry_ids == probe.enabled_content_ids \
 		and receipt.economy_config_id == probe.economy_config_id \
+		and receipt.combat_config_id == probe.combat_config_id \
 		and receipt.reward_table_ids == probe.reward_table_ids \
 		and receipt.map_node_def_ids == probe.map_node_def_ids \
 		and receipt.challenge_unlock_def_ids == probe.challenge_unlock_def_ids \

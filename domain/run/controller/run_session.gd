@@ -30,6 +30,14 @@ func run_snapshot() -> RunState:
 func view_state() -> RunViewState:
 	return RunViewState.from_run(_canonical_run, _publication_serial)
 
+func committed_combat_snapshot() -> CombatCommittedSnapshot:
+	return CombatCommittedSnapshot.new(
+		_publication_serial,
+		_canonical_run.run_phase,
+		_canonical_run.run_seed,
+		_canonical_run.resolution_state
+	)
+
 func publication_serial() -> U64Bits:
 	return _publication_serial.deep_clone()
 

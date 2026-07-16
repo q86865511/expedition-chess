@@ -32,6 +32,14 @@ func _ready() -> void:
 		return
 	_app_state_machine = AppStateMachine.new(save_repository)
 	scene_router.bind_presentation_host(presentation_host)
+	if OS.get_cmdline_user_args().has("--combat-lab"):
+		var combat_lab := load(
+			"res://scenes/dev/combat_lab/combat_lab.tscn"
+		) as PackedScene
+		var route_error := scene_router.replace_presentation(combat_lab)
+		if not route_error.is_empty():
+			boot_failed.emit(route_error)
+			return
 	var boot_transition := _app_state_machine.transition(
 		AppEvent.new(AppEvent.Kind.BOOT_COMPLETED)
 	)

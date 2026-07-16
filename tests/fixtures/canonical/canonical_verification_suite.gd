@@ -24,12 +24,15 @@ func run(case_filter: String = "") -> Dictionary:
 	if _selected(case_filter, "BattleSetupV1"):
 		_run_battle_codec()
 		completed_scopes.append("CanonicalBattleCodec-v1")
+	if _selected(case_filter, "BattleResultV1"):
+		_run_battle_result()
+		completed_scopes.append("BattleResult/EventCodec-v1")
 	return {
 		"case_count": _case_count,
 		"assertion_count": _assertion_count,
 		"failures": _failures.duplicate(true),
 		"completed_scopes": completed_scopes,
-		"deferred_scopes": ["BattleSimulation", "canonical BattleResult", "battle event hash", "gameplay soak"],
+		"deferred_scopes": [],
 	}
 
 func _selected(filter: String, name: String) -> bool:
@@ -299,7 +302,6 @@ func _run_battle_codec() -> void:
 	var invalid_speed := inputs.deep_clone()
 	invalid_speed.player_units[0].move_speed_milli = 0
 	_expect(not codec.encode(invalid_speed).ok, "zero move speed accepted")
-
 	var extended := inputs.deep_clone()
 	extended.content_version = "fixture.1\\\"quoted"
 	var phase := BossPhaseSnapshot.new()
@@ -326,3 +328,59 @@ func _run_battle_codec() -> void:
 		if extended_decoded.ok:
 			_expect(extended_decoded.inputs.content_version == extended.content_version, "canonical JSON string escaping changed value")
 			_expect(codec.encode(extended_decoded.inputs).canonical_bytes == extended_encoded.canonical_bytes, "non-empty nested DTO round-trip changed bytes")
+
+func _run_battle_result() -> void:
+	_begin_case("BattleResultV1")
+	var inputs := BattleSimulationFixture.create_inputs()
+	var player := inputs.player_units[0]
+	var enemy := inputs.encounter_snapshot.enemy_units[0]
+	player.logical_y = 3
+	player.logical_x = 3
+	enemy.logical_y = 4
+	enemy.logical_x = 3
+	player.health = 10
+	enemy.health = 10
+	player.attack = 20
+	enemy.attack = 20
+	player.max_mana = 0
+	enemy.max_mana = 0
+	var setup := BattleSimulationFixture.build_setup(inputs)
+	_expect(setup != null, "simultaneous-death setup build failed")
+	if setup == null:
+		return
+	var simulation := BattleSimulation.new()
+	var initialized := simulation.initialize(setup)
+	_expect(initialized.ok, "simultaneous-death initialize failed")
+	if not initialized.ok:
+		return
+	var events: Array[BattleEvent] = []
+	var stepped := simulation.step()
+	_expect(stepped.ok and stepped.finished, "simultaneous-death tick did not finish")
+	if not stepped.ok:
+		return
+	for event: BattleEvent in stepped.events:
+		events.append(event.deep_clone())
+	var queried := simulation.result()
+	_expect(queried.ok, "simultaneous-death result unavailable")
+	if not queried.ok:
+		return
+	var result := queried.result
+	_expect(result.outcome == &"player_loss", "double death was not player loss")
+	_expect(result.final_tick == 1, "simultaneous-death final tick drifted")
+	_expect(
+		String(result.summary_hash) == "6248075fcbe65a43cda15b2cd4efe0ee241a89f50c830d337d9871c8adc9bb6e",
+		"summary golden mismatch: %s" % String(result.summary_hash)
+	)
+	_expect(
+		String(result.result_hash) == "03d9decb4aa4e26f66fd6f92a1c4464c00e82bc621082c4176ed0f4c64838788",
+		"result golden mismatch: %s" % String(result.result_hash)
+	)
+	var framed := BattleEventStreamHasher.new().framed_bytes(events)
+	_expect(framed.ok, "event stream framing failed")
+	if framed.ok:
+		_expect(
+			BattleSetupHashBuilder.sha256_hex(framed.canonical_bytes) == "3c0c01b94ca8c727763cd117402a610c82dcb39b402747b99ad346003e749617",
+			"event stream golden mismatch: %s" % BattleSetupHashBuilder.sha256_hex(
+				framed.canonical_bytes
+			)
+		)

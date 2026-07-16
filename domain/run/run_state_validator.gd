@@ -31,7 +31,7 @@ func _init() -> void:
 func validate_root(root: SaveRoot) -> DtoValidationResult:
 	if root == null:
 		return _failure(&"root")
-	if root.schema_version != 1:
+	if root.schema_version != SaveSchemaContract.CURRENT:
 		return _failure(&"schema_version")
 	if root.rng_version != 1:
 		return _failure(&"rng_version")
@@ -109,6 +109,12 @@ func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_ve
 	var roster_result := _validate_roster(run.roster_state)
 	if not roster_result.ok:
 		return roster_result
+	var pool_roster_result := _validate_pool_roster_conservation(
+		run.unit_pool_state,
+		run.roster_state
+	)
+	if not pool_roster_result.ok:
+		return pool_roster_result
 	if run.rng_stream_states.size() != 4:
 		return _failure(&"run.rng_stream_states")
 	for index: int in range(4):
@@ -233,6 +239,8 @@ func _validate_pool(pool: UnitPoolState) -> DtoValidationResult:
 		return _failure(&"run.unit_pool_state")
 	var previous := ""
 	for entry: UnitPoolEntryState in pool.entries:
+		if entry == null:
+			return _failure(&"run.unit_pool_state.entries")
 		var unit_id := String(entry.unit_def_id)
 		if unit_id <= previous or not _stable_id(entry.unit_def_id):
 			return _failure(&"run.unit_pool_state.entries")
@@ -250,16 +258,21 @@ func _validate_roster(roster: RosterState) -> DtoValidationResult:
 		return _failure(&"run.roster_state")
 	var unit_ids: Array[String] = []
 	for unit: UnitInstance in roster.unit_instances:
-		if not _matches(_unit_id_regex, unit.instance_id) or unit_ids.has(unit.instance_id):
+		if unit == null or not _matches(_unit_id_regex, unit.instance_id) \
+			or unit_ids.has(unit.instance_id):
 			return _failure(&"run.roster_state.unit_instances")
 		if not _stable_id(unit.def_id) or unit.star < 1 or unit.star > 3 or unit.acquired_serial == null:
 			return _failure(&"run.roster_state.unit_instances")
+		if unit.equipment_instance_ids.size() > 3 \
+			or not _unique_nonempty_strings(unit.equipment_instance_ids):
+			return _failure(&"run.roster_state.unit_instances.equipment_instance_ids")
 		unit_ids.append(unit.instance_id)
 	var placed: Array[String] = []
 	var coordinates: Array[String] = []
 	var previous_placement := ""
 	for placement: BoardPlacementState in roster.board.placements:
-		if placement.logical_x < 0 or placement.logical_x > 7 or placement.logical_y < 0 or placement.logical_y > 7:
+		if placement == null or placement.logical_x < 0 or placement.logical_x > 7 \
+			or placement.logical_y < 0 or placement.logical_y > 7:
 			return _failure(&"run.roster_state.board.placements")
 		var coordinate := "%d,%d" % [placement.logical_y, placement.logical_x]
 		var sort_key := coordinate + "/" + placement.unit_instance_id
@@ -270,33 +283,95 @@ func _validate_roster(roster: RosterState) -> DtoValidationResult:
 		coordinates.append(coordinate)
 		placed.append(placement.unit_instance_id)
 		previous_placement = sort_key
-	if not _sorted_unique_strings(roster.bench_unit_instance_ids):
+	if roster.bench_unit_instance_ids.size() > 9 \
+		or not _unique_nonempty_strings(roster.bench_unit_instance_ids):
 		return _failure(&"run.roster_state.bench_unit_instance_ids")
 	for unit_id: String in roster.bench_unit_instance_ids:
 		if placed.has(unit_id) or not unit_ids.has(unit_id):
 			return _failure(&"run.roster_state.bench_unit_instance_ids")
+	for unit_id: String in unit_ids:
+		if not placed.has(unit_id) and not roster.bench_unit_instance_ids.has(unit_id):
+			return _failure(&"run.roster_state.unit_instances.location")
 	var item_ids: Array[String] = []
 	for item: ItemInstanceState in roster.item_instances:
-		if not _matches(_item_id_regex, item.instance_id) or item_ids.has(item.instance_id):
+		if item == null or not _matches(_item_id_regex, item.instance_id) \
+			or item_ids.has(item.instance_id):
 			return _failure(&"run.roster_state.item_instances")
 		if not _stable_id(item.def_id) or item.acquired_serial == null:
 			return _failure(&"run.roster_state.item_instances")
 		if item.bound_unit_instance_id != null and not unit_ids.has(item.bound_unit_instance_id.value):
 			return _failure(&"run.roster_state.item_instances")
 		item_ids.append(item.instance_id)
-	if not _sorted_unique_strings(roster.inventory_item_instance_ids) or not _sorted_unique_strings(roster.pending_item_overflow):
+	if roster.inventory_item_instance_ids.size() > 16 \
+		or not _sorted_unique_strings(roster.inventory_item_instance_ids) \
+		or not _sorted_unique_strings(roster.pending_item_overflow):
 		return _failure(&"run.roster_state.inventory")
+	var equipped_item_ids: Array[String] = []
+	for unit: UnitInstance in roster.unit_instances:
+		for item_id: String in unit.equipment_instance_ids:
+			if equipped_item_ids.has(item_id):
+				return _failure(&"run.roster_state.unit_instances.equipment_instance_ids")
+			var item := _find_item(roster.item_instances, item_id)
+			if item == null or item.bound_unit_instance_id == null \
+				or item.bound_unit_instance_id.value != unit.instance_id:
+				return _failure(&"run.roster_state.item_instances.bound_unit_instance_id")
+			equipped_item_ids.append(item_id)
 	for item_id: String in roster.inventory_item_instance_ids:
-		if not item_ids.has(item_id) or roster.pending_item_overflow.has(item_id):
+		var item := _find_item(roster.item_instances, item_id)
+		if item == null or item.bound_unit_instance_id != null \
+			or roster.pending_item_overflow.has(item_id) or equipped_item_ids.has(item_id):
 			return _failure(&"run.roster_state.inventory")
 	for item_id: String in roster.pending_item_overflow:
-		if not item_ids.has(item_id):
+		var item := _find_item(roster.item_instances, item_id)
+		if item == null or item.bound_unit_instance_id != null or equipped_item_ids.has(item_id):
 			return _failure(&"run.roster_state.pending_item_overflow")
+	for item: ItemInstanceState in roster.item_instances:
+		if item.bound_unit_instance_id != null:
+			if not equipped_item_ids.has(item.instance_id):
+				return _failure(&"run.roster_state.item_instances.bound_unit_instance_id")
+		elif not roster.inventory_item_instance_ids.has(item.instance_id) \
+			and not roster.pending_item_overflow.has(item.instance_id):
+			return _failure(&"run.roster_state.item_instances.location")
 	for index: int in range(5):
 		var slot: RelicSlotState = roster.active_relic_slots[index]
-		if slot.slot_index != index or (slot.relic_id != null and not _stable_id(slot.relic_id.value)):
+		if slot == null or slot.slot_index != index \
+			or (slot.relic_id != null and not _stable_id(slot.relic_id.value)):
 			return _failure(&"run.roster_state.active_relic_slots")
 	return DtoValidationResult.success()
+
+func _validate_pool_roster_conservation(
+	pool: UnitPoolState,
+	roster: RosterState
+) -> DtoValidationResult:
+	for entry: UnitPoolEntryState in pool.entries:
+		var weighted_copies := 0
+		for unit: UnitInstance in roster.unit_instances:
+			if unit.def_id == entry.unit_def_id:
+				weighted_copies += _star_copy_weight(unit.star)
+		if weighted_copies != entry.held_copies:
+			return _failure(&"run.unit_pool_state.entries.held_copies")
+	for unit: UnitInstance in roster.unit_instances:
+		var found := false
+		for entry: UnitPoolEntryState in pool.entries:
+			if entry.unit_def_id == unit.def_id:
+				found = true
+				break
+		if not found:
+			return _failure(&"run.unit_pool_state.entries.unit_def_id")
+	return DtoValidationResult.success()
+
+func _star_copy_weight(star: int) -> int:
+	match star:
+		1: return 1
+		2: return 3
+		3: return 9
+	return 0
+
+func _find_item(items: Array[ItemInstanceState], instance_id: String) -> ItemInstanceState:
+	for item: ItemInstanceState in items:
+		if item != null and item.instance_id == instance_id:
+			return item
+	return null
 
 func _validate_resolution(
 	resolution: ResolutionState,
@@ -330,6 +405,22 @@ func _validate_resolution(
 			var battle: BattleResultPendingResolutionState = resolution
 			if not _digest(battle.battle_setup_hash) or battle.battle_result == null:
 				return _failure(&"run.resolution_state.battle_result")
+			if String(battle.battle_result.battle_setup_hash) \
+				!= battle.battle_setup_hash:
+				return _failure(
+					&"run.resolution_state.battle_result.battle_setup_hash"
+				)
+			var battle_result_error := battle.battle_result.validate()
+			if battle_result_error != null:
+				return _failure(StringName(
+					"run.resolution_state.battle_result.%s" % \
+					String(battle_result_error.field_path)
+				))
+			var result_validation := _validate_run_mutation_proposals(
+				battle.battle_result.run_mutation_proposals
+			)
+			if not result_validation.ok:
+				return result_validation
 		ResolutionState.Kind.REWARD_PENDING:
 			if not resolution is RewardPendingResolutionState:
 				return _failure(&"run.resolution_state")
@@ -341,6 +432,35 @@ func _validate_resolution(
 					return _failure(&"run.resolution_state.pending_reward.phase")
 		_:
 			return _failure(&"run.resolution_state.kind")
+	return DtoValidationResult.success()
+
+func _validate_run_mutation_proposals(
+	proposals: Array[RunMutationProposal]
+) -> DtoValidationResult:
+	var previous_identity := ""
+	for proposal: RunMutationProposal in proposals:
+		if proposal == null:
+			return _failure(&"run.resolution_state.battle_result.run_mutation_proposals")
+		var restored := RunMutationProposal.restore(
+			proposal.claim_scope,
+			proposal.source_instance_or_slot,
+			proposal.effect_id,
+			proposal.operation_index,
+			proposal.operation_kind,
+			proposal.amount,
+			proposal.payload_digest
+		)
+		if not restored.ok:
+			return _failure(StringName(
+				"run.resolution_state.battle_result.run_mutation_proposals.%s"
+				% String(restored.error.field_path)
+			))
+		var identity := proposal.identity_key()
+		if identity <= previous_identity:
+			return _failure(
+				&"run.resolution_state.battle_result.run_mutation_proposals.order"
+			)
+		previous_identity = identity
 	return DtoValidationResult.success()
 
 func _receipts_sorted(run: RunState) -> bool:
@@ -449,6 +569,14 @@ func _sorted_unique_strings(values: Array[String]) -> bool:
 		if value.is_empty() or value <= previous:
 			return false
 		previous = value
+	return true
+
+func _unique_nonempty_strings(values: Array[String]) -> bool:
+	var seen: Array[String] = []
+	for value: String in values:
+		if value.is_empty() or seen.has(value):
+			return false
+		seen.append(value)
 	return true
 
 func _sorted_unique_ints(values: Array[int]) -> bool:

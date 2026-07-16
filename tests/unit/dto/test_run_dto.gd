@@ -26,6 +26,7 @@ func test_content_snapshot_factories_normalize_order_and_reject_invalid_inputs()
 		receipt.content_version,
 		reversed_ids,
 		receipt.economy_config_id,
+		receipt.combat_config_id,
 		receipt.reward_table_ids,
 		receipt.map_node_def_ids,
 		receipt.challenge_unlock_def_ids,
@@ -41,6 +42,7 @@ func test_content_snapshot_factories_normalize_order_and_reject_invalid_inputs()
 		receipt.content_version,
 		duplicate_ids,
 		receipt.economy_config_id,
+		receipt.combat_config_id,
 		receipt.reward_table_ids,
 		receipt.map_node_def_ids,
 		receipt.challenge_unlock_def_ids,
@@ -55,6 +57,7 @@ func test_content_snapshot_factories_normalize_order_and_reject_invalid_inputs()
 		receipt.content_version,
 		receipt.active_entry_ids,
 		receipt.economy_config_id,
+		receipt.combat_config_id,
 		receipt.reward_table_ids,
 		receipt.map_node_def_ids,
 		receipt.challenge_unlock_def_ids,
@@ -69,6 +72,7 @@ func test_content_snapshot_factories_normalize_order_and_reject_invalid_inputs()
 		"fixture.changed",
 		receipt.active_entry_ids,
 		receipt.economy_config_id,
+		receipt.combat_config_id,
 		receipt.reward_table_ids,
 		receipt.map_node_def_ids,
 		receipt.challenge_unlock_def_ids,
@@ -160,8 +164,12 @@ func test_four_resolution_subclasses_have_one_payload_path() -> void:
 	var combat: ResolutionState = CombatPendingResolutionState.new(setup)
 	assert_true(combat.deep_clone() is CombatPendingResolutionState)
 	var battle_result := BattleResult.new()
-	battle_result.outcome = &"win"
+	battle_result.battle_setup_hash = setup.battle_setup_hash
+	battle_result.outcome = &"player_win"
 	battle_result.summary_hash = &"0000000000000000000000000000000000000000000000000000000000000000"
+	var sealed := BattleResultCodecV1.new().seal(battle_result.to_record())
+	assert_true(sealed.ok)
+	battle_result = BattleResult.from_record(sealed.record)
 	var result_pending: ResolutionState = BattleResultPendingResolutionState.new(
 		String(setup.battle_setup_hash), battle_result
 	)

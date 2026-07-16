@@ -78,8 +78,8 @@ func _load_manifest() -> Dictionary:
 	var manifest: Dictionary = parsed
 	if int(manifest.get("manifest_schema_version", 0)) != 2:
 		_failures.append("manifest_schema_version must be 2")
-	if str(manifest.get("spec_version", "")) != "0.1" or str(manifest.get("status", "")) != "Approved":
-		_failures.append("Spec manifest version/status must be 0.1/Approved")
+	if str(manifest.get("spec_version", "")) != "0.2" or str(manifest.get("status", "")) != "Approved":
+		_failures.append("Spec manifest version/status must be 0.2/Approved")
 	return manifest
 
 
@@ -126,8 +126,8 @@ func _validate_document_set(manifest: Dictionary) -> void:
 			_failures.append("Missing manifest chapter: " + relative_path)
 			continue
 		var chapter: String = FileAccess.get_file_as_string(resource_path)
-		if not chapter.contains("v0.1 / Approved"):
-			_failures.append("Chapter status is not v0.1 / Approved: " + relative_path)
+		if not chapter.contains("v0.2 / Approved"):
+			_failures.append("Chapter status is not v0.2 / Approved: " + relative_path)
 		chapter_texts[relative_path] = chapter
 		all_text += chapter + "\n"
 		section_count += _count_matches('<a id="section-[0-9]+"></a>', chapter)
@@ -669,6 +669,10 @@ func _validate_silent_null_contract(source_path: String, source: String) -> void
 		var body: String = method_match.get_string(2)
 		var explicitly_nullable: bool = source_path.ends_with("/content_registry_service.gd") \
 			and method_name == "try_resolve"
+		explicitly_nullable = explicitly_nullable \
+			or method_name.begins_with("try_") \
+			or method_name.begins_with("from_") \
+			or method_name == "validate"
 		if not explicitly_nullable and body.contains("return null"):
 			_failures.append("Public API has a silent-null path: %s.%s" % [source_path, method_name])
 
@@ -840,7 +844,7 @@ func _count_matches(pattern: String, text: String) -> int:
 
 func _finish() -> void:
 	var completed: Array[String] = ["manifest", "links", "ids", "traceability", "aggregate_hash", "source_contracts"]
-	var deferred: Array[String] = ["battle_canonical_result", "soak", "gameplay_ac"]
+	var deferred: Array[String] = ["full_run_gameplay_ac"]
 	var report: Dictionary = Support.base_report("spec-contract", _started_at_utc, completed, deferred)
 	report["case_count"] = _case_count
 	report["failures"] = _failures

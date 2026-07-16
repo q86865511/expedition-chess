@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：像素呈現、UI 與無障礙
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 10 章
 
 ---

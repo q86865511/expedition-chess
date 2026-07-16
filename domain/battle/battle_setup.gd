@@ -6,6 +6,7 @@ var hash_version: int = 1
 var battle_setup_hash: StringName = &""
 var rng_version: int = 1
 var combat_rng_snapshot: RngSnapshot = null
+var battle_setup_envelope_digest: StringName = &""
 
 func deep_clone() -> BattleSetup:
 	var copied := BattleSetup.new()
@@ -14,4 +15,5 @@ func deep_clone() -> BattleSetup:
 	copied.battle_setup_hash = battle_setup_hash
 	copied.rng_version = rng_version
 	copied.combat_rng_snapshot = combat_rng_snapshot.deep_clone() if combat_rng_snapshot != null else null
+	copied.battle_setup_envelope_digest = battle_setup_envelope_digest
 	return copied

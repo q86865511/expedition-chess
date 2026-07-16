@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：文件控制與名詞表
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 0–1 章
 
 ---
@@ -13,7 +13,7 @@
 | 欄位 | 值 |
 |---|---|
 | 文件名稱 | PVE 自走棋 Roguelite 主體架構規格 |
-| 文件版本 | 0.1 |
+| 文件版本 | 0.2 |
 | 狀態 | Approved |
 | 建立日期 | 2026-07-13 |
 | 目標引擎 | Godot 4.7 stable |
@@ -54,6 +54,7 @@ ID 格式如下：
 | 版本 | 日期 | 狀態 | 摘要 |
 |---|---|---|---|
 | 0.1 | 2026-07-13 | Approved | 建立產品、玩法、內容、架構、測試與複檢基線；同版本改為主索引加 12 份主題文件，並於外部複檢完成後核可文件基線 |
+| 0.2 | 2026-07-16 | Approved | 鎖定 S2 戰鬥整數累加、CombatConfig、效果 stacking、事件／結果 codec、setup/save/content 相容與 proposal claim descriptor 語意；獨立 Gate A 複檢 Blocker 0／Major 0 |
 
 ### 0.4 章節導覽
 

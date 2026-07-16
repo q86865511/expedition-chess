@@ -14,8 +14,9 @@
 
 ## 常用指令
 
-- **完整 S1 gate**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`
-- **單一 runner**：將 `All` 改成 `Toolchain`、`Import`、`Smoke`、`Gut`、`Content`、`Canonical`、`Spec` 或 `RunnerContract`。
+- **完整 S1＋S2 快速 gate**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`
+- **S2 正式 soak**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Soak -SeedCount 10000 -TimeoutSeconds 600`
+- **單一 runner**：將 `All` 改成 `Toolchain`、`Import`、`Smoke`、`Gut`、`Content`、`Canonical`、`Combat`、`Soak`、`Spec` 或 `RunnerContract`。
 - **限定 GUT 目錄**：加上 `-TestPath res://tests/<path>`；canonical／content 可用 `-Case <case>`。
 - Godot executable 由環境變數 `GODOT_BIN` 或 wrapper 的 `-GodotPath` 傳入；不得把本機絕對路徑寫進 repository。
 - Runner artifacts 位於 `artifacts/test/`；退出碼固定為 `0／2／3／124`。
@@ -29,7 +30,8 @@
 - JSON `Dictionary` 僅能存在 `SaveJsonCodec` 邊界；公開 domain API 使用具名型別與 typed collection。
 - 所有決定性亂數使用 `RngService` 的 `map/shop/reward/combat` stream；不得使用 Godot `rand*`、時間或 Object ID 產生 gameplay entropy。
 - 內容以 immutable-style Resource authoring、canonical snapshot 與 pinned manifest digest 傳遞；舊 run 必須持有 catalog lease。
-- `ShopService`、`BattleSimulation`、`EffectResolver` 屬後續切片；S1 禁止建立假成功 stub。
+- `BattleSimulation`／`EffectResolver` 已由 S2 實作；兩者只讀 hashed `BattleSetup` 與 pinned rules，不得讀 latest catalog 或 presentation mutable state。
+- `ShopService` 與遠征戰果 exactly-once 結算屬 S3；不得在 S2 transaction 中提前扣 HP、發收入或獎勵。
 
 ## 文件工作流
 
@@ -40,4 +42,5 @@
 ## 目前切片
 
 - S1 `foundation-core`：已完成；規格位於 `specs/foundation-core/`。
-- 下一片 S2 `combat-core`：尚未建立功能規格或實作。開始前先依架構需求建立三件套並通過獨立複檢。
+- S2 `combat-core`：已完成；規格與複檢紀錄位於 `specs/combat-core/`，完成證據位於 `artifacts/test/`。
+- 下一片為 S3：`ShopService`、經濟、遠征 HP／收入／獎勵與 Boss 重戰的 exactly-once 結算；啟動前建立功能三件套並獨立複檢。

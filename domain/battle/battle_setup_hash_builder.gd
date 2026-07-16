@@ -17,7 +17,7 @@ func _init(
 func build_from_validated(inputs: BattleSetupInputs, validation_receipt: BattleSetupValidationReceipt) -> BattleSetupBuildResult:
 	if _run_seed == null:
 		return BattleSetupBuildResult.failure(INPUT_INVALID, &"run_seed")
-	var encoded := CanonicalBattleCodecV1.new().encode(inputs)
+	var encoded := BattleSetupInputsValidator._codec_for_schema(inputs.setup_schema_version).encode(inputs)
 	if not encoded.ok:
 		return BattleSetupBuildResult.failure(encoded.error.code, encoded.error.field_path)
 	var digest := sha256_hex(encoded.canonical_bytes)
@@ -38,6 +38,16 @@ func build_from_validated(inputs: BattleSetupInputs, validation_receipt: BattleS
 	setup.battle_setup_hash = StringName(digest)
 	setup.rng_version = 1
 	setup.combat_rng_snapshot = derived.snapshot.deep_clone()
+	if inputs.setup_schema_version == 2:
+		var envelope := envelope_digest(
+			setup.hash_version,
+			digest,
+			setup.rng_version,
+			setup.combat_rng_snapshot
+		)
+		if envelope.is_empty():
+			return BattleSetupBuildResult.failure(INPUT_INVALID, &"battle_setup_envelope_digest")
+		setup.battle_setup_envelope_digest = StringName(envelope)
 	return BattleSetupBuildResult.success(setup)
 
 static func sha256_hex(bytes: PackedByteArray) -> String:
@@ -47,3 +57,35 @@ static func sha256_hex(bytes: PackedByteArray) -> String:
 	if context.update(bytes) != OK:
 		return ""
 	return context.finish().hex_encode()
+
+static func envelope_digest(
+	hash_version: int,
+	setup_hash: String,
+	rng_version: int,
+	snapshot: RngSnapshot
+) -> String:
+	if hash_version != 1 or rng_version != 1 or snapshot == null \
+		or snapshot.rng_version != rng_version or setup_hash.length() != 64:
+		return ""
+	var setup_bytes := setup_hash.hex_decode()
+	if setup_bytes.size() != 32 or setup_bytes.hex_encode() != setup_hash:
+		return ""
+	var bytes := PackedByteArray()
+	bytes.append_array("BSE1".to_ascii_buffer())
+	_append_u32(bytes, hash_version)
+	bytes.append_array(setup_bytes)
+	_append_u32(bytes, rng_version)
+	_append_u64(bytes, snapshot.state)
+	_append_u64(bytes, snapshot.inc)
+	_append_u64(bytes, snapshot.counter)
+	return sha256_hex(bytes)
+
+static func _append_u32(bytes: PackedByteArray, value: int) -> void:
+	bytes.append((value >> 24) & 0xff)
+	bytes.append((value >> 16) & 0xff)
+	bytes.append((value >> 8) & 0xff)
+	bytes.append(value & 0xff)
+
+static func _append_u64(bytes: PackedByteArray, value: U64Bits) -> void:
+	_append_u32(bytes, value.high_u32())
+	_append_u32(bytes, value.low_u32())

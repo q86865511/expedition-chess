@@ -3,14 +3,15 @@ extends Node
 
 const CATALOG_SCHEMA_VERSION := 1
 
-var _codec := ContentCanonicalCodecV1.new()
-var _compiler := ContentDefinitionCompiler.new()
+var _codec := ContentCanonicalCodecV2.new()
+var _compiler := ContentDefinitionCompilerV2.new()
 var _authoring_by_id: Dictionary = {}
 var _content_version: String
 var _pack_ids: Array[StringName] = []
 var _aliases: Array[ContentAliasValue] = []
 var _tombstones: Array[ContentTombstoneValue] = []
 var _catalogs_by_digest: Dictionary = {}
+var _legacy_v1_catalogs_by_digest: Dictionary = {}
 var _receipts_by_digest: Dictionary = {}
 var _lease_counts: Dictionary = {}
 var _latest_digest: String
@@ -80,6 +81,63 @@ func compile_pinned_generation(selection: CatalogSelection) -> CatalogCompileRes
 	if not build.ok: return _compile_failure(build.error)
 	_publish_generation(build.draft)
 	return CatalogCompileResult.success(build.draft.handle, build.draft.receipt)
+
+func register_legacy_v1_generation(
+	catalog_bytes: PackedByteArray
+) -> LegacyContentGenerationResult:
+	if catalog_bytes.is_empty():
+		return LegacyContentGenerationResult.failure(
+			LegacyContentGenerationError.INPUT_INVALID,
+			&"catalog_bytes"
+		)
+	var decoded := ContentCanonicalCodecV1.new().decode_catalog(catalog_bytes)
+	if not decoded.ok or decoded.catalog == null:
+		return LegacyContentGenerationResult.failure(
+			LegacyContentGenerationError.CODEC_INVALID,
+			decoded.error.field_path if decoded.error != null else &"catalog_bytes"
+		)
+	var snapshot: ContentCatalogSnapshot = decoded.catalog
+	if snapshot.manifest == null or snapshot.manifest.content_version.is_empty() \
+		or snapshot.manifest_digest.is_empty():
+		return LegacyContentGenerationResult.failure(
+			LegacyContentGenerationError.CODEC_INVALID,
+			&"catalog.manifest"
+		)
+	if _legacy_v1_catalogs_by_digest.has(snapshot.manifest_digest):
+		var existing: ContentCatalogSnapshot = \
+			_legacy_v1_catalogs_by_digest[snapshot.manifest_digest]
+		if existing.diagnostic_catalog_bytes != snapshot.diagnostic_catalog_bytes:
+			return LegacyContentGenerationResult.failure(
+				LegacyContentGenerationError.DUPLICATE_CONFLICT,
+				&"catalog.manifest_digest"
+			)
+		return LegacyContentGenerationResult.success(existing)
+	_legacy_v1_catalogs_by_digest[snapshot.manifest_digest] = snapshot.deep_clone()
+	return LegacyContentGenerationResult.success(snapshot)
+
+func legacy_v1_generation(
+	content_version: String,
+	manifest_digest: String
+) -> LegacyContentGenerationResult:
+	if content_version.is_empty() or manifest_digest.is_empty():
+		return LegacyContentGenerationResult.failure(
+			LegacyContentGenerationError.INPUT_INVALID,
+			&"source"
+		)
+	if not _legacy_v1_catalogs_by_digest.has(manifest_digest):
+		return LegacyContentGenerationResult.failure(
+			LegacyContentGenerationError.SOURCE_MISMATCH,
+			&"source_manifest_digest"
+		)
+	var snapshot: ContentCatalogSnapshot = _legacy_v1_catalogs_by_digest[manifest_digest]
+	if snapshot.manifest == null \
+		or snapshot.manifest.content_version != content_version \
+		or snapshot.manifest_digest != manifest_digest:
+		return LegacyContentGenerationResult.failure(
+			LegacyContentGenerationError.SOURCE_MISMATCH,
+			&"source_content_version"
+		)
+	return LegacyContentGenerationResult.success(snapshot)
 
 func resolve(content_ref: ContentRef) -> ContentResolveResult:
 	if content_ref == null or not content_ref.is_valid():
@@ -155,7 +213,11 @@ func _migration_lookup(content_id: StringName) -> ContentMigrationLookup:
 func rebuild_from_probe(probe: ContentSnapshotProbe) -> CatalogCompileResult:
 	if probe == null:
 		return CatalogCompileResult.failure(&"PINNED_CATALOG_SELECTION_INVALID", &"probe")
-	var selection := CatalogSelection.new(probe.content_version, probe.enabled_content_ids, probe.economy_config_id,
+	var selection := CatalogSelection.new(
+		probe.content_version,
+		probe.enabled_content_ids,
+		probe.economy_config_id,
+		probe.combat_config_id,
 		probe.reward_table_ids, probe.map_node_def_ids, probe.challenge_unlock_def_ids, probe.meta_reward_table_id)
 	var build := _build_pinned_generation(selection)
 	if not build.ok: return _compile_failure(build.error)
@@ -178,6 +240,7 @@ func _build_pinned_generation(selection: CatalogSelection) -> CatalogGenerationB
 		)
 	var roots: Array[StringName] = selection.root_enabled_content_ids.duplicate()
 	roots.append(selection.economy_config_id)
+	roots.append(selection.combat_config_id)
 	roots.append_array(selection.reward_table_ids)
 	roots.append_array(selection.map_node_def_ids)
 	roots.append_array(selection.challenge_unlock_def_ids)
@@ -209,6 +272,18 @@ func _validate_selection(selection: CatalogSelection) -> CatalogCompileError:
 		if root_error != null: return root_error
 	var economy_error := _validate_selection_reference(selection.economy_config_id, &"economy_config", &"economy_config_id")
 	if economy_error != null: return economy_error
+	if selection.combat_config_id != &"config.combat_default":
+		return CatalogCompileError.new(
+			&"PINNED_CATALOG_SELECTION_INVALID",
+			&"combat_config_id",
+			selection.combat_config_id
+		)
+	var combat_error := _validate_selection_reference(
+		selection.combat_config_id,
+		&"combat_config",
+		&"combat_config_id"
+	)
+	if combat_error != null: return combat_error
 	for content_id in selection.reward_table_ids:
 		var reward_error := _validate_selection_reference(content_id, &"reward_table", &"reward_table_ids")
 		if reward_error != null: return reward_error
@@ -259,7 +334,7 @@ func _build_generation(
 	is_latest: bool,
 	selection: CatalogSelection = null
 ) -> CatalogGenerationBuildResult:
-	var compiler := ContentDefinitionCompiler.new()
+	var compiler := ContentDefinitionCompilerV2.new()
 	var entries: Array[ContentEntryValue] = []
 	for content_id in active_ids:
 		if not authoring_by_id.has(content_id):
@@ -305,11 +380,12 @@ func _build_generation(
 	if selection != null:
 		receipt = PinnedCatalogBuildReceipt.new(
 			CATALOG_SCHEMA_VERSION,
-			ContentCanonicalCodecV1.CONTENT_CODEC_VERSION,
+			ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2,
 			content_version,
 			selection_digest,
 			active_ids,
 			selection.economy_config_id,
+			selection.combat_config_id,
 			selection.reward_table_ids,
 			selection.map_node_def_ids,
 			selection.challenge_unlock_def_ids,
@@ -322,6 +398,131 @@ func _publish_generation(draft: CatalogGenerationDraft) -> void:
 	_catalogs_by_digest[draft.handle.manifest_digest] = draft.snapshot.deep_clone()
 	if draft.receipt != null:
 		_receipts_by_digest[draft.handle.manifest_digest] = draft.receipt.deep_clone()
+
+func _publish_migrated_generation(
+	draft: CatalogGenerationDraft
+) -> CatalogCompileResult:
+	if draft == null or draft.snapshot == null or draft.handle == null \
+		or draft.receipt == null:
+		return CatalogCompileResult.failure(
+			&"CONTENT_MIGRATED_GENERATION_INVALID", &"draft"
+		)
+	var digest := draft.handle.manifest_digest
+	if draft.handle.is_latest or digest != draft.snapshot.manifest_digest \
+		or digest != draft.receipt.manifest_digest \
+		or draft.receipt.content_codec_version != 2 \
+		or draft.receipt.catalog_schema_version != CATALOG_SCHEMA_VERSION:
+		return CatalogCompileResult.failure(
+			&"CONTENT_MIGRATED_GENERATION_INVALID", &"draft.manifest_digest"
+		)
+	var decoded := ContentCanonicalCodecV2.new().decode_catalog(
+		draft.snapshot.diagnostic_catalog_bytes
+	)
+	if not decoded.ok or decoded.catalog == null \
+		or decoded.catalog.manifest == null \
+		or decoded.catalog.manifest_digest != digest \
+		or decoded.catalog.manifest_bytes != draft.snapshot.manifest_bytes \
+		or decoded.catalog.manifest.content_version != draft.handle.content_version \
+		or decoded.catalog.manifest.content_version != draft.receipt.content_version \
+		or not _migrated_receipt_matches_catalog(draft.receipt, decoded.catalog):
+		return CatalogCompileResult.failure(
+			&"CONTENT_MIGRATED_GENERATION_INVALID", &"draft.catalog_bytes"
+		)
+	if _catalogs_by_digest.has(digest):
+		var existing: ContentCatalogSnapshot = _catalogs_by_digest[digest]
+		var existing_receipt := _receipt_for_digest(digest)
+		if existing.diagnostic_catalog_bytes != draft.snapshot.diagnostic_catalog_bytes \
+			or existing_receipt == null \
+			or not _pinned_receipts_equal(existing_receipt, draft.receipt):
+			return CatalogCompileResult.failure(
+				&"CONTENT_MIGRATED_GENERATION_CONFLICT", &"draft.manifest_digest"
+			)
+		return CatalogCompileResult.success(draft.handle, existing_receipt)
+	var sanitized := CatalogGenerationDraft.new(
+		decoded.catalog,
+		draft.handle,
+		draft.receipt
+	)
+	_publish_generation(sanitized)
+	return CatalogCompileResult.success(draft.handle, draft.receipt)
+
+func _migrated_receipt_matches_catalog(
+	receipt: PinnedCatalogBuildReceipt,
+	snapshot: ContentCatalogSnapshot
+) -> bool:
+	if receipt == null or snapshot == null or snapshot.manifest == null \
+		or receipt.combat_config_id != &"config.combat_default" \
+		or not _digest_is_lower_hex(receipt.selection_digest):
+		return false
+	var active_ids: Array[StringName] = []
+	var categories_by_id: Dictionary = {}
+	for entry: ContentEntryValue in snapshot.entries:
+		active_ids.append(entry.content_id)
+		categories_by_id[entry.content_id] = entry.category
+	active_ids.sort_custom(_string_name_less)
+	if active_ids != receipt.active_entry_ids \
+		or not _names_are_sorted_unique(receipt.active_entry_ids):
+		return false
+	if not _receipt_reference_matches(
+		categories_by_id, receipt.economy_config_id, &"economy_config"
+	) or not _receipt_reference_matches(
+		categories_by_id, receipt.combat_config_id, &"combat_config"
+	) or not _receipt_reference_matches(
+		categories_by_id, receipt.meta_reward_table_id, &"meta_reward_table"
+	):
+		return false
+	for content_id: StringName in receipt.reward_table_ids:
+		if not _receipt_reference_matches(
+			categories_by_id, content_id, &"reward_table"
+		): return false
+	for content_id: StringName in receipt.map_node_def_ids:
+		if not _receipt_reference_matches(
+			categories_by_id, content_id, &"map_node"
+		): return false
+	for content_id: StringName in receipt.challenge_unlock_def_ids:
+		if not _receipt_reference_matches(
+			categories_by_id, content_id, &"unlock"
+		): return false
+	return _names_are_sorted_unique(receipt.reward_table_ids) \
+		and _names_are_sorted_unique(receipt.map_node_def_ids) \
+		and _names_are_sorted_unique(receipt.challenge_unlock_def_ids)
+
+func _receipt_reference_matches(
+	categories_by_id: Dictionary,
+	content_id: StringName,
+	expected_category: StringName
+) -> bool:
+	return categories_by_id.has(content_id) \
+		and categories_by_id[content_id] == expected_category
+
+func _names_are_sorted_unique(values: Array[StringName]) -> bool:
+	for index: int in range(1, values.size()):
+		if String(values[index - 1]) >= String(values[index]):
+			return false
+	return true
+
+func _digest_is_lower_hex(value: String) -> bool:
+	if value.length() != 64: return false
+	for character: String in value:
+		if character not in "0123456789abcdef": return false
+	return true
+
+func _pinned_receipts_equal(
+	left: PinnedCatalogBuildReceipt,
+	right: PinnedCatalogBuildReceipt
+) -> bool:
+	return left.catalog_schema_version == right.catalog_schema_version \
+		and left.content_codec_version == right.content_codec_version \
+		and left.content_version == right.content_version \
+		and left.selection_digest == right.selection_digest \
+		and left.active_entry_ids == right.active_entry_ids \
+		and left.economy_config_id == right.economy_config_id \
+		and left.combat_config_id == right.combat_config_id \
+		and left.reward_table_ids == right.reward_table_ids \
+		and left.map_node_def_ids == right.map_node_def_ids \
+		and left.challenge_unlock_def_ids == right.challenge_unlock_def_ids \
+		and left.meta_reward_table_id == right.meta_reward_table_id \
+		and left.manifest_digest == right.manifest_digest
 
 func _compile_failure(error: CatalogCompileError) -> CatalogCompileResult:
 	if error == null:
@@ -336,6 +537,9 @@ func _generation_count() -> int:
 
 func _receipt_count() -> int:
 	return _receipts_by_digest.size()
+
+func _legacy_generation_count() -> int:
+	return _legacy_v1_catalogs_by_digest.size()
 
 func _state_fingerprint() -> String:
 	var values: Array[String] = [
@@ -358,7 +562,7 @@ func _state_fingerprint() -> String:
 	var authoring_ids: Array[StringName] = []
 	for key in _authoring_by_id.keys(): authoring_ids.append(key as StringName)
 	authoring_ids.sort_custom(_string_name_less)
-	var compiler := ContentDefinitionCompiler.new()
+	var compiler := ContentDefinitionCompilerV2.new()
 	for content_id in authoring_ids:
 		var definition: ContentDefinition = _authoring_by_id[content_id]
 		var compiled := compiler.compile(definition)
@@ -371,6 +575,10 @@ func _state_fingerprint() -> String:
 	for key in _catalogs_by_digest.keys(): catalog_keys.append(String(key))
 	catalog_keys.sort()
 	for key in catalog_keys: values.append("catalog:%s" % key)
+	var legacy_keys: Array[String] = []
+	for key in _legacy_v1_catalogs_by_digest.keys(): legacy_keys.append(String(key))
+	legacy_keys.sort()
+	for key in legacy_keys: values.append("legacy_v1:%s" % key)
 	var receipt_keys: Array[String] = []
 	for key in _receipts_by_digest.keys(): receipt_keys.append(String(key))
 	receipt_keys.sort()
@@ -420,12 +628,13 @@ func _selection_digest(selection: CatalogSelection) -> String:
 	var values: Array[String] = [selection.content_version]
 	for value in selection.root_enabled_content_ids: values.append(String(value))
 	values.append(String(selection.economy_config_id))
+	values.append(String(selection.combat_config_id))
 	for value in selection.reward_table_ids: values.append(String(value))
 	for value in selection.map_node_def_ids: values.append(String(value))
 	for value in selection.challenge_unlock_def_ids: values.append(String(value))
 	values.append(String(selection.meta_reward_table_id))
 	var bytes := PackedByteArray()
-	bytes.append_array("SEL1".to_ascii_buffer())
+	bytes.append_array("SEL2".to_ascii_buffer())
 	for value in values:
 		var raw := value.to_utf8_buffer()
 		bytes.append((raw.size() >> 24) & 0xff)

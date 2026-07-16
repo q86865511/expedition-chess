@@ -16,6 +16,7 @@ const MAP_NODE := 0x100c
 const UNLOCK := 0x100d
 const ECONOMY_CONFIG := 0x100e
 const META_REWARD_TABLE := 0x100f
+const COMBAT_CONFIG := 0x1010
 
 static func code_for_name(value: StringName) -> int:
 	match value:
@@ -34,6 +35,7 @@ static func code_for_name(value: StringName) -> int:
 		&"unlock": return UNLOCK
 		&"economy_config": return ECONOMY_CONFIG
 		&"meta_reward_table": return META_REWARD_TABLE
+		&"combat_config": return COMBAT_CONFIG
 	return 0
 
 static func name_for_code(value: int) -> StringName:
@@ -53,4 +55,5 @@ static func name_for_code(value: int) -> StringName:
 		UNLOCK: return &"unlock"
 		ECONOMY_CONFIG: return &"economy_config"
 		META_REWARD_TABLE: return &"meta_reward_table"
+		COMBAT_CONFIG: return &"combat_config"
 	return &""

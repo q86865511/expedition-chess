@@ -6,6 +6,7 @@ static var _construction_seal: RefCounted = RefCounted.new()
 var _content_version: String
 var _enabled_content_ids: Array[StringName] = []
 var _economy_config_id: StringName
+var _combat_config_id: StringName
 var _reward_table_ids: Array[StringName] = []
 var _map_node_def_ids: Array[StringName] = []
 var _challenge_unlock_def_ids: Array[StringName] = []
@@ -26,7 +27,7 @@ static func from_pinned_receipt(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			&"content_snapshot.receipt.catalog_schema_version"
 		)
-	if receipt.content_codec_version != 1:
+	if receipt.content_codec_version != 2:
 		return _failure(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			&"content_snapshot.receipt.content_codec_version"
@@ -40,6 +41,7 @@ static func from_pinned_receipt(
 		receipt.content_version,
 		receipt.active_entry_ids,
 		receipt.economy_config_id,
+		receipt.combat_config_id,
 		receipt.reward_table_ids,
 		receipt.map_node_def_ids,
 		receipt.challenge_unlock_def_ids,
@@ -55,6 +57,11 @@ static func from_pinned_receipt(
 		return _failure(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			&"content_snapshot.receipt.active_entry_ids"
+		)
+	if candidate.snapshot.combat_config_id_value() != receipt.combat_config_id:
+		return _failure(
+			ContentSnapshotBuildError.RECEIPT_INVALID,
+			&"content_snapshot.receipt.combat_config_id"
 		)
 	if candidate.snapshot.reward_table_ids_copy() != receipt.reward_table_ids:
 		return _failure(
@@ -78,6 +85,7 @@ static func from_persisted(
 	p_content_version: String,
 	p_enabled_content_ids: Array[StringName],
 	p_economy_config_id: StringName,
+	p_combat_config_id: StringName,
 	p_reward_table_ids: Array[StringName],
 	p_map_node_def_ids: Array[StringName],
 	p_challenge_unlock_def_ids: Array[StringName],
@@ -92,6 +100,7 @@ static func from_persisted(
 		p_content_version,
 		p_enabled_content_ids,
 		p_economy_config_id,
+		p_combat_config_id,
 		p_reward_table_ids,
 		p_map_node_def_ids,
 		p_challenge_unlock_def_ids,
@@ -111,6 +120,7 @@ static func _build_candidate(
 	p_content_version: String,
 	p_enabled_content_ids: Array[StringName],
 	p_economy_config_id: StringName,
+	p_combat_config_id: StringName,
 	p_reward_table_ids: Array[StringName],
 	p_map_node_def_ids: Array[StringName],
 	p_challenge_unlock_def_ids: Array[StringName],
@@ -132,6 +142,11 @@ static func _build_candidate(
 		return _failure(
 			ContentSnapshotBuildError.INPUT_INVALID,
 			&"content_snapshot.economy_config_id"
+		)
+	if p_combat_config_id != &"config.combat_default":
+		return _failure(
+			ContentSnapshotBuildError.INPUT_INVALID,
+			&"content_snapshot.combat_config_id"
 		)
 	if not stable_ids.is_valid(p_meta_reward_table_id):
 		return _failure(
@@ -175,6 +190,11 @@ static func _build_candidate(
 			ContentSnapshotBuildError.INPUT_INVALID,
 			&"content_snapshot.economy_config_id"
 		)
+	if not enabled_ids.has(p_combat_config_id):
+		return _failure(
+			ContentSnapshotBuildError.INPUT_INVALID,
+			&"content_snapshot.combat_config_id"
+		)
 	if not enabled_ids.has(p_meta_reward_table_id):
 		return _failure(
 			ContentSnapshotBuildError.INPUT_INVALID,
@@ -203,6 +223,7 @@ static func _build_candidate(
 			p_content_version,
 			enabled_ids,
 			p_economy_config_id,
+			p_combat_config_id,
 			reward_ids,
 			map_ids,
 			challenge_ids,
@@ -260,6 +281,7 @@ func _init(
 	p_content_version: String,
 	p_enabled_content_ids: Array[StringName],
 	p_economy_config_id: StringName,
+	p_combat_config_id: StringName,
 	p_reward_table_ids: Array[StringName],
 	p_map_node_def_ids: Array[StringName],
 	p_challenge_unlock_def_ids: Array[StringName],
@@ -270,6 +292,7 @@ func _init(
 	_content_version = p_content_version
 	_enabled_content_ids.assign(p_enabled_content_ids)
 	_economy_config_id = p_economy_config_id
+	_combat_config_id = p_combat_config_id
 	_reward_table_ids.assign(p_reward_table_ids)
 	_map_node_def_ids.assign(p_map_node_def_ids)
 	_challenge_unlock_def_ids.assign(p_challenge_unlock_def_ids)
@@ -288,6 +311,9 @@ func enabled_content_ids_copy() -> Array[StringName]:
 
 func economy_config_id_value() -> StringName:
 	return _economy_config_id
+
+func combat_config_id_value() -> StringName:
+	return _combat_config_id
 
 func reward_table_ids_copy() -> Array[StringName]:
 	return _reward_table_ids.duplicate()
@@ -309,6 +335,7 @@ func deep_clone() -> ContentSnapshotState:
 		_content_version,
 		_enabled_content_ids,
 		_economy_config_id,
+		_combat_config_id,
 		_reward_table_ids,
 		_map_node_def_ids,
 		_challenge_unlock_def_ids,
@@ -323,6 +350,7 @@ func canonical_equals(other: ContentSnapshotState) -> bool:
 	return _content_version == other._content_version \
 		and _enabled_content_ids == other._enabled_content_ids \
 		and _economy_config_id == other._economy_config_id \
+		and _combat_config_id == other._combat_config_id \
 		and _reward_table_ids == other._reward_table_ids \
 		and _map_node_def_ids == other._map_node_def_ids \
 		and _challenge_unlock_def_ids == other._challenge_unlock_def_ids \

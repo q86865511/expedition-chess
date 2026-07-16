@@ -1,7 +1,7 @@
 class_name SaveJsonCodec
 extends RefCounted
 
-const SCHEMA_VERSION: int = 1
+const SCHEMA_VERSION: int = SaveSchemaContract.CURRENT
 
 var _receipt_port: PinnedCatalogReceiptPort
 var _migration_port: ContentIdMigrationPort
@@ -130,6 +130,7 @@ func _encode_content_snapshot(snapshot: ContentSnapshotState) -> String:
 		_field("content_version", _quote(snapshot.content_version_value())),
 		_field("enabled_content_ids", _name_array(snapshot.enabled_content_ids_copy())),
 		_field("economy_config_id", _quote(String(snapshot.economy_config_id_value()))),
+		_field("combat_config_id", _quote(String(snapshot.combat_config_id_value()))),
 		_field("reward_table_ids", _name_array(snapshot.reward_table_ids_copy())),
 		_field("map_node_def_ids", _name_array(snapshot.map_node_def_ids_copy())),
 		_field("challenge_unlock_def_ids", _name_array(snapshot.challenge_unlock_def_ids_copy())),
@@ -365,32 +366,36 @@ func _encode_battle_setup(setup: BattleSetup) -> String:
 		_field("battle_setup_hash", _quote(String(setup.battle_setup_hash))),
 		_field("rng_version", str(setup.rng_version)),
 		_field("combat_rng_snapshot", _encode_rng_snapshot(setup.combat_rng_snapshot)),
+		_field("battle_setup_envelope_digest", _quote(String(setup.battle_setup_envelope_digest))),
 	])
 
 func _encode_battle_inputs(inputs: BattleSetupInputs) -> String:
+	if inputs != null and inputs.setup_schema_version == 2:
+		var encoded_v2: BattleCodecResult = CanonicalBattleCodecV2.new().encode(inputs)
+		return encoded_v2.canonical_bytes.get_string_from_utf8() if encoded_v2.ok else "null"
 	var units: Array[String] = []
 	for unit: UnitBattleSnapshot in inputs.player_units:
-		units.append(_encode_unit_battle(unit))
+		units.append(_encode_unit_battle(unit, 1))
 	var traits: Array[String] = []
 	for trait_snapshot: TraitBattleSnapshot in inputs.player_active_traits:
-		traits.append(_encode_trait_battle(trait_snapshot))
+		traits.append(_encode_trait_battle(trait_snapshot, 1))
 	var equipment: Array[String] = []
 	for effect: BattleEffectSnapshot in inputs.player_equipment_effects:
-		equipment.append(_encode_battle_effect(effect))
+		equipment.append(_encode_battle_effect(effect, 1))
 	var relics: Array[String] = []
 	for effect: BattleEffectSnapshot in inputs.player_relic_effects:
-		relics.append(_encode_battle_effect(effect))
+		relics.append(_encode_battle_effect(effect, 1))
 	var commander: Array[String] = []
 	for effect: BattleEffectSnapshot in inputs.commander_effects:
-		commander.append(_encode_battle_effect(effect))
+		commander.append(_encode_battle_effect(effect, 1))
 	var challenge: Array[String] = []
 	for effect: BattleEffectSnapshot in inputs.challenge_modifiers:
-		challenge.append(_encode_battle_effect(effect))
+		challenge.append(_encode_battle_effect(effect, 1))
 	return _object([
 		_field("setup_schema_version", str(inputs.setup_schema_version)),
 		_field("content_version", _quote(inputs.content_version)),
 		_field("manifest_digest", _quote(String(inputs.manifest_digest))),
-		_field("encounter_snapshot", _encode_preview(inputs.encounter_snapshot)),
+		_field("encounter_snapshot", _encode_preview(inputs.encounter_snapshot, 1)),
 		_field("player_units", _array(units)),
 		_field("player_active_traits", _array(traits)),
 		_field("player_equipment_effects", _array(equipment)),
@@ -407,23 +412,10 @@ func _encode_battle_inputs(inputs: BattleSetupInputs) -> String:
 	])
 
 func _encode_battle_result(result: BattleResult) -> String:
-	var proposals: Array[String] = []
-	for proposal: RunMutationProposal in result.run_mutation_proposals:
-		proposals.append(_object([
-			_field("operation_index", str(proposal.operation_index)),
-			_field("operation_kind", _quote(String(proposal.operation_kind))),
-			_field("amount", str(proposal.amount)),
-			_field("claim_key", _encode_claim_key(proposal.claim_key)),
-			_field("payload_digest", _quote(String(proposal.payload_digest))),
-		]))
-	return _object([
-		_field("outcome", _quote(String(result.outcome))),
-		_field("final_tick", str(result.final_tick)),
-		_field("survivor_instance_ids", _name_array(result.survivor_instance_ids)),
-		_field("expedition_damage", str(result.expedition_damage)),
-		_field("summary_hash", _quote(String(result.summary_hash))),
-		_field("run_mutation_proposals", _array(proposals)),
-	])
+	if result == null:
+		return "null"
+	var encoded := BattleResultCodecV1.new().encode(result.to_record())
+	return encoded.canonical_bytes.get_string_from_utf8() if encoded.ok else "null"
 
 func _encode_pending_reward(pending: PendingRewardState) -> String:
 	var offers: Array[String] = []
@@ -454,23 +446,26 @@ func _encode_pending_reward(pending: PendingRewardState) -> String:
 		_field("transaction_id", _encode_transaction_key(pending.transaction_id)),
 	])
 
-func _encode_preview(preview: EncounterPreviewSnapshot) -> String:
+func _encode_preview(preview: EncounterPreviewSnapshot, schema_version: int = 2) -> String:
 	var units: Array[String] = []
 	for unit: UnitBattleSnapshot in preview.enemy_units:
-		units.append(_encode_unit_battle(unit))
+		units.append(_encode_unit_battle(unit, schema_version))
 	var traits: Array[String] = []
 	for trait_snapshot: TraitBattleSnapshot in preview.active_traits:
-		traits.append(_encode_trait_battle(trait_snapshot))
+		traits.append(_encode_trait_battle(trait_snapshot, schema_version))
 	var effects: Array[String] = []
 	for effect: BattleEffectSnapshot in preview.affix_effects:
-		effects.append(_encode_battle_effect(effect))
+		effects.append(_encode_battle_effect(effect, schema_version))
 	var phases: Array[String] = []
 	for phase: BossPhaseSnapshot in preview.boss_phases:
-		phases.append(_object([
+		var phase_fields: Array[String] = [
 			_field("phase_index", str(phase.phase_index)),
 			_field("hp_threshold_bps", str(phase.hp_threshold_bps)),
-			_field("effect_ids", _name_array(phase.effect_ids)),
-		]))
+		]
+		if schema_version == 2:
+			phase_fields.append(_field("source_instance_id", _quote(String(phase.source_instance_id))))
+		phase_fields.append(_field("effect_ids", _name_array(phase.effect_ids)))
+		phases.append(_object(phase_fields))
 	return _object([
 		_field("preview_schema_version", str(preview.preview_schema_version)),
 		_field("encounter_id", _quote(String(preview.encounter_id))),
@@ -481,8 +476,8 @@ func _encode_preview(preview: EncounterPreviewSnapshot) -> String:
 		_field("boss_phases", _array(phases)),
 	])
 
-func _encode_unit_battle(unit: UnitBattleSnapshot) -> String:
-	return _object([
+func _encode_unit_battle(unit: UnitBattleSnapshot, schema_version: int = 2) -> String:
+	var fields: Array[String] = [
 		_field("instance_id", _quote(String(unit.instance_id))),
 		_field("unit_id", _quote(String(unit.unit_id))),
 		_field("side", _quote(String(unit.side))),
@@ -500,16 +495,31 @@ func _encode_unit_battle(unit: UnitBattleSnapshot) -> String:
 		_field("move_speed_milli", str(unit.move_speed_milli)),
 		_field("ability_id", _quote(String(unit.ability_id.value)) if unit.ability_id != null else "null"),
 		_field("effect_ids", _name_array(unit.effect_ids)),
-	])
+	]
+	if schema_version == 2:
+		fields.insert(fields.size() - 2, _field(
+			"basic_attack_profile", _quote(String(unit.basic_attack_profile))
+		))
+		var assignments: Array[String] = []
+		for assignment: BattleEffectSnapshot in unit.effect_assignments:
+			assignments.append(_encode_battle_effect(assignment, 2))
+		fields.append(_field("effect_assignments", _array(assignments)))
+	return _object(fields)
 
-func _encode_trait_battle(trait_snapshot: TraitBattleSnapshot) -> String:
-	return _object([
+func _encode_trait_battle(trait_snapshot: TraitBattleSnapshot, schema_version: int = 2) -> String:
+	var fields: Array[String] = [
 		_field("trait_id", _quote(String(trait_snapshot.trait_id))),
 		_field("tier", str(trait_snapshot.tier)),
 		_field("member_instance_ids", _name_array(trait_snapshot.member_instance_ids)),
-	])
+	]
+	if schema_version == 2:
+		var assignments: Array[String] = []
+		for assignment: BattleEffectSnapshot in trait_snapshot.effect_assignments:
+			assignments.append(_encode_battle_effect(assignment, 2))
+		fields.append(_field("effect_assignments", _array(assignments)))
+	return _object(fields)
 
-func _encode_battle_effect(effect: BattleEffectSnapshot) -> String:
+func _encode_battle_effect(effect: BattleEffectSnapshot, schema_version: int = 2) -> String:
 	var ints: Array[String] = []
 	for parameter: BattleIntParam in effect.integer_params:
 		ints.append(_object([
@@ -522,16 +532,24 @@ func _encode_battle_effect(effect: BattleEffectSnapshot) -> String:
 			_field("key", _quote(String(parameter.key))),
 			_field("value", _quote(String(parameter.value))),
 		]))
-	return _object([
+	var fields: Array[String] = [
 		_field("priority", str(effect.priority)),
-		_field("source_stable_id", _quote(String(effect.source_stable_id))),
-		_field("source_instance_id", _quote(String(effect.source_instance_id.value)) if effect.source_instance_id != null else "null"),
+	]
+	if schema_version == 2:
+		fields.append(_field("source_category", _quote(String(effect.source_category))))
+		fields.append(_field("source_side", _quote(String(effect.source_side))))
+	fields.append(_field("source_stable_id", _quote(String(effect.source_stable_id))))
+	fields.append(_field("source_instance_id", _quote(String(effect.source_instance_id.value)) if effect.source_instance_id != null else "null"))
+	if schema_version == 2:
+		fields.append(_field("source_slot", str(effect.source_slot)))
+	fields.append_array([
 		_field("effect_index", str(effect.effect_index)),
 		_field("effect_id", _quote(String(effect.effect_id))),
 		_field("target_ids", _name_array(effect.target_ids)),
 		_field("integer_params", _array(ints)),
 		_field("id_params", _array(ids)),
 	])
+	return _object(fields)
 
 func _field(key: String, encoded_value: String) -> String:
 	return _quote(key) + ":" + encoded_value
@@ -703,13 +721,15 @@ func _inspect_run_content_snapshot(run_data: Dictionary) -> ContentSnapshotProbe
 	var data := _read_object(value, &"run.content_snapshot")
 	if data == null or not _exact_keys(data, [
 		"content_version", "enabled_content_ids", "economy_config_id", "reward_table_ids",
-		"map_node_def_ids", "challenge_unlock_def_ids", "meta_reward_table_id", "manifest_digest"
+		"combat_config_id", "map_node_def_ids", "challenge_unlock_def_ids",
+		"meta_reward_table_id", "manifest_digest"
 	], &"run.content_snapshot"):
 		return null
 	return ContentSnapshotProbe.new(
 		_read_string(data, "content_version", &"run.content_snapshot.content_version"),
 		_read_name_array(data["enabled_content_ids"], &"run.content_snapshot.enabled_content_ids"),
 		StringName(_read_string(data, "economy_config_id", &"run.content_snapshot.economy_config_id")),
+		StringName(_read_string(data, "combat_config_id", &"run.content_snapshot.combat_config_id")),
 		_read_name_array(data["reward_table_ids"], &"run.content_snapshot.reward_table_ids"),
 		_read_name_array(data["map_node_def_ids"], &"run.content_snapshot.map_node_def_ids"),
 		_read_name_array(data["challenge_unlock_def_ids"], &"run.content_snapshot.challenge_unlock_def_ids"),
@@ -722,6 +742,7 @@ func _receipt_matches_probe(receipt: PinnedCatalogBuildReceipt, probe: ContentSn
 		return false
 	var exact := receipt.manifest_digest == probe.manifest_digest \
 		and receipt.economy_config_id == probe.economy_config_id \
+		and receipt.combat_config_id == probe.combat_config_id \
 		and receipt.meta_reward_table_id == probe.meta_reward_table_id \
 		and _same_names(receipt.active_entry_ids, probe.enabled_content_ids) \
 		and _same_names(receipt.reward_table_ids, probe.reward_table_ids) \
@@ -734,13 +755,17 @@ func _receipt_matches_probe(receipt: PinnedCatalogBuildReceipt, probe: ContentSn
 	var mapped_nodes := _migrate_comparison_names(probe.map_node_def_ids)
 	var mapped_challenges := _migrate_comparison_names(probe.challenge_unlock_def_ids)
 	var mapped_economy := _migrate_comparison_id(probe.economy_config_id)
+	var mapped_combat := _migrate_comparison_id(probe.combat_config_id)
 	var mapped_meta := _migrate_comparison_id(probe.meta_reward_table_id)
 	var changed := not _same_names(mapped_active, probe.enabled_content_ids) \
-		or mapped_economy != probe.economy_config_id or mapped_meta != probe.meta_reward_table_id \
+		or mapped_economy != probe.economy_config_id \
+		or mapped_combat != probe.combat_config_id \
+		or mapped_meta != probe.meta_reward_table_id \
 		or not _same_names(mapped_rewards, probe.reward_table_ids) \
 		or not _same_names(mapped_nodes, probe.map_node_def_ids) \
 		or not _same_names(mapped_challenges, probe.challenge_unlock_def_ids)
 	return changed and receipt.economy_config_id == mapped_economy \
+		and receipt.combat_config_id == mapped_combat \
 		and receipt.meta_reward_table_id == mapped_meta \
 		and _same_names(receipt.active_entry_ids, mapped_active) \
 		and _same_names(receipt.reward_table_ids, mapped_rewards) \
@@ -1334,14 +1359,29 @@ func _decode_pending_reward(value: Variant) -> PendingRewardState:
 func _decode_battle_setup(value: Variant, path: StringName) -> BattleSetup:
 	var data := _read_object(value, path)
 	if data == null or not _exact_keys(data, [
-		"inputs", "hash_version", "battle_setup_hash", "rng_version", "combat_rng_snapshot"
+		"inputs", "hash_version", "battle_setup_hash", "rng_version", "combat_rng_snapshot",
+		"battle_setup_envelope_digest"
 	], path):
 		return null
 	if not data["inputs"] is Dictionary:
 		_set_decode_error(StringName(String(path) + ".inputs"))
 		return null
+	var input_data: Dictionary = data["inputs"]
+	var setup_schema_version := _read_int(
+		input_data,
+		"setup_schema_version",
+		StringName(String(path) + ".inputs.setup_schema_version")
+	)
+	if setup_schema_version not in [1, 2]:
+		_set_decode_error(StringName(String(path) + ".inputs.setup_schema_version"))
+		return null
 	var input_text := _canonicalize_variant(data["inputs"])
-	var codec_result: BattleCodecResult = CanonicalBattleCodecV1.new().decode(input_text.to_utf8_buffer())
+	var codec: CanonicalBattleCodecV1 = (
+		CanonicalBattleCodecV2.new()
+		if setup_schema_version == 2
+		else CanonicalBattleCodecV1.new()
+	)
+	var codec_result: BattleCodecResult = codec.decode(input_text.to_utf8_buffer())
 	if not codec_result.ok or codec_result.inputs == null:
 		_set_decode_error(StringName(String(path) + ".inputs"))
 		return null
@@ -1354,72 +1394,245 @@ func _decode_battle_setup(value: Variant, path: StringName) -> BattleSetup:
 	setup.battle_setup_hash = StringName(_read_string(data, "battle_setup_hash", StringName(String(path) + ".battle_setup_hash")))
 	setup.rng_version = _read_int(data, "rng_version", StringName(String(path) + ".rng_version"))
 	setup.combat_rng_snapshot = snapshot
-	var encoded := CanonicalBattleCodecV1.new().encode(setup.inputs)
+	setup.battle_setup_envelope_digest = StringName(_read_string(
+		data,
+		"battle_setup_envelope_digest",
+		StringName(String(path) + ".battle_setup_envelope_digest")
+	))
+	var encoded: BattleCodecResult = codec.encode(setup.inputs)
 	if not encoded.ok or BattleSetupHashBuilder.sha256_hex(encoded.canonical_bytes) != String(setup.battle_setup_hash):
 		_set_decode_error(StringName(String(path) + ".battle_setup_hash"))
+		return null
+	if setup_schema_version == 2:
+		var expected_envelope := BattleSetupHashBuilder.envelope_digest(
+			setup.hash_version,
+			String(setup.battle_setup_hash),
+			setup.rng_version,
+			setup.combat_rng_snapshot
+		)
+		if expected_envelope.is_empty() \
+			or expected_envelope != String(setup.battle_setup_envelope_digest):
+			_set_decode_error(StringName(String(path) + ".battle_setup_envelope_digest"))
+			return null
+	elif not setup.battle_setup_envelope_digest.is_empty():
+		_set_decode_error(StringName(String(path) + ".battle_setup_envelope_digest"))
 		return null
 	return setup
 
 func _decode_battle_result(value: Variant, path: StringName) -> BattleResult:
 	var data := _read_object(value, path)
-	if data == null or not _exact_keys(data, [
-		"outcome", "final_tick", "survivor_instance_ids", "expedition_damage", "summary_hash",
-		"run_mutation_proposals"
-	], path):
+	if data == null:
 		return null
-	var proposals_value := _read_array(data["run_mutation_proposals"], StringName(String(path) + ".run_mutation_proposals"))
-	var proposals: Array[RunMutationProposal] = []
-	for index: int in range(proposals_value.size()):
-		var proposal_path := StringName("%s.run_mutation_proposals.%d" % [String(path), index])
-		var proposal_data := _read_object(proposals_value[index], proposal_path)
-		if proposal_data == null or not _exact_keys(proposal_data, [
-			"operation_index", "operation_kind", "amount", "claim_key", "payload_digest"
-		], proposal_path):
-			return null
-		var key := _decode_claim_key(proposal_data["claim_key"], StringName(String(proposal_path) + ".claim_key"))
-		if key == null:
-			return null
-		var proposal := RunMutationProposal.new()
-		proposal.operation_index = _read_int(proposal_data, "operation_index", StringName(String(proposal_path) + ".operation_index"))
-		proposal.operation_kind = StringName(_read_string(proposal_data, "operation_kind", StringName(String(proposal_path) + ".operation_kind")))
-		proposal.amount = _read_int(proposal_data, "amount", StringName(String(proposal_path) + ".amount"))
-		proposal.claim_key = key
-		proposal.payload_digest = StringName(_read_string(proposal_data, "payload_digest", StringName(String(proposal_path) + ".payload_digest")))
-		proposals.append(proposal)
-	var result := BattleResult.new()
-	result.outcome = StringName(_read_string(data, "outcome", StringName(String(path) + ".outcome")))
-	result.final_tick = _read_int(data, "final_tick", StringName(String(path) + ".final_tick"))
-	result.survivor_instance_ids = _read_name_array(data["survivor_instance_ids"], StringName(String(path) + ".survivor_instance_ids"))
-	result.expedition_damage = _read_int(data, "expedition_damage", StringName(String(path) + ".expedition_damage"))
-	result.summary_hash = StringName(_read_string(data, "summary_hash", StringName(String(path) + ".summary_hash")))
-	result.run_mutation_proposals = proposals
-	return result
+	var decoded := BattleResultCodecV1.new().decode(
+		_canonicalize_variant(data).to_utf8_buffer()
+	)
+	if not decoded.ok or decoded.record == null:
+		_set_decode_error(StringName(
+			"%s.%s" % [
+				String(path),
+				String(decoded.error.field_path) if decoded.error != null else "result",
+			]
+		))
+		return null
+	return BattleResult.from_record(decoded.record)
 
 func _decode_preview(value: Variant, path: StringName) -> EncounterPreviewSnapshot:
 	var data := _read_object(value, path)
-	if data == null or not data.has("manifest_digest") or not data["manifest_digest"] is String:
-		_set_decode_error(StringName(String(path) + ".manifest_digest"))
+	if data == null or not _exact_keys(data, [
+		"preview_schema_version", "encounter_id", "manifest_digest", "enemy_units",
+		"active_traits", "affix_effects", "boss_phases"
+	], path):
 		return null
-	var fields: Array[String] = []
-	fields.append(_field("setup_schema_version", "1"))
-	fields.append(_field("content_version", _quote("probe.1")))
-	fields.append(_field("manifest_digest", _quote(String(data["manifest_digest"]))))
-	fields.append(_field("encounter_snapshot", _canonicalize_variant(data)))
-	fields.append(_field("player_units", "[]"))
-	fields.append(_field("player_active_traits", "[]"))
-	fields.append(_field("player_equipment_effects", "[]"))
-	fields.append(_field("player_relic_effects", "[]"))
-	fields.append(_field("commander_effects", "[]"))
-	fields.append(_field("challenge_modifiers", "[]"))
-	fields.append(_field("battle_rules", _object([
-		_field("tick_rate", "20"), _field("board_width", "8"), _field("board_height", "8"),
-		_field("soft_limit_ticks", "1200"), _field("hard_limit_ticks", "1800")
-	])))
-	var codec_result: BattleCodecResult = CanonicalBattleCodecV1.new().decode(_object(fields).to_utf8_buffer())
-	if not codec_result.ok or codec_result.inputs == null:
-		_set_decode_error(path)
+	var preview := EncounterPreviewSnapshot.new()
+	preview.preview_schema_version = _read_int(
+		data, "preview_schema_version", StringName(String(path) + ".preview_schema_version")
+	)
+	preview.encounter_id = StringName(_read_string(
+		data, "encounter_id", StringName(String(path) + ".encounter_id")
+	))
+	preview.manifest_digest = StringName(_read_string(
+		data, "manifest_digest", StringName(String(path) + ".manifest_digest")
+	))
+	var unit_values := _read_array(data["enemy_units"], StringName(String(path) + ".enemy_units"))
+	for index: int in range(unit_values.size()):
+		var unit := _decode_preview_unit(
+			unit_values[index], StringName("%s.enemy_units.%d" % [String(path), index])
+		)
+		if unit == null:
+			return null
+		preview.enemy_units.append(unit)
+	var trait_values := _read_array(data["active_traits"], StringName(String(path) + ".active_traits"))
+	for index: int in range(trait_values.size()):
+		var trait_snapshot := _decode_preview_trait(
+			trait_values[index], StringName("%s.active_traits.%d" % [String(path), index])
+		)
+		if trait_snapshot == null:
+			return null
+		preview.active_traits.append(trait_snapshot)
+	var effect_values := _read_array(data["affix_effects"], StringName(String(path) + ".affix_effects"))
+	for index: int in range(effect_values.size()):
+		var effect := _decode_preview_effect(
+			effect_values[index], StringName("%s.affix_effects.%d" % [String(path), index])
+		)
+		if effect == null:
+			return null
+		preview.affix_effects.append(effect)
+	var phase_values := _read_array(data["boss_phases"], StringName(String(path) + ".boss_phases"))
+	for index: int in range(phase_values.size()):
+		var phase := _decode_preview_phase(
+			phase_values[index], StringName("%s.boss_phases.%d" % [String(path), index])
+		)
+		if phase == null:
+			return null
+		preview.boss_phases.append(phase)
+	var validation := EncounterPreviewValidator.new().validate(preview)
+	if not validation.ok:
+		_set_decode_error(StringName("%s.%s" % [String(path), String(validation.error.field_path)]))
 		return null
-	return codec_result.inputs.encounter_snapshot.deep_clone()
+	return preview
+
+func _decode_preview_unit(value: Variant, path: StringName) -> UnitBattleSnapshot:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, [
+		"instance_id", "unit_id", "side", "logical_y", "logical_x", "star",
+		"health", "attack", "armor", "magic_resist", "attack_speed_milli",
+		"attack_range_cells", "start_mana", "max_mana", "move_speed_milli",
+		"basic_attack_profile", "ability_id", "effect_ids", "effect_assignments"
+	], path):
+		return null
+	var unit := UnitBattleSnapshot.new()
+	unit.instance_id = StringName(_read_string(data, "instance_id", StringName(String(path) + ".instance_id")))
+	unit.unit_id = StringName(_read_string(data, "unit_id", StringName(String(path) + ".unit_id")))
+	unit.side = StringName(_read_string(data, "side", StringName(String(path) + ".side")))
+	unit.logical_y = _read_int(data, "logical_y", StringName(String(path) + ".logical_y"))
+	unit.logical_x = _read_int(data, "logical_x", StringName(String(path) + ".logical_x"))
+	unit.star = _read_int(data, "star", StringName(String(path) + ".star"))
+	unit.health = _read_int(data, "health", StringName(String(path) + ".health"))
+	unit.attack = _read_int(data, "attack", StringName(String(path) + ".attack"))
+	unit.armor = _read_int(data, "armor", StringName(String(path) + ".armor"))
+	unit.magic_resist = _read_int(data, "magic_resist", StringName(String(path) + ".magic_resist"))
+	unit.attack_speed_milli = _read_int(data, "attack_speed_milli", StringName(String(path) + ".attack_speed_milli"))
+	unit.attack_range_cells = _read_int(data, "attack_range_cells", StringName(String(path) + ".attack_range_cells"))
+	unit.start_mana = _read_int(data, "start_mana", StringName(String(path) + ".start_mana"))
+	unit.max_mana = _read_int(data, "max_mana", StringName(String(path) + ".max_mana"))
+	unit.move_speed_milli = _read_int(data, "move_speed_milli", StringName(String(path) + ".move_speed_milli"))
+	unit.basic_attack_profile = StringName(_read_string(
+		data, "basic_attack_profile", StringName(String(path) + ".basic_attack_profile")
+	))
+	if data["ability_id"] != null:
+		unit.ability_id = OptionalStringNameValue.of(StringName(_read_variant_string(
+			data["ability_id"], StringName(String(path) + ".ability_id")
+		)))
+	unit.effect_ids = _read_name_array(data["effect_ids"], StringName(String(path) + ".effect_ids"))
+	var assignment_values := _read_array(
+		data["effect_assignments"], StringName(String(path) + ".effect_assignments")
+	)
+	for index: int in range(assignment_values.size()):
+		var assignment := _decode_preview_effect(
+			assignment_values[index], StringName("%s.effect_assignments.%d" % [String(path), index])
+		)
+		if assignment == null:
+			return null
+		unit.effect_assignments.append(assignment)
+	return unit
+
+func _decode_preview_trait(value: Variant, path: StringName) -> TraitBattleSnapshot:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, [
+		"trait_id", "tier", "member_instance_ids", "effect_assignments"
+	], path):
+		return null
+	var trait_snapshot := TraitBattleSnapshot.new()
+	trait_snapshot.trait_id = StringName(_read_string(
+		data, "trait_id", StringName(String(path) + ".trait_id")
+	))
+	trait_snapshot.tier = _read_int(data, "tier", StringName(String(path) + ".tier"))
+	trait_snapshot.member_instance_ids = _read_name_array(
+		data["member_instance_ids"], StringName(String(path) + ".member_instance_ids")
+	)
+	var assignment_values := _read_array(
+		data["effect_assignments"], StringName(String(path) + ".effect_assignments")
+	)
+	for index: int in range(assignment_values.size()):
+		var assignment := _decode_preview_effect(
+			assignment_values[index], StringName("%s.effect_assignments.%d" % [String(path), index])
+		)
+		if assignment == null:
+			return null
+		trait_snapshot.effect_assignments.append(assignment)
+	return trait_snapshot
+
+func _decode_preview_effect(value: Variant, path: StringName) -> BattleEffectSnapshot:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, [
+		"priority", "source_category", "source_side", "source_stable_id",
+		"source_instance_id", "source_slot", "effect_index", "effect_id",
+		"target_ids", "integer_params", "id_params"
+	], path):
+		return null
+	var effect := BattleEffectSourceAssignmentSnapshot.new()
+	effect.priority = _read_int(data, "priority", StringName(String(path) + ".priority"))
+	effect.source_category = StringName(_read_string(
+		data, "source_category", StringName(String(path) + ".source_category")
+	))
+	effect.source_side = StringName(_read_string(
+		data, "source_side", StringName(String(path) + ".source_side")
+	))
+	effect.source_stable_id = StringName(_read_string(
+		data, "source_stable_id", StringName(String(path) + ".source_stable_id")
+	))
+	if data["source_instance_id"] != null:
+		effect.source_instance_id = OptionalStringNameValue.of(StringName(_read_variant_string(
+			data["source_instance_id"], StringName(String(path) + ".source_instance_id")
+		)))
+	effect.source_slot = _read_int(data, "source_slot", StringName(String(path) + ".source_slot"))
+	effect.effect_index = _read_int(data, "effect_index", StringName(String(path) + ".effect_index"))
+	effect.effect_id = StringName(_read_string(data, "effect_id", StringName(String(path) + ".effect_id")))
+	effect.target_ids = _read_name_array(data["target_ids"], StringName(String(path) + ".target_ids"))
+	var int_values := _read_array(data["integer_params"], StringName(String(path) + ".integer_params"))
+	for index: int in range(int_values.size()):
+		var parameter_path := StringName("%s.integer_params.%d" % [String(path), index])
+		var parameter_data := _read_object(int_values[index], parameter_path)
+		if parameter_data == null or not _exact_keys(parameter_data, ["key", "value"], parameter_path):
+			return null
+		var int_parameter := BattleIntParam.new()
+		int_parameter.key = StringName(_read_string(
+			parameter_data, "key", StringName(String(parameter_path) + ".key")
+		))
+		int_parameter.value = _read_int(
+			parameter_data, "value", StringName(String(parameter_path) + ".value")
+		)
+		effect.integer_params.append(int_parameter)
+	var id_values := _read_array(data["id_params"], StringName(String(path) + ".id_params"))
+	for index: int in range(id_values.size()):
+		var parameter_path := StringName("%s.id_params.%d" % [String(path), index])
+		var parameter_data := _read_object(id_values[index], parameter_path)
+		if parameter_data == null or not _exact_keys(parameter_data, ["key", "value"], parameter_path):
+			return null
+		var id_parameter := BattleIdParam.new()
+		id_parameter.key = StringName(_read_string(
+			parameter_data, "key", StringName(String(parameter_path) + ".key")
+		))
+		id_parameter.value = StringName(_read_string(
+			parameter_data, "value", StringName(String(parameter_path) + ".value")
+		))
+		effect.id_params.append(id_parameter)
+	return effect
+
+func _decode_preview_phase(value: Variant, path: StringName) -> BossPhaseSnapshot:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, [
+		"phase_index", "hp_threshold_bps", "source_instance_id", "effect_ids"
+	], path):
+		return null
+	var phase := BossPhaseSnapshot.new()
+	phase.phase_index = _read_int(data, "phase_index", StringName(String(path) + ".phase_index"))
+	phase.hp_threshold_bps = _read_int(data, "hp_threshold_bps", StringName(String(path) + ".hp_threshold_bps"))
+	phase.source_instance_id = StringName(_read_string(
+		data, "source_instance_id", StringName(String(path) + ".source_instance_id")
+	))
+	phase.effect_ids = _read_name_array(data["effect_ids"], StringName(String(path) + ".effect_ids"))
+	return phase
 
 func _read_object(value: Variant, path: StringName) -> Dictionary:
 	if not value is Dictionary:

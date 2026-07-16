@@ -11,6 +11,7 @@ extends ContentDefinition
 @export var basic_attack_profile: StringName
 @export var availability: StringName
 @export var shop_condition: StringName
+@export var effect_refs: Array[StringName] = []
 
 func category_name() -> StringName:
 	return &"unit"

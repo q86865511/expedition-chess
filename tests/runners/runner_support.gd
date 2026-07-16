@@ -1,9 +1,9 @@
 class_name FoundationRunnerSupport
 extends RefCounted
 
-const APP_VERSION: String = "0.1.0"
-const SCHEMA_VERSION: int = 1
-const CONTENT_CODEC_VERSION: int = 1
+const APP_VERSION: String = "0.2.0"
+const SCHEMA_VERSION: int = SaveSchemaContract.CURRENT
+const CONTENT_CODEC_VERSION: int = ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2
 const RNG_VERSION: int = 1
 const HASH_VERSION: int = 1
 
@@ -21,6 +21,9 @@ static func version_properties() -> Dictionary:
 		"content_codec_version": CONTENT_CODEC_VERSION,
 		"rng_version": RNG_VERSION,
 		"hash_version": HASH_VERSION,
+		"simulation_version": 1,
+		"battle_event_codec_version": 1,
+		"battle_result_codec_version": 1,
 	}
 
 

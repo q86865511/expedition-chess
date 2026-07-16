@@ -163,9 +163,10 @@ func _claim_identity(run: RunState) -> Array[String]:
 	if run.resolution_state is BattleResultPendingResolutionState:
 		var battle := run.resolution_state as BattleResultPendingResolutionState
 		for proposal: RunMutationProposal in battle.battle_result.run_mutation_proposals:
-			values.append("proposal|%d|%s|%d|%s|%s" % [
-				proposal.operation_index, String(proposal.operation_kind), proposal.amount,
-				_key_fingerprint(proposal.claim_key), String(proposal.payload_digest)
+			values.append("proposal|%s|%s|%s|%d|%s|%d|%s" % [
+				String(proposal.claim_scope), proposal.source_instance_or_slot,
+				String(proposal.effect_id), proposal.operation_index,
+				String(proposal.operation_kind), proposal.amount, proposal.payload_digest
 			])
 	return values
 
@@ -215,10 +216,6 @@ func _key_count(root: SaveRoot) -> int:
 			_append_key(digests, offer.reservation_owner_key)
 		for reserved: ReservedCopyState in reward.pending_reward.reserved_copies:
 			_append_key(digests, reserved.reservation_owner_key)
-	if root.run.resolution_state is BattleResultPendingResolutionState:
-		var battle := root.run.resolution_state as BattleResultPendingResolutionState
-		for proposal: RunMutationProposal in battle.battle_result.run_mutation_proposals:
-			_append_key(digests, proposal.claim_key)
 	return digests.size()
 
 func _append_key(digests: Array[String], key: RuntimeKeyState) -> void:

@@ -5,6 +5,7 @@ var _storage: SaveStoragePort
 var _codec: SaveJsonCodec
 var _validator: RunStateValidator
 var _migration_registry: SaveMigrationRegistry
+var _generation_migration_port: ContentGenerationMigrationPort
 var _operation_mutex := Mutex.new()
 var _operation_in_progress: bool = false
 var _content_ports_configured: bool = false
@@ -15,7 +16,8 @@ func _init(
 	storage: SaveStoragePort = null,
 	receipt_port: PinnedCatalogReceiptPort = null,
 	migration_port: ContentIdMigrationPort = null,
-	validator: RunStateValidator = null
+	validator: RunStateValidator = null,
+	generation_migration_port: ContentGenerationMigrationPort = null
 ) -> void:
 	_storage = storage if storage != null else FileSaveStorage.new()
 	var has_complete_port_pair := receipt_port != null and migration_port != null
@@ -27,11 +29,14 @@ func _init(
 	)
 	_content_ports_configured = has_complete_port_pair
 	_validator = validator if validator != null else RunStateValidator.new()
-	_migration_registry = SaveMigrationRegistry.new(_codec)
+	_generation_migration_port = generation_migration_port \
+		if generation_migration_port != null else ContentGenerationMigrationPort.new()
+	_migration_registry = SaveMigrationRegistry.new(_codec, _generation_migration_port)
 
 func _configure_content_ports(
 	receipt_port: PinnedCatalogReceiptPort,
-	migration_port: ContentIdMigrationPort
+	migration_port: ContentIdMigrationPort,
+	generation_migration_port: ContentGenerationMigrationPort = null
 ) -> SaveConfigurationResult:
 	if receipt_port == null or migration_port == null:
 		return SaveConfigurationResult.failure(
@@ -53,7 +58,9 @@ func _configure_content_ports(
 			)
 		)
 	_codec = SaveJsonCodec.new(receipt_port, migration_port)
-	_migration_registry = SaveMigrationRegistry.new(_codec)
+	if generation_migration_port != null:
+		_generation_migration_port = generation_migration_port
+	_migration_registry = SaveMigrationRegistry.new(_codec, _generation_migration_port)
 	_content_ports_configured = true
 	_end_operation()
 	return SaveConfigurationResult.success()
@@ -359,7 +366,31 @@ func _read_candidate(path: StringName) -> StoredSaveCandidate:
 	var bytes := read.bytes.value
 	var decoded := _codec.decode_bytes(bytes)
 	if not decoded.ok:
-		return StoredSaveCandidate.invalid(path, bytes, decoded.error)
+		if decoded.error.code == SaveCodecError.UTF8_INVALID:
+			return StoredSaveCandidate.invalid(path, bytes, decoded.error)
+		var migrated := _migration_registry.migrate(bytes.get_string_from_utf8())
+		if not migrated.ok:
+			return StoredSaveCandidate.invalid(
+				path,
+				bytes,
+				SaveCodecError.new(migrated.error.field_path)
+			)
+		if migrated.run_status == LoadResult.RunStatus.INCOMPATIBLE_PRESERVED:
+			decoded = SaveDecodeResult.incompatible(
+				migrated.profile,
+				migrated.incompatible_content_ids,
+				migrated.diagnostics
+			)
+		elif migrated.root != null:
+			decoded = SaveDecodeResult.success(
+				migrated.root,
+				LoadResult.RunStatus.LOADED if migrated.root.run != null \
+					else LoadResult.RunStatus.NONE,
+				migrated.incompatible_content_ids,
+				migrated.diagnostics
+			)
+		else:
+			return StoredSaveCandidate.invalid(path, bytes, SaveCodecError.new(&"root"))
 	return StoredSaveCandidate.decoded_value(path, bytes, decoded)
 
 func _candidate_has_utf8_error(candidate: StoredSaveCandidate) -> bool:

@@ -140,23 +140,27 @@ static func _create_resolution(run: RunState, kind: int) -> ResolutionState:
 static func _create_battle_result_pending(run: RunState) -> ResolutionState:
 	var setup := create_battle_setup()
 	var result := BattleResult.new()
-	result.outcome = &"win"
+	result.battle_setup_hash = setup.battle_setup_hash
+	result.outcome = &"player_win"
 	result.final_tick = 20
 	result.survivor_instance_ids = [&"u_0000000000000001"]
 	result.expedition_damage = 0
 	result.summary_hash = &"0000000000000000000000000000000000000000000000000000000000000000"
-	var node_id := run.map_state.nodes[0].node_key.digest
-	var proposal_claim := RuntimeKeySchemaRegistry.new().build_effect_claim(
-		StringName(run.run_id), node_id, &"run", &"slot_1", &"effect.fixture", 1
+	var proposal_result := RunMutationProposal.create(
+		&"once_per_node",
+		"u/u_0000000000000001",
+		&"effect.fixture",
+		1,
+		&"add_gold",
+		2
 	)
-	var proposal := RunMutationProposal.new()
-	proposal.operation_index = 1
-	proposal.operation_kind = &"add_gold"
-	proposal.amount = 2
-	proposal.claim_key = proposal_claim.key_state as EffectClaimKeyState
-	proposal.payload_digest = StringName(PAYLOAD_PROPOSAL)
-	result.run_mutation_proposals.append(proposal)
-	return BattleResultPendingResolutionState.new(String(setup.battle_setup_hash), result)
+	assert(proposal_result.ok)
+	result.run_mutation_proposals.append(proposal_result.proposal)
+	var sealed := BattleResultCodecV1.new().seal(result.to_record())
+	assert(sealed.ok)
+	return BattleResultPendingResolutionState.new(
+		String(setup.battle_setup_hash), BattleResult.from_record(sealed.record)
+	)
 
 static func _create_reward_pending(run: RunState) -> ResolutionState:
 	var registry := RuntimeKeySchemaRegistry.new()

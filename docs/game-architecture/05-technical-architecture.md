@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：技術架構
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 8 章
 
 ---
@@ -215,8 +215,11 @@ func derive_stream(
 | UnlockDef | 里程碑、貨幣成本、解鎖 ID | Meta |
 | EconomyConfigDef | 收入、利息、價格、XP、機率、卡池數量 | Shop、Run、UI |
 | MetaRewardTableDef | 節點分數、通關獎勵、挑戰倍率 | Results、Meta |
+| CombatConfigDef | tick、行動進度、回魔、阻抗、決勝期、遠征傷害、安全 budget | Battle、Preview、Validation |
 
 `BattleOperationDef` 與 `RunOperationDef` 是 `EffectDef` 內嵌的具型別 subresource，不是可獨立解鎖的 registry 內容，因此不各自配置 stable ID。前者只能描述 battle-local operation；後者只能描述交由 RunController 提交的持久 operation，兩者不可互相代用。
+
+`CombatConfigDef` 固定 ID 為 `config.combat_default`，且必須列入每個 run pinned generation 的 active IDs。固定規則欄位只接受：simulation 1、20 tick/s、8×8、soft/hard 1200/1800、progress scale 1000、resistance base 100、basis points 10000、overtime interval 20 tick、每 tick 每 entity 一次主行動；這些不是 TUNE。TUNE 的 default／inclusive range 固定為：attack mana `10／0..100`；damage mana factor `10／1..100`、min/max `1/10／0..100且min≤max`；overtime step/cap `200/2000／step 1..1000且cap step..10000`；act base `6/10/14／各1..100`；survivor/Boss damage `2/10／各0..100`；effect/operation/event/entity budgets `4096/8192/16384/64`，前三者 64..65535、operation≥effect，entity 64..1024且不得低於內容計算值。固定值不符、缺少、重複或越界皆阻止內容編譯；公式只讀 setup snapshot，不硬編 default。
 
 Godot `Resource`、nested Array 與 subresource 都是可變且同一路徑可能共用實例，因此「唯讀」不能只靠團隊約定。`ContentRegistryService` 在 BOOT 載入 authoring Resource 後，必須先做 schema／引用驗證，再依 stable ID 排序編譯為 `ContentCatalogSnapshot`：只含規則所需的基本型別、typed value DTO、asset path 與無共享集合的深拷貝，並以 canonical bytes 計算 manifest digest。原始 Resource 只留在 registry 的 authoring cache，絕不交給 UI、RunSession 或 domain。
 
@@ -247,12 +250,12 @@ Godot `Resource`、nested Array 與 subresource 都是可變且同一路徑可�
 | ShopOffer | offer_id、unit_def_id、費用、保留副本 | EconomyState |
 | EncounterPreviewSnapshot | 已提交的敵隊、站位、羈絆、招式、階段、詞綴 | RunSession |
 | BattleSetupInputs | canonical hash 的全部規則輸入，不含 seed、hash、UI | RunController |
-| BattleSetup | inputs、setup hash、combat seed／RNG snapshot | ResolutionState |
+| BattleSetup | inputs、codec/simulation/hash/RNG versions、setup hash、combat RNG snapshot、envelope digest；不保存 combat seed | ResolutionState |
 | BattleEvent | tick、sequence、type、source、targets、typed payload | BattleSimulation |
 | BattleResult | outcome、tick、存活者、遠征傷害、摘要、run effect intents | ResolutionState |
 | ResolutionState | `idle`／`combat_pending`／`battle_result_pending`／`reward_pending` tagged union | RunState |
 | PendingRewardState | node、stage、已提交 offers、reserved copies、choice、transaction ID | ResolutionState |
-| RunMutationProposal | typed run operations、claim scope、claim key | BattleResult／RunController |
+| RunMutationProposal | typed scalar run operation、claim scope、source instance/slot、effect／operation index、payload digest | BattleResult／RunController |
 | LoadResult | profile 狀態、run 狀態、診斷、保留檔路徑 | SaveRepository |
 
 - **[REQ-DATA-002]** 所有需要存檔或跨畫面傳遞的執行狀態必須使用明確 DTO，不得保存 Node、Callable、Resource 實例或 SceneTree 路徑。
@@ -267,13 +270,64 @@ Godot `Resource`、nested Array 與 subresource 都是可變且同一路徑可�
 - Run Operation：金幣、XP、卡池、物品、遺物、遠征 HP 或人口來源；只能由 RunController 在戰鬥外提交。事件／獎勵可透過其既有選擇或 overflow 狀態處理容量型輸出。
 - Stacking：`replace`、`refresh_duration`、`add_stacks`、`independent`，並有 `max_stacks`。
 
+首版有限 enum 固定為：Ability target `self/current_target/nearest_enemy/random_enemy/lowest_health_ally`；Operation target `self/target/all_allies/all_enemies`；Scaling `flat/attack`；Damage `physical/magical/true`；Move `forward/toward_target/away_from_target`；Summon placement `adjacent`；AI profile `frontline`。未知值不是可忽略的擴充點，內容編譯與 runtime resolution 都必須整體拒絕。
+
+Trigger lifecycle固定為：`battle_start`在首次step的tick1、spawn event後且regular phase前，依challenge→commander→relic slot→trait ID→encounter affix→equipment owner cell/slot→unit side/cell/ID，再依effect priority/ID→operation→target恰一次；`attack`在合法普攻接受後、命中前；`hit`在attack damage套用後；`damaged`只在shield＋health正承傷後；`cast`只在鎖定target成功resolve、ability effects前，start/fizzle不觸發；同wave死亡的`kill`先於`death`；`periodic`只在`tick % interval == 0`；`battle_end`在outcome固定後依全部曾instantiate的source states執行，v1只允許run intent、不發presentation，最後才由simulation發battle_finished。
+
+Setup v2 effect assignment exact欄為 `priority,source_category,source_side,source_stable_id,source_instance_id?,source_slot,effect_index,effect_id,targets,int/id params`，category rank為challenge/commander/relic/trait/encounter_affix/equipment/unit。challenge、commander、relic、equipment分別只來自對應頂層array；trait/unit assignment嵌在各snapshot；affix只來自encounter。equipment必保存owner run-unit ID與slot0..2，relic保存slot0..4；unit保存自身instance，global source為null。location/category/owner/slot不符阻止setup，reload不得讀RunState/registry補值。
+
+unit與equipment綁owner entity且可用九種trigger；其餘global source只可用battle_start/periodic/battle_end、僅允許flat＋all-allies/all-enemies或合法run intent，challenge/encounter-affix/enemy source連run intent也禁止。ability effects只由successful cast resolve執行；battle_end含已死亡owner與summon assignments。canonical category內順序為challenge/commander stable ID、relic slot、trait/affix side＋stable ID、equipment owner cell/slot/ID、unit side/cell/ID，再接assignment tuple。
+
+Target tie-break 固定為：nearest 使用可達 attack-position path cost→front rank→instance ID；random 先按 instance ID 排序，0 個不施法、1 個不抽 RNG、2 個以上恰一次 bounded draw；lowest-health ally 包含 self，依 health ratio 的整數交叉乘積→current health→cell→instance ID。cast target 在 start tick 鎖定且 random draw也只在該時消耗；到期無效只 fizzle，不重鎖或抽 RNG。`current_target`／operation `target` 缺失時 ability 不施法／resolution 整體失敗；all targets 依 cell→ID。Move forward 為 player +y、enemy -y；`cells>1` 從更新後 cell逐格重算 toward/away，每步檢查 corner/邊界/occupancy，首個非法步停止，成功一格一 event，0格成功 no-op。Adjacent summon 依 `N,NE,E,SE,S,SW,W,NW` 逐格保留，不抽 RNG；候選耗盡發具名 failure event。
+
+ConditionDef v2 固定 `kind,subject,comparator,int?,stable_id?,max_uses?`：source/target tag 使用對應 subject＋`has`＋Trait ID；health below/above 使用 source或target＋`lt/gt`＋0..10000，採整數交叉乘積嚴格比較；distance at most/least 使用 source_target＋`lte/gte`＋0..7 Chebyshev；has/lacks status 使用 source或target＋`has/not_has`＋status-marker EffectDef ID；has equipment 使用 `has`＋EquipmentDef ID；max uses 使用 effect＋`lt`＋1..99。未列 optional 必須 absent；conditions 排序後 AND。periodic interval 對 periodic 為1..1800、其他 trigger 恰為0。
+
+九種 BattleOperation v2 參數固定為：damage/heal `base 0..i32max,flat/attack,target`（attack=base+source attack）；damage另有三種 type；shield `amount,duration 1..1800,target`；modify stat只允許 attack/armor/magic_resist/attack_speed_milli/move_speed_milli 與 add/multiply_bps（multiply 0..100000）、duration 1..1800、target；apply/remove status 使用 status-marker ID（apply stacks1..99/duration1..1800）；move只移 source且使用三方向、cells1..7；summon使用 unit ID、count/max-active1..64、adjacent；grant mana非負且clamp。有效 stat 先加總 add，再用 `10000+sum(each multiplier-10000)` 合併倍率並一次 floor；attack/speed clamp 非負，armor/resist clamp i32。Target 只允許 self/target/all_allies/all_enemies。EffectDef 的 RunOperation 只允許三種非負 scalar與 once_per_node/on_first_clear。缺 source、overflow 或未知參數使整個 resolution rollback。
+
+四種 stacking 精確語意如下：`replace` 以 `(amount, duration, source identity)` canonical tuple 較大者替換，較小者不改狀態；`refresh_duration` 保持既有 stack/amount 並把剩餘時間設為兩者較大值；`add_stacks` 將 stacks 相加並 clamp `max_stacks`，duration 取較大值；`independent` 依 `(status/effect ID, source instance, operation index, application sequence)` 各自保存。Status 在本版本只是具名 marker、stacks 與 duration；任何 stun、silence、taunt 等控制語意必須新增 typed handler、codec 與測試，不得靠 ID 字串特判。
+
 任何無法由既有詞彙表達的特殊效果，先新增具型別參數的 operation handler、event payload codec 及測試，再建立內容；不得讓 `EffectDef` 直接執行任意 GDScript。
 
-`EffectResolver.resolve()` 成功時在 `EffectResolutionResult.value` 回傳 `EffectResolution`，其中 `battle_operations: Array[BattleOperation]` 由 BattleSimulation 套用、`run_effect_intents: Array[RunMutationProposal]` 只附加到 `BattleResult`、`events: Array[BattleEvent]` 僅供呈現。`BattleEvent` 的每個 type 都對應固定 payload DTO（例如 DamageEventPayload、MoveEventPayload、StatusEventPayload）；禁止使用任意 Dictionary payload。事件 codec 固定欄位順序、整數範圍與未知 type 的拒絕行為，確保 canonical event hash 不依 Variant 推斷。
+`EffectResolver.resolve()` 成功時在 `EffectResolutionResult.value` 回傳 `EffectResolution`，其中 `battle_operations: Array[BattleOperation]` 由 BattleSimulation 套用、`run_effect_intents: Array[RunMutationProposal]` 只附加到 `BattleResult`、`event_proposals: Array[BattleEventProposal]` 只描述可預先知道的呈現意圖。Resolver 不得猜 sequence、health_after或actual damage；Simulation 在 draft 套用 operation 後才 materialize 最終具名 `BattleEvent`。`BattleEvent` 的每個 type 都對應固定 payload DTO，禁止任意 Dictionary payload；事件 codec 固定欄位順序、整數範圍與 unknown 拒絕行為。
+
+`BattleEventCodec v1` common 欄位依序為 `event_codec_version,tick,sequence,type,source_instance_id?,target_instance_ids[],payload`；targets 排序去重，座標 0..7、tick 0..1800。payload exact schema如下：
+
+| type | payload fields（固定順序） |
+|---|---|
+| spawn | unit ID、side、origin、y、x |
+| move | from y/x、to y/x |
+| attack | raw damage、presentation profile |
+| cast | ability ID、start/resolve/fizzle、fizzle reason(none/target_invalid/caster_death)、resolve tick |
+| damage | type、raw、post-resistance、shield absorbed、health damage、health after |
+| heal | requested、applied、health after |
+| shield | delta、remaining、expires tick |
+| mana | reason、delta、mana after |
+| modifier | stat、mode、amount、expires tick、apply/expire |
+| status | status ID、apply/replace/refresh/stack/remove/expire、stacks、remaining ticks |
+| death | origin、y、x |
+| boss_phase | phase index、HP threshold bps |
+| summon_failure | unit ID、request ordinal、no_cell/entity_budget/max_active |
+| battle_finished | outcome、expedition damage |
+
+Common identity cross-field 規則：spawn source為summoner/null且target恰為新 entity；move source必填、target空；attack source必填、target恰1；cast source必填、target 0或1；damage source可null、target恰1；heal/shield/mana/modifier/status target恰1；death source為dead、target 0或1 killer；boss/summon failure source必填、target空；battle finished source null、targets恰為排序 survivors。payload 不重複這些 ID，任一矛盾拒絕。
+
+Operation event的source是operation source entity，global則null；mana(attack) source/target皆attacker，mana(damaged) source是原damager或null、target受傷者，mana(cast_reset) source/target皆caster。shield/modifier/status expire/remove沿用保存的原applicator ID，原本global才null，即使applicator已死亡也不改寫。overtime damage source固定null。
+
+Cast start/resolve 的 fizzle reason必為none，fizzle必為target_invalid或caster_death；不存在的remove_status仍發 `action=remove,stacks=0,remaining_ticks=0`。Damage的post-resistance是減傷公式後、shield前數值，真實傷害等於raw，負resist可使其大於raw；health damage依work order只配置剩餘health，overkill不計killer或承傷回魔，health_after永遠是u32 post-all-damage/pre-heal值。
+
+每筆 event canonical UTF-8 bytes 以 u32 長度 framing 後串成 ordered stream；unknown/extra/missing/type/range 一律拒絕。`BattleResultCodec v1` 欄位依序為 `setup_schema=2,hash=1,rng=1,simulation=1,event=1,result=1,battle_setup_hash,outcome,final_tick,sorted survivors,expedition_damage,sorted proposals,summary_hash,result_hash`；完整version tuple進result hash，battle_result_pending只保存此唯一result即可拒絕unknown tuple。proposal identity/sort key為 `claim_scope→source_instance_or_slot→effect_id→operation_index`，operation kind/amount由payload digest綁定；相同identity同digest合併、不同digest rollback。summary hash為 `BRS1 + setup raw digest + framed events`，只在simulation完成／receipt發行時由event transcript重算；正式save不保存transcript，載入時只驗digest格式。result hash為 `BRH1 + 除 result_hash 外的result preimage`，decode必須重算並拒絕不符。
+
+Result finalizer 要求 event stream 恰有一筆且最後一筆為 battle_finished；其 tick、targets survivors、payload outcome/expedition damage 必須逐欄等於 BattleResult，才可發行 validation receipt。v1 outcome固定後battle_end不產生presentation event，因此terminal suffix唯一event為battle_finished；CombatCoordinator只buffer這筆與outcome view，等RecordBattleResult存檔成功後才一起釋放，save失敗全部丟棄，reload由committed setup重播。
 
 `battle_start`、`attack`、`hit`、`damaged`、`cast`、`kill`、`death` 與 `periodic` 預設只能改變 `BattleLocalState`。需要產生局內持久資源的效果必須輸出 `RunMutationProposal`，宣告 `once_per_node` 或 `on_first_clear` claim scope，且只在勝利／合法結算交易中由 RunController 提交；戰敗一律丟棄。內容驗證器必須拒絕可在 Boss 重戰反覆提交的資源效果。
 
+任一可重新觸發既有 trigger 的 effect cycle 都必須在循環的每條可重入路徑具有有限 `max_uses_per_battle`；ContentValidator 以非零結果拒絕無界循環。BattleSimulation 另由版本化 CombatConfig 對每 tick 的 effect resolution、operation、event 與 entity 數設安全 budget；超限使整個 tick rollback，不能留下部分 operation、RNG 或 event sequence。
+
+Sim v1 budget計數單位固定：effect counter在每個trigger/effect attempt、判condition前+1（false也計）；operation counter對一般operation每expanded target、move每requested cell、summon每requested entity +1；event counter只在materialize具sequence的event時+1，含initial spawn、expire/fizzle/failure/no-op remove/battle_finished；前三者每tick歸零。entity budget是同時alive＋death_pending＋accepted spawn reservations的peak，不是ever-created；phase5完成死亡才釋放。所有counter在draft內，下一筆超限使step fatal rollback。
+
 垂直切片中，戰鬥來源的 `RunMutationProposal` 白名單只允許不需玩家選擇且不佔容器的非負 scalar：`add_gold`、`add_xp`、`heal_expedition_hp`；分別依 99 金上限、第 5.9.2 節 XP 規則與最大 HP 做決定性 clamp。戰鬥效果不得提出棋子、卡池 reservation、零件、成裝、消耗品、遺物、裝備拆卸、人口來源或任何替換／放棄操作；內容驗證器在匯入時拒絕。這些容量型 Run Operation 只可由事件或已序列化的 reward／overflow 流程使用，避免 `battle_result_pending` 等待一個沒有表示法的選擇。
+
+S2 起 proposal 不再保存已綁定 run/node 的 `EffectClaimKeyState`，而保存 `claim_scope/source_instance_or_slot/effect_id/operation_index/operation_kind/amount/payload_digest` descriptor。前四欄是 claim identity。`ProposalSourceCodec v1` token只可為 `u/<run-unit>`、`c/<stable-id>`、`r/<0..4>`、`t/<stable-id>`、`eq/<owner-run-unit>/<0..2>`，全部strict ASCII並直接供S3 RuntimeKey `s:` 使用；enemy/summon來源禁止RunOperation。digest preimage固定為ASCII `RMP2`，接claim scope/source/effect ID三個 `u32 length + bytes`、operation index u32、operation kind framing與nonnegative amount u32；同identity＋digest合併，不同digest使step rollback。
 
 - **[REQ-EFFECT-001]** 戰鬥 trigger 不得直接修改持久局內資源；所有持久變更必須具有可冪等驗證的 claim scope，並由 RunController 在合法結算時提交。
 - **[REQ-EFFECT-002]** EffectResolver 必須分離 battle-local operation、持久 run intent 與 presentation event，且跨模組事件 payload 必須是可版本化的具名型別。

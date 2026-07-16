@@ -1,6 +1,6 @@
 # PVE 自走棋 Roguelite 主體架構規格
 
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 目標專案：`E:\ClaudeWorkingPlace\Game`  
 > 單一事實來源：本索引所列的完整文件集
 
@@ -12,7 +12,7 @@
 - 所有列入清單的章節共同構成同一份規格，任何單一章節都不得脫離其餘章節獨立解讀。
 - REQ、DEC、ASM、RSK 與 AC 僅在正文定義一次；追溯矩陣仍是需求到驗收的權威映射。
 - 外部複檢必須讀取本索引列出的全部檔案，並以 `file:line` 指向證據。
-- 文件集已完成使用者安排的外部複檢；repository 不保存不存在的複檢報告。S1 的機器驗證只核對本索引明列的 12 份正文。
+- v0.1 已完成使用者安排的外部複檢；repository 不保存不存在的複檢報告。v0.2 的 S2 戰鬥語意增補已於 2026-07-16 通過獨立 Gate A 複檢（Blocker 0／Major 0）並標為 `Approved`；機器驗證只核對本索引明列的 12 份正文。
 
 ## 文件清單
 
@@ -37,7 +37,7 @@
 ```json
 {
   "manifest_schema_version": 2,
-  "spec_version": "0.1",
+  "spec_version": "0.2",
   "status": "Approved",
   "files": [
     "game-architecture/00-document-control-and-glossary.md",
@@ -60,7 +60,7 @@
     "ids": {
       "REQ": 74,
       "AC": 78,
-      "DEC": 13,
+      "DEC": 14,
       "ASM": 6,
       "RSK": 12
     },
@@ -82,15 +82,20 @@
       {"class": "SaveRepository", "method": "save", "return": "SaveResult"},
       {"class": "SaveRepository", "method": "load", "return": "LoadResult"},
       {"class": "SaveRepository", "method": "migrate", "return": "MigrationResult"},
-      {"class": "RngService", "method": "derive_stream", "return": "RngDeriveResult"}
+      {"class": "RngService", "method": "derive_stream", "return": "RngDeriveResult"},
+      {"class": "BattleSimulation", "method": "initialize", "return": "BattleInitializationResult"},
+      {"class": "BattleSimulation", "method": "step", "return": "BattleStepResult"},
+      {"class": "BattleSimulation", "method": "is_finished", "return": "bool"},
+      {"class": "BattleSimulation", "method": "result", "return": "BattleResultQuery"},
+      {"class": "EffectResolver", "method": "resolve", "return": "EffectResolutionResult"}
+    ],
+    "planned_public_apis": [
     ],
     "deferred_class_names": [
-      "ShopService",
-      "BattleSimulation",
-      "EffectResolver"
+      "ShopService"
     ]
   },
-  "aggregate_sha256": "e6c4984613f1588833b2a5d2a217afe9d58c216769d06155c458880eb90cc9a2"
+  "aggregate_sha256": "2cef770401639c52b6d5c5380221ca29971ce910d77defd434f7b64573ed312c"
 }
 ```
 <!-- spec-manifest:end -->
@@ -124,12 +129,12 @@
 
 - 需求：74 個 REQ
 - 驗收情境：78 個 AC
-- 決策／假設／風險：13 個 DEC、6 個 ASM、12 個 RSK
+- 決策／假設／風險：14 個 DEC、6 個 ASM、12 個 RSK
 - Mermaid 圖：3 張
-- 12 章 aggregate SHA-256：`e6c4984613f1588833b2a5d2a217afe9d58c216769d06155c458880eb90cc9a2`。
+- 12 章 aggregate SHA-256：以 Manifest 的 `aggregate_sha256` 為權威；每次正文修訂後由驗證器重算。
 - 聚合雜湊只涵蓋 Manifest 依序列出的 12 份正文；索引與其他文件不納入。驗證器同時檢查檔案清單、跨檔連結、ID 唯一性、追溯完整性與內容守恆。
 
 ## 外部複檢契約與狀態
 
-使用者已確認外部複檢完成。複檢格式、分級、證據要求與禁止事項仍以 [Claude 複檢契約](game-architecture/11-claude-review-and-references.md#section-15) 為準；本 repository 不虛構或代寫外部報告。
+使用者已確認 v0.1 外部複檢完成；v0.2 的 S2 規格 gate 已於 2026-07-16 通過並核可。實作完成前另依 [S2 最終獨立複檢紀錄](../specs/combat-core/final-review.md) 對照 requirements；該紀錄明確標示為 Codex 實作複檢，不冒充 Claude 外部報告。複檢格式、分級、證據要求與禁止事項仍以 [Claude 複檢契約](game-architecture/11-claude-review-and-references.md#section-15) 為準。
 

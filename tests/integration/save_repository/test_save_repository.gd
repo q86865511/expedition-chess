@@ -90,6 +90,57 @@ func test_invalid_utf8_main_falls_back_to_valid_backup() -> void:
 	assert_eq(loaded.run_status, LoadResult.RunStatus.LOADED)
 	assert_eq(loaded.recovery_diagnostics[0].code, LoadDiagnostic.RECOVERED_BACKUP)
 
+
+func test_schema_one_prepare_load_preserves_profile_and_original_committed_bytes() -> void:
+	var root := SaveRootFixture.create_valid_root()
+	root.run.run_phase = RunState.RunPhase.PREPARE
+	var legacy := _legacy_text(root, 1)
+	var storage := FakeSaveStorage.new()
+	storage.seed_file(StorageFaultKey.MAIN, legacy.to_utf8_buffer())
+	var repository := _repository(storage)
+	var loaded := repository.load()
+	assert_true(loaded.ok)
+	assert_eq(loaded.run_status, LoadResult.RunStatus.INCOMPATIBLE_PRESERVED)
+	assert_not_null(loaded.profile)
+	assert_null(loaded.run)
+	assert_eq(loaded.preserved_source_path.value, String(StorageFaultKey.MAIN))
+	assert_eq(storage.file_bytes(StorageFaultKey.MAIN).value, legacy.to_utf8_buffer())
+
+
+func test_schema_one_idle_load_uses_generation_port_without_mutating_source_file() -> void:
+	var target_receipt := _migration_target_receipt()
+	var migration_receipt := ContentGenerationMigrationReceipt.new(
+		SaveRootFixture.MANIFEST_DIGEST,
+		target_receipt.manifest_digest,
+		"463ac1f542a942fb1dc8c3dea7f7647295e4635f9b02c57be7c3ea0a15bcaaa6",
+		"2f7b38387cf9a69a2f9fa03f20b690f0098f5411097a4f96aa259db21076d2b9",
+		"20d34a4e5b489b1bad34f7d86005d757442f4922ef73b8369a703aedc1920b15",
+		1,
+		2,
+		"7c2ef65221a2ad4a84b923786500b2a974e560b6068e5a83393e783ae1524f65"
+	)
+	var generation_port := FakeContentGenerationMigrationPort.new(
+		ContentGenerationMigrationResult.success(target_receipt, migration_receipt)
+	)
+	var legacy := _legacy_text(SaveRootFixture.create_valid_root(), 1)
+	var storage := FakeSaveStorage.new()
+	storage.seed_file(StorageFaultKey.MAIN, legacy.to_utf8_buffer())
+	var repository := SaveRepository.new(
+		storage,
+		FakePinnedCatalogReceiptPort.new(target_receipt),
+		FakeContentIdMigrationPort.new(),
+		RunStateValidator.new(),
+		generation_port
+	)
+	add_child_autofree(repository)
+	var loaded := repository.load()
+	assert_true(loaded.ok)
+	assert_eq(loaded.run_status, LoadResult.RunStatus.LOADED)
+	assert_eq(loaded.run.content_snapshot.content_version_value(), "fixture.2")
+	assert_eq(loaded.run.content_snapshot.combat_config_id_value(), &"config.combat_default")
+	assert_eq(generation_port.requests.size(), 1)
+	assert_eq(storage.file_bytes(StorageFaultKey.MAIN).value, legacy.to_utf8_buffer())
+
 func test_invalid_rng_dto_is_rejected_before_clone_or_storage_mutation() -> void:
 	var storage := FakeSaveStorage.new()
 	var root := SaveRootFixture.create_valid_root()
@@ -190,6 +241,7 @@ func test_registry_adapter_loads_matching_run_and_session_holds_generation_lease
 		"fixture.1",
 		root_ids,
 		&"economy.default",
+		&"config.combat_default",
 		reward_ids,
 		map_ids,
 		challenge_ids,
@@ -262,6 +314,7 @@ func test_run_session_factory_rejects_every_snapshot_receipt_mismatch_without_le
 		"fixture.1",
 		root_ids,
 		&"economy.default",
+		&"config.combat_default",
 		reward_ids,
 		map_ids,
 		challenge_ids,
@@ -352,6 +405,7 @@ func test_run_session_factory_rejects_every_snapshot_receipt_mismatch_without_le
 		pinned.receipt.content_version,
 		pinned.receipt.active_entry_ids,
 		pinned.receipt.economy_config_id,
+		pinned.receipt.combat_config_id,
 		pinned.receipt.reward_table_ids,
 		pinned.receipt.map_node_def_ids,
 		pinned.receipt.challenge_unlock_def_ids,
@@ -389,12 +443,14 @@ func _validated_snapshot_for_equality_test(
 	map_node_def_ids: Array[StringName],
 	challenge_unlock_def_ids: Array[StringName],
 	meta_reward_table_id: StringName,
-	manifest_digest: String
+	manifest_digest: String,
+	combat_config_id: StringName = &"config.combat_default"
 ) -> ContentSnapshotState:
 	return ContentSnapshotState.new(
 		content_version,
 		enabled_content_ids,
 		economy_config_id,
+		combat_config_id,
 		reward_table_ids,
 		map_node_def_ids,
 		challenge_unlock_def_ids,
@@ -408,6 +464,38 @@ func _repository(storage: SaveStoragePort) -> SaveRepository:
 	var repository := SaveRootFixture.create_repository(storage)
 	add_child_autofree(repository)
 	return repository
+
+
+func _legacy_text(root: SaveRoot, schema: int) -> String:
+	var encoded := SaveRootFixture.create_codec().encode(root)
+	assert_true(encoded.ok)
+	var text := encoded.json_text.value.replace(
+		"\"schema_version\":2",
+		"\"schema_version\":%d" % schema
+	)
+	text = text.replace(",\"combat_config_id\":\"config.combat_default\"", "")
+	text = text.replace("\"config.combat_default\",", "")
+	if schema == 0:
+		text = text.replace("\"hash_version\":1,", "")
+	return text
+
+
+func _migration_target_receipt() -> PinnedCatalogBuildReceipt:
+	var source := SaveRootFixture.create_receipt()
+	return PinnedCatalogBuildReceipt.new(
+		1,
+		2,
+		"fixture.2",
+		"4444444444444444444444444444444444444444444444444444444444444444",
+		source.active_entry_ids,
+		source.economy_config_id,
+		&"config.combat_default",
+		source.reward_table_ids,
+		source.map_node_def_ids,
+		source.challenge_unlock_def_ids,
+		source.meta_reward_table_id,
+		"3333333333333333333333333333333333333333333333333333333333333333"
+	)
 
 func _file_valid(storage: FakeSaveStorage, path: StringName) -> bool:
 	var bytes := storage.file_bytes(path)

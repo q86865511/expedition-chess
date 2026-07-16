@@ -108,8 +108,8 @@ func _case_golden() -> String:
 	return ""
 
 func _case_payload_roundtrip() -> String:
-	var codec := ContentCanonicalCodecV1.new()
-	var compiler := ContentDefinitionCompiler.new()
+	var codec := ContentCanonicalCodecV2.new()
+	var compiler := ContentDefinitionCompilerV2.new()
 	var categories: Dictionary = {}
 	var record_types: Dictionary = {}
 	for definition in SyntheticContentFixture.build_valid().definitions:
@@ -123,7 +123,7 @@ func _case_payload_roundtrip() -> String:
 		if not reencoded.ok or reencoded.canonical_bytes != encoded.canonical_bytes: return "roundtrip failed: %s" % String(definition.id)
 		categories[compiled.entry.category] = true
 		_collect_record_types(compiled.entry.payload, record_types)
-	if categories.size() != 15: return "expected 15 payload categories, got %d" % categories.size()
+	if categories.size() != 16: return "expected 16 payload categories, got %d" % categories.size()
 	var int_pair := ContentValue.record(0x2009, PackedInt32Array([1, 2]), [ContentValue.i32(-1), ContentValue.i32(2)])
 	var stable_pair := ContentValue.record(0x200d, PackedInt32Array([1, 2]), [ContentValue.stable_id(&"unit.test"), ContentValue.i32(1)])
 	if not codec.validate_typed_value(int_pair).ok or not codec.validate_typed_value(stable_pair).ok: return "standalone nested record validation failed"
@@ -171,6 +171,7 @@ func _case_registry_pinning() -> String:
 	var fresh := ContentRegistryService.new()
 	if not fresh.install_validated(fixture_a, "fixture.1", [&"pack.core"]).ok: return "fresh full compile failed"
 	var probe := ContentSnapshotProbe.new("fixture.1", pinned_a.receipt.active_entry_ids, pinned_a.receipt.economy_config_id,
+		pinned_a.receipt.combat_config_id,
 		pinned_a.receipt.reward_table_ids, pinned_a.receipt.map_node_def_ids, pinned_a.receipt.challenge_unlock_def_ids,
 		pinned_a.receipt.meta_reward_table_id, pinned_a.receipt.manifest_digest)
 	var rebuilt := fresh.rebuild_from_probe(probe)
@@ -256,6 +257,7 @@ func _case_registry_transaction_rollback() -> String:
 		"fixture.1",
 		expanded_ids,
 		pinned.receipt.economy_config_id,
+		pinned.receipt.combat_config_id,
 		pinned.receipt.reward_table_ids,
 		pinned.receipt.map_node_def_ids,
 		pinned.receipt.challenge_unlock_def_ids,
@@ -519,6 +521,7 @@ func _case_alias_receipt_migration() -> String:
 		registry_a.free()
 		return "source pinned catalog compile failed"
 	var probe := ContentSnapshotProbe.new("fixture.1", pinned_a.receipt.active_entry_ids, pinned_a.receipt.economy_config_id,
+		pinned_a.receipt.combat_config_id,
 		pinned_a.receipt.reward_table_ids, pinned_a.receipt.map_node_def_ids, pinned_a.receipt.challenge_unlock_def_ids,
 		pinned_a.receipt.meta_reward_table_id, pinned_a.receipt.manifest_digest)
 	var fixture_b := SyntheticContentFixture.build_valid()
@@ -574,6 +577,7 @@ func _case_required_tombstone_incompatible() -> String:
 		"fixture.1",
 		pinned_a.receipt.active_entry_ids,
 		pinned_a.receipt.economy_config_id,
+		pinned_a.receipt.combat_config_id,
 		pinned_a.receipt.reward_table_ids,
 		pinned_a.receipt.map_node_def_ids,
 		pinned_a.receipt.challenge_unlock_def_ids,
@@ -625,7 +629,7 @@ func _view_health(view: ContentDefinitionView) -> int:
 	return view.payload.children[5].children[0].int_value
 
 func _selection() -> CatalogSelection:
-	return CatalogSelection.new("fixture.1", [&"unit.player_00", &"unit.player_01", &"unit.player_02"], &"economy.default",
+	return CatalogSelection.new("fixture.1", [&"unit.player_00", &"unit.player_01", &"unit.player_02"], &"economy.default", &"config.combat_default",
 		[&"reward_table.default"], [&"map_node.normal"], [&"unlock.challenge_0", &"unlock.challenge_1", &"unlock.challenge_2", &"unlock.challenge_3", &"unlock.challenge_4", &"unlock.challenge_5"], &"meta_reward.default")
 
 func _find_definition(input: ContentValidationInput, content_id: StringName) -> ContentDefinition:

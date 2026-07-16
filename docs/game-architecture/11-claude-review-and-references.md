@@ -1,7 +1,7 @@
 # PVE 自走棋 Roguelite 主體架構規格：Claude 複檢、完成定義與技術參考
 
 > 文件集入口：[game-architecture-spec.md](../game-architecture-spec.md)  
-> 文件狀態：`v0.1 / Approved`
+> 文件狀態：`v0.2 / Approved`
 > 本檔範圍：第 15–17 章
 
 ---
@@ -81,7 +81,7 @@ Evidence 必須包含 <relative-file>:<line>；沒有精確 `file:line` 的意�
 
 ## 16. 文件完成定義
 
-本文件集可由 `Ready for external review` 轉為 `Approved` 的條件：
+本文件集由 `Ready for external review` 轉為 `Approved` 時已滿足的條件：
 
 - 所有 REQ 有唯一 ID，並出現在追溯矩陣。
 - 所有 MUST 至少連到一個 Given／When／Then AC。

@@ -11,7 +11,7 @@ const SHOP_CONDITIONS: Array[StringName] = [&"always", &"unlocked", &"event_only
 
 var _issues: Array[ContentValidationIssue] = []
 var _by_id: Dictionary = {}
-var _compiler := ContentDefinitionCompiler.new()
+var _compiler := ContentDefinitionCompilerV2.new()
 var _stable_id_validator := StableIdValidator.new()
 
 func validate(input: ContentValidationInput) -> ContentValidationReport:
@@ -30,7 +30,9 @@ func validate(input: ContentValidationInput) -> ContentValidationReport:
 	_validate_rewards(input.definitions)
 	_validate_unlock_graph(input.definitions)
 	_validate_operations(input.definitions)
+	_validate_encounter_sources(input.definitions)
 	_calculate_population_and_entities(input, report)
+	_validate_combat_config(input.definitions, report.entity_stress_minimum)
 	_issues.sort_custom(_issue_less)
 	report.valid = _issues.is_empty()
 	for issue in _issues: report.issues.append(issue.deep_clone())
@@ -283,6 +285,12 @@ func _validate_operations(definitions: Array[ContentDefinition]) -> void:
 			var effect_definition := definition as EffectDef
 			if not EFFECT_TRIGGERS.has(effect_definition.trigger):
 				_issue(&"CONTENT_EFFECT_TRIGGER", effect_definition.id, &"trigger")
+			if (effect_definition.trigger == &"periodic" \
+				and (effect_definition.periodic_interval_ticks < 1 \
+					or effect_definition.periodic_interval_ticks > 1800)) \
+				or (effect_definition.trigger != &"periodic" \
+					and effect_definition.periodic_interval_ticks != 0):
+				_issue(&"CONTENT_EFFECT_TRIGGER", effect_definition.id, &"periodic_interval_ticks")
 			if not STACKING_RULES.has(effect_definition.stacking) \
 				or effect_definition.max_stacks < 1 \
 				or effect_definition.max_stacks > 99 \
@@ -300,6 +308,130 @@ func _validate_operations(definitions: Array[ContentDefinition]) -> void:
 			var allow_capacity := map_definition.node_type == &"event"
 			_validate_run_operations(map_definition.id, map_definition.enter_operations, &"enter_operations", &"map_node", false, allow_capacity)
 			_validate_run_operations(map_definition.id, map_definition.exit_operations, &"exit_operations", &"map_node", false, allow_capacity)
+	_validate_effect_trigger_cycles(definitions)
+
+func _validate_effect_trigger_cycles(
+	definitions: Array[ContentDefinition]
+) -> void:
+	var reactive_damage_effects: Array[EffectDef] = []
+	for definition: ContentDefinition in definitions:
+		if not definition is EffectDef:
+			continue
+		var effect := definition as EffectDef
+		if effect.trigger not in [&"hit", &"damaged", &"kill", &"death"]:
+			continue
+		var produces_damage := false
+		for operation: BattleOperationDef in effect.battle_operations:
+			if operation is DamageOperationDef:
+				produces_damage = true
+				break
+		if produces_damage:
+			reactive_damage_effects.append(effect)
+	reactive_damage_effects.sort_custom(func(left: EffectDef, right: EffectDef) -> bool:
+		return String(left.id) < String(right.id))
+	for effect: EffectDef in reactive_damage_effects:
+		if not _has_finite_use_bound(effect.conditions):
+			_issue(
+				&"CONTENT_EFFECT_TRIGGER_CYCLE",
+				effect.id,
+				&"conditions.max_uses_per_battle"
+			)
+
+func _has_finite_use_bound(conditions: Array[ConditionDef]) -> bool:
+	for condition: ConditionDef in conditions:
+		if condition != null and condition.kind == &"max_uses_per_battle" \
+			and condition.has_max_uses_per_battle \
+			and condition.max_uses_per_battle >= 1 \
+			and condition.max_uses_per_battle <= 99:
+			return true
+	return false
+
+func _validate_encounter_sources(definitions: Array[ContentDefinition]) -> void:
+	for definition: ContentDefinition in definitions:
+		if not definition is EncounterDef:
+			continue
+		var encounter := definition as EncounterDef
+		var spawn_keys: Dictionary = {}
+		for spawn_index: int in range(encounter.enemy_spawns.size()):
+			var spawn: EnemySpawnDef = encounter.enemy_spawns[spawn_index]
+			if spawn == null or not _strict_ascii_token(spawn.spawn_key):
+				_issue(&"CONTENT_ENCOUNTER_SPAWN_KEY", encounter.id, &"enemy_spawns", str(spawn_index))
+				continue
+			if spawn_keys.has(spawn.spawn_key):
+				_issue(&"CONTENT_ENCOUNTER_SPAWN_KEY", encounter.id, &"enemy_spawns", spawn.spawn_key)
+			else:
+				spawn_keys[spawn.spawn_key] = true
+		var previous_phase := -1
+		for phase_index: int in range(encounter.boss_phases.size()):
+			var phase: BossPhaseDef = encounter.boss_phases[phase_index]
+			if phase == null \
+				or phase.phase_index <= previous_phase \
+				or phase.hp_threshold_bps < 0 \
+				or phase.hp_threshold_bps > 10000:
+				_issue(&"CONTENT_BOSS_PHASE_INVALID", encounter.id, &"boss_phases", str(phase_index))
+				continue
+			previous_phase = phase.phase_index
+			if not _strict_ascii_token(phase.source_spawn_key) \
+				or not spawn_keys.has(phase.source_spawn_key):
+				_issue(&"CONTENT_BOSS_PHASE_SOURCE", encounter.id, &"boss_phases.source_spawn_key", phase.source_spawn_key)
+
+func _validate_combat_config(
+	definitions: Array[ContentDefinition],
+	entity_stress_minimum: int
+) -> void:
+	var configs: Array[CombatConfigDef] = []
+	for definition: ContentDefinition in definitions:
+		if definition is CombatConfigDef:
+			configs.append(definition as CombatConfigDef)
+	if configs.size() != 1:
+		_issue(&"CONTENT_COMBAT_CONFIG_COUNT", &"config.combat_default", &"count", str(configs.size()))
+		return
+	var config: CombatConfigDef = configs[0]
+	if config.id != &"config.combat_default":
+		_issue(&"CONTENT_COMBAT_CONFIG_ID", config.id, &"id")
+	var fixed_values := PackedInt32Array([
+		config.simulation_version,
+		config.tick_rate,
+		config.board_width,
+		config.board_height,
+		config.soft_limit_ticks,
+		config.hard_limit_ticks,
+		config.progress_scale,
+		config.resistance_base,
+		config.basis_points,
+		config.overtime_interval_ticks,
+		config.main_actions_per_tick,
+	])
+	if fixed_values != PackedInt32Array([1, 20, 8, 8, 1200, 1800, 1000, 100, 10000, 20, 1]):
+		_issue(&"CONTENT_COMBAT_CONFIG_FIXED", config.id, &"fixed_rules")
+	if config.attack_mana_gain < 0 or config.attack_mana_gain > 100:
+		_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"attack_mana_gain")
+	if config.damage_mana_factor < 1 or config.damage_mana_factor > 100:
+		_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"damage_mana_factor")
+	if config.damage_mana_min < 0 or config.damage_mana_max > 100 \
+		or config.damage_mana_min > config.damage_mana_max:
+		_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"damage_mana")
+	if config.overtime_step_bps < 1 or config.overtime_step_bps > 1000 \
+		or config.overtime_cap_bps < config.overtime_step_bps \
+		or config.overtime_cap_bps > 10000:
+		_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"overtime")
+	for value: int in [config.act1_base_damage, config.act2_base_damage, config.act3_base_damage]:
+		if value < 1 or value > 100:
+			_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"act_base_damage")
+			break
+	if config.survivor_damage < 0 or config.survivor_damage > 100 \
+		or config.boss_damage < 0 or config.boss_damage > 100:
+		_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"expedition_damage")
+	if config.effect_resolution_budget < 64 or config.effect_resolution_budget > 65535:
+		_issue(&"CONTENT_COMBAT_CONFIG_BUDGET", config.id, &"effect_resolution_budget")
+	if config.operation_budget < config.effect_resolution_budget \
+		or config.operation_budget > 65535:
+		_issue(&"CONTENT_COMBAT_CONFIG_BUDGET", config.id, &"operation_budget")
+	if config.event_budget < 64 or config.event_budget > 65535:
+		_issue(&"CONTENT_COMBAT_CONFIG_BUDGET", config.id, &"event_budget")
+	if config.entity_budget < 64 or config.entity_budget > 1024 \
+		or config.entity_budget < entity_stress_minimum:
+		_issue(&"CONTENT_COMBAT_CONFIG_BUDGET", config.id, &"entity_budget", str(entity_stress_minimum))
 
 func _validate_conditions(effect: EffectDef) -> void:
 	for condition in effect.conditions:
@@ -508,3 +640,11 @@ func _issue_less(left: ContentValidationIssue, right: ContentValidationIssue) ->
 
 func _string_name_less(left: StringName, right: StringName) -> bool:
 	return String(left) < String(right)
+
+func _strict_ascii_token(value: String) -> bool:
+	if value.is_empty():
+		return false
+	for byte: int in value.to_utf8_buffer():
+		if byte < 33 or byte > 126:
+			return false
+	return true

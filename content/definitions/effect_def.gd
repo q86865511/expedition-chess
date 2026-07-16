@@ -3,6 +3,7 @@ extends ContentDefinition
 
 @export var content_role: StringName = &"general"
 @export var trigger: StringName
+@export var periodic_interval_ticks: int = 0
 @export var conditions: Array[ConditionDef] = []
 @export var battle_operations: Array[BattleOperationDef] = []
 @export var run_operations: Array[RunOperationDef] = []

@@ -53,19 +53,26 @@ static func create_valid_root() -> SaveRoot:
 		PROFILE_ID, one, 0, unlocked, discovered, 0, settlements, &"settings.default"
 	)
 	return SaveRoot.new(
-		1, CONTENT_VERSION, "0.1.0", 1, 1, "2026-07-13T00:00:00Z", profile, run
+		SaveJsonCodec.SCHEMA_VERSION,
+		CONTENT_VERSION,
+		"0.2.0",
+		1,
+		1,
+		"2026-07-13T00:00:00Z",
+		profile,
+		run
 	)
 
 static func create_receipt() -> PinnedCatalogBuildReceipt:
 	var enabled: Array[StringName] = [
-		&"commander.fixture", &"economy.fixture", &"effect.fixture",
+		&"commander.fixture", &"config.combat_default", &"economy.fixture", &"effect.fixture",
 		&"mapnode.fixture", &"meta.fixture", &"unit.fixture"
 	]
 	var empty_names: Array[StringName] = []
 	var map_node_defs: Array[StringName] = [&"mapnode.fixture"]
 	return PinnedCatalogBuildReceipt.new(
-		1, 1, CONTENT_VERSION, SELECTION_DIGEST, enabled,
-		&"economy.fixture", empty_names, map_node_defs, empty_names,
+		1, 2, CONTENT_VERSION, SELECTION_DIGEST, enabled,
+		&"economy.fixture", &"config.combat_default", empty_names, map_node_defs, empty_names,
 		&"meta.fixture", MANIFEST_DIGEST
 	)
 

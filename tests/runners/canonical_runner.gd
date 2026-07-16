@@ -41,7 +41,7 @@ func _run() -> void:
 	var completed: Array[String] = []
 	for scope: Variant in result.get("completed_scopes", []):
 		completed.append(str(scope))
-	var deferred: Array[String] = ["battle_result", "battle_event_summary", "soak"]
+	var deferred: Array[String] = []
 	var report: Dictionary = Support.base_report("canonical", _started_at_utc, completed, deferred)
 	report["case_filter"] = _case_filter()
 	report["case_count"] = case_count
@@ -67,7 +67,7 @@ func _case_filter() -> String:
 
 func _finish_infrastructure(message: String) -> void:
 	var completed: Array[String] = []
-	var deferred: Array[String] = ["battle_result", "battle_event_summary", "soak"]
+	var deferred: Array[String] = []
 	var report: Dictionary = Support.base_report("canonical", _started_at_utc, completed, deferred)
 	report["case_count"] = 0
 	report["failures"] = [message]

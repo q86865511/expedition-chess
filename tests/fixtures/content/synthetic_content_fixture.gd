@@ -28,8 +28,11 @@ static func build_valid(add_fourth_population_source: bool = false) -> ContentVa
 	definitions.append(consumable)
 	for index in 15: definitions.append(_relic(index))
 	for index in 3: definitions.append(_commander(index))
+	definitions.append(_battle_encounter(&"normal"))
+	definitions.append(_battle_encounter(&"elite"))
 	for index in 3: definitions.append(_boss_encounter(index))
 	definitions.append(_reward_table())
+	definitions.append(_relic_reward_table())
 	definitions.append_array(_map_nodes(add_fourth_population_source))
 	definitions.append_array(_unlocks())
 	definitions.append(_economy())
@@ -364,14 +367,50 @@ static func _boss_encounter(index: int) -> EncounterDef:
 	value.boss_phases = [phase]
 	return value
 
+static func _battle_encounter(kind: StringName) -> EncounterDef:
+	var value := EncounterDef.new()
+	_common(value, StringName("encounter.%s" % String(kind)))
+	value.encounter_kind = kind
+	var spawn := EnemySpawnDef.new()
+	spawn.side = &"enemy"
+	spawn.logical_y = 6
+	spawn.logical_x = 3
+	spawn.spawn_key = "enemy_0"
+	spawn.unit_ref = &"unit.monster_00"
+	spawn.star = 1
+	value.enemy_spawns = [spawn]
+	return value
+
 static func _reward_table() -> RewardTableDef:
 	var value := RewardTableDef.new()
 	_common(value, &"reward_table.default")
 	var candidate := RewardCandidateDef.new()
 	candidate.kind = &"gold"
 	candidate.weight_i32 = 1
+	var condition := ConditionDef.new()
+	condition.kind = &"expedition_hp_below"
+	condition.subject = &"expedition_hp"
+	condition.comparator = &"lt"
+	condition.has_int_value = true
+	condition.int_value = 101
+	candidate.conditions = [condition]
+	var fallback := RewardCandidateDef.new()
+	fallback.kind = &"heal"
+	fallback.weight_i32 = 1
+	value.reward_candidates = [candidate, fallback]
+	value.draw_count = 3
+	return value
+
+static func _relic_reward_table() -> RewardTableDef:
+	var value := RewardTableDef.new()
+	_common(value, &"reward_table.relic")
+	var candidate := RewardCandidateDef.new()
+	candidate.kind = &"relic"
+	candidate.has_content_ref = true
+	candidate.content_ref = &"relic.r0"
+	candidate.weight_i32 = 1
 	value.reward_candidates = [candidate]
-	value.draw_count = 1
+	value.draw_count = 3
 	return value
 
 static func _map_nodes(add_fourth_population_source: bool) -> Array[ContentDefinition]:
@@ -380,7 +419,13 @@ static func _map_nodes(add_fourth_population_source: bool) -> Array[ContentDefin
 		var value := MapNodeDef.new()
 		_common(value, StringName("map_node.%s" % String(kind)))
 		value.node_type = kind
-		value.generator_ref = &"effect.general"
+		match kind:
+			&"normal", &"elite":
+				value.generator_ref = StringName("encounter.%s" % String(kind))
+			&"boss":
+				value.generator_ref = &"encounter.boss_0"
+			_:
+				value.generator_ref = &"effect.general"
 		if kind == &"normal":
 			var enter_xp := AddXpOperationDef.new()
 			enter_xp.operation_index = 0

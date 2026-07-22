@@ -10,6 +10,21 @@ func test_schema_two_round_trip_is_byte_identical() -> void:
 	var reencoded := codec.encode(decoded.root)
 	assert_eq(reencoded.json_text.value, encoded.json_text.value)
 
+func test_results_phase_round_trips_as_terminal_run_state() -> void:
+	var root := SaveRootFixture.create_valid_root()
+	root.run.run_phase = RunState.RunPhase.RESULTS
+	root.run.expedition_hp = 0
+	root.run.resolution_state = IdleResolutionState.new()
+	var codec := SaveRootFixture.create_codec()
+	var encoded := codec.encode(root)
+	assert_true(encoded.ok)
+	if not encoded.ok: return
+	var decoded := codec.decode_text(encoded.json_text.value)
+	assert_true(decoded.ok)
+	if not decoded.ok or decoded.root == null: return
+	assert_eq(decoded.root.run.run_phase, RunState.RunPhase.RESULTS)
+	assert_eq(codec.encode(decoded.root).json_text.value, encoded.json_text.value)
+
 func test_unknown_duplicate_and_noncanonical_fields_are_rejected() -> void:
 	var codec := SaveRootFixture.create_codec()
 	var encoded := codec.encode(SaveRootFixture.create_valid_root())
@@ -169,8 +184,9 @@ func test_four_resolution_shapes_round_trip_without_new_identity() -> void:
 	]
 	var codec := SaveRootFixture.create_codec()
 	for resolution: ResolutionState in variants:
-		var root := SaveRootFixture.create_valid_root()
-		root.run.resolution_state = resolution
+		var root := ResolutionFixtureFactory.create_root(resolution.kind)
+		if resolution.kind != ResolutionState.Kind.REWARD_PENDING:
+			root.run.resolution_state = resolution
 		var before := codec.encode(root)
 		assert_true(before.ok, "encode resolution kind %d" % resolution.kind)
 		if not before.ok:
@@ -192,6 +208,7 @@ func test_four_resolution_shapes_round_trip_without_new_identity() -> void:
 
 func test_schema_two_combat_pending_round_trips_full_v2_setup_envelope() -> void:
 	var root := SaveRootFixture.create_valid_root()
+	root.run.run_phase = RunState.RunPhase.COMBAT
 	var inputs := _battle_inputs_v2_for_save()
 	var validation := BattleSetupInputsValidator.new().validate_for_build(inputs)
 	assert_true(validation.ok)

@@ -66,7 +66,7 @@ static func create_valid_root() -> SaveRoot:
 static func create_receipt() -> PinnedCatalogBuildReceipt:
 	var enabled: Array[StringName] = [
 		&"commander.fixture", &"config.combat_default", &"economy.fixture", &"effect.fixture",
-		&"mapnode.fixture", &"meta.fixture", &"unit.fixture"
+		&"mapnode.fixture", &"meta.fixture", &"relic.fixture", &"unit.fixture"
 	]
 	var empty_names: Array[StringName] = []
 	var map_node_defs: Array[StringName] = [&"mapnode.fixture"]

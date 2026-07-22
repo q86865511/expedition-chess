@@ -1,7 +1,7 @@
 class_name RunState
 extends RefCounted
 
-enum RunPhase { MAP, PREPARE, COMBAT, REWARD }
+enum RunPhase { MAP, PREPARE, COMBAT, REWARD, RESULTS }
 
 var run_id: String
 var run_key: RunKeyState

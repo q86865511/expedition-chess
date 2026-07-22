@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Spec', 'RunnerContract')]
+    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'Spec', 'RunnerContract')]
     [string]$Suite = 'All',
     [string]$TestPath = '',
     [string]$Case = '',
@@ -224,7 +224,15 @@ function Invoke-RunnerScript {
         $arguments += '--'
         $arguments += $UserArguments
     }
-    return Invoke-GodotChild -Executable $Executable -Name $Name -Arguments $arguments -TimeoutOverrideSeconds $TimeoutOverrideSeconds
+    $exitCode = Invoke-GodotChild -Executable $Executable -Name $Name -Arguments $arguments -TimeoutOverrideSeconds $TimeoutOverrideSeconds
+    if ($exitCode -ne 0) { return $exitCode }
+    if ($Name -eq 'Gut') { return 0 }
+    if (-not (Test-Path -LiteralPath $logPath -PathType Leaf)) { return 3 }
+    $logText = Get-Content -LiteralPath $logPath -Raw -Encoding UTF8
+    if ($logText -match '(?m)^(SCRIPT ERROR:|ERROR: (Failed|Attempt|Could not)|.*Parse Error:)') {
+        return 3
+    }
+    return 0
 }
 
 function Test-ImportResult {
@@ -415,6 +423,9 @@ function Write-ExecutionArtifact {
     }
     if ($Suite -in @('All', 'Soak')) {
         Write-CombatAcceptanceArtifact -Toolchain $Toolchain
+    }
+    if ($Suite -in @('All', 'ExpeditionSoak')) {
+        Write-ExpeditionAcceptanceArtifact -Toolchain $Toolchain
     }
 }
 
@@ -823,6 +834,134 @@ function Write-CombatAcceptanceArtifact {
     }
 }
 
+function Get-ExpeditionEvidenceEvaluation {
+    $observed = @{}
+    $expeditionSourceFiles = @(
+        Get-ChildItem -LiteralPath (Join-Path $repoRoot 'domain\run\economy') -Recurse -File
+        Get-ChildItem -LiteralPath (Join-Path $repoRoot 'domain\run\map_generation') -Recurse -File
+        Get-Item -LiteralPath (Join-Path $repoRoot 'tests\runners\expedition_soak_runner.gd')
+    )
+    $latestExpeditionSourceUtc = ($expeditionSourceFiles | Measure-Object -Property LastWriteTimeUtc -Maximum).Maximum
+    $gutPath = Join-Path $artifactRoot 'gut.xml'
+    if (Test-Path -LiteralPath $gutPath -PathType Leaf) {
+        try {
+            [xml]$gutDocument = Get-Content -LiteralPath $gutPath -Raw -Encoding UTF8
+            $gutRoot = $gutDocument.SelectSingleNode('/testsuites')
+            if ($null -ne $gutRoot -and
+                [int]$gutRoot.GetAttribute('failures') -eq 0 -and
+                [int]$gutRoot.GetAttribute('errors') -eq 0 -and
+                [int]$gutRoot.GetAttribute('orphans') -eq 0) {
+                foreach ($testCase in $gutDocument.SelectNodes('//testcase')) {
+                    if ([string]$testCase.GetAttribute('status') -eq 'pass') {
+                        $observed['gut:' + [string]$testCase.GetAttribute('name')] = $true
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+    foreach ($artifactName in @('expedition-runner.json', 'expedition-soak.json')) {
+        $path = Join-Path $artifactRoot $artifactName
+        $artifact = $null
+        if (Test-Path -LiteralPath $path -PathType Leaf) {
+            try { $artifact = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json }
+            catch { $artifact = $null }
+        }
+        $observed['artifact:' + $artifactName] = (
+            $null -ne $artifact -and [bool]$artifact.passed -and
+            @($artifact.failures).Count -eq 0
+        )
+        if ($null -ne $artifact) {
+            foreach ($scope in @($artifact.completed_scopes)) {
+                $observed['scope:' + $artifactName + ':' + [string]$scope] = [bool]$artifact.passed
+            }
+            if ($artifactName -eq 'expedition-soak.json') {
+                $observed['expedition-soak:10000'] = (
+                    [bool]$artifact.passed -and [int]$artifact.seed_count -ge 10000 -and
+                    [int]$artifact.pool_conservation_checks -ge 10000 -and
+                    [int]$artifact.deterministic_replay_count -ge 64
+                )
+                $observed['expedition-soak:fresh'] = (
+                    (Get-Item -LiteralPath $path).LastWriteTimeUtc -ge $latestExpeditionSourceUtc
+                )
+            }
+        }
+    }
+    $rules = [ordered]@{
+        'S3-AC-001' = @('gut:test_map_generation_is_deterministic_and_has_three_valid_acts', 'scope:expedition-runner.json:three_act_map_generation', 'expedition-soak:10000', 'expedition-soak:fresh')
+        'S3-AC-002' = @('gut:test_node_entry_and_buy_commit_once_through_run_controller', 'gut:test_node_entry_save_failure_preserves_income_shop_rng_and_phase', 'gut:test_generated_map_entry_persists_preview_and_can_start_combat', 'gut:test_generated_non_combat_and_rest_nodes_have_committed_exits', 'scope:expedition-runner.json:production_node_entry_preview_and_combat_start')
+        'S3-AC-003' = @('gut:test_income_uses_pre_gold_and_versioned_streak_rules')
+        'S3-AC-004' = @('gut:test_generate_refresh_and_buy_conserve_pool_and_reservations', 'gut:test_active_reservation_owner_must_have_exactly_one_live_reference', 'gut:test_pool_reserved_total_must_equal_active_owner_ledger', 'expedition-soak:10000', 'expedition-soak:fresh')
+        'S3-AC-005' = @('gut:test_generate_refresh_and_buy_conserve_pool_and_reservations', 'gut:test_refresh_save_failure_preserves_gold_offers_rng_and_ledger')
+        'S3-AC-006' = @('gut:test_node_entry_and_buy_commit_once_through_run_controller', 'gut:test_buy_rejects_insufficient_gold_and_full_bench_without_mutation')
+        'S3-AC-007' = @('gut:test_sell_and_xp_follow_versioned_rules', 'gut:test_sell_prices_all_stars_and_moves_equipment_to_overflow')
+        'S3-AC-008' = @('gut:test_xp_curve_consumes_164_xp_and_preserves_cross_level_overflow')
+        'S3-AC-009' = @('gut:test_loss_settlement_discards_proposals_pays_stipend_once_and_releases_shop', 'gut:test_boss_loss_retries_without_income_reward_or_shop_release', 'gut:test_lethal_normal_and_boss_losses_enter_terminal_results')
+        'S3-AC-010' = @('gut:test_win_applies_scalar_claims_once_and_persists_reward_before_choice', 'gut:test_win_settlement_choice_and_advance_commit_each_subphase', 'gut:test_reward_conditions_filter_roster_inventory_hp_and_pool_deterministically', 'gut:test_act_three_boss_final_reward_enters_terminal_results', 'gut:test_results_phase_round_trips_as_terminal_run_state', 'scope:expedition-runner.json:battle_settlement_and_claims')
+        'S3-AC-011' = @('gut:test_standard_reward_always_contains_a_non_unit_and_reserves_unit_copies', 'gut:test_elite_standard_then_relic_keeps_shop_until_final_exit', 'gut:test_elite_two_stage_reward_reloads_each_stage_and_rolls_back_failed_transition', 'gut:test_event_unit_grant_reservation_is_atomic_on_save_failure', 'gut:test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits', 'gut:test_full_bench_unit_reward_can_be_abandoned_without_softlock', 'gut:test_item_overflow_and_full_relic_slots_remain_recoverable_subphases', 'gut:test_unit_reward_sell_equipment_overflow_keeps_exact_reservation', 'gut:test_selected_unit_reward_must_own_its_exact_reservation', 'gut:test_non_unit_and_ready_reward_phases_reject_leftover_unit_reservations', 'gut:test_lab_scene_exposes_route_status_combat_and_reward_controls')
+    }
+    $evaluations = [ordered]@{}
+    $missingAll = New-Object System.Collections.Generic.List[string]
+    foreach ($acceptanceId in $rules.Keys) {
+        $missing = New-Object System.Collections.Generic.List[string]
+        foreach ($key in @($rules[$acceptanceId])) {
+            if (-not $observed.ContainsKey($key) -or -not [bool]$observed[$key]) {
+                $missing.Add($key)
+                $missingAll.Add($acceptanceId + ':' + $key)
+            }
+        }
+        $evaluations[$acceptanceId] = [pscustomobject]@{
+            Verified = ($missing.Count -eq 0)
+            Required = @($rules[$acceptanceId])
+            Missing = $missing.ToArray()
+        }
+    }
+    return [pscustomobject]@{
+        Verified = ($missingAll.Count -eq 0)
+        Evaluations = $evaluations
+        Missing = $missingAll.ToArray()
+    }
+}
+
+function Write-ExpeditionAcceptanceArtifact {
+    param([object]$Toolchain)
+
+    $evaluation = Get-ExpeditionEvidenceEvaluation
+    $items = New-Object System.Collections.Generic.List[object]
+    foreach ($acceptanceId in $evaluation.Evaluations.Keys) {
+        $item = $evaluation.Evaluations[$acceptanceId]
+        $items.Add([ordered]@{
+            acceptance_id = $acceptanceId
+            status = if ($item.Verified) { 'pass' } else { 'not_verified' }
+            required_evidence = $item.Required
+            missing_evidence = $item.Missing
+        })
+    }
+    $payload = [ordered]@{
+        schema_version = 1
+        scope = 'economy-expedition'
+        suite = $Suite
+        evidence_verified = [bool]$evaluation.Verified
+        evidence_failures = $evaluation.Missing
+        generated_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        toolchain = $Toolchain
+        global_downstream = @(
+            'S4: formal equipment/relic reward content and crafting resolution',
+            'S5: profile settlement and meta-progression',
+            'AC-030: full production-content run soak remains downstream'
+        )
+        acceptance = $items.ToArray()
+    }
+    $path = Join-Path $artifactRoot 'expedition-acceptance.json'
+    $temporaryPath = $path + '.tmp'
+    [IO.File]::WriteAllText($temporaryPath, ($payload | ConvertTo-Json -Depth 12), (New-Object Text.UTF8Encoding($false)))
+    Move-Item -LiteralPath $temporaryPath -Destination $path -Force
+    $roundTrip = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ([int]$roundTrip.acceptance.Count -ne 11 -or [int]$roundTrip.schema_version -ne 1) {
+        throw 'expedition-acceptance.json read-back validation failed.'
+    }
+}
+
 $toolchainEvidence = $null
 try {
     New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
@@ -850,7 +989,7 @@ try {
         $failureMessage = [string]$toolchain.Message
     }
     else {
-        $selected = if ($Suite -eq 'All') { @('Import', 'RunnerContract', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Spec') } else { @($Suite) }
+        $selected = if ($Suite -eq 'All') { @('Import', 'RunnerContract', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Expedition', 'Spec') } else { @($Suite) }
         $finalExitCode = 0
         foreach ($name in $selected) {
             if ($name -eq 'Import') {
@@ -886,11 +1025,13 @@ try {
                     'Canonical' { 'canonical_runner.gd' }
                     'Combat' { 'combat_runner.gd' }
                     'Soak' { 'soak_runner.gd' }
+                    'Expedition' { 'expedition_runner.gd' }
+                    'ExpeditionSoak' { 'expedition_soak_runner.gd' }
                     'Spec' { 'spec_contract_runner.gd' }
                 }
                 $userArgs = @()
                 if (-not [string]::IsNullOrWhiteSpace($Case)) { $userArgs += @('--case', $Case) }
-                if ($name -eq 'Soak') { $userArgs += @('--seed-count', [string]$SeedCount) }
+                if ($name -in @('Soak', 'ExpeditionSoak')) { $userArgs += @('--seed-count', [string]$SeedCount) }
                 $code = Invoke-RunnerScript -Executable $resolvedGodot -Name $name -ScriptPath ('res://tests/runners/' + $scriptName) -UserArguments $userArgs
             }
             if ($code -ne 0) {
@@ -910,6 +1051,13 @@ try {
                 if (-not $foundationNegative.Verified) {
                     $finalExitCode = 2
                     $failureMessage = [string]$foundationNegative.Message
+                }
+            }
+            if ($finalExitCode -eq 0) {
+                $expeditionEvidence = Get-ExpeditionEvidenceEvaluation
+                if (-not $expeditionEvidence.Verified) {
+                    $finalExitCode = 2
+                    $failureMessage = 'Expedition acceptance evidence is incomplete: ' + ($expeditionEvidence.Missing -join ', ')
                 }
             }
         }

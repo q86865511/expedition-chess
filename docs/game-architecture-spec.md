@@ -92,7 +92,6 @@
     "planned_public_apis": [
     ],
     "deferred_class_names": [
-      "ShopService"
     ]
   },
   "aggregate_sha256": "2cef770401639c52b6d5c5380221ca29971ce910d77defd434f7b64573ed312c"

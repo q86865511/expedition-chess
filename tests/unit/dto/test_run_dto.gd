@@ -146,7 +146,8 @@ func test_rng_snapshot_missing_state_and_counter_are_rejected() -> void:
 	assert_false(RunStateValidator.new().validate_root(missing_counter).ok)
 
 func test_combat_rng_snapshot_uses_the_same_pcg_invariant() -> void:
-	var root := SaveRootFixture.create_valid_root()
+	var root := ResolutionFixtureFactory.create_root(ResolutionState.Kind.IDLE)
+	root.run.run_phase = RunState.RunPhase.COMBAT
 	root.run.resolution_state = CombatPendingResolutionState.new(_battle_setup())
 	var combat := root.run.resolution_state as CombatPendingResolutionState
 	combat.battle_setup.combat_rng_snapshot.inc = U64Bits.zero()
@@ -156,6 +157,80 @@ func test_combat_rng_snapshot_uses_the_same_pcg_invariant() -> void:
 		validation.error.field_path,
 		&"run.resolution_state.battle_setup.combat_rng_snapshot"
 	)
+
+func test_phase_and_resolution_kind_must_match() -> void:
+	var root := ResolutionFixtureFactory.create_root(ResolutionState.Kind.IDLE)
+	root.run.run_phase = RunState.RunPhase.MAP
+	root.run.resolution_state = CombatPendingResolutionState.new(_battle_setup())
+	var validation := RunStateValidator.new().validate_root(root)
+	assert_false(validation.ok)
+	assert_eq(validation.error.field_path, &"run.run_phase")
+
+func test_active_reservation_owner_must_have_exactly_one_live_reference() -> void:
+	var root := ResolutionFixtureFactory.create_root(ResolutionState.Kind.IDLE)
+	root.run.economy_state.shop_offers.clear()
+	var validation := RunStateValidator.new().validate_root(root)
+	assert_false(validation.ok)
+	assert_eq(validation.error.field_path, &"run.reservation_owners.lifecycle")
+
+func test_pool_reserved_total_must_equal_active_owner_ledger() -> void:
+	var root := ResolutionFixtureFactory.create_root(ResolutionState.Kind.IDLE)
+	root.run.unit_pool_state.entries[0].reserved_copies += 1
+	root.run.unit_pool_state.entries[0].total_copies += 1
+	var validation := RunStateValidator.new().validate_root(root)
+	assert_false(validation.ok)
+	assert_eq(
+		validation.error.field_path,
+		&"run.unit_pool_state.entries.reserved_copies"
+	)
+
+func test_selected_unit_reward_must_own_its_exact_reservation() -> void:
+	var root := ResolutionFixtureFactory.create_root(
+		ResolutionState.Kind.REWARD_PENDING
+	)
+	var catalog := EconomyTestFixture.settlement_catalog(
+		root.run.content_snapshot.manifest_digest_value()
+	)
+	var chosen := RewardService.new().choose(root.run, "choice_0", catalog)
+	assert_true(chosen.ok)
+	if not chosen.ok: return
+	var pending := (chosen.run_state.resolution_state as RewardPendingResolutionState).pending_reward
+	for owner: ReservationOwnerState in chosen.run_state.reservation_owners:
+		if owner.key.digest != pending.selected_unit_reservation.digest:
+			pending.selected_unit_reservation = owner.key.deep_clone()
+			break
+	var validation := RunStateValidator.new().validate_run(chosen.run_state)
+	assert_false(validation.ok)
+	assert_eq(
+		validation.error.field_path,
+		&"run.resolution_state.pending_reward.selected_unit_reservation"
+	)
+
+func test_non_unit_and_ready_reward_phases_reject_leftover_unit_reservations() -> void:
+	for phase: PendingRewardState.Phase in [
+		PendingRewardState.Phase.ITEM_RESOLUTION,
+		PendingRewardState.Phase.RELIC_RESOLUTION,
+		PendingRewardState.Phase.READY_TO_ADVANCE,
+	]:
+		var root := ResolutionFixtureFactory.create_root(
+			ResolutionState.Kind.REWARD_PENDING
+		)
+		var pending := (root.run.resolution_state as RewardPendingResolutionState).pending_reward
+		pending.phase = phase
+		pending.selected_choice_id = OptionalStringValue.new("choice_1")
+		if phase == PendingRewardState.Phase.ITEM_RESOLUTION:
+			var overflow_id := "it_0000000000000001"
+			root.run.roster_state.item_instances.append(ItemInstanceState.new(
+				overflow_id, &"item.fixture", null, U64Bits.one()
+			))
+			root.run.roster_state.pending_item_overflow.append(overflow_id)
+		var validation := RunStateValidator.new().validate_root(root)
+		assert_false(validation.ok, "phase %d" % phase)
+		if validation.error != null:
+			assert_eq(
+				validation.error.field_path,
+				&"run.resolution_state.pending_reward.phase"
+			)
 
 func test_four_resolution_subclasses_have_one_payload_path() -> void:
 	var idle: ResolutionState = IdleResolutionState.new()

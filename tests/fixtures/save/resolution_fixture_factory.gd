@@ -16,6 +16,13 @@ static func create_root(kind: int) -> SaveRoot:
 	var root := SaveRootFixture.create_valid_root()
 	_decorate_common_identity(root)
 	root.run.resolution_state = _create_resolution(root.run, kind)
+	match kind:
+		ResolutionState.Kind.COMBAT_PENDING, ResolutionState.Kind.BATTLE_RESULT_PENDING:
+			root.run.run_phase = RunState.RunPhase.COMBAT
+		ResolutionState.Kind.REWARD_PENDING:
+			root.run.run_phase = RunState.RunPhase.REWARD
+		_:
+			root.run.run_phase = RunState.RunPhase.MAP
 	return root
 
 static func create_battle_setup() -> BattleSetup:
@@ -165,6 +172,8 @@ static func _create_battle_result_pending(run: RunState) -> ResolutionState:
 static func _create_reward_pending(run: RunState) -> ResolutionState:
 	var registry := RuntimeKeySchemaRegistry.new()
 	var node_id := run.map_state.nodes[0].node_key.digest
+	run.current_node_id = OptionalStringValue.new(String(node_id))
+	run.map_state.current_node_id = OptionalStringValue.new(String(node_id))
 	var owner_result := registry.build_reservation_owner(
 		StringName(run.run_id), node_id, &"reward", &"standard", 0
 	)
@@ -187,6 +196,10 @@ static func _create_reward_pending(run: RunState) -> ResolutionState:
 		RewardOfferState.new(
 			"choice_1", RewardOfferState.RewardKind.GOLD,
 			null, 3, null, PAYLOAD_TRANSACTION
+		),
+		RewardOfferState.new(
+			"choice_2", RewardOfferState.RewardKind.GOLD,
+			null, 1, null, PAYLOAD_CLAIM
 		),
 	]
 	var reserved: Array[ReservedCopyState] = [

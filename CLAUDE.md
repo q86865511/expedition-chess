@@ -14,9 +14,10 @@
 
 ## 常用指令
 
-- **完整 S1＋S2 快速 gate**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`
+- **完整快速 gate**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`
 - **S2 正式 soak**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Soak -SeedCount 10000 -TimeoutSeconds 600`
-- **單一 runner**：將 `All` 改成 `Toolchain`、`Import`、`Smoke`、`Gut`、`Content`、`Canonical`、`Combat`、`Soak`、`Spec` 或 `RunnerContract`。
+- **S3 正式 soak**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite ExpeditionSoak -SeedCount 10000 -TimeoutSeconds 600`
+- **單一 runner**：將 `All` 改成 `Toolchain`、`Import`、`Smoke`、`Gut`、`Content`、`Canonical`、`Combat`、`Soak`、`Expedition`、`ExpeditionSoak`、`Spec` 或 `RunnerContract`。
 - **限定 GUT 目錄**：加上 `-TestPath res://tests/<path>`；canonical／content 可用 `-Case <case>`。
 - Godot executable 由環境變數 `GODOT_BIN` 或 wrapper 的 `-GodotPath` 傳入；不得把本機絕對路徑寫進 repository。
 - Runner artifacts 位於 `artifacts/test/`；退出碼固定為 `0／2／3／124`。
@@ -31,7 +32,7 @@
 - 所有決定性亂數使用 `RngService` 的 `map/shop/reward/combat` stream；不得使用 Godot `rand*`、時間或 Object ID 產生 gameplay entropy。
 - 內容以 immutable-style Resource authoring、canonical snapshot 與 pinned manifest digest 傳遞；舊 run 必須持有 catalog lease。
 - `BattleSimulation`／`EffectResolver` 已由 S2 實作；兩者只讀 hashed `BattleSetup` 與 pinned rules，不得讀 latest catalog 或 presentation mutable state。
-- `ShopService` 與遠征戰果 exactly-once 結算屬 S3；不得在 S2 transaction 中提前扣 HP、發收入或獎勵。
+- `ShopService`、三幕地圖、節點收入與戰果／遠征 HP／獎勵 exactly-once 結算已由 S3 實作；S2 只產生 canonical result/proposal，只有 S3 settlement/reward transaction 可提交局內持久變更。
 
 ## 文件工作流
 
@@ -43,4 +44,4 @@
 
 - S1 `foundation-core`：已完成；規格位於 `specs/foundation-core/`。
 - S2 `combat-core`：已完成；規格與複檢紀錄位於 `specs/combat-core/`，完成證據位於 `artifacts/test/`。
-- 下一片為 S3：`ShopService`、經濟、遠征 HP／收入／獎勵與 Boss 重戰的 exactly-once 結算；啟動前建立功能三件套並獨立複檢。
+- S3 `economy-expedition`：階段 0～6、逐 AC 證據與獨立 T00R／T11B 已完成；複檢紀錄位於 `specs/economy-expedition/final-review.md`。

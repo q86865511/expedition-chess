@@ -1,7 +1,7 @@
 # 實作切片計劃 (Implementation Slices)
 
 > 架構規格 → 功能切片 → specs 三件套 → `/pipeline` 的**銜接橋樑**。
-> 本文件只做規劃,不含實作;規則的單一事實來源仍是 `game-architecture/`。
+> 本文件記錄切片規劃與目前狀態；規則的單一事實來源仍是 `game-architecture/`。
 
 ## 目的
 
@@ -53,5 +53,6 @@
 ## 狀態
 
 - S1 `foundation-core`：已完成；三件套位於 `specs/foundation-core/`，完整 headless gate 通過。
-- S2 `combat-core`：下一個建議切片，尚未建立三件套或程式實作。
-- S3–S5：維持規劃階段。
+- S2 `combat-core`：已完成；三件套、程式實作、Combat Lab、正式 soak 與複檢紀錄均已落地。
+- S3 `economy-expedition`：階段 0～6、戰果／獎勵、Expedition Lab、正式 acceptance、10,000-seed soak 與獨立 T00R／T11B 複檢均已完成。
+- S4–S5：維持規劃階段。

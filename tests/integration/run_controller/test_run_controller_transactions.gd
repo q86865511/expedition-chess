@@ -7,10 +7,12 @@ func test_declared_run_phase_edge_matrix() -> void:
 		Vector2i(RunState.RunPhase.COMBAT, RunState.RunPhase.REWARD),
 		Vector2i(RunState.RunPhase.COMBAT, RunState.RunPhase.MAP),
 		Vector2i(RunState.RunPhase.COMBAT, RunState.RunPhase.PREPARE),
+		Vector2i(RunState.RunPhase.COMBAT, RunState.RunPhase.RESULTS),
 		Vector2i(RunState.RunPhase.REWARD, RunState.RunPhase.MAP),
+		Vector2i(RunState.RunPhase.REWARD, RunState.RunPhase.RESULTS),
 	]
-	for from_phase: int in range(4):
-		for to_phase: int in range(4):
+	for from_phase: int in range(5):
+		for to_phase: int in range(5):
 			var root := SaveRootFixture.create_valid_root()
 			root.run.run_phase = from_phase as RunState.RunPhase
 			var storage := FakeSaveStorage.new()

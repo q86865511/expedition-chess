@@ -194,6 +194,16 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 		elif definition is MapNodeDef:
 			if not node_types.has(definition.node_type): node_types.append(definition.node_type)
 			if definition.node_type == &"event": event_generators[definition.generator_ref] = true
+			if definition.node_type in [&"normal", &"elite", &"boss"]:
+				var generator: ContentDefinition = _by_id.get(
+					definition.generator_ref, null
+				)
+				if not generator is EncounterDef \
+					or generator.encounter_kind != definition.node_type:
+					_issue(
+						&"CONTENT_NODE_GENERATOR", definition.id,
+						&"generator_ref", String(definition.generator_ref)
+					)
 	if relics < 15 or commanders != 3 or monsters < 12 or affixes < 6 or bosses != 3 or event_generators.size() < 12:
 		_issue(&"CONTENT_MINIMUM_COUNTS", &"catalog.minimums", &"counts", "%d/%d/%d/%d/%d/%d" % [relics, commanders, monsters, affixes, bosses, event_generators.size()])
 	node_types.sort_custom(_string_name_less)
@@ -234,13 +244,85 @@ func _validate_economy(definitions: Array[ContentDefinition]) -> void:
 			if int(tiers.get(tier, 0)) < 9: _issue(&"CONTENT_POOL_COPIES", definition.id, &"pool_copies_by_tier", str(tier))
 
 func _validate_rewards(definitions: Array[ContentDefinition]) -> void:
+	var has_standard := false
+	var has_relic := false
+	var has_event := false
 	for definition in definitions:
 		if not definition is RewardTableDef: continue
 		var usable := 0
+		var relic_candidates := 0
+		var non_relic_candidates := 0
+		var non_unit_candidates := 0
+		var unconditional_relic := 0
+		var unconditional_non_unit := 0
+		var unconditional_non_relic := 0
 		for candidate in definition.reward_candidates:
-			if candidate.weight_i32 < 0: _issue(&"CONTENT_REWARD_WEIGHT", definition.id, &"reward_candidates", "negative")
-			elif candidate.weight_i32 > 0: usable += 1
-		if usable == 0 or definition.draw_count <= 0: _issue(&"CONTENT_REWARD_WEIGHT", definition.id, &"reward_candidates", "empty")
+			for condition: ConditionDef in candidate.conditions:
+				_validate_reward_condition(definition.id, condition)
+			if candidate.weight_i32 < 0:
+				_issue(&"CONTENT_REWARD_WEIGHT", definition.id, &"reward_candidates", "negative")
+			elif candidate.weight_i32 > 0:
+				usable += 1
+				if candidate.kind == &"relic":
+					relic_candidates += 1
+					if candidate.conditions.is_empty():
+						unconditional_relic += 1
+				else:
+					non_relic_candidates += 1
+					if candidate.conditions.is_empty():
+						unconditional_non_relic += 1
+					if candidate.kind != &"unit":
+						non_unit_candidates += 1
+						if candidate.conditions.is_empty():
+							unconditional_non_unit += 1
+		if usable == 0 or definition.draw_count != 3: _issue(&"CONTENT_REWARD_WEIGHT", definition.id, &"reward_candidates", "draw_count")
+		if relic_candidates > 0 and non_relic_candidates > 0:
+			_issue(&"CONTENT_REWARD_STAGE", definition.id, &"reward_candidates", "mixed")
+		elif relic_candidates > 0:
+			has_relic = unconditional_relic > 0
+			if not has_relic:
+				_issue(&"CONTENT_REWARD_FALLBACK", definition.id, &"reward_candidates", "relic")
+		elif non_relic_candidates > 0 and non_unit_candidates > 0:
+			has_standard = unconditional_non_unit > 0
+			has_event = has_event or unconditional_non_relic > 0
+			if not has_standard:
+				_issue(&"CONTENT_REWARD_FALLBACK", definition.id, &"reward_candidates", "standard")
+		elif non_relic_candidates > 0:
+			has_event = has_event or unconditional_non_relic > 0
+			if unconditional_non_relic == 0:
+				_issue(&"CONTENT_REWARD_FALLBACK", definition.id, &"reward_candidates", "event")
+	if not has_standard or not has_relic or not has_event:
+		_issue(
+			&"CONTENT_REWARD_STAGE_COVERAGE", &"catalog.reward_tables",
+			&"reward_candidates", "%s/%s/%s" % [has_standard, has_relic, has_event]
+		)
+
+func _validate_reward_condition(source_id: StringName, condition: ConditionDef) -> void:
+	if condition == null or not condition.has_int_value \
+		or condition.has_max_uses_per_battle:
+		_issue(&"CONTENT_REWARD_CONDITION", source_id, &"reward_candidates.conditions", "shape")
+		return
+	var valid := false
+	match condition.kind:
+		&"roster_space_at_least":
+			valid = condition.subject == &"roster" and condition.comparator == &"gte" \
+				and condition.int_value >= 0 and condition.int_value <= 9 \
+				and not condition.has_stable_id_value
+		&"inventory_space_at_least":
+			valid = condition.subject == &"inventory" and condition.comparator == &"gte" \
+				and condition.int_value >= 0 and condition.int_value <= 16 \
+				and not condition.has_stable_id_value
+		&"expedition_hp_below":
+			valid = condition.subject == &"expedition_hp" and condition.comparator == &"lt" \
+				and condition.int_value >= 1 and condition.int_value <= 101 \
+				and not condition.has_stable_id_value
+		&"pool_copies_at_least":
+			var referenced: ContentDefinition = _by_id.get(condition.stable_id_value)
+			valid = condition.subject == &"pool" and condition.comparator == &"gte" \
+				and condition.int_value >= 1 and condition.int_value <= 999 \
+				and condition.has_stable_id_value and referenced is UnitDef
+	if not valid:
+		_issue(&"CONTENT_REWARD_CONDITION", source_id, &"reward_candidates.conditions", String(condition.kind))
 
 func _validate_unlock_graph(definitions: Array[ContentDefinition]) -> void:
 	var unlocks: Dictionary = {}

@@ -181,9 +181,13 @@ func _edge_is_allowed(from_phase: RunState.RunPhase, to_phase: RunState.RunPhase
 		RunState.RunPhase.COMBAT:
 			return to_phase == RunState.RunPhase.REWARD \
 				or to_phase == RunState.RunPhase.MAP \
-				or to_phase == RunState.RunPhase.PREPARE
+				or to_phase == RunState.RunPhase.PREPARE \
+				or to_phase == RunState.RunPhase.RESULTS
 		RunState.RunPhase.REWARD:
-			return to_phase == RunState.RunPhase.MAP
+			return to_phase == RunState.RunPhase.MAP \
+				or to_phase == RunState.RunPhase.RESULTS
+		RunState.RunPhase.RESULTS:
+			return false
 	return false
 
 func _transition_error_from_commit(

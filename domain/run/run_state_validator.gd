@@ -92,8 +92,11 @@ func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_ve
 		return _failure(&"run.next_serial")
 	if not _stable_id(run.commander_id) or not _is_u32(run.challenge_level) or not _is_u32(run.act_index):
 		return _failure(&"run.commander_id")
-	if not _is_i32(run.expedition_hp):
+	if run.expedition_hp < 0 or run.expedition_hp > 100:
 		return _failure(&"run.expedition_hp")
+	var phase_result := _validate_phase_resolution_pair(run)
+	if not phase_result.ok:
+		return phase_result
 	var snapshot_result := _validate_content_snapshot(run.content_snapshot)
 	if not snapshot_result.ok:
 		return snapshot_result
@@ -134,7 +137,12 @@ func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_ve
 		return _failure(&"run.loss_stipend_claimed_act_ids")
 	if not _receipts_sorted(run):
 		return _failure(&"run.ledgers")
-	return _validate_resolution(run.resolution_state, expected_rng_version, expected_hash_version)
+	var reservation_result := _validate_reservation_ledger(run)
+	if not reservation_result.ok:
+		return reservation_result
+	return _validate_resolution(
+		run, run.resolution_state, expected_rng_version, expected_hash_version
+	)
 
 func _validate_content_snapshot(snapshot: ContentSnapshotState) -> DtoValidationResult:
 	if snapshot == null \
@@ -205,6 +213,9 @@ func _validate_map(run: RunState) -> DtoValidationResult:
 	for node_id: String in map.completed_node_ids:
 		if not node_ids.has(node_id):
 			return _failure(&"run.map_state.completed_node_ids")
+	for node: MapNodeState in map.nodes:
+		if node.completed != map.completed_node_ids.has(node.node_id):
+			return _failure(&"run.map_state.nodes.completed")
 	var previous_edge := ""
 	for edge: MapEdgeState in map.edges:
 		if edge == null:
@@ -224,14 +235,18 @@ func _validate_economy(economy: EconomyState) -> DtoValidationResult:
 		return _failure(&"run.economy_state")
 	if not _is_u32(economy.win_streak) or not _is_u32(economy.loss_streak) or not _is_u32(economy.shop_refresh_index):
 		return _failure(&"run.economy_state")
-	if economy.shop_offers.size() != 0 and economy.shop_offers.size() != 5:
+	if economy.shop_offers.size() > 5:
 		return _failure(&"run.economy_state.shop_offers")
+	var previous_slot := -1
 	for index: int in range(economy.shop_offers.size()):
 		var offer: ShopOffer = economy.shop_offers[index]
-		if offer.slot_index != index or not _stable_id(offer.unit_def_id) or offer.reservation_owner_key == null:
+		if offer == null or offer.slot_index <= previous_slot or offer.slot_index < 0 \
+			or offer.slot_index >= 5 or not _stable_id(offer.unit_def_id) \
+			or offer.reservation_owner_key == null:
 			return _failure(&"run.economy_state.shop_offers")
 		if not _is_u32(offer.cost) or not _is_u32(offer.reserved_copies):
 			return _failure(&"run.economy_state.shop_offers")
+		previous_slot = offer.slot_index
 	return DtoValidationResult.success()
 
 func _validate_pool(pool: UnitPoolState) -> DtoValidationResult:
@@ -374,6 +389,7 @@ func _find_item(items: Array[ItemInstanceState], instance_id: String) -> ItemIns
 	return null
 
 func _validate_resolution(
+	run: RunState,
 	resolution: ResolutionState,
 	expected_rng_version: int,
 	expected_hash_version: int
@@ -427,12 +443,232 @@ func _validate_resolution(
 			var reward: RewardPendingResolutionState = resolution
 			if reward.pending_reward == null or reward.pending_reward.transaction_id == null:
 				return _failure(&"run.resolution_state.pending_reward")
+			var pending_result := _validate_pending_reward(run, reward.pending_reward)
+			if not pending_result.ok:
+				return pending_result
 			if reward.pending_reward.phase == PendingRewardState.Phase.CHOOSING:
 				if reward.pending_reward.selected_choice_id != null or reward.pending_reward.selected_unit_reservation != null:
 					return _failure(&"run.resolution_state.pending_reward.phase")
 		_:
 			return _failure(&"run.resolution_state.kind")
 	return DtoValidationResult.success()
+
+func _validate_pending_reward(
+	run: RunState,
+	pending: PendingRewardState
+) -> DtoValidationResult:
+	if pending.node_id.is_empty() or run.current_node_id == null \
+		or pending.node_id != run.current_node_id.value \
+		or not _runtime_key(pending.transaction_id):
+		return _failure(&"run.resolution_state.pending_reward.identity")
+	var expected_offer_count := 1 \
+		if pending.stage_id == PendingRewardState.StageId.EVENT_GRANT else 3
+	if pending.offers.size() != expected_offer_count:
+		return _failure(&"run.resolution_state.pending_reward.offers")
+	var choice_ids: Array[String] = []
+	var unit_owner_digests: Array[StringName] = []
+	for offer: RewardOfferState in pending.offers:
+		if offer == null or offer.choice_id.is_empty() \
+			or choice_ids.has(offer.choice_id) or not _digest(offer.payload_digest) \
+			or not _is_u32(offer.amount):
+			return _failure(&"run.resolution_state.pending_reward.offers")
+		if offer.reward_kind in [
+			RewardOfferState.RewardKind.UNIT,
+			RewardOfferState.RewardKind.ITEM,
+			RewardOfferState.RewardKind.RELIC,
+		] and (offer.content_id == null or not _stable_id(offer.content_id.value)):
+			return _failure(&"run.resolution_state.pending_reward.offers.content_id")
+		if offer.reward_kind == RewardOfferState.RewardKind.UNIT \
+			and offer.reservation_owner_key == null:
+			return _failure(&"run.resolution_state.pending_reward.offers.reservation")
+		if offer.reward_kind == RewardOfferState.RewardKind.UNIT:
+			if unit_owner_digests.has(offer.reservation_owner_key.digest):
+				return _failure(&"run.resolution_state.pending_reward.offers.reservation")
+			unit_owner_digests.append(offer.reservation_owner_key.digest)
+		choice_ids.append(offer.choice_id)
+	var reserved_owner_digests: Array[StringName] = []
+	for reserved: ReservedCopyState in pending.reserved_copies:
+		if reserved == null or not _stable_id(reserved.unit_def_id) \
+			or reserved.copies < 1 or reserved.reservation_owner_key == null \
+			or not _runtime_key(reserved.reservation_owner_key):
+			return _failure(&"run.resolution_state.pending_reward.reserved_copies")
+		var owner := _find_reservation_owner(
+			run.reservation_owners, reserved.reservation_owner_key
+		)
+		if owner == null or owner.status != ReservationOwnerState.Status.ACTIVE \
+			or owner.unit_def_id != reserved.unit_def_id \
+			or owner.reserved_copies != reserved.copies:
+			return _failure(&"run.resolution_state.pending_reward.reserved_copies")
+		if reserved_owner_digests.has(reserved.reservation_owner_key.digest):
+			return _failure(&"run.resolution_state.pending_reward.reserved_copies")
+		reserved_owner_digests.append(reserved.reservation_owner_key.digest)
+	match pending.phase:
+		PendingRewardState.Phase.CHOOSING:
+			if pending.selected_choice_id != null \
+				or pending.selected_unit_reservation != null:
+				return _failure(&"run.resolution_state.pending_reward.phase")
+			if unit_owner_digests.size() != reserved_owner_digests.size():
+				return _failure(&"run.resolution_state.pending_reward.reserved_copies")
+			for digest: StringName in unit_owner_digests:
+				if not reserved_owner_digests.has(digest):
+					return _failure(&"run.resolution_state.pending_reward.reserved_copies")
+		PendingRewardState.Phase.UNIT_RESOLUTION:
+			if pending.selected_choice_id == null \
+				or pending.selected_unit_reservation == null:
+				return _failure(&"run.resolution_state.pending_reward.phase")
+			var selected_unit_offer := _find_reward_offer(
+				pending.offers, pending.selected_choice_id.value
+			)
+			if selected_unit_offer == null \
+				or selected_unit_offer.reward_kind != RewardOfferState.RewardKind.UNIT \
+				or selected_unit_offer.reservation_owner_key == null \
+				or selected_unit_offer.reservation_owner_key.digest \
+					!= pending.selected_unit_reservation.digest \
+				or reserved_owner_digests != [pending.selected_unit_reservation.digest]:
+				return _failure(&"run.resolution_state.pending_reward.selected_unit_reservation")
+		PendingRewardState.Phase.ITEM_RESOLUTION:
+			var selected_item_phase_offer := _find_reward_offer(
+				pending.offers,
+				pending.selected_choice_id.value if pending.selected_choice_id != null else ""
+			)
+			var item_reward_flow := selected_item_phase_offer != null \
+				and selected_item_phase_offer.reward_kind == RewardOfferState.RewardKind.ITEM \
+				and pending.selected_unit_reservation == null \
+				and reserved_owner_digests.is_empty()
+			var unit_overflow_flow := selected_item_phase_offer != null \
+				and selected_item_phase_offer.reward_kind == RewardOfferState.RewardKind.UNIT \
+				and pending.selected_unit_reservation != null \
+				and selected_item_phase_offer.reservation_owner_key != null \
+				and selected_item_phase_offer.reservation_owner_key.digest \
+					== pending.selected_unit_reservation.digest \
+				and reserved_owner_digests.size() == 1 \
+				and reserved_owner_digests[0] == pending.selected_unit_reservation.digest
+			if run.roster_state.pending_item_overflow.is_empty() \
+				or (not item_reward_flow and not unit_overflow_flow):
+				return _failure(&"run.resolution_state.pending_reward.phase")
+		PendingRewardState.Phase.RELIC_RESOLUTION:
+			var selected_relic_offer := _find_reward_offer(
+				pending.offers,
+				pending.selected_choice_id.value if pending.selected_choice_id != null else ""
+			)
+			if selected_relic_offer == null \
+				or selected_relic_offer.reward_kind != RewardOfferState.RewardKind.RELIC \
+				or pending.selected_unit_reservation != null \
+				or not reserved_owner_digests.is_empty():
+				return _failure(&"run.resolution_state.pending_reward.phase")
+		PendingRewardState.Phase.READY_TO_ADVANCE:
+			if _find_reward_offer(
+				pending.offers,
+				pending.selected_choice_id.value if pending.selected_choice_id != null else ""
+			) == null \
+				or pending.selected_unit_reservation != null \
+				or not run.roster_state.pending_item_overflow.is_empty() \
+				or not reserved_owner_digests.is_empty():
+				return _failure(&"run.resolution_state.pending_reward.phase")
+	if pending.selected_choice_id != null \
+		and not choice_ids.has(pending.selected_choice_id.value):
+		return _failure(&"run.resolution_state.pending_reward.selected_choice_id")
+	return DtoValidationResult.success()
+
+func _validate_phase_resolution_pair(run: RunState) -> DtoValidationResult:
+	if run.resolution_state == null:
+		return _failure(&"run.resolution_state")
+	match run.run_phase:
+		RunState.RunPhase.MAP, RunState.RunPhase.PREPARE:
+			if run.expedition_hp == 0 \
+				or run.resolution_state.kind != ResolutionState.Kind.IDLE:
+				return _failure(&"run.run_phase")
+		RunState.RunPhase.COMBAT:
+			if run.resolution_state.kind not in [
+				ResolutionState.Kind.COMBAT_PENDING,
+				ResolutionState.Kind.BATTLE_RESULT_PENDING,
+			]:
+				return _failure(&"run.run_phase")
+		RunState.RunPhase.REWARD:
+			if run.resolution_state.kind != ResolutionState.Kind.REWARD_PENDING:
+				return _failure(&"run.run_phase")
+		RunState.RunPhase.RESULTS:
+			if run.resolution_state.kind != ResolutionState.Kind.IDLE \
+				or (run.expedition_hp > 0 and not _final_boss_completed(run)):
+				return _failure(&"run.run_phase")
+		_:
+			return _failure(&"run.run_phase")
+	return DtoValidationResult.success()
+
+func _final_boss_completed(run: RunState) -> bool:
+	if run == null or run.map_state == null:
+		return false
+	for node: MapNodeState in run.map_state.nodes:
+		if node.act_index == 3 \
+			and node.node_kind == MapNodeState.NodeKind.BOSS and node.completed:
+			return true
+	return false
+
+func _validate_reservation_ledger(run: RunState) -> DtoValidationResult:
+	var live_reference_counts: Dictionary = {}
+	var active_copy_totals: Dictionary = {}
+	for owner: ReservationOwnerState in run.reservation_owners:
+		if owner.reserved_copies < 1 or not _stable_id(owner.unit_def_id):
+			return _failure(&"run.reservation_owners")
+		if owner.status == ReservationOwnerState.Status.ACTIVE:
+			live_reference_counts[owner.key.digest] = 0
+			active_copy_totals[owner.unit_def_id] = int(
+				active_copy_totals.get(owner.unit_def_id, 0)
+			) + owner.reserved_copies
+	for offer: ShopOffer in run.economy_state.shop_offers:
+		var owner := _find_reservation_owner(
+			run.reservation_owners, offer.reservation_owner_key
+		)
+		if owner == null or owner.status != ReservationOwnerState.Status.ACTIVE \
+			or owner.unit_def_id != offer.unit_def_id \
+			or owner.reserved_copies != offer.reserved_copies:
+			return _failure(&"run.economy_state.shop_offers.reservation")
+		live_reference_counts[owner.key.digest] = int(
+			live_reference_counts.get(owner.key.digest, 0)
+		) + 1
+	if run.resolution_state is RewardPendingResolutionState:
+		var pending := (run.resolution_state as RewardPendingResolutionState).pending_reward
+		if pending != null:
+			for reserved: ReservedCopyState in pending.reserved_copies:
+				var owner := _find_reservation_owner(
+					run.reservation_owners, reserved.reservation_owner_key
+				)
+				if owner == null or owner.status != ReservationOwnerState.Status.ACTIVE \
+					or owner.unit_def_id != reserved.unit_def_id \
+					or owner.reserved_copies != reserved.copies:
+					return _failure(&"run.resolution_state.pending_reward.reserved_copies")
+				live_reference_counts[owner.key.digest] = int(
+					live_reference_counts.get(owner.key.digest, 0)
+				) + 1
+	for owner: ReservationOwnerState in run.reservation_owners:
+		var references := int(live_reference_counts.get(owner.key.digest, 0))
+		if (owner.status == ReservationOwnerState.Status.ACTIVE and references != 1) \
+			or (owner.status != ReservationOwnerState.Status.ACTIVE and references != 0):
+			return _failure(&"run.reservation_owners.lifecycle")
+	for entry: UnitPoolEntryState in run.unit_pool_state.entries:
+		if entry.reserved_copies != int(
+			active_copy_totals.get(entry.unit_def_id, 0)
+		):
+			return _failure(&"run.unit_pool_state.entries.reserved_copies")
+	return DtoValidationResult.success()
+
+func _find_reward_offer(
+	offers: Array[RewardOfferState],
+	choice_id: String
+) -> RewardOfferState:
+	for offer: RewardOfferState in offers:
+		if offer.choice_id == choice_id:
+			return offer
+	return null
+
+func _find_reservation_owner(
+	owners: Array[ReservationOwnerState],
+	key: ReservationOwnerKeyState
+) -> ReservationOwnerState:
+	for owner: ReservationOwnerState in owners:
+		if owner.key != null and owner.key.digest == key.digest:
+			return owner
+	return null
 
 func _validate_run_mutation_proposals(
 	proposals: Array[RunMutationProposal]

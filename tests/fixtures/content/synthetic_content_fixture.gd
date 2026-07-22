@@ -325,11 +325,20 @@ static func _equipment(left: int, right: int) -> EquipmentDef:
 static func _relic(index: int) -> RelicDef:
 	var value := RelicDef.new()
 	_common(value, StringName("relic.r%d" % index))
-	value.category = &"team"
-	value.effect_refs = [&"effect.general"]
+	value.category = _relic_category_for_index(index)
+	value.effect_refs = [&"effect.operation_matrix"]
 	value.activation_limit = 1
 	value.population_bonus = 1 if index == 0 else 0
 	return value
+
+# 15 件遺物涵蓋四類各 >=1（0-3 battle、4-7 economy、8-10 route、11-14 rule）。
+# effect_refs 統一指向 effect.operation_matrix——其 battle_operations 與
+# run_operations 皆非空，battle／非 battle 類遺物的 effect scope 規則都能滿足。
+static func _relic_category_for_index(index: int) -> StringName:
+	if index < 4: return &"battle"
+	if index < 8: return &"economy"
+	if index < 11: return &"route"
+	return &"rule"
 
 static func _commander(index: int) -> CommanderDef:
 	var value := CommanderDef.new()

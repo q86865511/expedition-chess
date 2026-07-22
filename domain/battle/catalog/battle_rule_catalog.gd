@@ -9,6 +9,7 @@ var _effects: Array[BattleEffectRule] = []
 var _encounters: Array[BattleEncounterRule] = []
 var _equipment: Array[BattleEquipmentRule] = []
 var _configs: Array[BattleCombatConfigRule] = []
+var _relics: Array[BattleRelicRule] = []
 
 func _init(
 	manifest_digest: String,
@@ -18,7 +19,8 @@ func _init(
 	effects: Array[BattleEffectRule],
 	encounters: Array[BattleEncounterRule],
 	equipment: Array[BattleEquipmentRule],
-	configs: Array[BattleCombatConfigRule]
+	configs: Array[BattleCombatConfigRule],
+	relics: Array[BattleRelicRule] = [] as Array[BattleRelicRule]
 ) -> void:
 	_manifest_digest = manifest_digest
 	for value: BattleUnitRule in units: _units.append(value.deep_clone())
@@ -28,6 +30,7 @@ func _init(
 	for value: BattleEncounterRule in encounters: _encounters.append(value.deep_clone())
 	for value: BattleEquipmentRule in equipment: _equipment.append(value.deep_clone())
 	for value: BattleCombatConfigRule in configs: _configs.append(value.deep_clone())
+	for value: BattleRelicRule in relics: _relics.append(value.deep_clone())
 
 func manifest_digest_value() -> String:
 	return _manifest_digest
@@ -72,6 +75,11 @@ func try_combat_config_rule(content_id: StringName) -> BattleCombatConfigRule:
 		if value.config_id == content_id: return value.deep_clone()
 	return null
 
+func try_relic_rule(content_id: StringName) -> BattleRelicRule:
+	for value: BattleRelicRule in _relics:
+		if value.relic_id == content_id: return value.deep_clone()
+	return null
+
 func deep_clone() -> BattleRuleCatalog:
 	return BattleRuleCatalog.new(
 		_manifest_digest,
@@ -81,5 +89,6 @@ func deep_clone() -> BattleRuleCatalog:
 		_effects,
 		_encounters,
 		_equipment,
-		_configs
+		_configs,
+		_relics
 	)

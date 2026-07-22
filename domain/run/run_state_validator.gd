@@ -81,7 +81,12 @@ func validate_profile(profile: ProfileState) -> DtoValidationResult:
 		last_digest = String(receipt.key.digest)
 	return DtoValidationResult.success()
 
-func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_version: int = 1) -> DtoValidationResult:
+func validate_run(
+	run: RunState,
+	expected_rng_version: int = 1,
+	expected_hash_version: int = 1,
+	battle_catalog: BattleRuleCatalog = null
+) -> DtoValidationResult:
 	if run == null or run.run_key == null or run.run_id != String(run.run_key.digest):
 		return _failure(&"run.run_id")
 	if not _runtime_key(run.run_key):
@@ -112,6 +117,10 @@ func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_ve
 	var roster_result := _validate_roster(run.roster_state)
 	if not roster_result.ok:
 		return roster_result
+	if battle_catalog != null:
+		var equipment_kind_result := _validate_equipment_kind(run.roster_state, battle_catalog)
+		if not equipment_kind_result.ok:
+			return equipment_kind_result
 	var pool_roster_result := _validate_pool_roster_conservation(
 		run.unit_pool_state,
 		run.roster_state
@@ -352,6 +361,16 @@ func _validate_roster(roster: RosterState) -> DtoValidationResult:
 		if slot == null or slot.slot_index != index \
 			or (slot.relic_id != null and not _stable_id(slot.relic_id.value)):
 			return _failure(&"run.roster_state.active_relic_slots")
+	return DtoValidationResult.success()
+
+func _validate_equipment_kind(
+	roster: RosterState,
+	battle_catalog: BattleRuleCatalog
+) -> DtoValidationResult:
+	for item: ItemInstanceState in roster.item_instances:
+		if item.bound_unit_instance_id != null \
+			and battle_catalog.try_equipment_rule(item.def_id) == null:
+			return _failure(&"run.roster_state.item_instances.def_id")
 	return DtoValidationResult.success()
 
 func _validate_pool_roster_conservation(

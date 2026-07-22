@@ -7,7 +7,7 @@
 
 ## Gate A — catalog 與編譯器
 
-- [ ] **T01 [HARD][TDD] Catalog 擴充：BattleRelicRule＋ForgeRecipeTable＋RunRelicTable**
+- [x] **T01 [HARD][TDD] Catalog 擴充：BattleRelicRule＋ForgeRecipeTable＋RunRelicTable**
   - Covers：REQ-ITEM-001（配方表）、REQ-RELIC-001（規則表）、S4-AC-004（封閉枚舉）
   - 驗收：battle catalog 新增 relic rule 並經 builder 填入；ForgeRecipeTable 無序配對（含自配）21 封閉、任一零件可反查；RunRelicTable 回 typed intent（非 Dictionary）；catalog 只依 pinned manifest 建構。
 - [ ] **T02 [HARD][TDD] BattleSetupSourceCompiler（羈絆計數/快照/裝備/battle 遺物編譯）**
@@ -20,7 +20,7 @@
 - [ ] **T03 [HARD][TDD] ForgeEquipmentCommand**
   - Covers：REQ-ITEM-001、S4-AC-004/005；依賴：T01
   - 驗收：兩零件（含相同）消耗→恰一裝備入庫（滿則 overflow）；查無配方拒；零件不可直接裝備；交易失敗物品庫不變；配 transaction receipt。
-- [ ] **T04 [NORMAL][TDD] EquipItemCommand＋DismantleEquipmentCommand＋validator 擴充**
+- [x] **T04 [NORMAL][TDD] EquipItemCommand＋DismantleEquipmentCommand＋validator 擴充**
   - Covers：REQ-ITEM-002、S4-AC-006/007
   - 驗收：3 件上限、unique_group 衝突、裝零件皆拒且回具名 error；拆卸消耗道具、失敗不消耗；裝備搬移全程恰一實例；validator 新增「綁定物必為 EquipmentDef」不變式。
 - [ ] **T05 [HARD][TDD] ResolveOverflowCommand＋overflow 硬 gate＋crash/load 整合**
@@ -35,7 +35,7 @@
 
 ## Gate D — 內容與驗證器
 
-- [ ] **T07 [NORMAL][TDD] 內容驗證器擴充規則**
+- [x] **T07 [NORMAL][TDD] 內容驗證器擴充規則**
   - Covers：REQ-CONTENT-001（部分）、S4-AC-012
   - 驗收：unique_group 一致性、遺物四類各 ≥1 且 activation_limit 合法、battle 類 effect_refs 可解、拆卸道具 run_operations 語意、零件不得作為完整裝備發放——五類規則各有紅→綠測試。
 - [ ] **T08 [NORMAL][免TDD：內容資料授權，由 T07 驗證器與 content suite 自動驗收] 構築內容 pack（.tres）**
@@ -70,4 +70,4 @@ T01 → {T02, T03, T06}；T03+T04 → T05；T07 → T08 → T09；{T02~T06} → 
 
 ## Completion ledger
 
-（實作收尾時回填：各任務完成證據、測試輸出摘要、審查紀錄路徑。）
+- [2026-07-23] wave1（T01／T04／T07）完成。TDD 紅綠證據：`.pipeline/tdd/w1-*`（紅證據產於實作前；三處測試檔 GDScript Parse Error／fixture 漂移經主迴圈測試爭議裁決修正並重算 manifest）。雙審：Sonnet `.pipeline/reviews/2026-07-22-sonnet-w1.md`＋Opus `.pipeline/reviews/2026-07-22-reviewer-w1.md`；裁決 F1~F5 全修（validator 不變式接入 RunController commit 路徑＋世代守衛、dismantle 以 ConsumableRuleTable 驗拆卸語意、equip 加 catalog digest 比對、forge builder 驗 1/2 元配方形狀、relic effect_refs 非空且必為 EffectDef）。修正後 Gut 275/275、`-Suite All` exit 0。備註：RunController 的 battle_catalog 為選填參數，正式 composition root 接線（T10/T11）必須傳入 pinned catalog。

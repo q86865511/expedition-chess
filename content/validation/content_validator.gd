@@ -8,6 +8,7 @@ const EFFECT_CONDITIONS: Array[StringName] = [&"source_tag", &"target_tag", &"he
 const STACKING_RULES: Array[StringName] = [&"replace", &"refresh_duration", &"add_stacks", &"independent"]
 const BASIC_ATTACK_PROFILES: Array[StringName] = [&"melee", &"ranged", &"magic_projectile"]
 const SHOP_CONDITIONS: Array[StringName] = [&"always", &"unlocked", &"event_only", &"never"]
+const RELIC_CATEGORIES: Array[StringName] = [&"battle", &"economy", &"route", &"rule"]
 
 var _issues: Array[ContentValidationIssue] = []
 var _by_id: Dictionary = {}
@@ -25,6 +26,7 @@ func validate(input: ContentValidationInput) -> ContentValidationReport:
 	_validate_units_and_traits(input.definitions)
 	_validate_recipes(input.definitions)
 	_validate_minimum_counts_and_nodes(input.definitions)
+	_validate_relics(input.definitions)
 	_validate_challenge_chain(input.definitions)
 	_validate_economy(input.definitions)
 	_validate_rewards(input.definitions)
@@ -211,6 +213,37 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 	expected.sort_custom(_string_name_less)
 	if node_types != expected: _issue(&"CONTENT_NODE_KIND_COVERAGE", &"catalog.nodes", &"node_type", str(node_types))
 
+func _validate_relics(definitions: Array[ContentDefinition]) -> void:
+	var seen_categories: Dictionary = {}
+	for definition in definitions:
+		if not definition is RelicDef: continue
+		var relic := definition as RelicDef
+		if not RELIC_CATEGORIES.has(relic.category):
+			_issue(&"CONTENT_RELIC_CATEGORY", relic.id, &"category", String(relic.category))
+		else:
+			seen_categories[relic.category] = true
+			_validate_relic_effect_scope(relic, relic.category == &"battle")
+		if relic.activation_limit < 1 or relic.activation_limit > 99:
+			_issue(&"CONTENT_RELIC_ACTIVATION_LIMIT", relic.id, &"activation_limit", str(relic.activation_limit))
+	for category in RELIC_CATEGORIES:
+		if not seen_categories.has(category):
+			_issue(&"CONTENT_RELIC_CATEGORY_COVERAGE", &"catalog.relics", &"category", String(category))
+
+func _validate_relic_effect_scope(relic: RelicDef, require_battle_operations: bool) -> void:
+	if relic.effect_refs.is_empty():
+		_issue(&"CONTENT_RELIC_EFFECT_EMPTY", relic.id, &"effect_refs")
+		return
+	for effect_id in relic.effect_refs:
+		var effect: ContentDefinition = _by_id.get(effect_id)
+		if not effect is EffectDef:
+			_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+			continue
+		var effect_definition := effect as EffectDef
+		var satisfies := not effect_definition.battle_operations.is_empty() if require_battle_operations \
+			else not effect_definition.run_operations.is_empty()
+		if not satisfies:
+			_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+
 func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 	var levels: Dictionary = {}
 	for definition in definitions:
@@ -259,6 +292,9 @@ func _validate_rewards(definitions: Array[ContentDefinition]) -> void:
 		for candidate in definition.reward_candidates:
 			for condition: ConditionDef in candidate.conditions:
 				_validate_reward_condition(definition.id, condition)
+			if candidate.kind == &"item" and candidate.has_content_ref \
+				and _by_id.get(candidate.content_ref) is ItemComponentDef:
+				_issue(&"CONTENT_ITEM_GRANT_COMPONENT", definition.id, &"reward_candidates", String(candidate.content_ref))
 			if candidate.weight_i32 < 0:
 				_issue(&"CONTENT_REWARD_WEIGHT", definition.id, &"reward_candidates", "negative")
 			elif candidate.weight_i32 > 0:
@@ -385,6 +421,15 @@ func _validate_operations(definitions: Array[ContentDefinition]) -> void:
 		elif definition is ConsumableDef:
 			var consumable_definition := definition as ConsumableDef
 			_validate_run_operations(consumable_definition.id, consumable_definition.run_operations, &"run_operations", &"consumable", false, false)
+			if consumable_definition.use_timing == &"dismantle" and not consumable_definition.run_operations.is_empty():
+				_issue(&"CONTENT_CONSUMABLE_DISMANTLE", consumable_definition.id, &"run_operations", "dismantle")
+		elif definition is EquipmentDef:
+			var equipment_definition := definition as EquipmentDef
+			if equipment_definition.has_unique_group:
+				if equipment_definition.unique_group.is_empty() or not _stable_id_validator.is_valid(equipment_definition.unique_group):
+					_issue(&"CONTENT_EQUIPMENT_UNIQUE_GROUP", equipment_definition.id, &"unique_group", String(equipment_definition.unique_group))
+			elif not equipment_definition.unique_group.is_empty():
+				_issue(&"CONTENT_EQUIPMENT_UNIQUE_GROUP", equipment_definition.id, &"unique_group", String(equipment_definition.unique_group))
 		elif definition is MapNodeDef:
 			var map_definition := definition as MapNodeDef
 			var allow_capacity := map_definition.node_type == &"event"
@@ -604,6 +649,8 @@ func _validate_run_operations(
 				or not _is_item_content_ref(operation.content_ref) \
 				or operation.count < 1:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "grant_item")
+			elif _by_id.get(operation.content_ref) is ItemComponentDef:
+				_issue(&"CONTENT_ITEM_GRANT_COMPONENT", source_id, field_path, String(operation.content_ref))
 		elif operation is GrantRelicOperationDef:
 			if not _stable_id_validator.is_valid(operation.relic_ref) or not _by_id.has(operation.relic_ref) or not _by_id[operation.relic_ref] is RelicDef:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "grant_relic")

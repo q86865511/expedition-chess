@@ -25,6 +25,7 @@ func build(
 	var encounters: Array[BattleEncounterRule] = []
 	var equipment: Array[BattleEquipmentRule] = []
 	var configs: Array[BattleCombatConfigRule] = []
+	var relics: Array[BattleRelicRule] = []
 	while not pending.is_empty():
 		pending.sort_custom(_name_less)
 		var content_id: StringName = pending.pop_front()
@@ -88,6 +89,11 @@ func build(
 				var config := _decode_config(view)
 				if config == null: return _current_failure(content_id)
 				configs.append(config)
+			&"relic":
+				var relic_rule := _decode_relic(view)
+				if relic_rule == null: return _current_failure(content_id)
+				relics.append(relic_rule)
+				_append_names(pending, relic_rule.battle_effect_ids)
 			_:
 				return BattleRuleCatalogBuildResult.failure(
 					BattleRuleCatalogError.CATEGORY_MISMATCH,
@@ -105,8 +111,9 @@ func build(
 	effects.sort_custom(_effect_less)
 	encounters.sort_custom(_encounter_less)
 	equipment.sort_custom(_equipment_less)
+	relics.sort_custom(_relic_less)
 	return BattleRuleCatalogBuildResult.success(BattleRuleCatalog.new(
-		manifest_digest, units, traits, abilities, effects, encounters, equipment, configs
+		manifest_digest, units, traits, abilities, effects, encounters, equipment, configs, relics
 	))
 
 func _decode_unit(view: ContentDefinitionView) -> BattleUnitRule:
@@ -231,6 +238,22 @@ func _decode_equipment(view: ContentDefinitionView) -> BattleEquipmentRule:
 	result.effect_ids = _names(children[5])
 	if children[6].optional_present:
 		result.unique_group = OptionalStringNameValue.of(StringName(children[6].children[0].string_value))
+	return result
+
+func _decode_relic(view: ContentDefinitionView) -> BattleRelicRule:
+	if not _payload_is(view, ContentCategory.RELIC, 7): return null
+	var children: Array[ContentValue] = view.payload.children
+	var category := StringName(children[3].string_value)
+	if category != &"battle":
+		_error = BattleRuleCatalogError.new(
+			BattleRuleCatalogError.CATEGORY_MISMATCH,
+			&"relic.category",
+			view.content_id
+		)
+		return null
+	var result := BattleRelicRule.new()
+	result.relic_id = view.content_id
+	result.battle_effect_ids = _names(children[4])
 	return result
 
 func _decode_config(view: ContentDefinitionView) -> BattleCombatConfigRule:
@@ -435,3 +458,6 @@ func _encounter_less(left: BattleEncounterRule, right: BattleEncounterRule) -> b
 
 func _equipment_less(left: BattleEquipmentRule, right: BattleEquipmentRule) -> bool:
 	return String(left.equipment_id) < String(right.equipment_id)
+
+func _relic_less(left: BattleRelicRule, right: BattleRelicRule) -> bool:
+	return String(left.relic_id) < String(right.relic_id)

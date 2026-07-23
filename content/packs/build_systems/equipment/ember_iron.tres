@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_aotb6"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_wpfj5"]
+
+[sub_resource type="Resource" id="Resource_a20u8"]
+script = ExtResource("2_wpfj5")
+stat = &"attack"
+mode = &"flat"
+amount_i32 = 5
+
+[sub_resource type="Resource" id="Resource_uturd"]
+script = ExtResource("2_wpfj5")
+stat = &"armor"
+mode = &"flat"
+amount_i32 = 5
+
+[resource]
+script = ExtResource("1_aotb6")
+component_pair = Array[StringName]([&"item_component.ember_shard", &"item_component.iron_plate"])
+stat_modifiers = Array[ExtResource("2_wpfj5")]([SubResource("Resource_a20u8"), SubResource("Resource_uturd")])
+effect_refs = Array[StringName]([&"effect.equip_ember", &"effect.equip_iron"])
+id = &"equipment.ember_iron"
+display_name_key = &"loc.equipment_ember_iron"

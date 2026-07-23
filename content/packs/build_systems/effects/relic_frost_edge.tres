@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_72srm"]
+[ext_resource type="Script" path="res://content/definitions/damage_operation_def.gd" id="2_8drlw"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_jqev8"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_0elqi"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_m3kvb"]
+
+[sub_resource type="Resource" id="Resource_joh7b"]
+script = ExtResource("2_8drlw")
+base = 15
+scaling = &"attack"
+damage_type = &"magic"
+target = &"target"
+
+[sub_resource type="Resource" id="Resource_koeoy"]
+script = ExtResource("3_jqev8")
+kind = &"max_uses_per_battle"
+subject = &"self"
+comparator = &"lte"
+has_max_uses_per_battle = true
+max_uses_per_battle = 3
+
+[resource]
+script = ExtResource("5_m3kvb")
+trigger = &"hit"
+conditions = Array[ExtResource("3_jqev8")]([SubResource("Resource_koeoy")])
+battle_operations = Array[ExtResource("1_72srm")]([SubResource("Resource_joh7b")])
+stacking = &"independent"
+id = &"effect.relic_frost_edge"
+display_name_key = &"loc.effect_relic_frost_edge"

@@ -19,7 +19,7 @@ func generate_offers(request: GenerateOffersRequest) -> ShopTransactionResult:
 		return ShopTransactionResult.failure(ShopError.RNG_FAILED, &"shop_rng_snapshot")
 	var generation_error := _generate_offers(
 		request.run_id, request.node_id, economy, pool, owners,
-		stream_result.stream, request.catalog
+		stream_result.stream, request.catalog, _economy_discount(request)
 	)
 	if generation_error != null:
 		return ShopTransactionResult.failure(generation_error.code, generation_error.field_path)
@@ -46,7 +46,7 @@ func quote_refresh(request: RefreshShopRequest) -> ShopTransactionResult:
 		return ShopTransactionResult.failure(ShopError.RNG_FAILED, &"shop_rng_snapshot")
 	var generation_error := _generate_offers(
 		request.run_id, request.node_id, economy, pool, owners,
-		stream_result.stream, request.catalog
+		stream_result.stream, request.catalog, _economy_discount(request)
 	)
 	if generation_error != null:
 		return ShopTransactionResult.failure(generation_error.code, generation_error.field_path)
@@ -178,12 +178,24 @@ func _validate_request(request: ShopStateRequest) -> ShopError:
 		return ShopError.new(ShopError.INPUT_INVALID, &"request")
 	if request.next_transaction_serial.equals(U64Bits.max_value()):
 		return ShopError.new(ShopError.SERIAL_EXHAUSTED, &"next_transaction_serial")
+	# W3-F7 世代守衛：經濟遺物表若釘在與 catalog 不符的 manifest 世代，絕不得授權商店產生
+	# （catalog 為 content_snapshot 的可信代理，一致性由呼叫端更早驗）。
+	if request.relic_table != null \
+		and request.relic_table.manifest_digest_value() != request.catalog.manifest_digest_value():
+		return ShopError.new(ShopError.GENERATION_MISMATCH, &"relic_table.manifest_digest")
 	return null
+
+func _economy_discount(request: ShopStateRequest) -> int:
+	if request.relic_table == null:
+		return 0
+	return request.relic_table.sum_operation_amount(
+		request.active_relic_ids, &"economy", &"shop_discount"
+	)
 
 func _generate_offers(
 	run_id: StringName, node_id: StringName, economy: EconomyState,
 	pool: UnitPoolState, owners: Array[ReservationOwnerState],
-	stream: Pcg32Stream, catalog: EconomyExpeditionCatalog
+	stream: Pcg32Stream, catalog: EconomyExpeditionCatalog, price_discount: int
 ) -> ShopError:
 	var odds := catalog.config().try_odds_for_level(economy.level)
 	if odds == null:
@@ -241,7 +253,7 @@ func _generate_offers(
 		))
 		economy.shop_offers.append(ShopOffer.new(
 			slot_index, String(owner_key.digest), selected_rule.unit_id,
-			selected_rule.cost, 1, owner_key
+			maxi(1, selected_rule.cost - price_discount), 1, owner_key
 		))
 	_sort_owners(owners)
 	return null

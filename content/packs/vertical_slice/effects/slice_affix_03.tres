@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_7rh2l"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_dg24r"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_a41oq"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_nlt2s"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_bqgjn"]
+
+[sub_resource type="Resource" id="Resource_wu82m"]
+script = ExtResource("2_dg24r")
+stat = &"attack"
+mode = &"flat"
+amount = 8
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_bqgjn")
+content_role = &"elite_affix"
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_7rh2l")]([SubResource("Resource_wu82m")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_affix_03"
+display_name_key = &"loc.effect_slice_affix_03"

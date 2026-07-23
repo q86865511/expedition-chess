@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="EncounterDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/boss_phase_def.gd" id="1_f0m08"]
+[ext_resource type="Script" path="res://content/definitions/enemy_spawn_def.gd" id="2_216qe"]
+[ext_resource type="Script" path="res://content/definitions/encounter_def.gd" id="3_f4gcm"]
+
+[sub_resource type="Resource" id="Resource_ono24"]
+script = ExtResource("1_f0m08")
+hp_threshold_bps = 10000
+source_spawn_key = "boss_1"
+effect_refs = Array[StringName]([&"effect.slice_affix_01"])
+
+[sub_resource type="Resource" id="Resource_4ngca"]
+script = ExtResource("2_216qe")
+logical_y = 6
+logical_x = 1
+spawn_key = "boss_1"
+unit_ref = &"unit.slice_monster_03"
+
+[resource]
+script = ExtResource("3_f4gcm")
+encounter_kind = &"boss"
+enemy_spawns = Array[ExtResource("2_216qe")]([SubResource("Resource_4ngca")])
+affix_refs = Array[StringName]([&"effect.slice_affix_01", &"effect.slice_affix_02"])
+boss_phases = Array[ExtResource("1_f0m08")]([SubResource("Resource_ono24")])
+id = &"encounter.slice_boss_1"
+display_name_key = &"loc.encounter_slice_boss_1"

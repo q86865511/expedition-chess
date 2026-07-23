@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_bn58n"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_oe0u5"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_seqvc"]
+
+[sub_resource type="Resource" id="Resource_1kw7a"]
+script = ExtResource("1_bn58n")
+health = 750
+attack = 65
+armor = 20
+magic_resist = 20
+attack_speed_milli = 900
+attack_range_cells = 4
+max_mana = 75
+move_speed_milli = 1000
+
+[sub_resource type="Resource" id="Resource_3oajw"]
+script = ExtResource("3_seqvc")
+
+[sub_resource type="Resource" id="Resource_wsnhb"]
+script = ExtResource("3_seqvc")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_n8ls7"]
+script = ExtResource("3_seqvc")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_oe0u5")
+cost_tier = 4
+trait_refs = Array[StringName]([&"trait.faction_verdant", &"trait.role_marksman"])
+base_stats = SubResource("Resource_1kw7a")
+star_scalings = Array[ExtResource("3_seqvc")]([SubResource("Resource_3oajw"), SubResource("Resource_wsnhb"), SubResource("Resource_n8ls7")])
+ai_profile = &"frontline"
+basic_attack_profile = &"ranged"
+availability = &"player"
+shop_condition = &"always"
+id = &"unit.slice_player_25"
+display_name_key = &"loc.unit_slice_player_25"

@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_8emlf"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_yuchu"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_lb7rk"]
+
+[sub_resource type="Resource" id="Resource_dskxu"]
+script = ExtResource("1_8emlf")
+health = 810
+attack = 71
+armor = 20
+magic_resist = 20
+attack_speed_milli = 900
+attack_range_cells = 4
+max_mana = 81
+move_speed_milli = 1000
+
+[sub_resource type="Resource" id="Resource_0jy47"]
+script = ExtResource("3_lb7rk")
+
+[sub_resource type="Resource" id="Resource_yj321"]
+script = ExtResource("3_lb7rk")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_ermeb"]
+script = ExtResource("3_lb7rk")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_yuchu")
+cost_tier = 5
+trait_refs = Array[StringName]([&"trait.faction_verdant", &"trait.role_marksman"])
+base_stats = SubResource("Resource_dskxu")
+star_scalings = Array[ExtResource("3_lb7rk")]([SubResource("Resource_0jy47"), SubResource("Resource_yj321"), SubResource("Resource_ermeb")])
+ai_profile = &"frontline"
+basic_attack_profile = &"ranged"
+availability = &"player"
+shop_condition = &"always"
+id = &"unit.slice_player_31"
+display_name_key = &"loc.unit_slice_player_31"

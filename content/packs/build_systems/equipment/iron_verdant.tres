@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_sr7w8"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_ek0wp"]
+
+[sub_resource type="Resource" id="Resource_8fk6q"]
+script = ExtResource("2_ek0wp")
+stat = &"armor"
+mode = &"flat"
+amount_i32 = 5
+
+[sub_resource type="Resource" id="Resource_lpqmn"]
+script = ExtResource("2_ek0wp")
+stat = &"health"
+mode = &"flat"
+amount_i32 = 20
+
+[resource]
+script = ExtResource("1_sr7w8")
+component_pair = Array[StringName]([&"item_component.iron_plate", &"item_component.verdant_leaf"])
+stat_modifiers = Array[ExtResource("2_ek0wp")]([SubResource("Resource_8fk6q"), SubResource("Resource_lpqmn")])
+effect_refs = Array[StringName]([&"effect.equip_iron", &"effect.equip_verdant"])
+id = &"equipment.iron_verdant"
+display_name_key = &"loc.equipment_iron_verdant"

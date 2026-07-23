@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_fsben"]
+
+[resource]
+script = ExtResource("1_fsben")
+category = &"route"
+effect_refs = Array[StringName]([&"effect.relic_pathfinder_boots"])
+activation_limit = 2
+id = &"relic.pathfinder_boots"
+display_name_key = &"loc.relic_pathfinder_boots"

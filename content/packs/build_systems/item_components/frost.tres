@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemComponentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/item_component_def.gd" id="1_gah6t"]
+
+[resource]
+script = ExtResource("1_gah6t")
+recipe_key = "frost"
+sort_order = 2
+id = &"item_component.frost_core"
+display_name_key = &"loc.item_component_frost_core"

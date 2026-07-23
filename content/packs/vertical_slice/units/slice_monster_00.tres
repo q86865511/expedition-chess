@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_ees4b"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_sq815"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_8abxm"]
+
+[sub_resource type="Resource" id="Resource_de117"]
+script = ExtResource("1_ees4b")
+health = 300
+attack = 20
+armor = 10
+magic_resist = 10
+attack_speed_milli = 1000
+attack_range_cells = 1
+max_mana = 10
+move_speed_milli = 900
+
+[sub_resource type="Resource" id="Resource_oohvv"]
+script = ExtResource("3_8abxm")
+
+[sub_resource type="Resource" id="Resource_ukie8"]
+script = ExtResource("3_8abxm")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_4gf1v"]
+script = ExtResource("3_8abxm")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_sq815")
+base_stats = SubResource("Resource_de117")
+star_scalings = Array[ExtResource("3_8abxm")]([SubResource("Resource_oohvv"), SubResource("Resource_ukie8"), SubResource("Resource_4gf1v")])
+ai_profile = &"frontline"
+basic_attack_profile = &"melee"
+availability = &"monster"
+shop_condition = &"never"
+id = &"unit.slice_monster_00"
+display_name_key = &"loc.unit_slice_monster_00"

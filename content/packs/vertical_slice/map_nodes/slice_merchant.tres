@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MapNodeDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_i0ywq"]
+[ext_resource type="Script" path="res://content/definitions/map_node_def.gd" id="2_qajeg"]
+
+[resource]
+script = ExtResource("2_qajeg")
+node_type = &"merchant"
+generator_ref = &"effect.slice_affix_02"
+id = &"map_node.slice_merchant"
+display_name_key = &"loc.map_node_slice_merchant"

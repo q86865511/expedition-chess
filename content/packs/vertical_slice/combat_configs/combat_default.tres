@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CombatConfigDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/combat_config_def.gd" id="1_8efcp"]
+
+[resource]
+script = ExtResource("1_8efcp")
+id = &"config.combat_default"
+display_name_key = &"loc.config_combat_default"

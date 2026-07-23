@@ -7,13 +7,15 @@ var _session: RunSession
 var _save_repository: SaveRepository
 var _validator: RunStateValidator
 var _save_root_factory: RunSaveRootFactory
+var _battle_catalog: BattleRuleCatalog
 var _transaction_active: bool = false
 
 func _init(
 	p_session: RunSession,
 	p_save_repository: SaveRepository,
 	p_validator: RunStateValidator = null,
-	p_save_root_factory: RunSaveRootFactory = null
+	p_save_root_factory: RunSaveRootFactory = null,
+	p_battle_catalog: BattleRuleCatalog = null
 ) -> void:
 	_session = p_session
 	_save_repository = p_save_repository
@@ -23,6 +25,11 @@ func _init(
 		if p_save_root_factory != null
 		else RunSaveRootFactory.new()
 	)
+	# Pinned equipment-rule catalog held for the run's lifetime so the
+	# "bound item must be an EquipmentDef" invariant (run_state_validator.gd
+	# _validate_equipment_kind) runs on every commit instead of being dead code.
+	# deep_clone keeps presentation/domain from retaining a mutable reference.
+	_battle_catalog = p_battle_catalog.deep_clone() if p_battle_catalog != null else null
 
 func transition(event: RunEvent) -> RunTransitionResult:
 	var phase := _session.view_state().run_phase
@@ -118,6 +125,20 @@ func view_state() -> RunViewState:
 func committed_combat_snapshot() -> CombatCommittedSnapshot:
 	return _session.committed_combat_snapshot().deep_clone()
 
+## T10 (design.md §8) -- read-only deep-clone accessor for ViewModels: never
+## the same object graph as the canonical run, so a ViewModel can never retain
+## a mutable domain reference.
+func roster_snapshot() -> RosterState:
+	return _session.run_snapshot().roster_state.deep_clone()
+
+## T10 (design.md §8) -- read-only deep-clone accessor for ViewModels; null
+## when the run's resolution_state is not currently a
+## RewardPendingResolutionState (i.e. no pending reward to preview/resolve).
+func pending_reward_snapshot() -> PendingRewardState:
+	var resolution: ResolutionState = _session.run_snapshot().resolution_state
+	var reward_resolution: RewardPendingResolutionState = resolution as RewardPendingResolutionState
+	return reward_resolution.pending_reward.deep_clone() if reward_resolution != null else null
+
 func can_transition(event: RunEvent) -> bool:
 	if event == null or not event.is_concrete():
 		return false
@@ -153,7 +174,17 @@ func _commit_draft(
 				&"RUN_CONTENT_SNAPSHOT_IMMUTABLE"
 			)
 		)
-	var validation_result := _validator.validate_run(draft, 1, 1)
+	if _battle_catalog != null \
+		and _battle_catalog.manifest_digest_value() \
+			!= draft.content_snapshot.manifest_digest_value():
+		return RunCommitResult.failure(
+			RunCommitError.new(
+				RunCommitError.Kind.VALIDATION,
+				&"content_snapshot.manifest_digest",
+				&"RUN_CATALOG_GENERATION_MISMATCH"
+			)
+		)
+	var validation_result := _validator.validate_run(draft, 1, 1, _battle_catalog)
 	if not validation_result.ok:
 		return RunCommitResult.failure(
 			RunCommitError.new(

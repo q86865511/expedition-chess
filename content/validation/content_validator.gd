@@ -8,6 +8,7 @@ const EFFECT_CONDITIONS: Array[StringName] = [&"source_tag", &"target_tag", &"he
 const STACKING_RULES: Array[StringName] = [&"replace", &"refresh_duration", &"add_stacks", &"independent"]
 const BASIC_ATTACK_PROFILES: Array[StringName] = [&"melee", &"ranged", &"magic_projectile"]
 const SHOP_CONDITIONS: Array[StringName] = [&"always", &"unlocked", &"event_only", &"never"]
+const RELIC_CATEGORIES: Array[StringName] = [&"battle", &"economy", &"route", &"rule"]
 
 var _issues: Array[ContentValidationIssue] = []
 var _by_id: Dictionary = {}
@@ -25,6 +26,7 @@ func validate(input: ContentValidationInput) -> ContentValidationReport:
 	_validate_units_and_traits(input.definitions)
 	_validate_recipes(input.definitions)
 	_validate_minimum_counts_and_nodes(input.definitions)
+	_validate_relics(input.definitions)
 	_validate_challenge_chain(input.definitions)
 	_validate_economy(input.definitions)
 	_validate_rewards(input.definitions)
@@ -185,6 +187,7 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 	var bosses := 0
 	var event_generators: Dictionary = {}
 	var node_types: Array[StringName] = []
+	var node_type_counts: Dictionary = {}
 	for definition in definitions:
 		if definition is RelicDef: relics += 1
 		elif definition is CommanderDef: commanders += 1
@@ -193,6 +196,7 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 		elif definition is EncounterDef and definition.encounter_kind == &"boss": bosses += 1
 		elif definition is MapNodeDef:
 			if not node_types.has(definition.node_type): node_types.append(definition.node_type)
+			node_type_counts[definition.node_type] = int(node_type_counts.get(definition.node_type, 0)) + 1
 			if definition.node_type == &"event": event_generators[definition.generator_ref] = true
 			if definition.node_type in [&"normal", &"elite", &"boss"]:
 				var generator: ContentDefinition = _by_id.get(
@@ -210,6 +214,64 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 	var expected := NODE_TYPES.duplicate()
 	expected.sort_custom(_string_name_less)
 	if node_types != expected: _issue(&"CONTENT_NODE_KIND_COVERAGE", &"catalog.nodes", &"node_type", str(node_types))
+	# MapService 在 layer 1/3 的 branch anchor 上把 route 遺物觸發的 kind 覆寫
+	# NORMAL -> ELITE，且不消耗額外的 stream draw；覆寫後 rule_draw 的 bound 取自
+	# EconomyExpeditionCatalog.map_nodes_for(kind).size()，所以 NORMAL 與 ELITE 兩種
+	# node kind 的規則筆數必須相等，否則覆寫前後的 RNG 消耗量會分歧、破壞決定性。
+	var normal_count := int(node_type_counts.get(&"normal", 0))
+	var elite_count := int(node_type_counts.get(&"elite", 0))
+	if normal_count != elite_count:
+		_issue(
+			&"CONTENT_MAP_NODE_RULE_COUNT_PARITY", &"catalog.nodes", &"node_type",
+			"normal=%d/elite=%d" % [normal_count, elite_count]
+		)
+
+func _validate_relics(definitions: Array[ContentDefinition]) -> void:
+	var seen_categories: Dictionary = {}
+	for definition in definitions:
+		if not definition is RelicDef: continue
+		var relic := definition as RelicDef
+		if not RELIC_CATEGORIES.has(relic.category):
+			_issue(&"CONTENT_RELIC_CATEGORY", relic.id, &"category", String(relic.category))
+		else:
+			seen_categories[relic.category] = true
+			_validate_relic_effect_scope(relic, relic.category == &"battle")
+		if relic.activation_limit < 1 or relic.activation_limit > 99:
+			_issue(&"CONTENT_RELIC_ACTIVATION_LIMIT", relic.id, &"activation_limit", str(relic.activation_limit))
+	for category in RELIC_CATEGORIES:
+		if not seen_categories.has(category):
+			_issue(&"CONTENT_RELIC_CATEGORY_COVERAGE", &"catalog.relics", &"category", String(category))
+
+func _validate_relic_effect_scope(relic: RelicDef, require_battle_operations: bool) -> void:
+	if relic.effect_refs.is_empty():
+		_issue(&"CONTENT_RELIC_EFFECT_EMPTY", relic.id, &"effect_refs")
+		return
+	for effect_id in relic.effect_refs:
+		var effect: ContentDefinition = _by_id.get(effect_id)
+		if not effect is EffectDef:
+			_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+			continue
+		var effect_definition := effect as EffectDef
+		if require_battle_operations:
+			if effect_definition.battle_operations.is_empty():
+				_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+			continue
+		if effect_definition.run_operations.is_empty():
+			_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+			continue
+		# W4-F1（2026-07-24 使用者裁決）：非 battle 類遺物（economy/route/rule）引用的效果，其
+		# run intent 由 run-layer service（IncomeService/ShopService…）逐節點無條件消費——
+		# RunRelicTable.sum_operation_amount 不看 claim_scope，語意等同 always。故要求這些
+		# run_operations 的 claim_scope 一律為 &"always"，讓宣告的 scope 與實際消費行為一致，並與
+		# RunRelicTableBuilder 的 UNSUPPORTED_INTENT 守衛對齊（消除 validator↔builder 分歧）。
+		# 允許效果同時帶 battle_operations（混合效果）——其戰鬥部分不被 run layer 消費、屬 battle
+		# 類遺物作用域；此規則只約束會被 run layer 消費的 scalar run 部分。
+		for operation: RunOperationDef in effect_definition.run_operations:
+			if (operation is AddGoldOperationDef or operation is AddXpOperationDef \
+				or operation is HealExpeditionHpOperationDef or operation is ShopDiscountOperationDef) \
+				and _scalar_run_claim_scope(operation) != &"always":
+				_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", "%s:claim_scope" % String(effect_id))
+				break
 
 func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 	var levels: Dictionary = {}
@@ -231,17 +293,41 @@ func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 			if unlock.modifier_refs.is_empty(): _issue(&"CONTENT_CHALLENGE_CHAIN", unlock.id, &"modifier_refs", "missing")
 
 func _validate_economy(definitions: Array[ContentDefinition]) -> void:
+	var has_meta_reward_table := false
 	for definition in definitions:
+		if definition is MetaRewardTableDef: has_meta_reward_table = true
 		if not definition is EconomyConfigDef: continue
+		var levels_seen: Dictionary = {}
 		for row in definition.shop_odds_by_level:
 			var total := 0
 			for odds in row.tier_basis_points: total += odds
 			if row.tier_basis_points.size() != 5 or total != 10000: _issue(&"CONTENT_SHOP_PROBABILITY", definition.id, &"shop_odds_by_level", str(row.level))
+			levels_seen[row.level] = true
+		for level in range(3, 10):
+			if not levels_seen.has(level): _issue(&"CONTENT_SHOP_PROBABILITY", definition.id, &"shop_odds_by_level", str(level))
 		var tiers: Dictionary = {}
 		for pair in definition.pool_copies_by_tier:
 			tiers[pair.key_u32] = pair.value_u32
 		for tier in range(1, 6):
 			if int(tiers.get(tier, 0)) < 9: _issue(&"CONTENT_POOL_COPIES", definition.id, &"pool_copies_by_tier", str(tier))
+		# 以下鏡射 EconomyExpeditionCatalogBuilder._valid_config() 的必填欄位檢查——
+		# 驗證器放行但 builder 拒絕即為分歧缺陷（T11 wave4 實測發現，見 HANDOFF.md）。
+		if definition.layer_income.is_empty() or definition.interest_step_gold < 1 \
+			or definition.gold_cap < 1 or definition.reroll_cost < 0 \
+			or definition.xp_buy_cost < 1 or definition.xp_buy_amount < 1:
+			_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"economy_config", "scalar")
+		var costs: Dictionary = {}
+		for pair in definition.unit_costs_by_tier: costs[pair.key_u32] = pair.value_u32
+		for tier in range(1, 6):
+			if int(costs.get(tier, 0)) < 1:
+				_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"unit_costs_by_tier", str(tier))
+		var xp_levels: Dictionary = {}
+		for pair in definition.xp_thresholds: xp_levels[pair.key_u32] = pair.value_u32
+		for level in range(3, 9):
+			if int(xp_levels.get(level, 0)) < 1:
+				_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"xp_thresholds", str(level))
+	if not has_meta_reward_table:
+		_issue(&"CONTENT_META_REWARD_TABLE_MISSING", &"catalog.meta_reward_table", &"category")
 
 func _validate_rewards(definitions: Array[ContentDefinition]) -> void:
 	var has_standard := false
@@ -259,6 +345,9 @@ func _validate_rewards(definitions: Array[ContentDefinition]) -> void:
 		for candidate in definition.reward_candidates:
 			for condition: ConditionDef in candidate.conditions:
 				_validate_reward_condition(definition.id, condition)
+			if candidate.kind == &"item" and candidate.has_content_ref \
+				and _by_id.get(candidate.content_ref) is ItemComponentDef:
+				_issue(&"CONTENT_ITEM_GRANT_COMPONENT", definition.id, &"reward_candidates", String(candidate.content_ref))
 			if candidate.weight_i32 < 0:
 				_issue(&"CONTENT_REWARD_WEIGHT", definition.id, &"reward_candidates", "negative")
 			elif candidate.weight_i32 > 0:
@@ -385,6 +474,15 @@ func _validate_operations(definitions: Array[ContentDefinition]) -> void:
 		elif definition is ConsumableDef:
 			var consumable_definition := definition as ConsumableDef
 			_validate_run_operations(consumable_definition.id, consumable_definition.run_operations, &"run_operations", &"consumable", false, false)
+			if consumable_definition.use_timing == &"dismantle" and not consumable_definition.run_operations.is_empty():
+				_issue(&"CONTENT_CONSUMABLE_DISMANTLE", consumable_definition.id, &"run_operations", "dismantle")
+		elif definition is EquipmentDef:
+			var equipment_definition := definition as EquipmentDef
+			if equipment_definition.has_unique_group:
+				if equipment_definition.unique_group.is_empty() or not _stable_id_validator.is_valid(equipment_definition.unique_group):
+					_issue(&"CONTENT_EQUIPMENT_UNIQUE_GROUP", equipment_definition.id, &"unique_group", String(equipment_definition.unique_group))
+			elif not equipment_definition.unique_group.is_empty():
+				_issue(&"CONTENT_EQUIPMENT_UNIQUE_GROUP", equipment_definition.id, &"unique_group", String(equipment_definition.unique_group))
 		elif definition is MapNodeDef:
 			var map_definition := definition as MapNodeDef
 			var allow_capacity := map_definition.node_type == &"event"
@@ -586,8 +684,8 @@ func _validate_run_operations(
 		if operation == null or operation.operation_index != index or not _is_known_run_operation(operation):
 			_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "%s:index/type" % String(source_context))
 			continue
-		if operation is AddGoldOperationDef or operation is AddXpOperationDef or operation is HealExpeditionHpOperationDef:
-			if _scalar_run_amount(operation) < 0 or _scalar_run_claim_scope(operation) not in [&"once_per_node", &"on_first_clear"]:
+		if operation is AddGoldOperationDef or operation is AddXpOperationDef or operation is HealExpeditionHpOperationDef or operation is ShopDiscountOperationDef:
+			if _scalar_run_amount(operation) < 0 or _scalar_run_claim_scope(operation) not in [&"once_per_node", &"on_first_clear", &"always"]:
 				var scalar_code := &"CONTENT_RUN_INTENT_FORBIDDEN" if battle_source else &"CONTENT_OPERATION_INVALID"
 				_issue(scalar_code, source_id, field_path, "%s:amount/scope" % String(source_context))
 			continue
@@ -604,6 +702,8 @@ func _validate_run_operations(
 				or not _is_item_content_ref(operation.content_ref) \
 				or operation.count < 1:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "grant_item")
+			elif _by_id.get(operation.content_ref) is ItemComponentDef:
+				_issue(&"CONTENT_ITEM_GRANT_COMPONENT", source_id, field_path, String(operation.content_ref))
 		elif operation is GrantRelicOperationDef:
 			if not _stable_id_validator.is_valid(operation.relic_ref) or not _by_id.has(operation.relic_ref) or not _by_id[operation.relic_ref] is RelicDef:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "grant_relic")
@@ -615,6 +715,7 @@ func _is_known_run_operation(operation: RunOperationDef) -> bool:
 	return operation is AddGoldOperationDef \
 		or operation is AddXpOperationDef \
 		or operation is HealExpeditionHpOperationDef \
+		or operation is ShopDiscountOperationDef \
 		or operation is ModifyUnitPoolOperationDef \
 		or operation is GrantItemOperationDef \
 		or operation is GrantRelicOperationDef \
@@ -624,12 +725,14 @@ func _scalar_run_amount(operation: RunOperationDef) -> int:
 	if operation is AddGoldOperationDef: return (operation as AddGoldOperationDef).amount
 	if operation is AddXpOperationDef: return (operation as AddXpOperationDef).amount
 	if operation is HealExpeditionHpOperationDef: return (operation as HealExpeditionHpOperationDef).amount
+	if operation is ShopDiscountOperationDef: return (operation as ShopDiscountOperationDef).amount
 	return 0
 
 func _scalar_run_claim_scope(operation: RunOperationDef) -> StringName:
 	if operation is AddGoldOperationDef: return (operation as AddGoldOperationDef).claim_scope
 	if operation is AddXpOperationDef: return (operation as AddXpOperationDef).claim_scope
 	if operation is HealExpeditionHpOperationDef: return (operation as HealExpeditionHpOperationDef).claim_scope
+	if operation is ShopDiscountOperationDef: return (operation as ShopDiscountOperationDef).claim_scope
 	return &""
 
 func _is_item_content_ref(content_id: StringName) -> bool:

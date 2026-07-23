@@ -9,6 +9,7 @@ const CURRENT_NODE_MISSING: StringName = &"START_COMBAT_CURRENT_NODE_MISSING"
 const PREVIEW_MISSING: StringName = &"START_COMBAT_PREVIEW_MISSING"
 const PLAYER_SOURCE_MISMATCH: StringName = &"START_COMBAT_PLAYER_SOURCE_MISMATCH"
 const ENCOUNTER_KIND_INVALID: StringName = &"START_COMBAT_ENCOUNTER_KIND_INVALID"
+const OVERFLOW_PENDING: StringName = &"START_COMBAT_OVERFLOW_PENDING"
 
 var _catalog: BattleRuleCatalog
 var _sources: BattleSetupSourceBundle
@@ -43,6 +44,11 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	if draft.resolution_state == null \
 		or draft.resolution_state.kind != ResolutionState.Kind.IDLE:
 		return _rejected(&"run.resolution_state", RESOLUTION_INVALID)
+	# Hard gate (design §5.4): an unresolved item-overflow tray can never be
+	# bypassed into combat -- every entry must be dispositioned via
+	# ResolveOverflowCommand before PREPARE may be left, guaranteeing no softlock.
+	if not draft.roster_state.pending_item_overflow.is_empty():
+		return _rejected(&"run.roster_state.pending_item_overflow", OVERFLOW_PENDING)
 	var manifest_digest := draft.content_snapshot.manifest_digest_value()
 	if _catalog.manifest_digest_value() != manifest_digest \
 		or _sources.manifest_digest != manifest_digest:

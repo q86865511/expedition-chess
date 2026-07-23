@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemComponentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/item_component_def.gd" id="1_xlvuf"]
+
+[resource]
+script = ExtResource("1_xlvuf")
+recipe_key = "iron"
+sort_order = 3
+id = &"item_component.iron_plate"
+display_name_key = &"loc.item_component_iron_plate"

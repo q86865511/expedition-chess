@@ -123,13 +123,15 @@ func test_v2_effect_source_location_and_owner_are_hashed_and_strict() -> void:
 			BattleSetupHashBuilder.sha256_hex(changed_encoded.canonical_bytes),
 			BattleSetupHashBuilder.sha256_hex(baseline.canonical_bytes)
 		)
+	# W2-F1：design.md §4 明定裝備 source_instance_id=物品 instance id、
+	# 穿戴棋以 target_ids 表示。owner 驗證強度保持——穿戴棋(target)須解析為
+	# 合法上場 player 棋,否則整體拒絕(field 改為 target_ids)。
 	var wrong_owner := inputs.deep_clone()
-	wrong_owner.player_equipment_effects[0].source_instance_id = OptionalStringNameValue.of(
-		&"u_missing"
-	)
+	var missing_wearer: Array[StringName] = [&"u_missing"]
+	wrong_owner.player_equipment_effects[0].target_ids = missing_wearer
 	var rejected := codec.encode(wrong_owner)
 	assert_false(rejected.ok)
-	assert_eq(rejected.error.field_path, &"player_equipment_effects.0.source_instance_id")
+	assert_eq(rejected.error.field_path, &"player_equipment_effects.0.target_ids")
 	var wrong_location := inputs.deep_clone()
 	wrong_location.player_equipment_effects[0].source_category = &"relic"
 	rejected = codec.encode(wrong_location)

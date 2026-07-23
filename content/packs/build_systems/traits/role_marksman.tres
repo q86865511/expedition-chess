@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TraitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/trait_def.gd" id="1_i6vvr"]
+[ext_resource type="Script" path="res://content/definitions/trait_threshold_def.gd" id="2_kl0xf"]
+
+[sub_resource type="Resource" id="Resource_e0tsp"]
+script = ExtResource("2_kl0xf")
+required_count = 2
+effect_refs = Array[StringName]([&"effect.trait_role_marksman"])
+
+[sub_resource type="Resource" id="Resource_tn63o"]
+script = ExtResource("2_kl0xf")
+required_count = 4
+effect_refs = Array[StringName]([&"effect.trait_role_marksman"])
+
+[sub_resource type="Resource" id="Resource_xhakt"]
+script = ExtResource("2_kl0xf")
+required_count = 6
+effect_refs = Array[StringName]([&"effect.trait_role_marksman"])
+
+[resource]
+script = ExtResource("1_i6vvr")
+trait_kind = &"role"
+member_rule = &"distinct_unit_id"
+thresholds = Array[ExtResource("2_kl0xf")]([SubResource("Resource_e0tsp"), SubResource("Resource_tn63o"), SubResource("Resource_xhakt")])
+description_key = &"loc.trait_role_marksman_description"
+id = &"trait.role_marksman"
+display_name_key = &"loc.trait_role_marksman"

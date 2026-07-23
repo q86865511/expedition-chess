@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ConsumableDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_lbqc1"]
+[ext_resource type="Script" path="res://content/definitions/consumable_def.gd" id="2_iqk6m"]
+
+[resource]
+script = ExtResource("2_iqk6m")
+use_timing = &"dismantle"
+stack_limit = 3
+id = &"consumable.dismantle_kit"
+display_name_key = &"loc.consumable_dismantle_kit"

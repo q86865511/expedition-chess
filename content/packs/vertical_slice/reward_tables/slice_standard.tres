@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="RewardTableDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/reward_candidate_def.gd" id="1_ahm0d"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_uun15"]
+[ext_resource type="Script" path="res://content/definitions/reward_table_def.gd" id="3_wgrjo"]
+
+[sub_resource type="Resource" id="Resource_4ttnl"]
+script = ExtResource("2_uun15")
+kind = &"expedition_hp_below"
+subject = &"expedition_hp"
+comparator = &"lt"
+has_int_value = true
+int_value = 50
+
+[sub_resource type="Resource" id="Resource_cwrya"]
+script = ExtResource("1_ahm0d")
+kind = &"gold"
+weight_i32 = 5
+conditions = Array[ExtResource("2_uun15")]([SubResource("Resource_4ttnl")])
+
+[sub_resource type="Resource" id="Resource_h4xgs"]
+script = ExtResource("1_ahm0d")
+kind = &"heal"
+weight_i32 = 3
+
+[resource]
+script = ExtResource("3_wgrjo")
+reward_candidates = Array[ExtResource("1_ahm0d")]([SubResource("Resource_cwrya"), SubResource("Resource_h4xgs")])
+draw_count = 3
+id = &"reward_table.slice_standard"
+display_name_key = &"loc.reward_table_slice_standard"

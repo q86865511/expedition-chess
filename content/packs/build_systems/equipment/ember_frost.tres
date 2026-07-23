@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_7iuds"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_0ygex"]
+
+[sub_resource type="Resource" id="Resource_fxs6n"]
+script = ExtResource("2_0ygex")
+stat = &"attack"
+mode = &"flat"
+amount_i32 = 5
+
+[sub_resource type="Resource" id="Resource_x26a2"]
+script = ExtResource("2_0ygex")
+stat = &"magic_resist"
+mode = &"flat"
+amount_i32 = 5
+
+[resource]
+script = ExtResource("1_7iuds")
+component_pair = Array[StringName]([&"item_component.ember_shard", &"item_component.frost_core"])
+stat_modifiers = Array[ExtResource("2_0ygex")]([SubResource("Resource_fxs6n"), SubResource("Resource_x26a2")])
+effect_refs = Array[StringName]([&"effect.equip_ember", &"effect.equip_frost"])
+id = &"equipment.ember_frost"
+display_name_key = &"loc.equipment_ember_frost"

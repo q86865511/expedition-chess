@@ -19,6 +19,14 @@ func resolve(
 		return ExpeditionActionResult.failure(
 			ExpeditionActionError.PHASE_INVALID, &"run_phase"
 		)
+	# Hard gate (design §5.4): leaving PREPARE via a non-combat node is refused
+	# while the item-overflow tray is non-empty, mirroring the StartCombatEvent
+	# gate so the tray can never be bypassed into a softlock.
+	if source.roster_state != null \
+		and not source.roster_state.pending_item_overflow.is_empty():
+		return ExpeditionActionResult.failure(
+			ExpeditionActionError.OVERFLOW_PENDING, &"roster_state.pending_item_overflow"
+		)
 	var node := _current_node(source)
 	if node == null or node.node_kind in [
 		MapNodeState.NodeKind.NORMAL,

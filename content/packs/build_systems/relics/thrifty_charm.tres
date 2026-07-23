@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_k3lpa"]
+
+[resource]
+script = ExtResource("1_k3lpa")
+category = &"economy"
+effect_refs = Array[StringName]([&"effect.relic_thrifty_charm"])
+activation_limit = 3
+id = &"relic.thrifty_charm"
+display_name_key = &"loc.relic_thrifty_charm"

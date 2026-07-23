@@ -1,0 +1,79 @@
+[gd_resource type="Resource" script_class="MetaRewardTableDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/enum_int_pair_def.gd" id="1_kq2df"]
+[ext_resource type="Script" path="res://content/definitions/challenge_multiplier_def.gd" id="2_n6h1a"]
+[ext_resource type="Script" path="res://content/definitions/meta_reward_table_def.gd" id="3_yv9pw"]
+
+[sub_resource type="Resource" id="Resource_ns001"]
+script = ExtResource("1_kq2df")
+enum_key = &"normal"
+value_i32 = 1
+
+[sub_resource type="Resource" id="Resource_ns002"]
+script = ExtResource("1_kq2df")
+enum_key = &"elite"
+value_i32 = 2
+
+[sub_resource type="Resource" id="Resource_ns003"]
+script = ExtResource("1_kq2df")
+enum_key = &"merchant"
+value_i32 = 1
+
+[sub_resource type="Resource" id="Resource_ns004"]
+script = ExtResource("1_kq2df")
+enum_key = &"event"
+value_i32 = 1
+
+[sub_resource type="Resource" id="Resource_ns005"]
+script = ExtResource("1_kq2df")
+enum_key = &"rest"
+value_i32 = 0
+
+[sub_resource type="Resource" id="Resource_ns006"]
+script = ExtResource("1_kq2df")
+enum_key = &"treasure"
+value_i32 = 1
+
+[sub_resource type="Resource" id="Resource_ns007"]
+script = ExtResource("1_kq2df")
+enum_key = &"boss"
+value_i32 = 5
+
+[sub_resource type="Resource" id="Resource_cm000"]
+script = ExtResource("2_n6h1a")
+challenge_level = 0
+basis_points = 10000
+
+[sub_resource type="Resource" id="Resource_cm001"]
+script = ExtResource("2_n6h1a")
+challenge_level = 1
+basis_points = 11000
+
+[sub_resource type="Resource" id="Resource_cm002"]
+script = ExtResource("2_n6h1a")
+challenge_level = 2
+basis_points = 12000
+
+[sub_resource type="Resource" id="Resource_cm003"]
+script = ExtResource("2_n6h1a")
+challenge_level = 3
+basis_points = 13000
+
+[sub_resource type="Resource" id="Resource_cm004"]
+script = ExtResource("2_n6h1a")
+challenge_level = 4
+basis_points = 14000
+
+[sub_resource type="Resource" id="Resource_cm005"]
+script = ExtResource("2_n6h1a")
+challenge_level = 5
+basis_points = 15000
+
+[resource]
+script = ExtResource("3_yv9pw")
+node_scores = Array[ExtResource("1_kq2df")]([SubResource("Resource_ns001"), SubResource("Resource_ns002"), SubResource("Resource_ns003"), SubResource("Resource_ns004"), SubResource("Resource_ns005"), SubResource("Resource_ns006"), SubResource("Resource_ns007")])
+completion_reward = 10
+failure_reward = 2
+challenge_multiplier_bps = Array[ExtResource("2_n6h1a")]([SubResource("Resource_cm000"), SubResource("Resource_cm001"), SubResource("Resource_cm002"), SubResource("Resource_cm003"), SubResource("Resource_cm004"), SubResource("Resource_cm005")])
+id = &"meta_reward_table.slice_default"
+display_name_key = &"loc.meta_reward_table_slice_default"

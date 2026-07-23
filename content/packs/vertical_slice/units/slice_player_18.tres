@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_us3af"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_r6v37"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_hoxp7"]
+
+[sub_resource type="Resource" id="Resource_d6yqo"]
+script = ExtResource("1_us3af")
+health = 680
+attack = 58
+armor = 20
+magic_resist = 20
+attack_speed_milli = 900
+attack_range_cells = 1
+max_mana = 68
+move_speed_milli = 1000
+
+[sub_resource type="Resource" id="Resource_ko1mk"]
+script = ExtResource("3_hoxp7")
+
+[sub_resource type="Resource" id="Resource_bflgg"]
+script = ExtResource("3_hoxp7")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_c6epf"]
+script = ExtResource("3_hoxp7")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_r6v37")
+cost_tier = 3
+trait_refs = Array[StringName]([&"trait.faction_arcane", &"trait.role_vanguard"])
+base_stats = SubResource("Resource_d6yqo")
+star_scalings = Array[ExtResource("3_hoxp7")]([SubResource("Resource_ko1mk"), SubResource("Resource_bflgg"), SubResource("Resource_c6epf")])
+ai_profile = &"frontline"
+basic_attack_profile = &"melee"
+availability = &"player"
+shop_condition = &"always"
+id = &"unit.slice_player_18"
+display_name_key = &"loc.unit_slice_player_18"

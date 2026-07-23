@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_jcbqo"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_txivq"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_bv2iq"]
+
+[sub_resource type="Resource" id="Resource_eu0g1"]
+script = ExtResource("1_jcbqo")
+health = 340
+attack = 24
+armor = 10
+magic_resist = 10
+attack_speed_milli = 1000
+attack_range_cells = 4
+max_mana = 10
+move_speed_milli = 900
+
+[sub_resource type="Resource" id="Resource_gq86h"]
+script = ExtResource("3_bv2iq")
+
+[sub_resource type="Resource" id="Resource_qxyp3"]
+script = ExtResource("3_bv2iq")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_qmpql"]
+script = ExtResource("3_bv2iq")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_txivq")
+base_stats = SubResource("Resource_eu0g1")
+star_scalings = Array[ExtResource("3_bv2iq")]([SubResource("Resource_gq86h"), SubResource("Resource_qxyp3"), SubResource("Resource_qmpql")])
+ai_profile = &"frontline"
+basic_attack_profile = &"ranged"
+availability = &"monster"
+shop_condition = &"never"
+id = &"unit.slice_monster_04"
+display_name_key = &"loc.unit_slice_monster_04"

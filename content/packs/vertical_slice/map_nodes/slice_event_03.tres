@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MapNodeDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_ah4wj"]
+[ext_resource type="Script" path="res://content/definitions/map_node_def.gd" id="2_c2wa7"]
+
+[resource]
+script = ExtResource("2_c2wa7")
+node_type = &"event"
+generator_ref = &"effect.slice_event_gen_03"
+id = &"map_node.slice_event_03"
+display_name_key = &"loc.map_node_slice_event_03"

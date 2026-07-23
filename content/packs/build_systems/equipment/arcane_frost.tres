@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_r12sm"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_cxuwh"]
+
+[sub_resource type="Resource" id="Resource_dp3qm"]
+script = ExtResource("2_cxuwh")
+stat = &"max_mana"
+mode = &"flat"
+amount_i32 = 10
+
+[sub_resource type="Resource" id="Resource_the2j"]
+script = ExtResource("2_cxuwh")
+stat = &"magic_resist"
+mode = &"flat"
+amount_i32 = 5
+
+[resource]
+script = ExtResource("1_r12sm")
+component_pair = Array[StringName]([&"item_component.arcane_dust", &"item_component.frost_core"])
+stat_modifiers = Array[ExtResource("2_cxuwh")]([SubResource("Resource_dp3qm"), SubResource("Resource_the2j")])
+effect_refs = Array[StringName]([&"effect.equip_arcane", &"effect.equip_frost"])
+id = &"equipment.arcane_frost"
+display_name_key = &"loc.equipment_arcane_frost"

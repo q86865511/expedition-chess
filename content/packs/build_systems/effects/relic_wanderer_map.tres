@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_cmlg6"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_p16jd"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_k4hu5"]
+[ext_resource type="Script" path="res://content/definitions/heal_expedition_hp_operation_def.gd" id="4_781te"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_l85wq"]
+
+[sub_resource type="Resource" id="Resource_jyh4l"]
+script = ExtResource("4_781te")
+amount = 5
+claim_scope = &"always"
+
+[resource]
+script = ExtResource("5_l85wq")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_k4hu5")]([SubResource("Resource_jyh4l")])
+stacking = &"replace"
+id = &"effect.relic_wanderer_map"
+display_name_key = &"loc.effect_relic_wanderer_map"

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EncounterDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/boss_phase_def.gd" id="1_7tug4"]
+[ext_resource type="Script" path="res://content/definitions/enemy_spawn_def.gd" id="2_v17xv"]
+[ext_resource type="Script" path="res://content/definitions/encounter_def.gd" id="3_awnaf"]
+
+[sub_resource type="Resource" id="Resource_57378"]
+script = ExtResource("2_v17xv")
+logical_y = 6
+logical_x = 3
+spawn_key = "enemy_0"
+unit_ref = &"unit.slice_monster_01"
+
+[resource]
+script = ExtResource("3_awnaf")
+encounter_kind = &"elite"
+enemy_spawns = Array[ExtResource("2_v17xv")]([SubResource("Resource_57378")])
+affix_refs = Array[StringName]([&"effect.slice_affix_00", &"effect.slice_affix_01"])
+id = &"encounter.slice_elite"
+display_name_key = &"loc.encounter_slice_elite"

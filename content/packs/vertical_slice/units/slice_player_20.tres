@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_xew8h"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_6bjcp"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_4h4v1"]
+
+[sub_resource type="Resource" id="Resource_c6lh1"]
+script = ExtResource("1_xew8h")
+health = 700
+attack = 60
+armor = 20
+magic_resist = 20
+attack_speed_milli = 900
+attack_range_cells = 4
+max_mana = 70
+move_speed_milli = 1000
+
+[sub_resource type="Resource" id="Resource_h4lwk"]
+script = ExtResource("3_4h4v1")
+
+[sub_resource type="Resource" id="Resource_4jmwt"]
+script = ExtResource("3_4h4v1")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_26l0n"]
+script = ExtResource("3_4h4v1")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_6bjcp")
+cost_tier = 3
+trait_refs = Array[StringName]([&"trait.faction_ember", &"trait.role_mystic"])
+base_stats = SubResource("Resource_c6lh1")
+star_scalings = Array[ExtResource("3_4h4v1")]([SubResource("Resource_h4lwk"), SubResource("Resource_4jmwt"), SubResource("Resource_26l0n")])
+ai_profile = &"frontline"
+basic_attack_profile = &"magic_projectile"
+availability = &"player"
+shop_condition = &"always"
+id = &"unit.slice_player_20"
+display_name_key = &"loc.unit_slice_player_20"

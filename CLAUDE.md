@@ -37,6 +37,7 @@
 ## 文件工作流
 
 - 進度記於 `PROGRESS.md`(六區段);用 `/save-progress` 累積、`/sync-notion` 同步 Notion。
+- Claude／Codex 分工邊界與 presentation 消費契約見 `HANDOFF.md`;跨方交接（邏輯 vs 美術/UI）先讀該檔。
 - 功能級開發用 `specs/<功能名>/` 三件套(requirements / design / tasks),餵 `/pipeline`。
 - 架構規格 → 實作的切片規劃見 `docs/implementation-slices.md`(74 REQ 切成 5 個功能片 + 銜接流程);要實作某片時照它走三件套。
 
@@ -45,3 +46,4 @@
 - S1 `foundation-core`：已完成；規格位於 `specs/foundation-core/`。
 - S2 `combat-core`：已完成；規格與複檢紀錄位於 `specs/combat-core/`，完成證據位於 `artifacts/test/`。
 - S3 `economy-expedition`：階段 0～6、逐 AC 證據與獨立 T00R／T11B 已完成；複檢紀錄位於 `specs/economy-expedition/final-review.md`。
+- S4 `build-systems`：已完成（2026-07-24）；規格與複檢紀錄位於 `specs/build-systems/`（三件套＋implementation-review.md）。

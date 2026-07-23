@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ItemComponentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/item_component_def.gd" id="1_5ycyp"]
+
+[resource]
+script = ExtResource("1_5ycyp")
+recipe_key = "arcane"
+id = &"item_component.arcane_dust"
+display_name_key = &"loc.item_component_arcane_dust"

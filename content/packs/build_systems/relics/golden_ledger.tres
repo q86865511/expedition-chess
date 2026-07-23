@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_ncsga"]
+
+[resource]
+script = ExtResource("1_ncsga")
+category = &"economy"
+effect_refs = Array[StringName]([&"effect.relic_golden_ledger"])
+activation_limit = 3
+id = &"relic.golden_ledger"
+display_name_key = &"loc.relic_golden_ledger"

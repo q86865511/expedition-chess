@@ -8,6 +8,11 @@ func quote(request: IncomeQuoteRequest) -> IncomeQuoteResult:
 		return IncomeQuoteResult.failure(ShopError.INPUT_INVALID, &"request")
 	if request.next_transaction_serial.equals(U64Bits.max_value()):
 		return IncomeQuoteResult.failure(ShopError.SERIAL_EXHAUSTED, &"next_transaction_serial")
+	# W3-F7 世代守衛：經濟遺物表若釘在與 catalog 不符的 manifest 世代，絕不得授權收入報價
+	# （catalog 為 content_snapshot 的可信代理，一致性由呼叫端更早驗）。
+	if request.relic_table != null \
+		and request.relic_table.manifest_digest_value() != request.catalog.manifest_digest_value():
+		return IncomeQuoteResult.failure(ShopError.GENERATION_MISMATCH, &"relic_table.manifest_digest")
 	var config := request.catalog.config()
 	var economy := request.economy_state.deep_clone()
 	var pre_gold := economy.gold
@@ -15,7 +20,12 @@ func quote(request: IncomeQuoteRequest) -> IncomeQuoteResult:
 	var interest_steps := pre_gold / config.interest_step_gold
 	var interest := mini(interest_steps * config.interest_per_step, config.max_interest)
 	var streak := config.streak_reward(economy.win_streak)
-	economy.gold = mini(config.gold_cap, pre_gold + base + interest + streak)
+	var relic_bonus := 0
+	if request.relic_table != null:
+		relic_bonus = request.relic_table.sum_operation_amount(
+			request.active_relic_ids, &"economy", &"add_gold"
+		)
+	economy.gold = mini(config.gold_cap, pre_gold + base + interest + streak + relic_bonus)
 	var key_result := RuntimeKeySchemaRegistry.new().build_transaction(
 		request.run_id, request.node_id, &"node_income", request.next_transaction_serial
 	)

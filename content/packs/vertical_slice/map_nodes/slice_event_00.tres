@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="MapNodeDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_n6at0"]
+[ext_resource type="Script" path="res://content/definitions/modify_unit_pool_operation_def.gd" id="2_y0nsm"]
+[ext_resource type="Script" path="res://content/definitions/grant_item_operation_def.gd" id="3_o874m"]
+[ext_resource type="Script" path="res://content/definitions/grant_relic_operation_def.gd" id="4_x4iop"]
+[ext_resource type="Script" path="res://content/definitions/population_source_operation_def.gd" id="5_pc463"]
+[ext_resource type="Script" path="res://content/definitions/heal_expedition_hp_operation_def.gd" id="6_33qco"]
+[ext_resource type="Script" path="res://content/definitions/map_node_def.gd" id="7_4rqlh"]
+
+[sub_resource type="Resource" id="Resource_s8qk8"]
+script = ExtResource("2_y0nsm")
+unit_ref = &"unit.slice_player_00"
+count = 1
+
+[sub_resource type="Resource" id="Resource_tc7gm"]
+script = ExtResource("3_o874m")
+content_ref = &"consumable.dismantle_kit"
+count = 1
+operation_index = 1
+
+[sub_resource type="Resource" id="Resource_dqiuq"]
+script = ExtResource("4_x4iop")
+relic_ref = &"relic.ember_ward"
+operation_index = 2
+
+[sub_resource type="Resource" id="Resource_xavjn"]
+script = ExtResource("5_pc463")
+source_id = &"source.slice_event_bonus"
+amount = 1
+operation_index = 3
+
+[sub_resource type="Resource" id="Resource_qennv"]
+script = ExtResource("6_33qco")
+amount = 5
+claim_scope = &"once_per_node"
+
+[resource]
+script = ExtResource("7_4rqlh")
+node_type = &"event"
+generator_ref = &"effect.slice_event_gen_00"
+enter_operations = Array[ExtResource("1_n6at0")]([SubResource("Resource_s8qk8"), SubResource("Resource_tc7gm"), SubResource("Resource_dqiuq"), SubResource("Resource_xavjn")])
+exit_operations = Array[ExtResource("1_n6at0")]([SubResource("Resource_qennv")])
+id = &"map_node.slice_event_00"
+display_name_key = &"loc.map_node_slice_event_00"

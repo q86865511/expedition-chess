@@ -23,3 +23,6 @@ Thumbs.db
 artifacts/test/*
 !artifacts/test/.gitkeep
 *.tmp
+
+# pipeline 狀態(本機)
+.pipeline/

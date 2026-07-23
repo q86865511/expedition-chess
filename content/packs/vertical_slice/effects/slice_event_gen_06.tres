@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_a1y86"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_ppgqm"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_j6di1"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="4_c5r7q"]
+
+[resource]
+script = ExtResource("4_c5r7q")
+trigger = &"battle_start"
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_event_gen_06"
+display_name_key = &"loc.effect_slice_event_gen_06"

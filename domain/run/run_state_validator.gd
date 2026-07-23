@@ -81,7 +81,12 @@ func validate_profile(profile: ProfileState) -> DtoValidationResult:
 		last_digest = String(receipt.key.digest)
 	return DtoValidationResult.success()
 
-func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_version: int = 1) -> DtoValidationResult:
+func validate_run(
+	run: RunState,
+	expected_rng_version: int = 1,
+	expected_hash_version: int = 1,
+	battle_catalog: BattleRuleCatalog = null
+) -> DtoValidationResult:
 	if run == null or run.run_key == null or run.run_id != String(run.run_key.digest):
 		return _failure(&"run.run_id")
 	if not _runtime_key(run.run_key):
@@ -112,6 +117,24 @@ func validate_run(run: RunState, expected_rng_version: int = 1, expected_hash_ve
 	var roster_result := _validate_roster(run.roster_state)
 	if not roster_result.ok:
 		return roster_result
+	# Hard gate (design §5.4), the 繞不過 final defence behind the early-exit
+	# checks in StartCombatEvent/NonCombatNodeService: the one-shot item-overflow
+	# tray may be non-empty only while the player can still dispose of it -- during
+	# PREPARE (the disposition window) or REWARD (the item-resolution flow that
+	# populates it, validated in _validate_resolution). Once the run has left
+	# PREPARE into COMBAT, a committed MAP transition, or terminal RESULTS, the
+	# tray MUST be empty -- so any future PREPARE exit is caught here at
+	# commit-validate time and can never softlock. Placed after _validate_roster
+	# so structural roster errors (e.g. duplicate item location) still surface
+	# first, mirroring how the reward-phase tray gate lives in _validate_resolution.
+	if run.run_phase in [
+		RunState.RunPhase.COMBAT, RunState.RunPhase.MAP, RunState.RunPhase.RESULTS,
+	] and not run.roster_state.pending_item_overflow.is_empty():
+		return _failure(&"run.roster_state.pending_item_overflow")
+	if battle_catalog != null:
+		var equipment_kind_result := _validate_equipment_kind(run.roster_state, battle_catalog)
+		if not equipment_kind_result.ok:
+			return equipment_kind_result
 	var pool_roster_result := _validate_pool_roster_conservation(
 		run.unit_pool_state,
 		run.roster_state
@@ -352,6 +375,16 @@ func _validate_roster(roster: RosterState) -> DtoValidationResult:
 		if slot == null or slot.slot_index != index \
 			or (slot.relic_id != null and not _stable_id(slot.relic_id.value)):
 			return _failure(&"run.roster_state.active_relic_slots")
+	return DtoValidationResult.success()
+
+func _validate_equipment_kind(
+	roster: RosterState,
+	battle_catalog: BattleRuleCatalog
+) -> DtoValidationResult:
+	for item: ItemInstanceState in roster.item_instances:
+		if item.bound_unit_instance_id != null \
+			and battle_catalog.try_equipment_rule(item.def_id) == null:
+			return _failure(&"run.roster_state.item_instances.def_id")
 	return DtoValidationResult.success()
 
 func _validate_pool_roster_conservation(

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CommanderDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/weighted_enum_def.gd" id="1_tqgfl"]
+[ext_resource type="Script" path="res://content/definitions/commander_def.gd" id="2_6wkcb"]
+[ext_resource type="Script" path="res://content/definitions/content_amount_def.gd" id="3_15v0u"]
+
+[sub_resource type="Resource" id="Resource_7o4i6"]
+script = ExtResource("1_tqgfl")
+enum_key = &"normal"
+weight_i32 = 1
+
+[sub_resource type="Resource" id="Resource_q877h"]
+script = ExtResource("3_15v0u")
+content_id = &"unit.slice_player_00"
+count_u32 = 1
+
+[resource]
+script = ExtResource("2_6wkcb")
+starting_pack = Array[ExtResource("3_15v0u")]([SubResource("Resource_q877h")])
+passive_effect_refs = Array[StringName]([&"effect.slice_commander_passive"])
+route_preferences = Array[ExtResource("1_tqgfl")]([SubResource("Resource_7o4i6")])
+id = &"commander.slice_c0"
+display_name_key = &"loc.commander_slice_c0"

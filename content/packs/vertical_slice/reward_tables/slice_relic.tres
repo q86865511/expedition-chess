@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RewardTableDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/reward_candidate_def.gd" id="1_gpgci"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_ucukp"]
+[ext_resource type="Script" path="res://content/definitions/reward_table_def.gd" id="3_tgmjv"]
+
+[sub_resource type="Resource" id="Resource_yix4k"]
+script = ExtResource("1_gpgci")
+kind = &"relic"
+has_content_ref = true
+content_ref = &"relic.ember_ward"
+weight_i32 = 1
+
+[resource]
+script = ExtResource("3_tgmjv")
+reward_candidates = Array[ExtResource("1_gpgci")]([SubResource("Resource_yix4k")])
+draw_count = 3
+id = &"reward_table.slice_relic"
+display_name_key = &"loc.reward_table_slice_relic"

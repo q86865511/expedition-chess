@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UnlockDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unlock_def.gd" id="1_7om7b"]
+
+[resource]
+script = ExtResource("1_7om7b")
+unlock_kind = &"challenge"
+challenge_level = 5
+prerequisite_refs = Array[StringName]([&"unlock.slice_challenge_4"])
+modifier_refs = Array[StringName]([&"effect.slice_affix_04"])
+id = &"unlock.slice_challenge_5"
+display_name_key = &"loc.unlock_slice_challenge_5"

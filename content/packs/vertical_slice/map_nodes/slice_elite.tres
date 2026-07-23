@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MapNodeDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_hlqpd"]
+[ext_resource type="Script" path="res://content/definitions/map_node_def.gd" id="2_t1wdk"]
+
+[resource]
+script = ExtResource("2_t1wdk")
+node_type = &"elite"
+generator_ref = &"encounter.slice_elite"
+id = &"map_node.slice_elite"
+display_name_key = &"loc.map_node_slice_elite"

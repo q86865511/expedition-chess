@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="UnitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_stats_def.gd" id="1_2h8x7"]
+[ext_resource type="Script" path="res://content/definitions/unit_def.gd" id="2_rvyea"]
+[ext_resource type="Script" path="res://content/definitions/star_scaling_def.gd" id="3_6sck7"]
+
+[sub_resource type="Resource" id="Resource_0b0fl"]
+script = ExtResource("1_2h8x7")
+health = 590
+attack = 49
+armor = 20
+magic_resist = 20
+attack_speed_milli = 900
+attack_range_cells = 1
+max_mana = 59
+move_speed_milli = 1000
+
+[sub_resource type="Resource" id="Resource_edejo"]
+script = ExtResource("3_6sck7")
+
+[sub_resource type="Resource" id="Resource_r7bmi"]
+script = ExtResource("3_6sck7")
+star = 2
+health_bps = 18000
+attack_bps = 18000
+armor_bps = 18000
+magic_resist_bps = 18000
+attack_speed_bps = 18000
+attack_range_bps = 18000
+start_mana_bps = 18000
+max_mana_bps = 18000
+move_speed_bps = 18000
+
+[sub_resource type="Resource" id="Resource_bc5rk"]
+script = ExtResource("3_6sck7")
+star = 3
+health_bps = 32000
+attack_bps = 32000
+armor_bps = 32000
+magic_resist_bps = 32000
+attack_speed_bps = 32000
+attack_range_bps = 32000
+start_mana_bps = 32000
+max_mana_bps = 32000
+move_speed_bps = 32000
+
+[resource]
+script = ExtResource("2_rvyea")
+trait_refs = Array[StringName]([&"trait.faction_frost", &"trait.role_sentinel"])
+base_stats = SubResource("Resource_0b0fl")
+star_scalings = Array[ExtResource("3_6sck7")]([SubResource("Resource_edejo"), SubResource("Resource_r7bmi"), SubResource("Resource_bc5rk")])
+ai_profile = &"frontline"
+basic_attack_profile = &"melee"
+availability = &"player"
+shop_condition = &"always"
+id = &"unit.slice_player_09"
+display_name_key = &"loc.unit_slice_player_09"

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EncounterDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/boss_phase_def.gd" id="1_pjswv"]
+[ext_resource type="Script" path="res://content/definitions/enemy_spawn_def.gd" id="2_rpsys"]
+[ext_resource type="Script" path="res://content/definitions/encounter_def.gd" id="3_owehy"]
+
+[sub_resource type="Resource" id="Resource_ijr6i"]
+script = ExtResource("2_rpsys")
+logical_y = 6
+logical_x = 3
+spawn_key = "enemy_0"
+unit_ref = &"unit.slice_monster_00"
+
+[resource]
+script = ExtResource("3_owehy")
+encounter_kind = &"normal"
+enemy_spawns = Array[ExtResource("2_rpsys")]([SubResource("Resource_ijr6i")])
+id = &"encounter.slice_normal"
+display_name_key = &"loc.encounter_slice_normal"

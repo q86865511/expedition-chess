@@ -1,0 +1,108 @@
+[gd_resource type="Resource" script_class="EconomyConfigDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/u32_pair_def.gd" id="1_3yr7h"]
+[ext_resource type="Script" path="res://content/definitions/economy_config_def.gd" id="2_1vww3"]
+[ext_resource type="Script" path="res://content/definitions/shop_odds_row_def.gd" id="3_a646h"]
+
+[sub_resource type="Resource" id="Resource_yuetx"]
+script = ExtResource("1_3yr7h")
+key_u32 = 1
+value_u32 = 18
+
+[sub_resource type="Resource" id="Resource_kyx4y"]
+script = ExtResource("1_3yr7h")
+key_u32 = 2
+value_u32 = 15
+
+[sub_resource type="Resource" id="Resource_umapg"]
+script = ExtResource("1_3yr7h")
+key_u32 = 3
+value_u32 = 12
+
+[sub_resource type="Resource" id="Resource_m33wd"]
+script = ExtResource("1_3yr7h")
+key_u32 = 4
+value_u32 = 10
+
+[sub_resource type="Resource" id="Resource_0k3l8"]
+script = ExtResource("1_3yr7h")
+key_u32 = 5
+value_u32 = 9
+
+[sub_resource type="Resource" id="Resource_4fiuu"]
+script = ExtResource("3_a646h")
+level = 1
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_ckumw"]
+script = ExtResource("3_a646h")
+level = 2
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_7nx8e"]
+script = ExtResource("3_a646h")
+level = 3
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_ee105"]
+script = ExtResource("3_a646h")
+level = 4
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_8knpm"]
+script = ExtResource("3_a646h")
+level = 5
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_d87oa"]
+script = ExtResource("3_a646h")
+level = 6
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_cuotb"]
+script = ExtResource("3_a646h")
+level = 7
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_uaa6s"]
+script = ExtResource("3_a646h")
+level = 8
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_olnla"]
+script = ExtResource("3_a646h")
+level = 9
+tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+
+[sub_resource type="Resource" id="Resource_7nome"]
+script = ExtResource("1_3yr7h")
+key_u32 = 1
+value_u32 = 1
+
+[sub_resource type="Resource" id="Resource_4qhrn"]
+script = ExtResource("1_3yr7h")
+key_u32 = 2
+value_u32 = 2
+
+[sub_resource type="Resource" id="Resource_tghom"]
+script = ExtResource("1_3yr7h")
+key_u32 = 3
+value_u32 = 3
+
+[sub_resource type="Resource" id="Resource_8ugvu"]
+script = ExtResource("1_3yr7h")
+key_u32 = 4
+value_u32 = 4
+
+[sub_resource type="Resource" id="Resource_ob2t3"]
+script = ExtResource("1_3yr7h")
+key_u32 = 5
+value_u32 = 5
+
+[resource]
+script = ExtResource("2_1vww3")
+shop_odds_by_level = Array[ExtResource("3_a646h")]([SubResource("Resource_4fiuu"), SubResource("Resource_ckumw"), SubResource("Resource_7nx8e"), SubResource("Resource_ee105"), SubResource("Resource_8knpm"), SubResource("Resource_d87oa"), SubResource("Resource_cuotb"), SubResource("Resource_uaa6s"), SubResource("Resource_olnla")])
+pool_copies_by_tier = Array[ExtResource("1_3yr7h")]([SubResource("Resource_yuetx"), SubResource("Resource_kyx4y"), SubResource("Resource_umapg"), SubResource("Resource_m33wd"), SubResource("Resource_0k3l8")])
+unit_costs_by_tier = Array[ExtResource("1_3yr7h")]([SubResource("Resource_7nome"), SubResource("Resource_4qhrn"), SubResource("Resource_tghom"), SubResource("Resource_8ugvu"), SubResource("Resource_ob2t3")])
+id = &"economy.slice_default"
+display_name_key = &"loc.economy_slice_default"

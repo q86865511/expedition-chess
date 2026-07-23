@@ -48,6 +48,10 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	if item == null or item.bound_unit_instance_id != null \
 		or not draft.roster_state.inventory_item_instance_ids.has(_item_instance_id):
 		return _rejected(&"run.roster_state.item_instances", &"EQUIP_ITEM_NOT_IN_INVENTORY")
+	# SYNC: the three equip rules below (equipment-rule resolves, slots < capacity,
+	# no unique_group conflict) are duplicated by hand in
+	# resolve_overflow_command.gd:130-144 (its overflow-tray equip path cannot
+	# delegate here) -- any change to this check logic must be mirrored there.
 	var rule := _catalog.try_equipment_rule(item.def_id)
 	if rule == null:
 		return _rejected(&"run.roster_state.item_instances.def_id", &"EQUIP_ITEM_NOT_EQUIPMENT")

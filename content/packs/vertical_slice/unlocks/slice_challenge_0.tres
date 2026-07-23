@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="UnlockDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unlock_def.gd" id="1_pxsth"]
+
+[resource]
+script = ExtResource("1_pxsth")
+unlock_kind = &"challenge"
+id = &"unlock.slice_challenge_0"
+display_name_key = &"loc.unlock_slice_challenge_0"

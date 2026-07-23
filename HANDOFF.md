@@ -22,12 +22,14 @@
 4. **不得讀 latest catalog**：內容一律經 pinned canonical snapshot（`ContentRegistry` generation pin）；UI 顯示的門檻／數值必須與模擬消費同一份 compiled snapshot（例：羈絆預覽用 `BattleSetupSourceCompiler` 的產物）。
 5. **Autoload 維持既有五個**（`ContentRegistry`、`SaveService`、`SettingsService`、`AudioService`、`SceneRouter`），不新增。
 6. 驗證失敗 command 會回具名 error——UI 負責呈現，不得吞掉或繞過（例如 overflow tray 未清空時開戰被拒是設計行為）。
+   - **具名原因的讀法**：頂層 `CommandError.code` 對所有拒絕一律是 `APPLY_FAILED`；具體原因（如 `EQUIP_ITEM_SLOTS_FULL`、`RESOLVE_OVERFLOW_ITEM_NOT_IN_TRAY`）在 `error.diagnostic_values` 中 key 為 `source_code` 的診斷字串——UI 分流訊息請讀這裡。
+7. **讀取節奏**：ViewModel 每次讀取都回完整 deep-clone snapshot——請「操作後刷新」，不要逐幀輪詢（避免高頻深拷貝的效能壓力）。ViewModel 建構時持有 pinned catalog/規則表的私有 clone；catalog 世代更換（新 run／熱重載）時請重建 ViewModel 實例，勿沿用舊物件。
 
 **ViewModel 入口清單**（S4 起提供，Codex 換皮起點）：
-- `TraitPreviewViewModel` — 羈絆面板（當前計數／下一門檻／效果，與實戰同源）
-- `ForgeViewModel` — 鍛造介面（零件清單、配方預覽）
-- `InventoryViewModel` — 物品庫／棋子裝備／overflow tray
-- `RelicSlotViewModel` — 遺物槽序與第六件替換
+- `TraitPreviewViewModel`（`presentation/viewmodels/trait_preview_view_model.gd`） — 羈絆面板（當前計數／下一門檻／效果，與實戰同源）
+- `ForgeViewModel`（`presentation/viewmodels/forge_view_model.gd`） — 鍛造介面（零件清單、配方預覽）
+- `InventoryViewModel`（`presentation/viewmodels/inventory_view_model.gd`） — 物品庫／棋子裝備／overflow tray
+- `RelicSlotViewModel`（`presentation/viewmodels/relic_slot_view_model.gd`） — 遺物槽序與第六件替換
 - （S2/S3 既有）戰鬥 event/result clone、商店 offer 表、地圖節點狀態——見各 Lab 的 session/presentation 腳本示範消費方式
 
 ## 3. 進度地圖（接手時從這裡看）

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MapNodeDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_c6ua3"]
+[ext_resource type="Script" path="res://content/definitions/add_xp_operation_def.gd" id="2_evk4c"]
+[ext_resource type="Script" path="res://content/definitions/map_node_def.gd" id="3_bnvjg"]
+
+[sub_resource type="Resource" id="Resource_fw33r"]
+script = ExtResource("2_evk4c")
+amount = 5
+claim_scope = &"once_per_node"
+
+[resource]
+script = ExtResource("3_bnvjg")
+node_type = &"normal"
+generator_ref = &"encounter.slice_normal"
+enter_operations = Array[ExtResource("1_c6ua3")]([SubResource("Resource_fw33r")])
+id = &"map_node.slice_normal"
+display_name_key = &"loc.map_node_slice_normal"

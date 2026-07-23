@@ -125,6 +125,20 @@ func view_state() -> RunViewState:
 func committed_combat_snapshot() -> CombatCommittedSnapshot:
 	return _session.committed_combat_snapshot().deep_clone()
 
+## T10 (design.md §8) -- read-only deep-clone accessor for ViewModels: never
+## the same object graph as the canonical run, so a ViewModel can never retain
+## a mutable domain reference.
+func roster_snapshot() -> RosterState:
+	return _session.run_snapshot().roster_state.deep_clone()
+
+## T10 (design.md §8) -- read-only deep-clone accessor for ViewModels; null
+## when the run's resolution_state is not currently a
+## RewardPendingResolutionState (i.e. no pending reward to preview/resolve).
+func pending_reward_snapshot() -> PendingRewardState:
+	var resolution: ResolutionState = _session.run_snapshot().resolution_state
+	var reward_resolution: RewardPendingResolutionState = resolution as RewardPendingResolutionState
+	return reward_resolution.pending_reward.deep_clone() if reward_resolution != null else null
+
 func can_transition(event: RunEvent) -> bool:
 	if event == null or not event.is_concrete():
 		return false

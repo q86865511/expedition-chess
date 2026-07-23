@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="Resource_lgrbe"]
 script = ExtResource("4_tqwo5")
 amount = 3
-claim_scope = &"on_first_clear"
+claim_scope = &"always"
 
 [resource]
 script = ExtResource("5_fgpud")

@@ -12,7 +12,8 @@ func enter(
 	run: RunState,
 	target_node_id: String,
 	catalog: EconomyExpeditionCatalog,
-	battle_catalog: BattleRuleCatalog = null
+	battle_catalog: BattleRuleCatalog = null,
+	relic_table: RunRelicTable = null
 ) -> NodeEntryResult:
 	if run == null or target_node_id.is_empty() or catalog == null or run.map_state == null:
 		return NodeEntryResult.failure(NodeEntryError.INPUT_INVALID, &"request")
@@ -67,10 +68,15 @@ func enter(
 				compiled.error.field_path
 			)
 		node.encounter_preview = compiled.preview.deep_clone()
+	# 路線／經濟遺物的作用中槽位（依 slot_index 升序）由 draft roster 推導，餵給 income／shop。
+	var active_relic_ids := RunRelicActivation.active_ids_in_slot_order(
+		draft.roster_state.active_relic_slots
+	)
 	if not draft.income_claimed_node_ids.has(target_node_id):
 		var income := _income_service.quote(IncomeQuoteRequest.new(
 			StringName(draft.run_id), StringName(target_node_id), node.layer_index,
-			draft.economy_state, draft.next_transaction_serial, catalog
+			draft.economy_state, draft.next_transaction_serial, catalog,
+			relic_table, active_relic_ids
 		))
 		if not income.ok:
 			return NodeEntryResult.failure(income.error.code, income.error.field_path)
@@ -90,7 +96,8 @@ func enter(
 	var shop := _shop_service.generate_offers(GenerateOffersRequest.new(
 		StringName(draft.run_id), StringName(target_node_id), draft.economy_state,
 		draft.unit_pool_state, draft.roster_state, draft.reservation_owners,
-		shop_rng, draft.next_transaction_serial, draft.next_unit_serial, catalog
+		shop_rng, draft.next_transaction_serial, draft.next_unit_serial, catalog,
+		relic_table, active_relic_ids
 	))
 	if not shop.ok:
 		return NodeEntryResult.failure(shop.error.code, shop.error.field_path)

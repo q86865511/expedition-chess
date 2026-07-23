@@ -23,10 +23,11 @@
 | `encounters/` | 5 | `encounter.slice_normal`／`slice_elite`／`slice_boss_0..2`（3 Boss，各 1 phase） |
 | `map_nodes/` | 18 | 6 種固定節點（normal/elite/merchant/rest/treasure/boss 各 1）＋12 個 event 節點，`generator_ref` 各不相同；normal／elite 節點數相等（W2-F6 規則） |
 | `unlocks/` | 7 | `unlock.slice_base_profile`（3 位起始棋，共享 `trait.faction_arcane`／`trait.role_vanguard`，滿足門檻可達性）＋6 級 challenge 鏈 |
-| `economy_configs/` | 1 | `economy.slice_default`：shop_odds_by_level（level 1-9）、pool_copies_by_tier（tier 1-5 皆 >=9） |
+| `economy_configs/` | 1 | `economy.slice_default`：shop_odds_by_level（level 1-9）、pool_copies_by_tier（tier 1-5 皆 >=9）、unit_costs_by_tier（tier 1-5）、layer_income／streak_rewards／loss_subsidy／xp_thresholds（level 3-8，TUNE 佔位，見 T11 wave4 修復說明） |
 | `combat_configs/` | 1 | `config.combat_default`：全部欄位採用 `CombatConfigDef` 預設值（固定規則與驗證器要求的精確值一致） |
 | `reward_tables/` | 2 | `reward_table.slice_standard`（gold/heal，涵蓋 standard／event 兩種 fallback）、`reward_table.slice_relic`（指向 `build_systems` 的 `relic.ember_ward`） |
 | `effects/` | 19 | 6 個 elite_affix（`effect.slice_affix_*`）＋12 個 event generator 佔位（`effect.slice_event_gen_*`）＋1 個指揮官被動（`effect.slice_commander_passive`） |
+| `meta_reward_tables/` | 1 | `meta_reward_table.slice_default`：node_scores（7 種節點 kind）、challenge_multiplier_bps（level 0-5）、completion/failure_reward，皆為 TUNE 佔位——S5 meta-progression 尚未開工，正式語意由該片擁有（見 T11 wave4 修復說明） |
 
 ## 設計慣例（供後續擴充參考）
 
@@ -47,6 +48,20 @@
   `entity_stress_minimum` 落在 `CombatConfigDef` 預設 `entity_budget = 64` 之內。
 - **TUNE 佔位**：全部數值（stat/star_scalings bps、economy 賠率與 pool 數、reward 權重、
   affix 加成等）皆為 TUNE 佔位，非最終平衡，僅供驗證器與 Build Lab 灰盒可跑。
+
+## T11 wave4 內容缺口修復（見 HANDOFF.md 交接紀錄）
+
+T11 灰盒首次把本 pack 餵進 production `EconomyExpeditionCatalogBuilder`／
+`ContentRegistryReceiptAdapter` 後，暴露兩個此前從未被觸發過的內容缺口，本次一併補齊：
+
+1. `economy_configs/slice_default.tres` 原本沒有填 `layer_income`／`xp_thresholds`
+   （`@export` 預設空陣列），被 `EconomyExpeditionCatalogBuilder._valid_config()`
+   判定不合法（S3 測試只用過 `EconomyTestFixture` 合成 config，從未餵過這份正式內容）。
+   現已補上 TUNE 佔位值（沿用 `tests/fixtures/economy/economy_test_fixture.gd` 的合理設定）。
+2. 本 pack 與 `build_systems` 合併後此前完全沒有 `meta_reward_table` 分類內容，導致任何真正
+   走 `ContentRegistryReceiptAdapter` 的 save/load 在 receipt 重建階段必定失敗
+   （`PINNED_CATALOG_REFERENCE_MISSING`）。現已新增 `meta_reward_tables/slice_default.tres`
+   佔位內容，數值與正式語意由 S5 meta-progression 片擁有。
 
 ## 重新產生方式
 

@@ -70,7 +70,10 @@ func test_builder_decodes_run_operations_from_referenced_effect_for_economy_reli
 		var add_gold: RunRelicOperationRule = by_kind[&"add_gold"]
 		assert_eq(add_gold.operation_index, 0)
 		assert_eq(add_gold.amount, 1)
-		assert_eq(add_gold.claim_scope, &"once_per_node")
+		# W4-F1（2026-07-24）：斷言語意不變——驗證 builder 保真回傳 effect 宣告的 claim_scope。
+		# fixture 的 effect.operation_matrix 因新規則改宣告 &"always"（非 battle 遺物 run intent
+		# 必須 always），斷言值隨之同步；仍鎖定「解碼保真」而非放寬。
+		assert_eq(add_gold.claim_scope, &"always")
 
 func test_builder_run_operations_isolated_from_lookup_mutation() -> void:
 	var registry := ContentRegistryService.new()
@@ -174,7 +177,7 @@ func test_builder_rejects_relic_whose_run_intents_are_all_unsupported_for_its_ca
 	var dead_operation := AddXpOperationDef.new()
 	dead_operation.operation_index = 0
 	dead_operation.amount = 1
-	dead_operation.claim_scope = &"once_per_node"
+	dead_operation.claim_scope = &"always"
 	var dead_effect := EffectDef.new()
 	dead_effect.id = &"effect.dead_economy_intent"
 	dead_effect.schema_version = 1

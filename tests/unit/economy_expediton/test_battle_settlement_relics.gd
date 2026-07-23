@@ -28,7 +28,7 @@ func test_existing_two_arg_settle_call_still_compiles_and_behaves_unchanged() ->
 func test_win_settlement_adds_rule_relic_heal_bonus_after_existing_proposals() -> void:
 	var root := _win_root(80, 0, [])
 	var catalog := EconomyTestFixture.settlement_catalog(root.run.content_snapshot.manifest_digest_value())
-	var table := RunRelicTable.new(EconomyTestFixture.MANIFEST, [_rule_heal_rule(&"relic.rule_a", 5)])
+	var table := RunRelicTable.new(root.run.content_snapshot.manifest_digest_value(), [_rule_heal_rule(&"relic.rule_a", 5)])
 	var settled := BattleSettlementService.new().settle(root.run, catalog, table, [&"relic.rule_a"])
 	assert_true(settled.ok, "%s:%s" % [
 		String(settled.error.code) if settled.error != null else "none",
@@ -41,7 +41,7 @@ func test_win_settlement_adds_rule_relic_heal_bonus_after_existing_proposals() -
 func test_win_settlement_heal_bonus_is_capped_at_expedition_hp_cap() -> void:
 	var root := _win_root(98, 0, [])
 	var catalog := EconomyTestFixture.settlement_catalog(root.run.content_snapshot.manifest_digest_value())
-	var table := RunRelicTable.new(EconomyTestFixture.MANIFEST, [_rule_heal_rule(&"relic.rule_a", 5)])
+	var table := RunRelicTable.new(root.run.content_snapshot.manifest_digest_value(), [_rule_heal_rule(&"relic.rule_a", 5)])
 	var settled := BattleSettlementService.new().settle(root.run, catalog, table, [&"relic.rule_a"])
 	assert_true(settled.ok)
 	if not settled.ok:
@@ -51,7 +51,7 @@ func test_win_settlement_heal_bonus_is_capped_at_expedition_hp_cap() -> void:
 func test_multiple_rule_relics_sum_the_settlement_heal_bonus() -> void:
 	var root := _win_root(80, 0, [])
 	var catalog := EconomyTestFixture.settlement_catalog(root.run.content_snapshot.manifest_digest_value())
-	var table := RunRelicTable.new(EconomyTestFixture.MANIFEST, [
+	var table := RunRelicTable.new(root.run.content_snapshot.manifest_digest_value(), [
 		_rule_heal_rule(&"relic.rule_a", 3),
 		_rule_heal_rule(&"relic.rule_b", 4),
 	])
@@ -76,7 +76,7 @@ func test_economy_category_relic_does_not_affect_settlement_hp() -> void:
 	economy_rule.category = &"economy"
 	economy_rule.effect_ids = [&"effect.fixture"]
 	economy_rule.run_operations = [economy_operation]
-	var table := RunRelicTable.new(EconomyTestFixture.MANIFEST, [economy_rule])
+	var table := RunRelicTable.new(root.run.content_snapshot.manifest_digest_value(), [economy_rule])
 	var settled := BattleSettlementService.new().settle(root.run, catalog, table, [&"relic.eco_a"])
 	assert_true(settled.ok)
 	if not settled.ok:
@@ -86,7 +86,7 @@ func test_economy_category_relic_does_not_affect_settlement_hp() -> void:
 func test_loss_settlement_reduces_expedition_damage_by_rule_relic_bonus() -> void:
 	var root := _loss_root(100, 30)
 	var catalog := EconomyTestFixture.settlement_catalog(root.run.content_snapshot.manifest_digest_value())
-	var table := RunRelicTable.new(EconomyTestFixture.MANIFEST, [_rule_heal_rule(&"relic.rule_a", 10)])
+	var table := RunRelicTable.new(root.run.content_snapshot.manifest_digest_value(), [_rule_heal_rule(&"relic.rule_a", 10)])
 	var settled := BattleSettlementService.new().settle(root.run, catalog, table, [&"relic.rule_a"])
 	assert_true(settled.ok, "%s:%s" % [
 		String(settled.error.code) if settled.error != null else "none",
@@ -99,7 +99,7 @@ func test_loss_settlement_reduces_expedition_damage_by_rule_relic_bonus() -> voi
 func test_loss_damage_reduction_floors_at_zero_and_never_heals() -> void:
 	var root := _loss_root(100, 5)
 	var catalog := EconomyTestFixture.settlement_catalog(root.run.content_snapshot.manifest_digest_value())
-	var table := RunRelicTable.new(EconomyTestFixture.MANIFEST, [_rule_heal_rule(&"relic.rule_a", 10)])
+	var table := RunRelicTable.new(root.run.content_snapshot.manifest_digest_value(), [_rule_heal_rule(&"relic.rule_a", 10)])
 	var settled := BattleSettlementService.new().settle(root.run, catalog, table, [&"relic.rule_a"])
 	assert_true(settled.ok)
 	if not settled.ok:

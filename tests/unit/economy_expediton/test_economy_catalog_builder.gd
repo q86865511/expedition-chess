@@ -17,11 +17,11 @@ func test_catalog_decodes_from_pinned_generation_and_is_clone_isolated() -> void
 			reward_ids.append(definition.id)
 	assert_not_null(economy)
 	if economy == null: return
-	economy.layer_income = [_pair(0, 5)]
+	# layer_income／xp_thresholds 已由 SyntheticContentFixture._economy() 預設補齊
+	# (T11 wave4,見 content_validator.gd 對 EconomyConfigDef 必填欄位的驗證器對齊)——
+	# 這裡只再補上驗證器不要求、但本測試不需要斷言的 streak_rewards／loss_subsidy。
 	economy.streak_rewards = [_pair(3, 1), _pair(5, 2)]
 	economy.loss_subsidy = [_pair(2, 3)]
-	var thresholds := [4, 8, 16, 28, 44, 64]
-	for level: int in range(3, 9): economy.xp_thresholds.append(_pair(level, thresholds[level - 3]))
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var installed := registry.install_validated(fixture, "economy.fixture", [&"pack.core"])

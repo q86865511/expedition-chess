@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="Resource_5eoo7"]
 script = ExtResource("4_jr2cv")
 amount = 4
-claim_scope = &"once_per_node"
+claim_scope = &"always"
 
 [resource]
 script = ExtResource("5_ywxym")

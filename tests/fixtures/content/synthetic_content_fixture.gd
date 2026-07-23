@@ -218,18 +218,21 @@ static func _operation_matrix_effect() -> EffectDef:
 	mana.amount = 5
 	mana.target = &"self"
 	value.battle_operations = [damage, heal, shield, modify, apply_status, remove_status, move, summon, mana]
+	# W4-F1（2026-07-24）：effect.operation_matrix 被 economy/route/rule 遺物引用，其 run intent
+	# 的 claim_scope 必須為 &"always"（見 content_validator._validate_relic_effect_scope 與
+	# RunRelicTableBuilder）。map_node／consumable 的 run intent 不受此規則約束，維持 once_per_node。
 	var add_gold := AddGoldOperationDef.new()
 	add_gold.operation_index = 0
 	add_gold.amount = 1
-	add_gold.claim_scope = &"once_per_node"
+	add_gold.claim_scope = &"always"
 	var add_xp := AddXpOperationDef.new()
 	add_xp.operation_index = 1
 	add_xp.amount = 1
-	add_xp.claim_scope = &"once_per_node"
+	add_xp.claim_scope = &"always"
 	var heal_hp := HealExpeditionHpOperationDef.new()
 	heal_hp.operation_index = 2
 	heal_hp.amount = 1
-	heal_hp.claim_scope = &"once_per_node"
+	heal_hp.claim_scope = &"always"
 	value.run_operations = [add_gold, add_xp, heal_hp]
 	var condition := ConditionDef.new()
 	condition.kind = &"source_tag"
@@ -332,8 +335,9 @@ static func _relic(index: int) -> RelicDef:
 	return value
 
 # 15 件遺物涵蓋四類各 >=1（0-3 battle、4-7 economy、8-10 route、11-14 rule）。
-# effect_refs 統一指向 effect.operation_matrix——其 battle_operations 與
-# run_operations 皆非空，battle／非 battle 類遺物的 effect scope 規則都能滿足。
+# effect_refs 統一指向 effect.operation_matrix——其 battle_operations 與 run_operations 皆非空，
+# battle／非 battle 類遺物的 effect scope 規則都能滿足；run_operations 的 claim_scope 全為
+# &"always"（W4-F1：非 battle 遺物引用的 run intent 必須 always）。
 static func _relic_category_for_index(index: int) -> StringName:
 	if index < 4: return &"battle"
 	if index < 8: return &"economy"
@@ -499,6 +503,10 @@ static func _unlocks() -> Array[ContentDefinition]:
 static func _economy() -> EconomyConfigDef:
 	var value := EconomyConfigDef.new()
 	_common(value, &"economy.default")
+	var income := U32PairDef.new()
+	income.key_u32 = 0
+	income.value_u32 = 5
+	value.layer_income = [income]
 	for level in range(1, 10):
 		var odds := ShopOddsRowDef.new()
 		odds.level = level
@@ -514,6 +522,12 @@ static func _economy() -> EconomyConfigDef:
 		cost.key_u32 = tier
 		cost.value_u32 = tier
 		value.unit_costs_by_tier.append(cost)
+	var thresholds := [4, 8, 16, 28, 44, 64]
+	for level in range(3, 9):
+		var threshold := U32PairDef.new()
+		threshold.key_u32 = level
+		threshold.value_u32 = thresholds[level - 3]
+		value.xp_thresholds.append(threshold)
 	return value
 
 static func _combat_config() -> CombatConfigDef:

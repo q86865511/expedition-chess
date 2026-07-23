@@ -95,6 +95,57 @@ func test_combined_manifest_installs_validated_with_zero_issues_and_pins_into_ca
 	var resolved := registry.resolve(ref)
 	assert_true(resolved.ok, "resolve 應能查回剛 pin 的 unit.slice_player_00")
 
+# T11 wave4(見 content/packs/vertical_slice/README.md「T11 wave4 內容缺口修復」)：
+# economy_config 原本缺 layer_income/xp_thresholds 等必填欄位，被
+# EconomyExpeditionCatalogBuilder._valid_config() 拒絕——S3 測試至今只用過
+# EconomyTestFixture 合成 config，從未把這份正式內容餵進 production builder。
+# 本測試把雙 pack 安裝進 registry 後，直接呼叫該 builder 驗證正式內容現在能真正
+# build 成功。
+func test_vertical_slice_economy_config_builds_via_production_builder() -> void:
+	var build_systems_pack := _load_pack(BUILD_SYSTEMS_ROOT)
+	var vertical_slice_pack := _load_pack(VERTICAL_SLICE_ROOT)
+	var combined: Array[ContentDefinition] = []
+	combined.append_array(build_systems_pack)
+	combined.append_array(vertical_slice_pack)
+
+	var dependency_port := FakeContentDependencyPort.new()
+	var input := ContentValidationInput.new(combined, [], [], dependency_port, 9)
+	var report := ContentValidator.new().validate(input)
+	assert_true(report.valid, _issue_text(report))
+	if not report.valid: return
+
+	var registry := ContentRegistryService.new()
+	add_child_autofree(registry)
+	var pack_ids: Array[StringName] = [&"pack.build_systems", &"pack.vertical_slice"]
+	var install_result := registry.install_validated(input, "0.1.0-vertical-slice-t11", pack_ids)
+	if not install_result.ok:
+		assert_true(install_result.ok, "install_validated 失敗: %s" % install_result.error.code)
+		return
+	var digest := install_result.handle.manifest_digest
+
+	var unit_ids: Array[StringName] = []
+	var map_node_ids: Array[StringName] = []
+	var reward_table_ids: Array[StringName] = []
+	var economy_config_id: StringName = &""
+	for definition: ContentDefinition in combined:
+		match definition.category_name():
+			&"unit": unit_ids.append(definition.id)
+			&"map_node": map_node_ids.append(definition.id)
+			&"reward_table": reward_table_ids.append(definition.id)
+			&"economy_config": economy_config_id = definition.id
+	assert_ne(economy_config_id, &"", "應能找到 economy_config")
+
+	var economy_result := EconomyExpeditionCatalogBuilder.new().build(
+		registry, digest, economy_config_id, unit_ids, map_node_ids, reward_table_ids
+	)
+	assert_true(
+		economy_result.ok,
+		"EconomyExpeditionCatalogBuilder 應對正式內容 build 成功: %s field=%s" % [
+			economy_result.error.code if not economy_result.ok else "",
+			economy_result.error.field_path if not economy_result.ok else "",
+		]
+	)
+
 # ================= pack 載入 =================
 
 func _load_pack(root: String) -> Array[ContentDefinition]:

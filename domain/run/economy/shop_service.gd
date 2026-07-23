@@ -178,6 +178,11 @@ func _validate_request(request: ShopStateRequest) -> ShopError:
 		return ShopError.new(ShopError.INPUT_INVALID, &"request")
 	if request.next_transaction_serial.equals(U64Bits.max_value()):
 		return ShopError.new(ShopError.SERIAL_EXHAUSTED, &"next_transaction_serial")
+	# W3-F7 世代守衛：經濟遺物表若釘在與 catalog 不符的 manifest 世代，絕不得授權商店產生
+	# （catalog 為 content_snapshot 的可信代理，一致性由呼叫端更早驗）。
+	if request.relic_table != null \
+		and request.relic_table.manifest_digest_value() != request.catalog.manifest_digest_value():
+		return ShopError.new(ShopError.GENERATION_MISMATCH, &"relic_table.manifest_digest")
 	return null
 
 func _economy_discount(request: ShopStateRequest) -> int:

@@ -7,6 +7,11 @@ const LAYER_COUNT: int = 7
 func generate_map(request: MapGenerationRequest) -> MapGenerationResult:
 	if request == null or request.run_id.is_empty() or request.run_seed == null or request.catalog == null:
 		return MapGenerationResult.failure(MapGenerationError.INPUT_INVALID, &"request")
+	# W3-F7 世代守衛：路線遺物表若釘在與 catalog 不符的 manifest 世代，絕不得授權地圖生成
+	# （比照 forge/equip 慣例）。catalog 與 content_snapshot 一致性由呼叫端更早驗。
+	if request.relic_table != null \
+		and request.relic_table.manifest_digest_value() != request.catalog.manifest_digest_value():
+		return MapGenerationResult.failure(MapGenerationError.GENERATION_MISMATCH, &"relic_table.manifest_digest")
 	var derived := RngService.new().derive_stream(
 		request.run_seed, &"map", StringName("%s:expedition_map_v1" % String(request.run_id))
 	)
@@ -35,7 +40,8 @@ func generate_map(request: MapGenerationRequest) -> MapGenerationResult:
 					return MapGenerationResult.failure(MapGenerationError.RNG_FAILED, &"node_kind")
 				# 路線遺物依生成走訪順序佔用 branch anchor（layer 1/3、slot 0），把 anchor
 				# 節點強制為 ELITE。既有的 stream draw 已在 _kind_for_layer 內照常發生，此處只
-				# 覆寫結果、不新增 entropy；每種 kind 的 map_nodes_for 皆恰有一筆規則，故後續
+				# 覆寫結果、不新增 entropy；決定性依賴 NORMAL/ELITE 規則數對等，由
+				# ContentValidator 的 CONTENT_MAP_NODE_RULE_COUNT_PARITY 不變式保證，故後續
 				# rule_draw 的 bound 不變，RNG 消耗與未啟用遺物時逐位元相同。
 				if layer_index == 1 or layer_index == 3:
 					if slot_index == 0:

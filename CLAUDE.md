@@ -46,4 +46,4 @@
 - S1 `foundation-core`：已完成；規格位於 `specs/foundation-core/`。
 - S2 `combat-core`：已完成；規格與複檢紀錄位於 `specs/combat-core/`，完成證據位於 `artifacts/test/`。
 - S3 `economy-expedition`：階段 0～6、逐 AC 證據與獨立 T00R／T11B 已完成；複檢紀錄位於 `specs/economy-expedition/final-review.md`。
-- S4 `build-systems`：實作中；三件套規格位於 `specs/build-systems/`（已核可 2026-07-22）。
+- S4 `build-systems`：已完成（2026-07-24）；規格與複檢紀錄位於 `specs/build-systems/`（三件套＋implementation-review.md）。

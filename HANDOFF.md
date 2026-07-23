@@ -39,15 +39,17 @@
 | S1 `foundation-core` | ✅ 完成 | `specs/foundation-core/` | PROGRESS 2026-07-13 條目；`foundation-acceptance.json`（無獨立 final-review，複檢結論僅載於 PROGRESS——歷史事實，如實記載） |
 | S2 `combat-core` | ✅ 完成，複檢 PASS | `specs/combat-core/`（含 final-review.md） | `artifacts/test/`、10,000-seed soak |
 | S3 `economy-expedition` | ✅ 完成，複檢 PASS | `specs/economy-expedition/`（final-review.md＋implementation-review.md） | 11/11 S4-AC evidence、10,000-seed ExpeditionSoak |
-| S4 `build-systems` | 🔨 實作中 | `specs/build-systems/`（三件套已核可 2026-07-22） | 依 tasks T01～T12 |
+| S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
 | S5 `meta-progression` | 📋 規劃 | 未建立 | — |
 | 橫切 UX/QA 15 REQ | 📋 未動工 | `docs/implementation-slices.md` | 正式 UI／美術（Codex）＋效能／QA gate |
 
 - 測試 gate：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`（其餘 suite 見專案 `CLAUDE.md`）。`artifacts/test/` 為本機驗證輸出。
 - 表現層現況：全專案 `.tscn` 僅 `app/main.tscn`＋dev Lab；美術／音效資源為 0——正式視覺全部待 Codex 建立。
+- **T11 內容缺口修復記錄**（S4 wave4 收尾，2026-07-23）：Build Lab（T11）首次把 `content/packs/vertical_slice/` 餵進 production `EconomyExpeditionCatalogBuilder`／`ContentRegistryReceiptAdapter` 後，暴露兩個此前從未被真正觸發過的內容缺口，已一併修復：(1) `economy_configs/slice_default.tres` 原缺 `layer_income`／`xp_thresholds`，被 builder 判定不合法而驗證器當時未攔——`content/validation/content_validator.gd:298` 已補上與 builder 一致的必填欄位檢查（新增 `CONTENT_ECONOMY_CONFIG_INCOMPLETE`）；(2) 雙 pack 合併後完全沒有 `meta_reward_table` 分類內容，導致 `ContentRegistryReceiptAdapter` 的 save/load 在 receipt 重建階段必定失敗（`PINNED_CATALOG_REFERENCE_MISSING`）——已新增 `meta_reward_tables/slice_default.tres` 佔位內容＋驗證器 `CONTENT_META_REWARD_TABLE_MISSING` 規則。細節見 `content/packs/vertical_slice/README.md`「T11 wave4 內容缺口修復」與 `scripts/dev/build_lab/build_lab_content_bootstrap.gd:14` 註解。
 
 ## 4. 雙方工作流
 
 - **Claude**：功能片走 `specs/<切片>/` 三件套（逐段核可）→ 依 tasks 波次實作（TDD 分代理：測試先行→紅證據→實作轉綠→fresh 重驗）→ 雙審（Sonnet 5 一審＋Opus 4.8 二審，兩獨立 session；使用者裁決不用 Codex review）→ 更新 PROGRESS.md 與本檔。
 - **Codex**：接手 UI 時（1）讀本檔 §2 契約與 §3 進度地圖；（2）從對應 Lab 的 session 腳本看 ViewModel 消費示範；（3）正式場景放 `scenes/`（非 `scenes/dev/`），經 `SceneRouter` 掛入；（4）改動不得觸碰 `domain/`／`services/` 邏輯——需要新資料介面時，在 PROGRESS.md 待辦記需求由 Claude 補 ViewModel；（5）改動後跑 `-Suite All` 確認灰盒與邏輯測試不受影響。
 - 規格／數值變更：先改 `docs/game-architecture/` 對應章節＋§14 追溯矩陣，再改程式（見專案 `CLAUDE.md`）。
+- **S5 接手檢查項**：`GenerateExpeditionMapCommand`／`RefreshShopCommand`／`SettleBattleResultCommand`／`EnterNodeEvent` 的 `relic_table`／`active_relic_ids` 皆為選填參數（預設 `null`／空陣列），目前只有測試與 soak runner 會傳；正式 composition root 真正接線這些 command 時（S5 或任何串接生產流程的切片）必須顯式傳入 `relic_table`，忘傳不會有任何警告——世代守衛只在 `relic_table != null` 時才比對，忘傳只會靜默跳過遺物效果，不會報錯。

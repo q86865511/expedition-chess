@@ -252,10 +252,26 @@ func _validate_relic_effect_scope(relic: RelicDef, require_battle_operations: bo
 			_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
 			continue
 		var effect_definition := effect as EffectDef
-		var satisfies := not effect_definition.battle_operations.is_empty() if require_battle_operations \
-			else not effect_definition.run_operations.is_empty()
-		if not satisfies:
+		if require_battle_operations:
+			if effect_definition.battle_operations.is_empty():
+				_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+			continue
+		if effect_definition.run_operations.is_empty():
 			_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", String(effect_id))
+			continue
+		# W4-F1（2026-07-24 使用者裁決）：非 battle 類遺物（economy/route/rule）引用的效果，其
+		# run intent 由 run-layer service（IncomeService/ShopService…）逐節點無條件消費——
+		# RunRelicTable.sum_operation_amount 不看 claim_scope，語意等同 always。故要求這些
+		# run_operations 的 claim_scope 一律為 &"always"，讓宣告的 scope 與實際消費行為一致，並與
+		# RunRelicTableBuilder 的 UNSUPPORTED_INTENT 守衛對齊（消除 validator↔builder 分歧）。
+		# 允許效果同時帶 battle_operations（混合效果）——其戰鬥部分不被 run layer 消費、屬 battle
+		# 類遺物作用域；此規則只約束會被 run layer 消費的 scalar run 部分。
+		for operation: RunOperationDef in effect_definition.run_operations:
+			if (operation is AddGoldOperationDef or operation is AddXpOperationDef \
+				or operation is HealExpeditionHpOperationDef or operation is ShopDiscountOperationDef) \
+				and _scalar_run_claim_scope(operation) != &"always":
+				_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", "%s:claim_scope" % String(effect_id))
+				break
 
 func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 	var levels: Dictionary = {}
@@ -277,17 +293,41 @@ func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 			if unlock.modifier_refs.is_empty(): _issue(&"CONTENT_CHALLENGE_CHAIN", unlock.id, &"modifier_refs", "missing")
 
 func _validate_economy(definitions: Array[ContentDefinition]) -> void:
+	var has_meta_reward_table := false
 	for definition in definitions:
+		if definition is MetaRewardTableDef: has_meta_reward_table = true
 		if not definition is EconomyConfigDef: continue
+		var levels_seen: Dictionary = {}
 		for row in definition.shop_odds_by_level:
 			var total := 0
 			for odds in row.tier_basis_points: total += odds
 			if row.tier_basis_points.size() != 5 or total != 10000: _issue(&"CONTENT_SHOP_PROBABILITY", definition.id, &"shop_odds_by_level", str(row.level))
+			levels_seen[row.level] = true
+		for level in range(3, 10):
+			if not levels_seen.has(level): _issue(&"CONTENT_SHOP_PROBABILITY", definition.id, &"shop_odds_by_level", str(level))
 		var tiers: Dictionary = {}
 		for pair in definition.pool_copies_by_tier:
 			tiers[pair.key_u32] = pair.value_u32
 		for tier in range(1, 6):
 			if int(tiers.get(tier, 0)) < 9: _issue(&"CONTENT_POOL_COPIES", definition.id, &"pool_copies_by_tier", str(tier))
+		# 以下鏡射 EconomyExpeditionCatalogBuilder._valid_config() 的必填欄位檢查——
+		# 驗證器放行但 builder 拒絕即為分歧缺陷（T11 wave4 實測發現，見 HANDOFF.md）。
+		if definition.layer_income.is_empty() or definition.interest_step_gold < 1 \
+			or definition.gold_cap < 1 or definition.reroll_cost < 0 \
+			or definition.xp_buy_cost < 1 or definition.xp_buy_amount < 1:
+			_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"economy_config", "scalar")
+		var costs: Dictionary = {}
+		for pair in definition.unit_costs_by_tier: costs[pair.key_u32] = pair.value_u32
+		for tier in range(1, 6):
+			if int(costs.get(tier, 0)) < 1:
+				_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"unit_costs_by_tier", str(tier))
+		var xp_levels: Dictionary = {}
+		for pair in definition.xp_thresholds: xp_levels[pair.key_u32] = pair.value_u32
+		for level in range(3, 9):
+			if int(xp_levels.get(level, 0)) < 1:
+				_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"xp_thresholds", str(level))
+	if not has_meta_reward_table:
+		_issue(&"CONTENT_META_REWARD_TABLE_MISSING", &"catalog.meta_reward_table", &"category")
 
 func _validate_rewards(definitions: Array[ContentDefinition]) -> void:
 	var has_standard := false
@@ -645,7 +685,7 @@ func _validate_run_operations(
 			_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "%s:index/type" % String(source_context))
 			continue
 		if operation is AddGoldOperationDef or operation is AddXpOperationDef or operation is HealExpeditionHpOperationDef or operation is ShopDiscountOperationDef:
-			if _scalar_run_amount(operation) < 0 or _scalar_run_claim_scope(operation) not in [&"once_per_node", &"on_first_clear"]:
+			if _scalar_run_amount(operation) < 0 or _scalar_run_claim_scope(operation) not in [&"once_per_node", &"on_first_clear", &"always"]:
 				var scalar_code := &"CONTENT_RUN_INTENT_FORBIDDEN" if battle_source else &"CONTENT_OPERATION_INVALID"
 				_issue(scalar_code, source_id, field_path, "%s:amount/scope" % String(source_context))
 			continue

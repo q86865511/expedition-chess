@@ -17,6 +17,13 @@ func settle(
 	var input_error := _validate(source, catalog)
 	if input_error != null:
 		return ExpeditionActionResult.failure(input_error.code, input_error.field_path)
+	# W3-F7 世代守衛：遺物表若釘在與 run content_snapshot 不符的 manifest 世代，絕不得授權結算
+	# （與既有 catalog vs content_snapshot 檢查同一份 digest，見 _validate）。
+	if relic_table != null \
+		and relic_table.manifest_digest_value() != source.content_snapshot.manifest_digest_value():
+		return ExpeditionActionResult.failure(
+			ExpeditionActionError.GENERATION_MISMATCH, &"relic_table.manifest_digest"
+		)
 	var draft := source.deep_clone()
 	var pending := draft.resolution_state as BattleResultPendingResolutionState
 	var result := pending.battle_result

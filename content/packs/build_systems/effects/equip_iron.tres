@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_dmj1c"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_f0ccy"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_hmyjy"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_xrjnl"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_13oig"]
+
+[sub_resource type="Resource" id="Resource_k11ci"]
+script = ExtResource("2_f0ccy")
+stat = &"armor"
+mode = &"flat"
+amount = 5
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_13oig")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_dmj1c")]([SubResource("Resource_k11ci")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.equip_iron"
+display_name_key = &"loc.effect_equip_iron"

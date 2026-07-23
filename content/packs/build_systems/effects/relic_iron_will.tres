@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_10chv"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_jt5fa"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_mg33l"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_2lc31"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ohexk"]
+
+[sub_resource type="Resource" id="Resource_vablu"]
+script = ExtResource("2_jt5fa")
+stat = &"health"
+mode = &"flat"
+amount = 40
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_ohexk")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_10chv")]([SubResource("Resource_vablu")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.relic_iron_will"
+display_name_key = &"loc.effect_relic_iron_will"

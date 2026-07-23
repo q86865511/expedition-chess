@@ -10,7 +10,9 @@ func _init(p_reward_service: RewardService = null) -> void:
 
 func settle(
 	source: RunState,
-	catalog: EconomyExpeditionCatalog
+	catalog: EconomyExpeditionCatalog,
+	relic_table: RunRelicTable = null,
+	active_relic_ids: Array[StringName] = []
 ) -> ExpeditionActionResult:
 	var input_error := _validate(source, catalog)
 	if input_error != null:
@@ -27,8 +29,14 @@ func settle(
 		return ExpeditionActionResult.failure(
 			ExpeditionActionError.NODE_INVALID, &"current_node_id"
 		)
+	# 規則型遺物的遠征 HP 修正（不經 EffectResolver；EffectResolver 專用於戰鬥）。
+	var relic_heal_bonus := 0
+	if relic_table != null:
+		relic_heal_bonus = relic_table.sum_operation_amount(
+			active_relic_ids, &"rule", &"heal_expedition_hp"
+		)
 	if result.outcome == &"player_loss":
-		return _settle_loss(draft, node, result, catalog)
+		return _settle_loss(draft, node, result, catalog, relic_heal_bonus)
 	if result.outcome != &"player_win":
 		return ExpeditionActionResult.failure(
 			ExpeditionActionError.RESULT_INVALID, &"battle_result.outcome"
@@ -38,6 +46,8 @@ func settle(
 		return ExpeditionActionResult.failure(
 			proposal_error.code, proposal_error.field_path
 		)
+	# 勝利：既有 proposals 之後、產生獎勵之前，套用規則遺物的遠征 HP 修正（受 cap 夾限）。
+	draft.expedition_hp = mini(EXPEDITION_HP_CAP, draft.expedition_hp + relic_heal_bonus)
 	draft.economy_state.win_streak += 1
 	draft.economy_state.loss_streak = 0
 	match node.node_kind:
@@ -95,9 +105,12 @@ func _settle_loss(
 	draft: RunState,
 	node: MapNodeState,
 	result: BattleResult,
-	catalog: EconomyExpeditionCatalog
+	catalog: EconomyExpeditionCatalog,
+	relic_damage_reduction: int = 0
 ) -> ExpeditionActionResult:
-	draft.expedition_hp = maxi(0, draft.expedition_hp - result.expedition_damage)
+	# 規則型遺物把遠征 HP 修正值視為傷害減免（下限 0，不得反向治療）。
+	var reduced_damage := maxi(0, result.expedition_damage - relic_damage_reduction)
+	draft.expedition_hp = maxi(0, draft.expedition_hp - reduced_damage)
 	draft.economy_state.loss_streak += 1
 	draft.economy_state.win_streak = 0
 	if draft.economy_state.loss_streak >= 2 \

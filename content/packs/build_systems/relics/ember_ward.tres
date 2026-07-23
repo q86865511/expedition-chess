@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_x2m7g"]
+
+[resource]
+script = ExtResource("1_x2m7g")
+category = &"battle"
+effect_refs = Array[StringName]([&"effect.relic_ember_ward"])
+activation_limit = 1
+id = &"relic.ember_ward"
+display_name_key = &"loc.relic_ember_ward"

@@ -602,9 +602,9 @@ func _record_child_allowed(parent_type: int, field_id: int, child_type: int) -> 
 	if parent_type == 0x1004:
 		if field_id == 0x0102: return child_type == 0x2002
 		if field_id == 0x0103: return child_type >= 0x3001 and child_type <= 0x3009
-		if field_id == 0x0104: return child_type >= 0x3101 and child_type <= 0x3107
+		if field_id == 0x0104: return child_type >= 0x3101 and child_type <= 0x3108
 	if parent_type == 0x1006 and field_id == 0x0101: return child_type == 0x2003
-	if parent_type == 0x1007 and field_id == 0x0101: return child_type >= 0x3101 and child_type <= 0x3107
+	if parent_type == 0x1007 and field_id == 0x0101: return child_type >= 0x3101 and child_type <= 0x3108
 	if parent_type == 0x1009:
 		if field_id == 0x0100: return child_type == 0x2004
 		if field_id == 0x0102: return child_type == 0x2005
@@ -612,7 +612,7 @@ func _record_child_allowed(parent_type: int, field_id: int, child_type: int) -> 
 		if field_id == 0x0102: return child_type == 0x2006
 		if field_id == 0x0104: return child_type == 0x2007
 	if parent_type == 0x100b and field_id == 0x0100: return child_type == 0x2008
-	if parent_type == 0x100c and field_id in [0x0102, 0x0103]: return child_type >= 0x3101 and child_type <= 0x3107
+	if parent_type == 0x100c and field_id in [0x0102, 0x0103]: return child_type >= 0x3101 and child_type <= 0x3108
 	if parent_type == 0x100e:
 		if field_id == 0x010a: return child_type == 0x200a
 		return child_type == 0x200e
@@ -698,6 +698,7 @@ func _expected_field_kinds(type_id: int) -> PackedInt32Array:
 		0x3008: return PackedInt32Array([U, D, U, U, E])
 		0x3009: return PackedInt32Array([U, I, E])
 		0x3101, 0x3102, 0x3103: return PackedInt32Array([U, I, E])
+		0x3108: return PackedInt32Array([U, I, E])
 		0x3104: return PackedInt32Array([U, D, I])
 		0x3105: return PackedInt32Array([U, D, U])
 		0x3106: return PackedInt32Array([U, D])

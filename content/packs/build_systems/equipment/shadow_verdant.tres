@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_e2jsc"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_h1opm"]
+
+[sub_resource type="Resource" id="Resource_oycdi"]
+script = ExtResource("2_h1opm")
+stat = &"attack_speed"
+mode = &"flat"
+amount_i32 = 5
+
+[sub_resource type="Resource" id="Resource_ynf4j"]
+script = ExtResource("2_h1opm")
+stat = &"health"
+mode = &"flat"
+amount_i32 = 20
+
+[resource]
+script = ExtResource("1_e2jsc")
+component_pair = Array[StringName]([&"item_component.shadow_thread", &"item_component.verdant_leaf"])
+stat_modifiers = Array[ExtResource("2_h1opm")]([SubResource("Resource_oycdi"), SubResource("Resource_ynf4j")])
+effect_refs = Array[StringName]([&"effect.equip_shadow", &"effect.equip_verdant"])
+id = &"equipment.shadow_verdant"
+display_name_key = &"loc.equipment_shadow_verdant"

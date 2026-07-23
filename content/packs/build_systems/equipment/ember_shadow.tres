@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_t28vb"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_cvkyo"]
+
+[sub_resource type="Resource" id="Resource_0m183"]
+script = ExtResource("2_cvkyo")
+stat = &"attack"
+mode = &"flat"
+amount_i32 = 5
+
+[sub_resource type="Resource" id="Resource_xe0dp"]
+script = ExtResource("2_cvkyo")
+stat = &"attack_speed"
+mode = &"flat"
+amount_i32 = 5
+
+[resource]
+script = ExtResource("1_t28vb")
+component_pair = Array[StringName]([&"item_component.ember_shard", &"item_component.shadow_thread"])
+stat_modifiers = Array[ExtResource("2_cvkyo")]([SubResource("Resource_0m183"), SubResource("Resource_xe0dp")])
+effect_refs = Array[StringName]([&"effect.equip_ember", &"effect.equip_shadow"])
+id = &"equipment.ember_shadow"
+display_name_key = &"loc.equipment_ember_shadow"

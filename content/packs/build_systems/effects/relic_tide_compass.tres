@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_0tfwm"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_8x2dy"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_yxl2g"]
+[ext_resource type="Script" path="res://content/definitions/add_gold_operation_def.gd" id="4_jr2cv"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ywxym"]
+
+[sub_resource type="Resource" id="Resource_5eoo7"]
+script = ExtResource("4_jr2cv")
+amount = 4
+claim_scope = &"once_per_node"
+
+[resource]
+script = ExtResource("5_ywxym")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_yxl2g")]([SubResource("Resource_5eoo7")])
+stacking = &"replace"
+id = &"effect.relic_tide_compass"
+display_name_key = &"loc.effect_relic_tide_compass"

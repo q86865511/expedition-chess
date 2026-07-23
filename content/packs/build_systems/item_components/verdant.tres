@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemComponentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/item_component_def.gd" id="1_1dwas"]
+
+[resource]
+script = ExtResource("1_1dwas")
+recipe_key = "verdant"
+sort_order = 5
+id = &"item_component.verdant_leaf"
+display_name_key = &"loc.item_component_verdant_leaf"

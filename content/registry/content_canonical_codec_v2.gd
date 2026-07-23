@@ -122,7 +122,7 @@ func _record_child_allowed(parent_type: int, field_id: int, child_type: int) -> 
 		if field_id == 0x0104:
 			return child_type >= 0x3001 and child_type <= 0x3009
 		if field_id == 0x0105:
-			return child_type >= 0x3101 and child_type <= 0x3107
+			return child_type >= 0x3101 and child_type <= 0x3108
 	if parent_type == ContentCategory.ENCOUNTER and field_id == 0x0104:
 		return child_type == 0x2007
 	return super._record_child_allowed(parent_type, field_id, child_type)

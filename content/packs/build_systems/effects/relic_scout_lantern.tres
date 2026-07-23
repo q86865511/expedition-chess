@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_tjscv"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_pukv0"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_0pelm"]
+[ext_resource type="Script" path="res://content/definitions/add_xp_operation_def.gd" id="4_qpbjk"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_nsir0"]
+
+[sub_resource type="Resource" id="Resource_u5035"]
+script = ExtResource("4_qpbjk")
+amount = 3
+claim_scope = &"once_per_node"
+
+[resource]
+script = ExtResource("5_nsir0")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_0pelm")]([SubResource("Resource_u5035")])
+stacking = &"replace"
+id = &"effect.relic_scout_lantern"
+display_name_key = &"loc.effect_relic_scout_lantern"

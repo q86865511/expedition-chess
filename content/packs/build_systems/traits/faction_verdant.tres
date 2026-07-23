@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TraitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/trait_def.gd" id="1_4xodc"]
+[ext_resource type="Script" path="res://content/definitions/trait_threshold_def.gd" id="2_h6vfv"]
+
+[sub_resource type="Resource" id="Resource_pilji"]
+script = ExtResource("2_h6vfv")
+required_count = 2
+effect_refs = Array[StringName]([&"effect.trait_faction_verdant"])
+
+[sub_resource type="Resource" id="Resource_wrapa"]
+script = ExtResource("2_h6vfv")
+required_count = 4
+effect_refs = Array[StringName]([&"effect.trait_faction_verdant"])
+
+[sub_resource type="Resource" id="Resource_lbxkd"]
+script = ExtResource("2_h6vfv")
+required_count = 6
+effect_refs = Array[StringName]([&"effect.trait_faction_verdant"])
+
+[resource]
+script = ExtResource("1_4xodc")
+trait_kind = &"faction"
+member_rule = &"distinct_unit_id"
+thresholds = Array[ExtResource("2_h6vfv")]([SubResource("Resource_pilji"), SubResource("Resource_wrapa"), SubResource("Resource_lbxkd")])
+description_key = &"loc.trait_faction_verdant_description"
+id = &"trait.faction_verdant"
+display_name_key = &"loc.trait_faction_verdant"

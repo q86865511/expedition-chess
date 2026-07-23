@@ -229,6 +229,7 @@ func _run_operation(value: RunOperationDef) -> ContentValue:
 	if value is AddGoldOperationDef: fields.append_array([ContentValue.i32(value.amount), ContentValue.enum_value(value.claim_scope)])
 	elif value is AddXpOperationDef: fields.append_array([ContentValue.i32(value.amount), ContentValue.enum_value(value.claim_scope)])
 	elif value is HealExpeditionHpOperationDef: fields.append_array([ContentValue.i32(value.amount), ContentValue.enum_value(value.claim_scope)])
+	elif value is ShopDiscountOperationDef: fields.append_array([ContentValue.i32(value.amount), ContentValue.enum_value(value.claim_scope)])
 	elif value is ModifyUnitPoolOperationDef: fields.append_array([ContentValue.stable_id(value.unit_ref), ContentValue.i32(value.count)])
 	elif value is GrantItemOperationDef: fields.append_array([ContentValue.stable_id(value.content_ref), ContentValue.u32(value.count)])
 	elif value is GrantRelicOperationDef: fields.append(ContentValue.stable_id(value.relic_ref))

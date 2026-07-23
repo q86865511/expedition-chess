@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_08wm1"]
+
+[resource]
+script = ExtResource("1_08wm1")
+category = &"economy"
+effect_refs = Array[StringName]([&"effect.relic_interest_token"])
+activation_limit = 3
+id = &"relic.interest_token"
+display_name_key = &"loc.relic_interest_token"

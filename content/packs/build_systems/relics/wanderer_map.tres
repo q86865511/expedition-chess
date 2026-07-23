@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_av8p3"]
+
+[resource]
+script = ExtResource("1_av8p3")
+category = &"route"
+effect_refs = Array[StringName]([&"effect.relic_wanderer_map"])
+activation_limit = 2
+id = &"relic.wanderer_map"
+display_name_key = &"loc.relic_wanderer_map"

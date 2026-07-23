@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_utfc6"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_0wkgh"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_u1qjr"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_q4j5u"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_4ecmm"]
+
+[sub_resource type="Resource" id="Resource_nlxmv"]
+script = ExtResource("2_0wkgh")
+stat = &"attack_speed"
+mode = &"flat"
+amount = 12
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_4ecmm")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_utfc6")]([SubResource("Resource_nlxmv")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.relic_shadow_veil"
+display_name_key = &"loc.effect_relic_shadow_veil"

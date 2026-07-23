@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_4edfq"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_y5c2x"]
+
+[sub_resource type="Resource" id="Resource_gktly"]
+script = ExtResource("2_y5c2x")
+stat = &"armor"
+mode = &"flat"
+amount_i32 = 10
+
+[resource]
+script = ExtResource("1_4edfq")
+component_pair = Array[StringName]([&"item_component.iron_plate"])
+stat_modifiers = Array[ExtResource("2_y5c2x")]([SubResource("Resource_gktly")])
+effect_refs = Array[StringName]([&"effect.equip_iron"])
+id = &"equipment.iron_iron"
+display_name_key = &"loc.equipment_iron_iron"

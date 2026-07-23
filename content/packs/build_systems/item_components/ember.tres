@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ItemComponentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/item_component_def.gd" id="1_vn74r"]
+
+[resource]
+script = ExtResource("1_vn74r")
+recipe_key = "ember"
+sort_order = 1
+id = &"item_component.ember_shard"
+display_name_key = &"loc.item_component_ember_shard"

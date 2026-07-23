@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TraitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/trait_def.gd" id="1_h6oug"]
+[ext_resource type="Script" path="res://content/definitions/trait_threshold_def.gd" id="2_on50q"]
+
+[sub_resource type="Resource" id="Resource_otxtc"]
+script = ExtResource("2_on50q")
+required_count = 2
+effect_refs = Array[StringName]([&"effect.trait_faction_iron"])
+
+[sub_resource type="Resource" id="Resource_dbb71"]
+script = ExtResource("2_on50q")
+required_count = 4
+effect_refs = Array[StringName]([&"effect.trait_faction_iron"])
+
+[sub_resource type="Resource" id="Resource_esh5s"]
+script = ExtResource("2_on50q")
+required_count = 6
+effect_refs = Array[StringName]([&"effect.trait_faction_iron"])
+
+[resource]
+script = ExtResource("1_h6oug")
+trait_kind = &"faction"
+member_rule = &"distinct_unit_id"
+thresholds = Array[ExtResource("2_on50q")]([SubResource("Resource_otxtc"), SubResource("Resource_dbb71"), SubResource("Resource_esh5s")])
+description_key = &"loc.trait_faction_iron_description"
+id = &"trait.faction_iron"
+display_name_key = &"loc.trait_faction_iron"

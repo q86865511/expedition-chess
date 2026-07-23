@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_g8382"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_cy25l"]
+
+[sub_resource type="Resource" id="Resource_tkou5"]
+script = ExtResource("2_cy25l")
+stat = &"max_mana"
+mode = &"flat"
+amount_i32 = 20
+
+[resource]
+script = ExtResource("1_g8382")
+component_pair = Array[StringName]([&"item_component.arcane_dust"])
+stat_modifiers = Array[ExtResource("2_cy25l")]([SubResource("Resource_tkou5")])
+effect_refs = Array[StringName]([&"effect.equip_arcane"])
+has_unique_group = true
+unique_group = &"unique_group.mythic_core"
+id = &"equipment.arcane_arcane"
+display_name_key = &"loc.equipment_arcane_arcane"

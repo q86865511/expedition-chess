@@ -638,7 +638,7 @@ func _validate_v2_source_graph(inputs: BattleSetupInputs) -> BattleInputValidati
 		all_units,
 		inputs.player_units,
 		identities,
-		&"player_unit",
+		&"equipment",
 		&"",
 		&"",
 		2
@@ -740,10 +740,16 @@ func _validate_source_list(
 			&"null":
 				if effect.source_instance_id != null:
 					return BattleInputValidationResult.failure(INPUT_INVALID, StringName("%s.source_instance_id" % item_path))
-			&"player_unit":
+			&"equipment":
+				# design.md §4：裝備效果 source_instance_id=物品 instance id（非棋），
+				# 穿戴棋以 target_ids=[棋 instance] 表示。故此處驗證物品 id 非空、
+				# 且 target 恰一並解析為合法上場 player 棋（維持 owner 驗證強度）。
 				if effect.source_instance_id == null \
-					or _find_unit(player_units, effect.source_instance_id.value) == null:
+					or String(effect.source_instance_id.value).is_empty():
 					return BattleInputValidationResult.failure(INPUT_INVALID, StringName("%s.source_instance_id" % item_path))
+				if effect.target_ids.size() != 1 \
+					or _find_unit(player_units, effect.target_ids[0]) == null:
+					return BattleInputValidationResult.failure(INPUT_INVALID, StringName("%s.target_ids" % item_path))
 			&"exact":
 				if effect.source_instance_id == null \
 					or effect.source_instance_id.value != expected_owner:
@@ -779,8 +785,10 @@ func _source_assignment_before(
 	if category == &"relic" and left.source_slot != right.source_slot:
 		return left.source_slot < right.source_slot
 	if category == &"equipment":
-		var left_unit := _find_unit(all_units, left.source_instance_id.value)
-		var right_unit := _find_unit(all_units, right.source_instance_id.value)
+		# 裝備效果的擁有棋為 target_ids[0]（source_instance_id 為物品 instance id）；
+		# 依穿戴棋格序、再依裝備槽序、最後以物品 instance id 定序，對齊 compiler 產出順序。
+		var left_unit := _find_unit(all_units, left.target_ids[0])
+		var right_unit := _find_unit(all_units, right.target_ids[0])
 		var left_cell := left_unit.logical_y * 8 + left_unit.logical_x
 		var right_cell := right_unit.logical_y * 8 + right_unit.logical_x
 		if left_cell != right_cell: return left_cell < right_cell

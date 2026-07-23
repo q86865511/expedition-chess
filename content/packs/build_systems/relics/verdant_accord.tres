@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="RelicDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/relic_def.gd" id="1_je8v7"]
+
+[resource]
+script = ExtResource("1_je8v7")
+category = &"rule"
+effect_refs = Array[StringName]([&"effect.relic_verdant_accord"])
+activation_limit = 1
+id = &"relic.verdant_accord"
+display_name_key = &"loc.relic_verdant_accord"

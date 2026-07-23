@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TraitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/trait_def.gd" id="1_rbbky"]
+[ext_resource type="Script" path="res://content/definitions/trait_threshold_def.gd" id="2_hfn5h"]
+
+[sub_resource type="Resource" id="Resource_gv50v"]
+script = ExtResource("2_hfn5h")
+required_count = 2
+effect_refs = Array[StringName]([&"effect.trait_faction_frost"])
+
+[sub_resource type="Resource" id="Resource_3uuv0"]
+script = ExtResource("2_hfn5h")
+required_count = 4
+effect_refs = Array[StringName]([&"effect.trait_faction_frost"])
+
+[sub_resource type="Resource" id="Resource_1py3t"]
+script = ExtResource("2_hfn5h")
+required_count = 6
+effect_refs = Array[StringName]([&"effect.trait_faction_frost"])
+
+[resource]
+script = ExtResource("1_rbbky")
+trait_kind = &"faction"
+member_rule = &"distinct_unit_id"
+thresholds = Array[ExtResource("2_hfn5h")]([SubResource("Resource_gv50v"), SubResource("Resource_3uuv0"), SubResource("Resource_1py3t")])
+description_key = &"loc.trait_faction_frost_description"
+id = &"trait.faction_frost"
+display_name_key = &"loc.trait_faction_frost"

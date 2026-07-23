@@ -220,3 +220,35 @@ func test_reward_candidate_item_kind_must_not_target_an_item_component() -> void
 	var report := ContentValidator.new().validate(input)
 	assert_false(report.valid)
 	assert_true(_has_issue(report, &"CONTENT_ITEM_GRANT_COMPONENT"), _issue_text(report))
+
+# ================= (W2-F6) NORMAL/ELITE MapNodeRule 數量必須對等（route 遺物覆寫 kind 時 RNG bound 不變）=================
+
+func _extra_map_node(content_id: StringName, kind: StringName) -> MapNodeDef:
+	var node := MapNodeDef.new()
+	node.id = content_id
+	node.schema_version = 1
+	node.display_name_key = StringName("loc.%s" % String(content_id))
+	node.node_type = kind
+	node.generator_ref = StringName("encounter.%s" % String(kind))
+	return node
+
+func test_map_node_rule_count_parity_flags_normal_elite_imbalance() -> void:
+	var input := _compliant_input()
+	# 基準 fixture 的 normal/elite 各 1 筆；多加一筆 elite、不補對應的 normal，
+	# 使兩者數量失衡（1 normal / 2 elite），對應 map_service.gd 覆寫 NORMAL -> ELITE
+	# 後 rule_draw bound 會分歧的情境。
+	input.definitions.append(_extra_map_node(&"map_node.elite_extra", &"elite"))
+	var report := ContentValidator.new().validate(input)
+	assert_false(report.valid)
+	assert_true(_has_issue(report, &"CONTENT_MAP_NODE_RULE_COUNT_PARITY"), _issue_text(report))
+
+func test_map_node_rule_count_parity_allows_matched_normal_and_elite_counts() -> void:
+	var input := _compliant_input()
+	# 同時各加一筆 normal 與 elite，維持對等（2 normal / 2 elite）——確認規則比較的是
+	# 「數量相等」而非「恰為 1」，等量時不應誤報。
+	input.definitions.append(_extra_map_node(&"map_node.normal_extra", &"normal"))
+	input.definitions.append(_extra_map_node(&"map_node.elite_extra", &"elite"))
+	var report := ContentValidator.new().validate(input)
+	assert_false(_has_issue(report, &"CONTENT_MAP_NODE_RULE_COUNT_PARITY"), _issue_text(report))
+
+# W2-F6 fix 2026-07-23

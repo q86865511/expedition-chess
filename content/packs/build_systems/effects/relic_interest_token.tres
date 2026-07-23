@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_rb4vr"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_r2qwk"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_vkpn2"]
+[ext_resource type="Script" path="res://content/definitions/add_gold_operation_def.gd" id="4_vhn2i"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_mmg5g"]
+
+[sub_resource type="Resource" id="Resource_5pgiw"]
+script = ExtResource("4_vhn2i")
+amount = 2
+claim_scope = &"once_per_node"
+
+[resource]
+script = ExtResource("5_mmg5g")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_vkpn2")]([SubResource("Resource_5pgiw")])
+stacking = &"replace"
+id = &"effect.relic_interest_token"
+display_name_key = &"loc.effect_relic_interest_token"

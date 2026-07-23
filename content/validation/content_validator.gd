@@ -187,6 +187,7 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 	var bosses := 0
 	var event_generators: Dictionary = {}
 	var node_types: Array[StringName] = []
+	var node_type_counts: Dictionary = {}
 	for definition in definitions:
 		if definition is RelicDef: relics += 1
 		elif definition is CommanderDef: commanders += 1
@@ -195,6 +196,7 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 		elif definition is EncounterDef and definition.encounter_kind == &"boss": bosses += 1
 		elif definition is MapNodeDef:
 			if not node_types.has(definition.node_type): node_types.append(definition.node_type)
+			node_type_counts[definition.node_type] = int(node_type_counts.get(definition.node_type, 0)) + 1
 			if definition.node_type == &"event": event_generators[definition.generator_ref] = true
 			if definition.node_type in [&"normal", &"elite", &"boss"]:
 				var generator: ContentDefinition = _by_id.get(
@@ -212,6 +214,17 @@ func _validate_minimum_counts_and_nodes(definitions: Array[ContentDefinition]) -
 	var expected := NODE_TYPES.duplicate()
 	expected.sort_custom(_string_name_less)
 	if node_types != expected: _issue(&"CONTENT_NODE_KIND_COVERAGE", &"catalog.nodes", &"node_type", str(node_types))
+	# MapService 在 layer 1/3 的 branch anchor 上把 route 遺物觸發的 kind 覆寫
+	# NORMAL -> ELITE，且不消耗額外的 stream draw；覆寫後 rule_draw 的 bound 取自
+	# EconomyExpeditionCatalog.map_nodes_for(kind).size()，所以 NORMAL 與 ELITE 兩種
+	# node kind 的規則筆數必須相等，否則覆寫前後的 RNG 消耗量會分歧、破壞決定性。
+	var normal_count := int(node_type_counts.get(&"normal", 0))
+	var elite_count := int(node_type_counts.get(&"elite", 0))
+	if normal_count != elite_count:
+		_issue(
+			&"CONTENT_MAP_NODE_RULE_COUNT_PARITY", &"catalog.nodes", &"node_type",
+			"normal=%d/elite=%d" % [normal_count, elite_count]
+		)
 
 func _validate_relics(definitions: Array[ContentDefinition]) -> void:
 	var seen_categories: Dictionary = {}
@@ -631,7 +644,7 @@ func _validate_run_operations(
 		if operation == null or operation.operation_index != index or not _is_known_run_operation(operation):
 			_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "%s:index/type" % String(source_context))
 			continue
-		if operation is AddGoldOperationDef or operation is AddXpOperationDef or operation is HealExpeditionHpOperationDef:
+		if operation is AddGoldOperationDef or operation is AddXpOperationDef or operation is HealExpeditionHpOperationDef or operation is ShopDiscountOperationDef:
 			if _scalar_run_amount(operation) < 0 or _scalar_run_claim_scope(operation) not in [&"once_per_node", &"on_first_clear"]:
 				var scalar_code := &"CONTENT_RUN_INTENT_FORBIDDEN" if battle_source else &"CONTENT_OPERATION_INVALID"
 				_issue(scalar_code, source_id, field_path, "%s:amount/scope" % String(source_context))
@@ -662,6 +675,7 @@ func _is_known_run_operation(operation: RunOperationDef) -> bool:
 	return operation is AddGoldOperationDef \
 		or operation is AddXpOperationDef \
 		or operation is HealExpeditionHpOperationDef \
+		or operation is ShopDiscountOperationDef \
 		or operation is ModifyUnitPoolOperationDef \
 		or operation is GrantItemOperationDef \
 		or operation is GrantRelicOperationDef \
@@ -671,12 +685,14 @@ func _scalar_run_amount(operation: RunOperationDef) -> int:
 	if operation is AddGoldOperationDef: return (operation as AddGoldOperationDef).amount
 	if operation is AddXpOperationDef: return (operation as AddXpOperationDef).amount
 	if operation is HealExpeditionHpOperationDef: return (operation as HealExpeditionHpOperationDef).amount
+	if operation is ShopDiscountOperationDef: return (operation as ShopDiscountOperationDef).amount
 	return 0
 
 func _scalar_run_claim_scope(operation: RunOperationDef) -> StringName:
 	if operation is AddGoldOperationDef: return (operation as AddGoldOperationDef).claim_scope
 	if operation is AddXpOperationDef: return (operation as AddXpOperationDef).claim_scope
 	if operation is HealExpeditionHpOperationDef: return (operation as HealExpeditionHpOperationDef).claim_scope
+	if operation is ShopDiscountOperationDef: return (operation as ShopDiscountOperationDef).claim_scope
 	return &""
 
 func _is_item_content_ref(content_id: StringName) -> bool:

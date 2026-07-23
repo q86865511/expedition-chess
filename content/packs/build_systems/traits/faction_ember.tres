@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TraitDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/trait_def.gd" id="1_51od1"]
+[ext_resource type="Script" path="res://content/definitions/trait_threshold_def.gd" id="2_kcs7u"]
+
+[sub_resource type="Resource" id="Resource_13qxa"]
+script = ExtResource("2_kcs7u")
+required_count = 2
+effect_refs = Array[StringName]([&"effect.trait_faction_ember"])
+
+[sub_resource type="Resource" id="Resource_bckgb"]
+script = ExtResource("2_kcs7u")
+required_count = 4
+effect_refs = Array[StringName]([&"effect.trait_faction_ember"])
+
+[sub_resource type="Resource" id="Resource_d56ag"]
+script = ExtResource("2_kcs7u")
+required_count = 6
+effect_refs = Array[StringName]([&"effect.trait_faction_ember"])
+
+[resource]
+script = ExtResource("1_51od1")
+trait_kind = &"faction"
+member_rule = &"distinct_unit_id"
+thresholds = Array[ExtResource("2_kcs7u")]([SubResource("Resource_13qxa"), SubResource("Resource_bckgb"), SubResource("Resource_d56ag")])
+description_key = &"loc.trait_faction_ember_description"
+id = &"trait.faction_ember"
+display_name_key = &"loc.trait_faction_ember"

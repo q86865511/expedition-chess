@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_2i3sm"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_kkvqr"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_m6e3q"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_umy2a"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_eqety"]
+
+[sub_resource type="Resource" id="Resource_cna2c"]
+script = ExtResource("2_kkvqr")
+stat = &"attack_speed"
+mode = &"flat"
+amount = 5
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_eqety")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_2i3sm")]([SubResource("Resource_cna2c")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.equip_shadow"
+display_name_key = &"loc.effect_equip_shadow"

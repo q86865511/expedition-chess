@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_g0w20"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_le83k"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_ndr05"]
+[ext_resource type="Script" path="res://content/definitions/heal_expedition_hp_operation_def.gd" id="4_7scl5"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_yxqfh"]
+
+[sub_resource type="Resource" id="Resource_58u4b"]
+script = ExtResource("4_7scl5")
+amount = 5
+claim_scope = &"once_per_node"
+
+[resource]
+script = ExtResource("5_yxqfh")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_ndr05")]([SubResource("Resource_58u4b")])
+stacking = &"replace"
+id = &"effect.relic_arbiter_seal"
+display_name_key = &"loc.effect_relic_arbiter_seal"

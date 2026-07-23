@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_djb0d"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_nu5av"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_ep4bp"]
+[ext_resource type="Script" path="res://content/definitions/heal_expedition_hp_operation_def.gd" id="4_fufk1"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ge3nn"]
+
+[sub_resource type="Resource" id="Resource_jo344"]
+script = ExtResource("4_fufk1")
+amount = 3
+claim_scope = &"on_first_clear"
+
+[resource]
+script = ExtResource("5_ge3nn")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_ep4bp")]([SubResource("Resource_jo344")])
+stacking = &"replace"
+id = &"effect.relic_pathfinder_boots"
+display_name_key = &"loc.effect_relic_pathfinder_boots"

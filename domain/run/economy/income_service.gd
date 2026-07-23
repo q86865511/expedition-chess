@@ -15,7 +15,12 @@ func quote(request: IncomeQuoteRequest) -> IncomeQuoteResult:
 	var interest_steps := pre_gold / config.interest_step_gold
 	var interest := mini(interest_steps * config.interest_per_step, config.max_interest)
 	var streak := config.streak_reward(economy.win_streak)
-	economy.gold = mini(config.gold_cap, pre_gold + base + interest + streak)
+	var relic_bonus := 0
+	if request.relic_table != null:
+		relic_bonus = request.relic_table.sum_operation_amount(
+			request.active_relic_ids, &"economy", &"add_gold"
+		)
+	economy.gold = mini(config.gold_cap, pre_gold + base + interest + streak + relic_bonus)
 	var key_result := RuntimeKeySchemaRegistry.new().build_transaction(
 		request.run_id, request.node_id, &"node_income", request.next_transaction_serial
 	)

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_i42ws"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_17tbn"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_ojikq"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_q5pln"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_sm5db"]
+
+[sub_resource type="Resource" id="Resource_gl4l7"]
+script = ExtResource("2_17tbn")
+stat = &"armor"
+mode = &"flat"
+amount = 12
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_sm5db")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_i42ws")]([SubResource("Resource_gl4l7")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.relic_ember_ward"
+display_name_key = &"loc.effect_relic_ember_ward"

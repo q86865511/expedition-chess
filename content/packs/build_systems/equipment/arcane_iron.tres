@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EquipmentDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/equipment_def.gd" id="1_w7qm0"]
+[ext_resource type="Script" path="res://content/definitions/stat_modifier_def.gd" id="2_q4pv3"]
+
+[sub_resource type="Resource" id="Resource_qv6y1"]
+script = ExtResource("2_q4pv3")
+stat = &"max_mana"
+mode = &"flat"
+amount_i32 = 10
+
+[sub_resource type="Resource" id="Resource_hxwwo"]
+script = ExtResource("2_q4pv3")
+stat = &"armor"
+mode = &"flat"
+amount_i32 = 5
+
+[resource]
+script = ExtResource("1_w7qm0")
+component_pair = Array[StringName]([&"item_component.arcane_dust", &"item_component.iron_plate"])
+stat_modifiers = Array[ExtResource("2_q4pv3")]([SubResource("Resource_qv6y1"), SubResource("Resource_hxwwo")])
+effect_refs = Array[StringName]([&"effect.equip_arcane", &"effect.equip_iron"])
+id = &"equipment.arcane_iron"
+display_name_key = &"loc.equipment_arcane_iron"

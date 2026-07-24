@@ -188,9 +188,12 @@ func _validate_request(request: ShopStateRequest) -> ShopError:
 func _economy_discount(request: ShopStateRequest) -> int:
 	if request.relic_table == null:
 		return 0
-	return request.relic_table.sum_operation_amount(
+	# slot-gated 折扣加總後，再加指揮官/挑戰 always-active 折扣（design §6.1、S5-AC-003）。
+	var discount := request.relic_table.sum_operation_amount(
 		request.active_relic_ids, &"economy", &"shop_discount"
 	)
+	discount += request.relic_table.sum_always_active(&"economy", &"shop_discount")
+	return discount
 
 func _generate_offers(
 	run_id: StringName, node_id: StringName, economy: EconomyState,

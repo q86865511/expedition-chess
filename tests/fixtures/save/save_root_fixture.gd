@@ -39,18 +39,21 @@ static func create_valid_root() -> SaveRoot:
 	var owners: Array[ReservationOwnerState] = []
 	var transactions: Array[TransactionReceiptState] = []
 	var claims: Array[ClaimReceiptState] = []
+	var empty_names: Array[StringName] = []
 	var run := RunState.new(
 		String(run_key.digest), run_key, zero, content, zero, zero, zero,
 		&"commander.fixture", 0, 0, map, null, RunState.RunPhase.MAP, 100,
 		economy, UnitPoolState.new(empty_pool), roster, 0, 0, 0,
 		rng_states, empty_strings, empty_ints, owners, transactions, claims,
-		IdleResolutionState.new()
+		IdleResolutionState.new(), empty_names
 	)
 	var unlocked: Array[StringName] = [&"commander.fixture"]
 	var discovered: Array[StringName] = []
 	var settlements: Array[SettlementReceiptState] = []
+	var records: Array[CommanderChallengeRecordState] = []
 	var profile := ProfileState.new(
-		PROFILE_ID, one, 0, unlocked, discovered, 0, settlements, &"settings.default"
+		PROFILE_ID, one, 0, unlocked, discovered, 0, settlements, &"settings.default",
+		null, records
 	)
 	return SaveRoot.new(
 		SaveJsonCodec.SCHEMA_VERSION,

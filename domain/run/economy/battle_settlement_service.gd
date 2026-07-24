@@ -37,11 +37,13 @@ func settle(
 			ExpeditionActionError.NODE_INVALID, &"current_node_id"
 		)
 	# 規則型遺物的遠征 HP 修正（不經 EffectResolver；EffectResolver 專用於戰鬥）。
+	# slot-gated 加總後，再加指揮官/挑戰 always-active 貢獻（design §6.1、S5-AC-003）。
 	var relic_heal_bonus := 0
 	if relic_table != null:
 		relic_heal_bonus = relic_table.sum_operation_amount(
 			active_relic_ids, &"rule", &"heal_expedition_hp"
 		)
+		relic_heal_bonus += relic_table.sum_always_active(&"rule", &"heal_expedition_hp")
 	if result.outcome == &"player_loss":
 		return _settle_loss(draft, node, result, catalog, relic_heal_bonus)
 	if result.outcome != &"player_win":

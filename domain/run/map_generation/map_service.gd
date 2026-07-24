@@ -20,7 +20,10 @@ func generate_map(request: MapGenerationRequest) -> MapGenerationResult:
 	var stream := derived.stream
 	var route_relic_count := 0
 	if request.relic_table != null:
+		# slot-gated 路線遺物計數後，再加指揮官/挑戰 always-active 路線貢獻（design §6.1、
+		# S5-AC-003）。always-active 不看 slot、不消耗 entropy，只增加要強制的 anchor 總額度。
 		route_relic_count = request.relic_table.active_count(request.active_relic_ids, &"route")
+		route_relic_count += request.relic_table.always_active_count(&"route")
 	var branch_anchor_ordinal := 0
 	var nodes: Array[MapNodeState] = []
 	var edges: Array[MapEdgeState] = []

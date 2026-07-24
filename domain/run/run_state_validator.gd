@@ -79,6 +79,19 @@ func validate_profile(profile: ProfileState) -> DtoValidationResult:
 		if String(receipt.key.digest) <= last_digest or not _is_i32(receipt.currency_delta):
 			return _failure(&"profile.settlement_receipts")
 		last_digest = String(receipt.key.digest)
+	if profile.last_selection != null:
+		if not _stable_id(profile.last_selection.commander_id) \
+			or not _is_u32(profile.last_selection.challenge_level):
+			return _failure(&"profile.last_selection")
+	var previous_commander_id := ""
+	for record: CommanderChallengeRecordState in profile.commander_challenge_records:
+		if record == null or not _stable_id(record.commander_id) \
+			or not _is_u32(record.highest_cleared_level):
+			return _failure(&"profile.commander_challenge_records")
+		var commander_text := String(record.commander_id)
+		if commander_text <= previous_commander_id:
+			return _failure(&"profile.commander_challenge_records")
+		previous_commander_id = commander_text
 	return DtoValidationResult.success()
 
 func validate_run(
@@ -158,6 +171,8 @@ func validate_run(
 		return _failure(&"run.income_claimed_node_ids")
 	if not _sorted_unique_ints(run.loss_stipend_claimed_act_ids):
 		return _failure(&"run.loss_stipend_claimed_act_ids")
+	if not _sorted_unique_names(run.discovered_content_ids):
+		return _failure(&"run.discovered_content_ids")
 	if not _receipts_sorted(run):
 		return _failure(&"run.ledgers")
 	var reservation_result := _validate_reservation_ledger(run)

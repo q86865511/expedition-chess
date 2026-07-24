@@ -12,17 +12,17 @@ value_i32 = 1
 [sub_resource type="Resource" id="Resource_ns002"]
 script = ExtResource("1_kq2df")
 enum_key = &"elite"
-value_i32 = 2
+value_i32 = 3
 
 [sub_resource type="Resource" id="Resource_ns003"]
 script = ExtResource("1_kq2df")
 enum_key = &"merchant"
-value_i32 = 1
+value_i32 = 0
 
 [sub_resource type="Resource" id="Resource_ns004"]
 script = ExtResource("1_kq2df")
 enum_key = &"event"
-value_i32 = 1
+value_i32 = 0
 
 [sub_resource type="Resource" id="Resource_ns005"]
 script = ExtResource("1_kq2df")
@@ -32,7 +32,7 @@ value_i32 = 0
 [sub_resource type="Resource" id="Resource_ns006"]
 script = ExtResource("1_kq2df")
 enum_key = &"treasure"
-value_i32 = 1
+value_i32 = 0
 
 [sub_resource type="Resource" id="Resource_ns007"]
 script = ExtResource("1_kq2df")
@@ -73,7 +73,7 @@ basis_points = 15000
 script = ExtResource("3_yv9pw")
 node_scores = Array[ExtResource("1_kq2df")]([SubResource("Resource_ns001"), SubResource("Resource_ns002"), SubResource("Resource_ns003"), SubResource("Resource_ns004"), SubResource("Resource_ns005"), SubResource("Resource_ns006"), SubResource("Resource_ns007")])
 completion_reward = 10
-failure_reward = 2
+failure_reward = 0
 challenge_multiplier_bps = Array[ExtResource("2_n6h1a")]([SubResource("Resource_cm000"), SubResource("Resource_cm001"), SubResource("Resource_cm002"), SubResource("Resource_cm003"), SubResource("Resource_cm004"), SubResource("Resource_cm005")])
 id = &"meta_reward_table.slice_default"
 display_name_key = &"loc.meta_reward_table_slice_default"

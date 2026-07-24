@@ -86,6 +86,9 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 		draft.roster_state.pending_item_overflow.append(forged_id)
 		draft.roster_state.pending_item_overflow.sort()
 	draft.next_item_serial = created.next_serial.deep_clone()
+	# T09 / S5-AC-012 (design.md §8): 取得裝備 -> discover the forged equipment in
+	# the same copy-validate-save-swap transaction.
+	RunDiscoveryLog.mark(draft, recipe.equipment_id)
 	return CommandApplyResult.success(draft)
 
 ## An eligible forge input is an inventory item that exists in item_instances,

@@ -193,7 +193,13 @@ func _commit_draft(
 				validation_result.error.code
 			)
 		)
-	var candidate := _save_root_factory.build(_session.profile_snapshot(), draft)
+	# T09 / S5-AC-012 (design.md §8): fold the run-scoped discovery ledger into
+	# profile' -- discovery is the profile's only mutable face during a run -- so
+	# it commits atomically in the same copy-validate-save-swap as the action
+	# that revealed the content. Idempotent union: reload/replay never duplicates.
+	var committed_profile := _session.profile_snapshot()
+	RunDiscoveryLog.union_into_profile(committed_profile, draft)
+	var candidate := _save_root_factory.build(committed_profile, draft)
 	var save_result := _save_repository.save(candidate)
 	if not save_result.ok:
 		var save_field := save_result.error.field_path if save_result.error != null else &"save"
@@ -201,7 +207,7 @@ func _commit_draft(
 		return RunCommitResult.failure(
 			RunCommitError.new(RunCommitError.Kind.SAVE, save_field, save_code)
 		)
-	return RunCommitResult.success(_session._commit_saved_draft(draft))
+	return RunCommitResult.success(_session._commit_saved_draft(draft, committed_profile))
 
 func _edge_is_allowed(from_phase: RunState.RunPhase, to_phase: RunState.RunPhase) -> bool:
 	match from_phase:

@@ -91,7 +91,7 @@ ViewModel 契約 (Codex 接正式 UI; 全部只持 ProfileState/RunState clone):
 局內最終結算（三幕通關 boss 勝、遠征 HP 歸零、Boss 重戰放棄）由既有 `BattleSettlementService`（`battle_settlement_service.gd:45-152`）把 `run_phase` 設為 `RESULTS`、經 `RunController` 提交——**此時尚未發任何局外貨幣**，active run 仍持久於 `run_phase=RESULTS`。
 
 meta 結算＝`FINISH_RUN`（RUN→RESULTS，需存檔提交）這一**單一原子交易**（§7.3：貨幣/里程碑/挑戰紀錄/receipt/active run 清除同一交易）：`MetaSettlementCommand`→`MetaSettlementService.settle(profile, terminal_run, meta_reward_table)`：
-1. 判 outcome：`defeated_boss_count == 3`→`COMPLETED`；`expedition_hp==0`→`FAILED`；Boss 重戰放棄→`ABANDONED`。
+1. 判 outcome：`defeated_boss_count == 3`→`COMPLETED`；否則→`FAILED`（含遠征 HP 歸零與 Boss 重戰放棄——S3 兩路徑終態同為 RESULTS＋hp0 不可區分，且 AC-043 本就同列兩者為失敗結算；`SettlementReceiptState.Outcome.ABANDONED` 枚舉值保留不使用。w2 裁決 2026-07-24）。
 2. `currency_delta = MetaRewardComputeService.compute(...)`（§9，純函式）。
 3. `key = build_settlement_receipt(run.run_id)`。**冪等守衛**：若 `profile.settlement_receipts` 已含此 key.digest→`currency_delta` 視為 0（不重發），仍授權清 run。
 4. `profile'`＝`meta_currency += delta`、append `SettlementReceiptState(key, outcome, delta, payload_digest)`、`highest_challenge_level = max(舊, COMPLETED 時的 challenge_level)`、更新該指揮官 `commander_challenge_records`（COMPLETED 時取 max，§7.4）。

@@ -78,7 +78,20 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	if not report.valid:
 		var first_code := report.issues[0].code if not report.issues.is_empty() else &"BOARD_INVALID"
 		return _rejected(&"run.roster_state.board", first_code)
+	# T09 / S5-AC-012 (design.md §8): 上場 -> every unit deployed on the final
+	# board is discovered in the same copy-validate-save-swap transaction
+	# (idempotent for units already discovered earlier this run).
+	for placement: BoardPlacementState in draft.roster_state.board.placements:
+		var boarded := _find_unit(draft.roster_state.unit_instances, placement.unit_instance_id)
+		if boarded != null:
+			RunDiscoveryLog.mark(draft, boarded.def_id)
 	return CommandApplyResult.success(draft)
+
+func _find_unit(units: Array[UnitInstance], instance_id: String) -> UnitInstance:
+	for unit: UnitInstance in units:
+		if unit.instance_id == instance_id:
+			return unit
+	return null
 
 func _copy_ledger_matches_pool(
 	ledger: Array[UnitCopyLedgerEntry],

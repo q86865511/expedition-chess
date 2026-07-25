@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_ca04b"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_ca04m"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_ca04c"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_ca04r"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ca04e"]
+
+[sub_resource type="Resource" id="Resource_ca04op"]
+script = ExtResource("2_ca04m")
+stat = &"magic_resist"
+mode = &"flat"
+amount = 5
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_ca04e")
+content_role = &"challenge_affix"
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_ca04b")]([SubResource("Resource_ca04op")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_challenge_affix_04"
+display_name_key = &"loc.effect_slice_challenge_affix_04"

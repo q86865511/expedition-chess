@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_ca03b"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_ca03c"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_ca03r"]
+[ext_resource type="Script" path="res://content/definitions/drain_expedition_hp_operation_def.gd" id="4_ca03d"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ca03e"]
+
+[sub_resource type="Resource" id="Resource_ca03op"]
+script = ExtResource("4_ca03d")
+amount = 2
+claim_scope = &"always"
+
+[resource]
+script = ExtResource("5_ca03e")
+content_role = &"challenge_affix"
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_ca03r")]([SubResource("Resource_ca03op")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_challenge_affix_03"
+display_name_key = &"loc.effect_slice_challenge_affix_03"

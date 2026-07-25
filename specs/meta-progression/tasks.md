@@ -52,7 +52,7 @@
 
 - [ ] **T11 [HARD][TDD] AppRoot composition root＋RunCommandFactory＋Camp/Results 灰盒＋ViewModels**
   - Covers：REQ-META-001、REQ-TECH-002、REQ-UX-005、S5-AC-001、S5-AC-008、S5-AC-014；依賴：T02、T04、T05、T06、T07
-  - 驗收：boot→load 分流（LOADED→RunSession/RunController/factory→RUN；否則 CAMP）；factory 唯一建構四命令且 relic_table 非 null（含被動＋詞綴）、防回歸測試；Camp 灰盒五設施進出、CampViewModel 單一 ProfileState 源；端到端：新 profile→選指揮官→三幕通關與失敗/放棄→RESULTS→CAMP、重載 RESULTS 不重發；SceneRouter 依 app state 換場。
+  - 驗收：boot→load 分流（LOADED→RunSession/RunController/factory→RUN；否則 CAMP）；factory 唯一建構四命令且 relic_table 非 null（含被動＋詞綴）、防回歸測試；Camp 灰盒五設施進出、CampViewModel 單一 ProfileState 源；端到端：新 profile→選指揮官→三幕通關與失敗/放棄→RESULTS→CAMP、重載 RESULTS 不重發；SceneRouter 依 app state 換場。世代一致性：factory 建構的四命令（含 challenge 詞綴管線 resolver→RunModifierTableBuilder→BattleSettlementService/ShopService）須共用同一 content_snapshot.manifest_digest，補一條端到端測試證明——`test_challenge_affix_end_to_end.gd` 因橋接兩個獨立 fixture factory（ContentRegistryService／ResolutionFixtureFactory，見該檔 :67 註解）未覆蓋此面向（W4-Sonnet#3 遺留，2026-07-25），本任務不得只靠該檔既有斷言頂替。
 - [ ] **T12 [NORMAL][免TDD：整合驗收與 soak 實跑證據彙整，無新測試標的] 全 AC 回歸＋soak 新鮮度＋證據彙整**
   - Covers：全 S5-AC 回歸、S4 已知邊界（soak 新鮮度）；依賴：T10、T11
   - 驗收：domain 改動後先 `ExpeditionSoak -SeedCount 10000` 綠再 `-Suite All` 綠（帶 -GodotPath）；逐 S5-AC 證據對照落 `specs/meta-progression/implementation-review.md`；PROGRESS.md/HANDOFF.md/implementation-slices.md 狀態更新。

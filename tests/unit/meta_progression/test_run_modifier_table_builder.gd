@@ -293,6 +293,32 @@ func _strip_add_xp_from_operation_matrix(fixture: ContentValidationInput) -> voi
 		supported[index].operation_index = index
 	matrix.run_operations = supported
 
+## W4-F7（2026-07-25）：同一 effect_id 掛在兩個挑戰階級時，run 層貢獻只能計一次——否則
+## sum_always_active 會把同一份詞綴加總兩次（與 ChallengeAffixResolver 的清單去重同語意）。
+func test_same_effect_on_two_challenge_levels_contributes_only_once() -> void:
+	var effect_id := &"effect.challenge_shared_bonus"
+	var fixture := _fixture_with_renamed_challenge_chain()
+	_append_add_gold_effect(fixture, effect_id, 3)
+	(_find(fixture, &"unlock.slice_challenge_1") as UnlockDef).modifier_refs = [effect_id]
+	(_find(fixture, &"unlock.slice_challenge_2") as UnlockDef).modifier_refs = [effect_id]
+	var registry := ContentRegistryService.new()
+	add_child_autofree(registry)
+	var installed := registry.install_validated(fixture, "fixture.run_modifier.10", [&"pack.core"])
+	assert_true(installed.ok)
+	if not installed.ok:
+		return
+	var no_relics: Array[StringName] = []
+	var built := RunModifierTableBuilder.new().build(
+		registry, installed.handle.manifest_digest, no_relics, &"commander.c0", 2
+	)
+	assert_true(built.ok)
+	if not built.ok:
+		return
+	assert_eq(
+		built.table.sum_always_active(&"economy", &"add_gold"), 3,
+		"同一 effect 被 level1 與 level2 引用時只計一次（3），不得雙倍計（6）"
+	)
+
 func _fixture_with_renamed_challenge_chain() -> ContentValidationInput:
 	var fixture := SyntheticContentFixture.build_valid()
 	for level in range(6):

@@ -45,12 +45,21 @@ func settle(
 	# 勝負皆適用，維持既有逐節點語意（design §6.1/§6.4、S5-AC-003/013）。once_per_node／
 	# on_first_clear 的 claim 建立與消費延後到確認勝利之後才進行——2026-07-25 裁決：
 	# 戰敗不得建立/消耗 claim、不套 bonus，避免首戰落敗即燒掉「首次通關」等效果。
+	# design §6.3 軌 B：挑戰詞綴（及指揮官被動）的 drain 貢獻只在戰敗路徑加深損失，勝利不生效。
+	# W4-F3 修正（2026-07-25）：drain 比照 heal，同時讀 slot-gated（一般 rule 類遺物，經
+	# _sum_always_rule_drain_bonus）與 always-active（commander/challenge 來源）兩路——修正前
+	# 只讀後者，slot-gated drain 遺物會建表成功卻結算時靜默零效果。
 	var relic_always_bonus := 0
+	var challenge_drain := 0
 	if relic_table != null:
 		relic_always_bonus = _sum_always_rule_heal_bonus(relic_table, active_relic_ids)
 		relic_always_bonus += relic_table.sum_always_active(&"rule", &"heal_expedition_hp")
+		challenge_drain = _sum_always_rule_drain_bonus(relic_table, active_relic_ids)
+		challenge_drain += relic_table.sum_always_active(&"rule", &"drain_expedition_hp")
 	if result.outcome == &"player_loss":
-		return _settle_loss(draft, node, result, catalog, relic_always_bonus)
+		return _settle_loss(
+			draft, node, result, catalog, relic_always_bonus, challenge_drain
+		)
 	if result.outcome != &"player_win":
 		return ExpeditionActionResult.failure(
 			ExpeditionActionError.RESULT_INVALID, &"battle_result.outcome"
@@ -126,11 +135,17 @@ func _settle_loss(
 	node: MapNodeState,
 	result: BattleResult,
 	catalog: EconomyExpeditionCatalog,
-	relic_damage_reduction: int = 0
+	relic_damage_reduction: int = 0,
+	challenge_extra_damage: int = 0
 ) -> ExpeditionActionResult:
 	# 規則型遺物把遠征 HP 修正值視為傷害減免（下限 0，不得反向治療）。
+	# design §6.3 軌 B（S5-AC-010）：挑戰詞綴的遠征傷害以 drain_expedition_hp 表達（amount≥0＝
+	# 額外損失幅度），是獨立加項——先讓 heal 把傷害砍到不低於 0，drain 再對這個已砍過的值疊加，
+	# 兩者不合併成單一淨值（否則 drain 會被 heal 的下限 clamp 吸收）。
 	var reduced_damage := maxi(0, result.expedition_damage - relic_damage_reduction)
-	draft.expedition_hp = maxi(0, draft.expedition_hp - reduced_damage)
+	draft.expedition_hp = maxi(
+		0, draft.expedition_hp - (reduced_damage + challenge_extra_damage)
+	)
 	draft.economy_state.loss_streak += 1
 	draft.economy_state.win_streak = 0
 	if draft.economy_state.loss_streak >= 2 \
@@ -176,6 +191,24 @@ func _sum_always_rule_heal_bonus(
 			continue
 		for operation: RunRelicOperationRule in rule.run_operations:
 			if operation.kind == &"heal_expedition_hp" and operation.claim_scope == &"always":
+				bonus += operation.amount
+	return bonus
+
+## 規則遺物 (rule, drain_expedition_hp) 的 claim_scope=always 加總（design §6.3 軌 B、
+## W4-F3 修正）。與 _sum_always_rule_heal_bonus 同構，但 drain 沒有對應的 claim-aware 消費
+## 版本——RunRelicTableBuilder._scope_supported 只對 (rule, heal_expedition_hp) 開放
+## once_per_node/on_first_clear，drain 的 claim_scope 只可能是 always（否則 build 階段已被
+## UNSUPPORTED_INTENT 拒絕），故本函式已涵蓋 drain 的完整 slot-gated 貢獻，不需額外的
+## claim 消費函式。勝負皆呼叫（維持既有逐節點語意），drain 本身只在 _settle_loss 分支生效。
+func _sum_always_rule_drain_bonus(
+	relic_table: RunRelicTable, active_relic_ids: Array[StringName]
+) -> int:
+	var bonus := 0
+	for rule: RunRelicRule in relic_table.ordered_rules(active_relic_ids):
+		if rule.category != &"rule":
+			continue
+		for operation: RunRelicOperationRule in rule.run_operations:
+			if operation.kind == &"drain_expedition_hp" and operation.claim_scope == &"always":
 				bonus += operation.amount
 	return bonus
 

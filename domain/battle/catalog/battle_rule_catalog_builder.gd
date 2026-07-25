@@ -94,6 +94,9 @@ func build(
 				if relic_rule == null: return _current_failure(content_id)
 				relics.append(relic_rule)
 				_append_names(pending, relic_rule.battle_effect_ids)
+			&"unlock":
+				if not _append_unlock_battle_effects(registry, manifest_digest, view, pending):
+					return _current_failure(content_id)
 			_:
 				return BattleRuleCatalogBuildResult.failure(
 					BattleRuleCatalogError.CATEGORY_MISMATCH,
@@ -377,6 +380,13 @@ func _decode_battle_operation(value: ContentValue) -> BattleOperationRule:
 			return _payload_failure(&"effect.battle_operations.type")
 	return result
 
+## battle 層不消費 run intent，但 design §6.3 明文允許同一效果同時帶 battle_operations 與
+## run_operations（雙軌詞綴/混合效果）。這種效果因軌 A 必須進本 catalog，_decode_effect 會連同
+## 其 run_operations 一併解碼——白名單漏一種 record type 就會讓整份 catalog 回 PAYLOAD_INVALID、
+## 該遠征所有戰鬥節點進不去。故此處必須認得所有 scalar run operation（形狀同為
+## [u32 index, i32 amount, enum scope]，見 content_canonical_codec_v1.gd:700-701），與
+## run_relic_table_builder.gd:78-85 的對應表保持一致（非 scalar 的 0x3104..0x3107 形狀不同、
+## 不屬效果可著作的 run intent，維持既有拒絕）。
 func _decode_run_operation(value: ContentValue) -> BattleRunOperationRule:
 	if value == null or value.children.size() != 3:
 		return _payload_failure(&"effect.run_operations")
@@ -388,8 +398,47 @@ func _decode_run_operation(value: ContentValue) -> BattleRunOperationRule:
 		0x3101: result.kind = &"add_gold"
 		0x3102: result.kind = &"add_xp"
 		0x3103: result.kind = &"heal_expedition_hp"
+		0x3108: result.kind = &"shop_discount"
+		0x3109: result.kind = &"shop_surcharge"
+		0x310a: result.kind = &"drain_expedition_hp"
 		_: return _payload_failure(&"effect.run_operations.type")
 	return result
+
+## design §6.3（S5-AC-010）軌 A 的可達性：challenge unlock 的 modifier_refs 是挑戰詞綴效果的
+## 唯一入口，其中軌 A（battle_operations 非空）必須遞移 pin 進本 catalog，否則
+## EncounterCompiler._compile_affixes 在 challenge≥1 的戰鬥節點找不到規則而回 RULE_MISSING。
+## 軌 B（純 run_operations 的詞綴）由 run 層 RunModifierTableBuilder 消費、不屬戰鬥規則，
+## 故此處只放行軌 A——分軌判準與 challenge_affix_resolver.gd:81-88 相同（不重複解碼 operation 種類）。
+## UnlockDef payload：3 common ＋ 6 specifics ＝ 9 children；children[8]＝modifier_refs。
+## 回傳 false＝已設定具名 _error（由呼叫端 _current_failure 補上 unlock 的 content_id）。
+func _append_unlock_battle_effects(
+	registry: ContentRegistryService,
+	manifest_digest: String,
+	view: ContentDefinitionView,
+	pending: Array[StringName]
+) -> bool:
+	if not _payload_is(view, ContentCategory.UNLOCK, 9): return false
+	for effect_id: StringName in _names(view.payload.children[8]):
+		var resolved := registry.resolve(ContentRef.new(manifest_digest, effect_id))
+		if not resolved.ok:
+			_error = BattleRuleCatalogError.new(
+				BattleRuleCatalogError.RESOLVE_FAILED, resolved.error.field_path, effect_id
+			)
+			return false
+		var effect_view: ContentDefinitionView = resolved.value
+		if effect_view.category != &"effect":
+			_error = BattleRuleCatalogError.new(
+				BattleRuleCatalogError.CATEGORY_MISMATCH, &"unlock.modifier_refs", effect_id
+			)
+			return false
+		if effect_view.payload == null \
+			or effect_view.payload.record_type != ContentCategory.EFFECT \
+			or effect_view.payload.children.size() != 12:
+			_payload_failure(&"unlock.modifier_refs")
+			return false
+		if not effect_view.payload.children[7].children.is_empty():
+			pending.append(effect_id)
+	return true
 
 func _payload_is(view: ContentDefinitionView, type_id: int, child_count: int) -> bool:
 	if view == null or view.payload == null \

@@ -10,11 +10,14 @@ extends RefCounted
 ##   modifier_refs 的 run_operations（本波僅建通道與參數，wave4 才有實際內容）。
 ## 回傳型別重用 RunRelicTableBuildResult（同一個 RunRelicTable 產物，不另造同構型別）。
 
-## always-active 規則的消費端支援集合：IncomeService(add_gold)／ShopService(shop_discount)／
-## BattleSettlementService(heal_expedition_hp)。不在此集合的 kind（如 add_xp）沒有任何
-## always-active 消費端，build 時具名拒絕，杜絕「建表成功但效果靜默歸零」。
+## always-active 規則的消費端支援集合：IncomeService(add_gold)／ShopService(shop_discount、
+## shop_surcharge)／BattleSettlementService(heal_expedition_hp、drain_expedition_hp)。不在此
+## 集合的 kind（如 add_xp）沒有任何 always-active 消費端，build 時具名拒絕，杜絕「建表成功但
+## 效果靜默歸零」。shop_surcharge／drain_expedition_hp 為 design §6.3 軌 B 的負向挑戰詞綴
+## intent（amount≥0＝幅度，負向由型別表達），消費端已於 W4 接線。
 const _ALWAYS_ACTIVE_SUPPORTED_KINDS: Array[StringName] = [
-	&"add_gold", &"shop_discount", &"heal_expedition_hp",
+	&"add_gold", &"shop_discount", &"shop_surcharge",
+	&"heal_expedition_hp", &"drain_expedition_hp",
 ]
 
 var _relic_builder := RunRelicTableBuilder.new()
@@ -75,10 +78,14 @@ func _append_commander_rules(
 ## 解 challenge unlock 鏈 1..challenge_level 的 modifier_refs 為 always-active 規則。
 ## challenge_level 0 無詞綴（不解析任何 unlock）；1..N 逐階累積（design §6.3「詞綴 1..N 累積」）。
 ## unlock id 慣例：unlock.slice_challenge_%d（見 content/packs/vertical_slice/unlocks/）。
+## 跨階級去重（W4-F7，2026-07-25）：同一 effect_id 若被兩個階級的 modifier_refs 各自引用，
+## 只在首次出現（最低）階級計入一次，與 ChallengeAffixResolver 的清單去重同語意（design §6.3
+## 「sorted, dedup」）——否則 sum_always_active 會把同一份貢獻加總兩次。
 func _append_challenge_rules(
 	registry: ContentRegistryService, manifest_digest: String,
 	challenge_level: int, rules: Array[RunRelicRule]
 ) -> RunRelicTableBuildResult:
+	var seen_effect_ids: Array[StringName] = []
 	for level: int in range(1, challenge_level + 1):
 		var unlock_id := StringName("unlock.slice_challenge_%d" % level)
 		var resolved := registry.resolve(ContentRef.new(manifest_digest, unlock_id))
@@ -98,7 +105,14 @@ func _append_challenge_rules(
 			return RunRelicTableBuildResult.failure(
 				RunRelicTableError.PAYLOAD_INVALID, &"unlock.payload", unlock_id
 			)
-		var effect_refs := _stable_id_names(view.payload.children[8])
+		var effect_refs: Array[StringName] = []
+		for effect_id: StringName in _stable_id_names(view.payload.children[8]):
+			if seen_effect_ids.has(effect_id):
+				continue
+			seen_effect_ids.append(effect_id)
+			effect_refs.append(effect_id)
+		if effect_refs.is_empty():
+			continue
 		var failure := _append_source_rules(
 			registry, manifest_digest, unlock_id, &"challenge",
 			effect_refs, &"challenge.run_operations", rules
@@ -164,11 +178,12 @@ func _append_category_rule(
 	rules.append(rule)
 
 ## run operation kind → run-layer category（消費端讀取的 category 反推）：
-## heal_expedition_hp→rule（BattleSettlementService）；add_gold/shop_discount→economy
-## （IncomeService／ShopService）。不在 _ALWAYS_ACTIVE_SUPPORTED_KINDS 的 kind（如 add_xp）
-## 已於 _append_source_rules 具名拒絕，到不了本函式。
+## heal_expedition_hp/drain_expedition_hp→rule（BattleSettlementService）；
+## add_gold/shop_discount/shop_surcharge→economy（IncomeService／ShopService）。不在
+## _ALWAYS_ACTIVE_SUPPORTED_KINDS 的 kind（如 add_xp）已於 _append_source_rules 具名拒絕，
+## 到不了本函式。
 func _category_for_kind(kind: StringName) -> StringName:
-	if kind == &"heal_expedition_hp":
+	if kind == &"heal_expedition_hp" or kind == &"drain_expedition_hp":
 		return &"rule"
 	return &"economy"
 

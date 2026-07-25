@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_ca02b"]
+[ext_resource type="Script" path="res://content/definitions/move_operation_def.gd" id="2_ca02mv"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_ca02c"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_ca02r"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ca02e"]
+
+[sub_resource type="Resource" id="Resource_ca02op"]
+script = ExtResource("2_ca02mv")
+direction_or_target = &"forward"
+cells = 2
+
+[resource]
+script = ExtResource("5_ca02e")
+content_role = &"challenge_affix"
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_ca02b")]([SubResource("Resource_ca02op")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_challenge_affix_02"
+display_name_key = &"loc.effect_slice_challenge_affix_02"
+# TUNE: 遭遇規則類軌 A 詞綴（W4-F6 修正，2026-07-25）——敵人開場向前移動 cells 格，縮短初始
+# 交戰距離，表達「遭遇規則」而非單純的敵人屬性強化（異於 _00/_04 的 ModifyStat 敵人編成類）。
+# 四類→機制映射見 design.md §6.3/§7.1：敵人編成（_00/_04, ModifyStat）與遭遇規則（本檔, Move）
+# 共用軌 A；經濟壓力見 _01（ShopSurcharge）；遠征傷害見 _03（DrainExpeditionHp）。

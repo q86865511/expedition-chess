@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_cp01b"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_cp01c"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_cp01r"]
+[ext_resource type="Script" path="res://content/definitions/heal_expedition_hp_operation_def.gd" id="4_cp01h"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_cp01e"]
+
+[sub_resource type="Resource" id="Resource_cp01op"]
+script = ExtResource("4_cp01h")
+amount = 2
+claim_scope = &"always"
+
+[resource]
+script = ExtResource("5_cp01e")
+trigger = &"battle_start"
+run_operations = Array[ExtResource("3_cp01r")]([SubResource("Resource_cp01op")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_commander_passive_01"
+display_name_key = &"loc.effect_slice_commander_passive_01"

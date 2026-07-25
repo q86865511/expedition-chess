@@ -129,7 +129,7 @@ exactly-once 由四重保證疊加：(a) `compute` 純函式，同一 terminal r
 - `EnterNodeEvent` 於 node entry 把軌 A 結果填入 `EncounterCompileRequest`（新欄位 `challenge_affix_effect_ids`），`_compile_affixes` 合併 encounter 自帶 affix 與 challenge affix（同一敵方管線、決定性 sort、去重）。
 
 **軌 B：負向 run 機制（經濟壓力/遠征傷害）**——既有 run 層 operation 受 `content_validator.gd:688` amount≥0 約束；不放寬該不變量，改以**新 operation def 型別承載負向語意（amount≥0＝幅度、負向由型別表達）**：
-- `ShopSurchargeOperationDef`（amount＝商店 reroll/購買成本**增量**）：shop 作用點消費端（`shop_service.gd:189-192` 既有 discount 加總處）改為 `cost + surcharge − discount`（下限 clamp 沿用既有規則）。
+- `ShopSurchargeOperationDef`（amount＝商店 reroll/購買成本**增量**）：shop 作用點消費端（`shop_service.gd:189-192` 既有 discount 加總處）改為 `cost + surcharge − discount`（下限 clamp 沿用既有規則）。**不對稱裁決**（W4-F4，2026-07-25）：此公式套用於單件 offer 的購買成本（`_generate_offers`）；`quote_refresh` 的 reroll 固定費用（`config.reroll_cost`）改為 `maxi(1, reroll_cost + surcharge)`，**只套 surcharge、不套 discount**——discount 維持 S4（economy-expedition）既有行為不套用到 reroll，避免動到已完成切片的平衡，非遺漏。
 - `DrainExpeditionHpOperationDef`（amount＝戰敗時**額外**遠征 HP 損失）：settlement 作用點（`battle_settlement_service.gd:41-44` 既有 heal 加總處）於戰敗路徑加算額外損失（與 heal 同一決定性加總慣例、受 HP 下限 clamp）。
 - 兩者作為 source=`challenge` 的 always-active 規則經 §6.1 `RunRelicTable` 消費（claim_scope=always，逐事件生效不設一次性 claim）；validator 對兩者維持 amount≥0、須擴充解碼分支（§7.2）。
 

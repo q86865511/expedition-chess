@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_cp02b"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_cp02m"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_cp02c"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_cp02r"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_cp02e"]
+
+[sub_resource type="Resource" id="Resource_cp02op"]
+script = ExtResource("2_cp02m")
+stat = &"attack_speed_milli"
+mode = &"flat"
+amount = 50
+duration_ticks = 1800
+target = &"self"
+
+[resource]
+script = ExtResource("5_cp02e")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_cp02b")]([SubResource("Resource_cp02op")])
+stacking = &"replace"
+duration_ticks = 1800
+id = &"effect.slice_commander_passive_02"
+display_name_key = &"loc.effect_slice_commander_passive_02"

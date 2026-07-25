@@ -3,11 +3,18 @@
 [ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_lndfd"]
 [ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="2_qmswd"]
 [ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="3_exhrt"]
+[ext_resource type="Script" path="res://content/definitions/add_gold_operation_def.gd" id="4_cp00g"]
 [ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="4_cdibx"]
+
+[sub_resource type="Resource" id="Resource_cp00op"]
+script = ExtResource("4_cp00g")
+amount = 1
+claim_scope = &"always"
 
 [resource]
 script = ExtResource("4_cdibx")
 trigger = &"battle_start"
+run_operations = Array[ExtResource("3_exhrt")]([SubResource("Resource_cp00op")])
 stacking = &"replace"
 duration_ticks = 1800
 id = &"effect.slice_commander_passive"

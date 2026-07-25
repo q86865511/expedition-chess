@@ -80,6 +80,8 @@ func _append_effect_run_operations(
 			0x3102: operation.kind = &"add_xp"
 			0x3103: operation.kind = &"heal_expedition_hp"
 			0x3108: operation.kind = &"shop_discount"
+			0x3109: operation.kind = &"shop_surcharge"
+			0x310a: operation.kind = &"drain_expedition_hp"
 			_: return RunRelicTableError.PAYLOAD_INVALID
 		if not _scope_supported(category, operation.kind, operation.claim_scope):
 			return RunRelicTableError.UNSUPPORTED_INTENT
@@ -108,18 +110,20 @@ func _has_supported_run_intent(rule: RunRelicRule) -> bool:
 	return false
 
 ## 支援集合以「修正後實際消費端」為準：
-## - economy：IncomeService 讀 add_gold、ShopService 讀 shop_discount。
-## - rule：BattleSettlementService 讀 heal_expedition_hp。
+## - economy：IncomeService 讀 add_gold、ShopService 讀 shop_discount／shop_surcharge。
+## - rule：BattleSettlementService 讀 heal_expedition_hp／drain_expedition_hp。
 ## - route：MapService 只計數 active route 遺物、不讀 kind，故任一可解碼的 run kind 皆有效。
 func _is_supported_run_intent(category: StringName, kind: StringName) -> bool:
 	match category:
 		&"economy":
-			return kind == &"add_gold" or kind == &"shop_discount"
+			return kind == &"add_gold" or kind == &"shop_discount" \
+				or kind == &"shop_surcharge"
 		&"rule":
-			return kind == &"heal_expedition_hp"
+			return kind == &"heal_expedition_hp" or kind == &"drain_expedition_hp"
 		&"route":
 			return kind == &"add_gold" or kind == &"add_xp" \
-				or kind == &"heal_expedition_hp" or kind == &"shop_discount"
+				or kind == &"heal_expedition_hp" or kind == &"shop_discount" \
+				or kind == &"shop_surcharge" or kind == &"drain_expedition_hp"
 	return false
 
 func _names(value: ContentValue) -> Array[StringName]:

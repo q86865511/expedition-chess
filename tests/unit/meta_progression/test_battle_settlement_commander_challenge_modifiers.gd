@@ -100,7 +100,9 @@ func _slot_gated_rule(relic_id: StringName, heal_amount: int) -> RunRelicRule:
 	operation.operation_index = 0
 	operation.kind = &"heal_expedition_hp"
 	operation.amount = heal_amount
-	operation.claim_scope = &"once_per_node"
+	# w3 仲裁（2026-07-25）：本 fixture 只驗 slot-gated 與 always-active 的戰敗減免疊加，
+	# once_per_node 舊預留值在勝利才消耗的新語意下不再於戰敗生效，改 always 保留測試原意。
+	operation.claim_scope = &"always"
 	var rule := RunRelicRule.new()
 	rule.relic_id = relic_id
 	rule.category = &"rule"

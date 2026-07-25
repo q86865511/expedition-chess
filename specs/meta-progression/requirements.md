@@ -95,9 +95,9 @@ AppRoot 正式接線＋Camp 灰盒入本片；指揮官被動經遺物作用點�
 - Then discovered_content_ids 於同一 copy-validate-save-swap 交易原子追加（冪等：重載/重放不重複）；圖鑑館按類別讀出發現/解鎖狀態
 
 ### S5-AC-013 — claim_scope 真語意防重放（S4 裁決；對應 AC-073 settlement 子條款）
-- Given 遺物/效果 claim_scope ∈ {always, once_per_node, on_first_clear}
-- When 同節點重入、重載重放、跨節點再觸發
-- Then once_per_node 同節點恰一次、on_first_clear 全 run 首次通過恰一次；validator 與 run_relic_table_builder 同步放寬；claim/settlement keys 全 run 唯一且重複 tuple 拒載
+- Given 遺物/效果 claim_scope ∈ {always, once_per_node, on_first_clear}（非 always scope 的支援集合依 design §6.4 收斂為「消費端具 claim-aware 去重」的 (category×kind)，目前即 (rule×heal_expedition_hp)；w3 裁決 2026-07-25）
+- When 同節點重入、重載重放、跨節點再觸發、以及戰敗結算
+- Then once_per_node 同節點恰一次、on_first_clear 全 run 首次通過恰一次；戰敗不提交也不消耗 claim（w3 裁決 2026-07-25）；validator 與 run_relic_table_builder 同判準同步放寬；claim/settlement keys 全 run 唯一且重複 tuple 拒載
 
 ### S5-AC-014 — 正式接線 relic_table 顯式傳入（HANDOFF §4；Covers REQ-TECH-002）
 - Given AppRoot 正式 composition root 與 SceneRouter CAMP↔RUN↔RESULTS

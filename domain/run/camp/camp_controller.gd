@@ -17,6 +17,7 @@ var _profile: ProfileState
 var _save_repository: SaveRepository
 var _content_version: String
 var _save_root_factory: CampSaveRootFactory
+var _run_save_root_factory: RunSaveRootFactory
 var _validator: RunStateValidator
 var _transaction_active: bool = false
 
@@ -25,7 +26,8 @@ func _init(
 	p_save_repository: SaveRepository,
 	p_content_version: String,
 	p_save_root_factory: CampSaveRootFactory = null,
-	p_validator: RunStateValidator = null
+	p_validator: RunStateValidator = null,
+	p_run_save_root_factory: RunSaveRootFactory = null
 ) -> void:
 	# clone in: never alias the caller's ProfileState instance.
 	_profile = p_profile.deep_clone()
@@ -35,6 +37,15 @@ func _init(
 		p_save_root_factory
 		if p_save_root_factory != null
 		else CampSaveRootFactory.new()
+	)
+	# dispatch_start_expedition() writes a SaveRoot that carries a run, so it needs
+	# the run-scoped factory. It is injectable for the same reasons the camp one is:
+	# app_version and the commit clock must be a single choice per controller, not
+	# one value for unlock purchases and RunSaveRootFactory's defaults for starts.
+	_run_save_root_factory = (
+		p_run_save_root_factory
+		if p_run_save_root_factory != null
+		else RunSaveRootFactory.new()
 	)
 	_validator = p_validator if p_validator != null else RunStateValidator.new()
 
@@ -92,3 +103,68 @@ func dispatch(command: PurchaseUnlockCommand) -> CampCommandResult:
 	_profile = apply_result.profile.deep_clone()
 	_transaction_active = false
 	return CampCommandResult.success(apply_result.profile)
+
+## T05 (design.md §4.2): a SECOND entry point added alongside dispatch(), NOT a
+## breaking widening of it -- dispatch() stays PurchaseUnlockCommand-only. Same
+## copy-validate-save-swap discipline, but a successful start commits profile'
+## AND the freshly bootstrapped RunState atomically in one SaveRoot. The
+## candidate is built via the EXISTING RunSaveRootFactory (not CampSaveRootFactory,
+## which is scoped to run == null profile-only saves) since the SaveRoot now
+## carries an actual run. CampController keeps no in-memory RunState of its own
+## (its scope is "no active run"): only the persisted SaveRoot carries it, while
+## the returned result still hands `run` back for T11's AppStateMachine transition.
+func dispatch_start_expedition(command: StartExpeditionCommand) -> StartExpeditionCampResult:
+	# 1. structural guard: no clone/validate/save attempted.
+	if command == null or not command.is_concrete():
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(CampCommandError.INVALID_COMMAND, &"command")
+		)
+	# 2. reentrancy guard.
+	if _transaction_active:
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(CampCommandError.TRANSACTION_BUSY, &"transaction")
+		)
+	_transaction_active = true
+	# 3. clone -> apply; a domain rejection propagates its code straight through.
+	var draft := _profile.deep_clone()
+	var apply_result := command.apply_to(draft)
+	if not apply_result.ok:
+		_transaction_active = false
+		var apply_field: StringName = (
+			apply_result.error.field_path if apply_result.error != null else &"command"
+		)
+		var apply_code: StringName = (
+			apply_result.error.code
+			if apply_result.error != null
+			else StartExpeditionError.INPUT_INVALID
+		)
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(apply_code, apply_field)
+		)
+	# 4. validate: build the candidate profile'+run SaveRoot and run the full
+	#    RunStateValidator BEFORE any save (a real, independently observable step).
+	var candidate := _run_save_root_factory.build(
+		apply_result.profile, apply_result.run
+	)
+	var validation := _validator.validate_root(candidate)
+	if not validation.ok:
+		_transaction_active = false
+		var validation_field: StringName = (
+			validation.error.field_path if validation.error != null else &"root"
+		)
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(CampCommandError.VALIDATION_FAILED, validation_field)
+		)
+	# 5. save: profile'+run committed atomically. On failure the in-memory
+	#    profile is NOT swapped and no active run is persisted.
+	var save_result := _save_repository.save(candidate)
+	if not save_result.ok:
+		_transaction_active = false
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(CampCommandError.SAVE_FAILED, &"save")
+		)
+	# 6. swap: canonical profile becomes profile'. CampController does not retain
+	#    the RunState -- only the persisted SaveRoot does.
+	_profile = apply_result.profile.deep_clone()
+	_transaction_active = false
+	return StartExpeditionCampResult.success(apply_result.profile, apply_result.run)

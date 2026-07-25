@@ -52,7 +52,7 @@ func calculate(
 
 func _source_is_valid(source: PopulationSourceSnapshot) -> bool:
 	if source == null or source.source_kind < PopulationSourceSnapshot.SourceKind.EVENT \
-		or source.source_kind > PopulationSourceSnapshot.SourceKind.TRAIT:
+		or source.source_kind > PopulationSourceSnapshot.SourceKind.COMMANDER:
 		return false
 	if not _stable_ids.is_valid(source.source_id):
 		return false

@@ -9,7 +9,7 @@ extends RefCounted
 ##   1. repository.load() 取得目前 profile/run。load 失敗（存檔各前置故障點）→ SAVE_FAILED：
 ##      交易尚未提交、run 維持 active，重載重試即可（§5.2）。
 ##   2. 無 active run（run==null）→ NO_ACTIVE_RUN：無可結算標的、零變動。
-##   3. MetaSettlementService.settle(profile, run, table) → profile'（回 null
+##   3. MetaSettlementService.try_settle(profile, run, table) → profile'（回 null
 ##      時→KEY_FAILED：不可達防禦路徑，尚未組 SaveRoot、run 未清）；否則組
 ##      SaveRoot(profile', run=null) 經 repository.save 單一原子提交（清除 active run 與
 ##      發放貨幣/receipt/挑戰紀錄同一 SaveRoot）。save 失敗 → SAVE_FAILED：
@@ -48,7 +48,7 @@ func dispatch() -> MetaSettlementCommandResult:
 			MetaSettlementCommandError.NO_ACTIVE_RUN, &"run"
 		)
 	var content_version := loaded.run.content_snapshot.content_version_value()
-	var settled := MetaSettlementService.settle(
+	var settled := MetaSettlementService.try_settle(
 		loaded.profile, loaded.run, _meta_reward_table
 	)
 	if settled == null:

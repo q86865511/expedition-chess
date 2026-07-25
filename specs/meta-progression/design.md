@@ -138,7 +138,8 @@ challenge 0 無詞綴；菁英詞綴與 map node generator 不受重指影響（
 ### 6.4 claim_scope 真語意（S5-AC-013；S4 裁決/AC-073 settlement 子條款）
 
 - **放寬**：`run_relic_table_builder.gd:83-84`（拒非 always→UNSUPPORTED_INTENT）與 `content_validator.gd:264-274`（`_validate_relic_effect_scope` 強制 always）同步改為接受 `{always, once_per_node, on_first_clear}`（`content_validator.gd:688` 的 scalar 路徑已允許三者）。
-- **claim key**：沿用 `build_effect_claim(run_id, node_id, claim_scope, source, effect_id, op_index)`（`runtime_key_schema_registry.gd:110-140`）與 `claim_receipts` 去重（`battle_settlement_service.gd:169-200` 既有樣式）。`once_per_node`→node_id 用當前節點（同節點同 key→恰一次、跨節點重觸發）；`on_first_clear`→node_id 用 run 級 sentinel（全 run 同一 key→首次通過恰一次）。`always`→維持既有逐節點無條件加總（§6.1）。
+- **claim key**：沿用 `build_effect_claim(run_id, node_id, claim_scope, source, effect_id, op_index)`（`runtime_key_schema_registry.gd:110-140`）與 `claim_receipts` 去重（`battle_settlement_service.gd:169-200` 既有樣式）。`once_per_node`→node_id 用當前節點（同節點同 key→恰一次、跨節點重觸發）；`on_first_clear`→node_id 用 run 級 sentinel（全 run 同一 key→首次通過恰一次）。`always`→維持既有逐節點無條件加總（§6.1）。claim 消費對齊既有 S3 claim 紀律（AC-059 同款）：**戰敗不提交、不消耗 claim；首次合法勝利結算才提交恰一次**（w3 裁決 2026-07-25）。
+- **支援集合收斂**（w3 裁決 2026-07-25）：非 always scope 只在「消費端具 claim-aware 去重」的 (category×kind) 開放——目前僅 (rule×heal_expedition_hp)（結算作用點）；economy/route 類 scalar intent 維持 always-only（消費端逐節點無條件加總、無法履行 claim 語意，開放即成死內容），直到對應消費端支援 claim 再擴。builder 與 validator 以同一判準拒絕。
 - **唯一性**：`RunStateValidator` 對 `claim_receipts` 與 `settlement_receipts` 重編碼＋去重，重複 tuple 拒載（對齊 AC-073）。
 
 ## 7. 挑戰詞綴內容與驗證器擴充

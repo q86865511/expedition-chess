@@ -49,7 +49,7 @@ func test_settle_completed_creates_first_time_commander_record_and_updates_globa
 		4, 2, 3, 2, SettlementReceiptState.Outcome.COMPLETED, table
 	)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.meta_currency, expected_delta)
 	assert_eq(settled.settlement_receipts.size(), 1)
@@ -78,7 +78,7 @@ func test_settle_completed_updates_commander_record_to_max_without_regressing() 
 		1, 0, 3, 1, SettlementReceiptState.Outcome.COMPLETED, table
 	)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.meta_currency, 50 + expected_delta)
 	assert_eq(settled.highest_challenge_level, 4, "global highest must not regress")
@@ -104,7 +104,7 @@ func test_settle_completed_leaves_other_commanders_records_untouched() -> void:
 		2, 1, 3, 6, SettlementReceiptState.Outcome.COMPLETED, table
 	)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.meta_currency, 10 + expected_delta)
 	assert_eq(settled.highest_challenge_level, 6, "global highest tracks the new max across all commanders")
@@ -136,7 +136,7 @@ func test_settle_completed_inserts_new_commander_record_in_sorted_position() -> 
 		3, 0, 0, 90
 	)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.commander_challenge_records.size(), 3)
 	var ids: Array[String] = []
@@ -163,7 +163,7 @@ func test_settle_failed_outcome_does_not_touch_challenge_records_or_global_highe
 		2, 1, 1, 9, SettlementReceiptState.Outcome.FAILED, table
 	)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.meta_currency, 20 + expected_delta)
 	assert_eq(settled.settlement_receipts.size(), 1)
@@ -197,7 +197,7 @@ func test_settle_completed_outcome_precedes_zero_expedition_hp_check() -> void:
 	# to COMPLETED) or this test could pass for the wrong reason.
 	assert_ne(expected_completed_delta, expected_failed_delta)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.meta_currency, expected_completed_delta)
 	assert_eq(settled.settlement_receipts[0].outcome, SettlementReceiptState.Outcome.COMPLETED)
@@ -216,7 +216,7 @@ func test_settle_receipt_key_equals_build_settlement_receipt_for_run_id() -> voi
 	)
 	assert_true(expected_key.ok)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.settlement_receipts.size(), 1)
 	assert_eq(settled.settlement_receipts[0].key.digest, expected_key.key_state.digest)
@@ -243,7 +243,7 @@ func test_settle_is_idempotent_when_run_id_already_has_a_receipt() -> void:
 		3, 9, 9, 100
 	)
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(settled.meta_currency, 100, "idempotent guard: currency_delta must be treated as 0")
 	assert_eq(settled.settlement_receipts.size(), 1, "must not append a second receipt for the same run_id")
@@ -273,7 +273,7 @@ func test_settle_does_not_mutate_input_profile_or_terminal_run() -> void:
 	var before_run_challenge_level := run.challenge_level
 	var before_run_defeated_boss := run.defeated_boss_count
 
-	var settled: ProfileState = MetaSettlementService.settle(profile, run, table)
+	var settled: ProfileState = MetaSettlementService.try_settle(profile, run, table)
 
 	assert_eq(profile.meta_currency, before_currency, "input profile must not be mutated")
 	assert_eq(profile.settlement_receipts.size(), before_receipt_count)

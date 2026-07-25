@@ -18,7 +18,8 @@ extends RefCounted
 ## SaveRoot(profile', run=null)／存檔／AppStateMachine 轉場屬 MetaSettlementCommand（§5.1 point5）。
 ## 例外：settlement receipt key 建置失敗時回傳 null（不可達防禦路徑，見下方
 ## key_result.ok 檢查），由呼叫端（MetaSettlementCommand）轉具名 KEY_FAILED 錯誤。
-static func settle(
+## 可回 null 故依 REQ-TECH-006／spec_contract_runner 的 optional-lookup 慣例命名 try_*。
+static func try_settle(
 	profile: ProfileState,
 	terminal_run: RunState,
 	meta_reward_table: MetaRewardTableDef

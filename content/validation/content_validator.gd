@@ -269,9 +269,18 @@ func _validate_relic_effect_scope(relic: RelicDef, require_battle_operations: bo
 		for operation: RunOperationDef in effect_definition.run_operations:
 			if (operation is AddGoldOperationDef or operation is AddXpOperationDef \
 				or operation is HealExpeditionHpOperationDef or operation is ShopDiscountOperationDef) \
-				and _scalar_run_claim_scope(operation) != &"always":
+				and _scalar_run_claim_scope(operation) != &"always" \
+					and not _relic_claim_scope_consumed(relic.category, operation):
 				_issue(&"CONTENT_RELIC_EFFECT_SCOPE", relic.id, &"effect_refs", "%s:claim_scope" % String(effect_id))
 				break
+
+## claim_scope 消費判準（S5-AC-013／design §6.4）：非 battle 遺物的 scalar run intent 只有在其
+## (category, operation) 消費端具 claim-aware 去重時，才可宣告 once_per_node/on_first_clear。目前唯一
+## 具此消費的作用點是 BattleSettlementService 對 (rule, heal_expedition_hp) 的規則遺物遠征 HP 修正；
+## economy/route 消費端仍逐節點無條件加總，故其 scalar intent 續守 always。與 RunRelicTableBuilder.
+## _scope_supported 同判準（消除 validator↔builder 分歧）。
+func _relic_claim_scope_consumed(category: StringName, operation: RunOperationDef) -> bool:
+	return category == &"rule" and operation is HealExpeditionHpOperationDef
 
 func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 	var levels: Dictionary = {}

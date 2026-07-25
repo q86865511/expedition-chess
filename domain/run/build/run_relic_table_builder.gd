@@ -30,7 +30,7 @@ func build(
 		rule.category = category
 		rule.effect_ids = _names(view.payload.children[4])
 		for effect_id: StringName in rule.effect_ids:
-			var append_error := _append_effect_run_operations(registry, manifest_digest, effect_id, rule.run_operations)
+			var append_error := _append_effect_run_operations(registry, manifest_digest, category, effect_id, rule.run_operations)
 			if append_error != &"":
 				return RunRelicTableBuildResult.failure(
 					append_error, &"relic.run_operations", relic_id
@@ -46,16 +46,16 @@ func build(
 ## 解析非 battle 遺物 effect_ref 所指的 EffectDef payload，取其 run_operations（children[8]，
 ## 形狀同 battle_rule_catalog_builder._decode_run_operation），append 進 target。
 ## 回傳 &"" 表成功；解不到、非 &"effect" 分類、或 payload/紀錄形狀不符 → PAYLOAD_INVALID。
-## W3-F5（S4 語意，2026-07-23 使用者裁決）＋W4-F2（2026-07-24 使用者裁決，移除混合效果豁免）：
-## 非 battle 遺物解出的每一筆 run intent，其 claim_scope 必須是 &"always" 哨兵，否則回
-## UNSUPPORTED_INTENT——S4 只支援 always（其餘 scope 語意如 on_first_clear 延後 S5）。
-## run-layer 消費端（IncomeService/ShopService…／RunRelicTable.sum_operation_amount）逐節點
-## 無條件加總、不看 claim_scope，任何非 always 的宣告都無法被正確履行。此約束不分效果是否
-## 同時帶 battle_operations（混合效果）：混合效果的戰鬥部分屬 battle 類遺物作用域、不被 run
-## layer 消費，但被非 battle 遺物引用時其 run 部分同樣受 always 約束（與 content_validator 的
-## _validate_relic_effect_scope 對齊，消除 validator↔builder 分歧）。
+## claim_scope 支援集合（W3-T08，S5-AC-013／design §6.4，2026-07-25）：每一筆 run intent 的
+## claim_scope 必須落在 _scope_supported 認可的集合，否則回 UNSUPPORTED_INTENT。&"always" 永遠
+## 支援（逐節點無條件加總，§6.1）；once_per_node/on_first_clear 只在其消費端實際依 claim_scope
+## 去重時才支援——目前唯一具 claim-aware 消費的作用點是 BattleSettlementService 對
+## (rule, heal_expedition_hp) 的規則遺物遠征 HP 修正（battle_settlement_service.gd）。economy/route
+## 消費端（IncomeService/ShopService／RunRelicTable.sum_operation_amount）仍逐節點無條件加總、不看
+## claim_scope，故其 scalar run intent 續守 always（非 always 會被靜默違反）。此判準與
+## content_validator._validate_relic_effect_scope 對齊，消除 validator↔builder 分歧。
 func _append_effect_run_operations(
-	registry: ContentRegistryService, manifest_digest: String,
+	registry: ContentRegistryService, manifest_digest: String, category: StringName,
 	effect_id: StringName, target: Array[RunRelicOperationRule]
 ) -> StringName:
 	var resolved := registry.resolve(ContentRef.new(manifest_digest, effect_id))
@@ -74,16 +74,28 @@ func _append_effect_run_operations(
 		operation.operation_index = value.children[0].int_value
 		operation.amount = value.children[1].int_value
 		operation.claim_scope = StringName(value.children[2].string_value)
+		operation.effect_id = effect_id
 		match value.record_type:
 			0x3101: operation.kind = &"add_gold"
 			0x3102: operation.kind = &"add_xp"
 			0x3103: operation.kind = &"heal_expedition_hp"
 			0x3108: operation.kind = &"shop_discount"
 			_: return RunRelicTableError.PAYLOAD_INVALID
-		if operation.claim_scope != &"always":
+		if not _scope_supported(category, operation.kind, operation.claim_scope):
 			return RunRelicTableError.UNSUPPORTED_INTENT
 		target.append(operation)
 	return &""
+
+## claim_scope 支援判準（S5-AC-013／design §6.4）：&"always" 恆支援；once_per_node/on_first_clear
+## 只在其 (category, kind) 消費端具 claim-aware 去重時支援。目前唯一具此消費的作用點是
+## BattleSettlementService 對 (rule, heal_expedition_hp) 的規則遺物遠征 HP 修正；其餘 (category, kind)
+## 及未知 scope 一律不支援（回 UNSUPPORTED_INTENT）。與 content_validator 同判準以消除分歧。
+func _scope_supported(category: StringName, kind: StringName, claim_scope: StringName) -> bool:
+	if claim_scope == &"always":
+		return true
+	if claim_scope == &"once_per_node" or claim_scope == &"on_first_clear":
+		return category == &"rule" and kind == &"heal_expedition_hp"
+	return false
 
 ## design §6/§10：非 battle 遺物的 run intent 必須落在對應 run-layer service 實際消費的
 ## (category, kind) 支援集合，否則其效果永遠不會被讀取（死內容）→ build 失敗。

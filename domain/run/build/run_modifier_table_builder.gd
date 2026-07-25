@@ -121,8 +121,10 @@ func _append_source_rules(
 ) -> RunRelicTableBuildResult:
 	var operations: Array[RunRelicOperationRule] = []
 	for effect_id: StringName in effect_refs:
+		# category 傳 source（commander/challenge）：always-active 路徑無 claim-aware 消費端，
+		# _scope_supported 對非 rule category 只放行 always——非 always 的被動/詞綴 intent 在此被拒。
 		var error := _relic_builder._append_effect_run_operations(
-			registry, manifest_digest, effect_id, operations
+			registry, manifest_digest, source, effect_id, operations
 		)
 		if error != &"":
 			return RunRelicTableBuildResult.failure(error, failure_path, source_id)

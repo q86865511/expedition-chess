@@ -4,6 +4,7 @@ extends RunCommand
 var _board: BoardState
 var _bench_unit_instance_ids: Array[String] = []
 var _catalog: BattleRuleCatalog
+var _population_sources: Array[PopulationSourceSnapshot] = []
 var _board_validator: BoardPreparationValidator
 var _bench_compactor: BenchCompactor
 var _merge_service: UnitMergeService
@@ -12,6 +13,7 @@ func _init(
 	p_board: BoardState,
 	p_bench_unit_instance_ids: Array[String],
 	p_catalog: BattleRuleCatalog,
+	p_population_sources: Array[PopulationSourceSnapshot] = [],
 	p_board_validator: BoardPreparationValidator = null,
 	p_bench_compactor: BenchCompactor = null,
 	p_merge_service: UnitMergeService = null
@@ -19,6 +21,9 @@ func _init(
 	_board = p_board.deep_clone() if p_board != null else null
 	_bench_unit_instance_ids.assign(p_bench_unit_instance_ids)
 	_catalog = p_catalog.deep_clone() if p_catalog != null else null
+	for source: PopulationSourceSnapshot in p_population_sources:
+		if source != null:
+			_population_sources.append(source.deep_clone())
 	_board_validator = (
 		p_board_validator if p_board_validator != null else BoardPreparationValidator.new()
 	)
@@ -63,16 +68,19 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	draft.roster_state = merge_result.roster.deep_clone()
 	if not _copy_ledger_matches_pool(merge_result.copy_ledger, draft.unit_pool_state):
 		return _rejected(&"run.unit_pool_state.held_copies", &"UNIT_POOL_HELD_COPY_MISMATCH")
-	# S2 has no persisted authoritative population-source ledger.  Extra sources
-	# remain disabled here until the pinned S4 builder can derive them from run state.
-	var no_population_sources: Array[PopulationSourceSnapshot] = []
+	# RunState still has no persisted population-source ledger, so extra sources are
+	# INJECTED by whoever constructs the command and rebuilt deterministically from
+	# run state + pinned content.  The only source today is the commander's
+	# population_bonus (S5 / design.md SS4.2), built via
+	# RunBootstrapService.try_commander_population_source(run.commander_id, bonus).
+	# Default is empty, which is exactly the S2~S4 "level only" behaviour.
 	var report := _board_validator.validate(
 		BoardPreparationRequest.new(
 			draft.roster_state.board,
 			draft.roster_state.bench_unit_instance_ids,
 			draft.roster_state.unit_instances,
 			draft.economy_state.level,
-			no_population_sources
+			_population_sources
 		)
 	)
 	if not report.valid:

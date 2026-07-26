@@ -1,0 +1,153 @@
+# G2 內容完整切片 — 四切片交付 Roadmap
+
+> 建立日期：2026-07-26｜狀態：草稿（未核可）
+> 架構基線：`docs/game-architecture/`、`docs/implementation-slices.md`
+> 基準提交：`5ddf80a30481ee701ba90be48e0fd474bc8c2715`（S5 merged）
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R1 雙審全部 14 項修正建議
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R2 雙審全部 7 項修正建議
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R3 雙審全部 7 項修正建議
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R4 雙審全部 4 項修正建議
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R5 雙審全部 3 項修正建議
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R6 雙審全部 2 項修正建議
+> 規格裁決：2026-07-26 使用者採用 presentation-ui R7 雙審唯一 1 項修正建議
+> 規格 checkpoint：2026-07-26 使用者指示記錄 R8 `G2-R8-01` 後提交；不構成修正裁決或 SDD 核可
+
+## 1. 目的與完成定義
+
+G2 將已完成的 G1 灰盒系統，依序交付為正式 presentation、完整內容、可測平衡候選與
+Windows release candidate。四個切片各自有 SDD、TDD、雙審、使用者裁決與獨立 PR；
+後一片只能由前一片已合併的最新 `master` 建立。
+
+G2 **只有**在第四片同時具備下列外部證據時才可標記完成：
+
+- 指定最低規格 Windows 實機通過正常與壓力效能 Gate。
+- 至少 30 名熟悉規則玩家、每人至少 3 局，合計至少 90 局有效匿名報告。
+- 完成局中位數 45～60 分鐘，至少三種決策不同的構築有通關紀錄。
+- 全部全域 AC、四片 artifact、migration matrix、原創性審查、雙審與 release gate 完整。
+
+在上述證據齊備前，最多只能標示 `RC`，不得標示 `G2 complete`。
+
+## 2. 切片、分支與依賴
+
+| 順序 | 切片 | 分支 | 主要交付 | 前置 |
+|---:|---|---|---|---|
+| 1 | `presentation-ui` | `codex/g2-presentation-ui` | production facade、主選單、正式場景、設定、localization、視覺樣板 | `master@5ddf80a` |
+| 2 | `content-production` | `codex/g2-content-production` | 原創內容、美術音訊、事件選擇、codec 3、save schema 4 | 第 1 片已合併 |
+| 3 | `balance-playtest` | `codex/g2-balance-playtest` | 版本化 TUNE、30k bot soak、匿名報告、Windows 可測 RC | 第 2 片已合併 |
+| 4 | `performance-release` | `codex/g2-performance-release` | CI/export、效能、G1→G2 bridge、90 場真人 Gate、最終 review | 第 3 片已合併 |
+
+共同 Git 規則：代理不得 commit、push 或 merge；主迴圈在每片文件與證據同步後停下，
+只在使用者確認後進行該片 commit／PR／merge。
+
+## 3. 橫切 15 REQ 唯一 owner
+
+`docs/implementation-slices.md` 的 15 條精確集合是 PROD(4)＋SCOPE(2)＋UX(5)＋QA(4)。
+`HANDOFF.md` 的「UX/QA 15 REQ」只是簡稱；`REQ-CONTENT-001` 是額外 G2 依賴，不計入 15。
+
+| Requirement owner | Owning requirements | 數量 | Closure 說明 |
+|---|---|---:|---|
+| `presentation-ui` | REQ-UX-001、REQ-UX-002、REQ-UX-003、REQ-UX-005 | 4 | 第 1 片建立正式證據；第 2 片文案／資產變更後重跑 gate |
+| `content-production` | REQ-PROD-001、REQ-SCOPE-002、REQ-QA-001 | 3 | 完整內容、資產與匯出前 validator |
+| `balance-playtest` | REQ-PROD-002、REQ-PROD-004 | 2 | 第 3 片負責候選與調校；真人樣本由第 4 片收口 |
+| `performance-release` | REQ-PROD-003、REQ-SCOPE-001、REQ-UX-004、REQ-QA-002、REQ-QA-003、REQ-QA-004 | 6 | 最終離線、效能、追溯與 runner/release gate |
+| **合計** | 無重複、無缺漏 | **15** | |
+
+額外依賴：`REQ-CONTENT-001` 的 G2 owner 為 `content-production`，第四片重跑其 release gate。
+
+## 4. 全域 AC-001～078 唯一 closure owner
+
+此處的 owner 是 **G2 closure 證據責任**，不取代 S1～S5 的歷史實作 owner。每個 AC
+只出現一次；其他切片若供應 component evidence，仍不得自行把該全域 AC 標為完成。
+
+| Slice | 證據模式 | Global AC |
+|---|---|---|
+| `presentation-ui` | 正式 UI／UX 新證據或重證 | AC-004、AC-005、AC-006、AC-007、AC-017、AC-020、AC-024、AC-028、AC-029、AC-039、AC-044、AC-049、AC-055、AC-065、AC-070、AC-072、AC-075、AC-076、AC-077 |
+| `content-production` | 正式內容／資產／codec 新證據或重證 | AC-015、AC-016、AC-018、AC-021、AC-022、AC-023、AC-033、AC-034、AC-038、AC-046、AC-047、AC-050、AC-051、AC-052、AC-057、AC-060、AC-067、AC-074 |
+| `balance-playtest` | 最終候選 TUNE／統計重證 | AC-001、AC-002、AC-008、AC-009、AC-010、AC-011、AC-012、AC-013、AC-019、AC-030、AC-045、AC-048、AC-056、AC-059、AC-062 |
+| `performance-release` | 新 release／migration／外部 Gate 證據 | AC-025、AC-026、AC-031、AC-032、AC-036、AC-037、AC-040、AC-042、AC-043、AC-053、AC-054、AC-071、AC-078 |
+| `performance-release` | 無 G2 語意變更；最終 All／soak regression 聚合 | AC-003、AC-014、AC-027、AC-035、AC-041、AC-058、AC-061、AC-063、AC-064、AC-066、AC-068、AC-069、AC-073 |
+
+計數檢查：presentation 19＋content 18＋balance 15＋performance 26＝78；重複 0、缺號 0。
+
+### 跨片邊界
+
+- AC-032：唯一 closure owner 為 `performance-release`；第三片只能產 RC、報告格式與
+  provisional TUNE，不得提前標 PASS。
+- AC-033：唯一 owner 為 `content-production`；第一片視覺樣板仍須保存原創性初審證據。
+- AC-077：唯一 owner 為 `presentation-ui`；第二片正式潤飾 ContentDefinition 文案後必須重跑。
+- AC-025／026：第二片提供 migration component evidence，第四片完成 schema matrix、
+  G1→G2 bridge 與 byte-preserving fail-closed 證據。
+- AC-078：唯一 owner 為 `performance-release`；第二片只提供 codec 2→3、schema 3→4
+  與 migration fixture，不得提前宣稱完成強制 G2 rebase。
+- presentation-ui 的 19 條 owning AC 必須逐條提供 fresh production evidence；既有 G1
+  domain／灰盒 PASS 只能當 regression 輸入，不能單獨完成 G2 closure。
+
+## 5. 共同 SDD／TDD／Review 管線
+
+每片依序執行，不能跳過：
+
+1. 建立 `specs/<slice>/requirements.md`，逐條寫可測驗收並取得使用者核可。
+2. 建立 `design.md`，完成需求對應、公開介面、failure policy、版本策略與測試表，再核可。
+3. 建立 `tasks.md`，標 HARD／NORMAL、TDD／免TDD、依賴與雙向覆蓋，再核可。
+4. 由測試代理把對應案例翻成紅燈；保存完整輸出及 SHA-256 manifest。
+5. 鎖定測試後，互不重疊的實作代理只改授權範圍；主迴圈負責整合。
+6. fresh 執行針對性 suite、All 與該片 soak／QA；比對 manifest 雜湊。
+7. 兩位獨立 reviewer 對照 requirements／design／tests／diff。任何新問題立即硬停，
+   由使用者逐項裁決；未裁決不得修下一輪或進下一片。
+8. 回寫 implementation review、roadmap ledger、`PROGRESS.md`、`HANDOFF.md`、
+   `docs/implementation-slices.md` 與 `.pipeline`，等待使用者確認 Git。
+
+Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、引用、透明邊界、色彩可讀性、
+重複度、原創性、provenance 及多解析度畫面 QA。未採用大型生成原稿不得進 Git。
+
+## 6. 各片完成 Gate
+
+### 6.1 presentation-ui
+
+- production App 不再引用 `scripts/dev/` 或 `scenes/dev/`。
+- 正式主選單、完整 scene shell、presentation facade、設定／音訊／localization 可運作。
+- 720p／1080p／1440p、鍵盤焦點、150% UI、四種色覺模式與非色彩提示通過。
+- 戰鬥 1×／2×／4×／pause 不改 canonical result、事件順序或 hash。
+- 第一批視覺樣板完成：3 位不同費用玩家棋、1 怪物、1 Boss、營地一角、核心 UI。
+- **樣板必須由使用者確認後，第二片才能量產美術。**
+
+### 6.2 content-production
+
+- 44 UnitDef 全有正式 AbilityDef／EffectDef；數量、分布、事件選擇與 tooltip 全部通過 gate。
+- save schema 4、content codec 3、codec 2→3 allowlisted migration 與 `5ddf80a` fixture 完整。
+- 正式 ContentDependencyPort 實際驗 asset path／localization key；production 無 dev fake。
+- 完整 runtime PNG／OGG、atlas、prompt／seed／處理參數及 provenance 已審。
+
+### 6.3 balance-playtest
+
+- 全部 TUNE 轉為有版本候選；三 bot 策略與至少 30,000 seeds 統計完成。
+- 任一構築通關率或選取率高於次名 20 個百分點即阻擋候選。
+- 至少三條決策路線有穩定通關樣本。
+- 產出匿名 `PlaytestSessionReport v1`、Windows 可攜 ZIP、SHA-256 與 provisional RC。
+- AC-032 保持 `PENDING_EXTERNAL`。
+
+### 6.4 performance-release
+
+- Windows CI、固定 Godot 4.7 SHA、vendored GUT、export preset、離線完整遠征 smoke 皆通過。
+- 最低規格實機：正常戰鬥 60 FPS、64 實體壓力場景 ≥55 FPS、tick p99 ≤8ms、
+  queue 不持續成長且峰值 ≤4096。
+- G1→G2 root generation 強制 rebase 與 signed committed-object bridge 通過 migration matrix；
+  任一驗證失敗皆 byte-preserving fail-closed。
+- 至少 30 人／90 場真人報告通過產品時長與三構築 Gate。
+- 全域 78 AC、15 橫切 REQ、四片 implementation review 與雙審證據完整。
+
+## 7. Completion ledger
+
+| Slice | SDD | Implementation | Review | External gate | Git |
+|---|---|---|---|---|---|
+| `presentation-ui` | R1-R7 FIXES APPLIED; R8-01 RECORDED_UNRESOLVED | NOT STARTED | architecture approved; behavior blocked; see `review-log.md` | visual pilot approval pending | checkpoint commit authorized |
+| `content-production` | NOT STARTED | NOT STARTED | NOT STARTED | pilot approval prerequisite | not created |
+| `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
+| `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |
+
+## 8. 固定假設
+
+- 發行平台只有 Windows 10／11 64-bit 離線可攜版。
+- 正式輸入為滑鼠＋鍵盤；完整控制器支援不在 G2。
+- 使用者負責分發測試 ZIP、回收匿名 JSON、提供符合規格的最低 PC。
+- Codex 負責程式、內容、美術、音訊、分析、修正與證據整理。

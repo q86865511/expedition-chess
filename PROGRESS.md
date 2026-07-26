@@ -4,7 +4,7 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成實作，G1 灰盒全系統閉環成立：S5 `meta-progression` 提供營地五設施、指揮官／挑戰、局外解鎖、圖鑑發現、exactly-once meta 結算、AppRoot CAMP↔RUN↔RESULTS composition 與可恢復／明示棄置流程。最終 fresh gate：Gut 737/737（9332 asserts）、10,000-seed ExpeditionSoak（64 replay／10,000 pool checks／40,000 build operations）與 `-Suite All` exit 0；逐 AC 證據見 `specs/meta-progression/implementation-review.md`。
+主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。目前 `presentation-ui` 的 R1～R7 findings 均獲使用者全修裁決並已回寫 SDD；R8 架構審查通過，行為審查新增的 `G2-R8-01` 已依使用者指示記入 `specs/presentation-ui/review-log.md` 並建立規格 checkpoint，但尚未修正或裁決。尚未進入 TDD／production code。
 
 ## 已完成
 
@@ -26,21 +26,30 @@
 
 ## 進行中
 
-- S5 實作、驗證與文件已完成；下一階段轉入正式 UI／內容 TUNE 與發行準備。
+- G2 `presentation-ui`：R8 架構審查零未決；`G2-R8-01` 已記錄為 `RECORDED_UNRESOLVED`，checkpoint 不代表 SDD 核可。
 
 ## 待辦
 
-- 橫切工作：正式像素內容與 UI（Codex，見 HANDOFF）、最低規格效能、TUNE 數值平衡與 G2 完整內容。
+- `presentation-ui` 的 `G2-R8-01` 經使用者裁決、修訂並通過下一輪雙審後才建立 TDD 紅燈；視覺樣板完成後仍需使用者核可，才可進 `content-production` 量產。
+- 後續三片：完整內容／資產、TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
 
 ## 已知問題
 
 - Combat／Expedition／Build／Camp／Run／Results Lab 都是開發用灰盒，不是正式產品 UI；正式美術、音效與 UX 仍屬 G2 橫切工作。
-- `INCOMPATIBLE_PRESERVED` run 採資料保留硬停，需相容內容或 migration 恢復；不提供缺乏可靠 decoded run-id 的刪除入口。
+- G1 的 `INCOMPATIBLE_PRESERVED` 仍採資料保留硬停；G2 `presentation-ui` 將依 AC-070 新增 opaque committed-bytes digest token 與 archive-before-clear recovery，實作前仍須完成 `G2-R8-01` 裁決、下一輪雙審與 TDD。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
 
+- [2026-07-26] G2 `presentation-ui` R8 checkpoint：使用者指示先記錄 `G2-R8-01` 並更新交接後 commit；此指示不視為採納修正。finding 要求補 retry-vs-Camp／Menu 三個 barrier 的 single-flight 競爭紅燈，下一位接手者須先取得裁決、修訂並通過 R9 雙審，才可進 TDD。
+- [2026-07-26] G2 `presentation-ui` R7 唯一一項裁決採用：RESULTS fallback retry token 增加獨立 retry-attempt generation；consume 必須在 repository read ownership 內 fresh-read authoritative bytes 並重新核對 receipt／完整 file digest。任何 attempt 都消耗 token、推進 generation 並撤銷同代 sibling token；競爭寫入、receipt replacement、read fault 與 sibling token 納入 TDD。
+- [2026-07-26] G2 `presentation-ui` R6 兩項裁決全採用：terminal settlement 的 save commit、internal capability consume、RUN writer lease 撤銷、session invalidation 與 RESULTS transition 必須位於同一 AppRoot single-flight＋SaveRepository writer ownership，禁止中途釋放或 await；postcommit presentation failure 進 typed `RESULTS_FALLBACK`，只提供 repository／receipt／完整檔案 digest／fallback generation 綁定的單次 retry 與零新 save 的 Camp／Menu 離開路徑。
+- [2026-07-26] G2 `presentation-ui` R5 三項裁決全採用：terminal settlement commit 後先撤銷 RUN writer/session 並進 RESULTS，route failure 僅留唯讀 fallback；正式 screen 只持 lease-bound LiveScreenIntentPort，raw RunPresentationSession 不外流；Collection 強制涵蓋 discovered/unlocked content、recipes、rule glossary 並以 typed comparability 限制比較。
+- [2026-07-26] G2 `presentation-ui` R4 四項裁決全採用：same-state route 使用 parent-bound subroute token；每個 screen 以可撤銷 LiveScreenLease 隔離，RUN 子畫面共用 session；RESULTS→CAMP／MENU 分成零新 save 的 typed event；SettingsRepository clone-in/out，coordinator 以 digest-bound plan/token＋single-flight 防 alias 與交錯 apply。
+- [2026-07-26] G2 `presentation-ui` R3 七項裁決全採用：所有 Camp writer 共用 repository-owned 原子交易；transcript 採 precommit accumulator→postcommit 唯一 buffer ownership transfer；復原測試擴為四 base states×四 tmp residue；不可逆操作 typed confirm/cancel exactly-once；戰鬥單位唯讀 inspection；locale 僅 `zh_TW|en`；圖鑑以 cloned ViewModel 提供 filter/search/compare。
+- [2026-07-26] G2 `presentation-ui` R2 七項裁決全採用：recovery 明列既有 save rotation 的可恢復 main-missing 中間態；opaque token 統一完整 committed-file digest；repository operation epoch＋consume 鎖內 fresh-read；staging read-only＋commit 後 activation；SettingsApplicationCoordinator 跨 adapter two-phase；BattleTranscriptBuffer 私有 owner／4096 window／byte budget；正式 typed Camp start-expedition 路徑。
+- [2026-07-26] G2 `presentation-ui` R1 雙審 14 項裁決全採用：完整 facade intent、pre/post commit failure 分流、19 AC fresh evidence、四 bus volume/mute 原子套用、opaque digest recovery、敵我非色彩提示、pointer mapping、settings stable wire/future-version、PreparedRunCapability、atomic scene swap、commit-before-present playback、typed clone accessor、AppRoot 單一 integration owner、T00 compile-safe contract TDD。
 - [2026-07-26] S5 retained run 採 fail-closed：所有一般 Camp writer 只在 fresh load 明確 `RunStatus.NONE` 時寫入；decoded unresumable run 只能以 expected run-id 明示棄置，opaque incompatible run 保留並 boot failure。MetaReward/Commander 皆由 pinned canonical payload reader 重建 clone。
 - [2026-07-22] S3 reward generation 的 standard stage 固定三選一且必要時保留最後一格給合法非棋子候選；event grant 使用同一 table 但只建立單一 pending offer。菁英 standard→relic 期間保留 shop，最後 stage 與 overflow 全解決後才釋放。
 - [2026-07-22] RewardTable conditions 以 roster／inventory／HP／pool 決定性過濾並由 content gate 要求 stage fallback；unit-only event 在卡池耗盡時提交零效果 EVENT choice，不虛構副本。非戰鬥節點透過正式 command 離開 PREPARE，避免路線軟鎖。

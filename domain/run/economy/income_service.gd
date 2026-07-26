@@ -22,9 +22,11 @@ func quote(request: IncomeQuoteRequest) -> IncomeQuoteResult:
 	var streak := config.streak_reward(economy.win_streak)
 	var relic_bonus := 0
 	if request.relic_table != null:
+		# slot-gated 遺物加總後，再加指揮官/挑戰 always-active 貢獻（design §6.1、S5-AC-003）。
 		relic_bonus = request.relic_table.sum_operation_amount(
 			request.active_relic_ids, &"economy", &"add_gold"
 		)
+		relic_bonus += request.relic_table.sum_always_active(&"economy", &"add_gold")
 	economy.gold = mini(config.gold_cap, pre_gold + base + interest + streak + relic_bonus)
 	var key_result := RuntimeKeySchemaRegistry.new().build_transaction(
 		request.run_id, request.node_id, &"node_income", request.next_transaction_serial

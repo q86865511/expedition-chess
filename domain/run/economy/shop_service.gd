@@ -31,7 +31,12 @@ func quote_refresh(request: RefreshShopRequest) -> ShopTransactionResult:
 	if error != null:
 		return ShopTransactionResult.failure(error.code, error.field_path)
 	var config := request.catalog.config()
-	if request.economy_state.gold < config.reroll_cost:
+	# design §6.3 軌 B（S5-AC-010、W4-F4 修正 2026-07-25）：reroll 這個動作本身的固定費用也
+	# 套用 challenge surcharge（不套 discount，見 _economy_surcharge 註解的不對稱說明）。
+	# affordability 檢查須用同一個含 surcharge 的實際扣款金額，避免「通過檢查卻扣成負數」
+	# （economy_state.gold 的 u32 下限不變量，見 run_state_validator.gd）。
+	var reroll_price := maxi(1, config.reroll_cost + _economy_surcharge(request))
+	if request.economy_state.gold < reroll_price:
 		return ShopTransactionResult.failure(ShopError.GOLD_INSUFFICIENT, &"economy_state.gold")
 	var economy := request.economy_state.deep_clone()
 	var pool := request.unit_pool_state.deep_clone()
@@ -39,7 +44,7 @@ func quote_refresh(request: RefreshShopRequest) -> ShopTransactionResult:
 	var release_error := _release_offers(economy, pool, owners)
 	if release_error != null:
 		return ShopTransactionResult.failure(release_error.code, release_error.field_path)
-	economy.gold -= config.reroll_cost
+	economy.gold -= reroll_price
 	economy.shop_refresh_index += 1
 	var stream_result := Pcg32Stream.from_snapshot(request.shop_rng_snapshot)
 	if not stream_result.ok:
@@ -188,9 +193,30 @@ func _validate_request(request: ShopStateRequest) -> ShopError:
 func _economy_discount(request: ShopStateRequest) -> int:
 	if request.relic_table == null:
 		return 0
-	return request.relic_table.sum_operation_amount(
+	# slot-gated 折扣加總後，再加指揮官/挑戰 always-active 折扣（design §6.1、S5-AC-003）。
+	var discount := request.relic_table.sum_operation_amount(
 		request.active_relic_ids, &"economy", &"shop_discount"
 	)
+	discount += request.relic_table.sum_always_active(&"economy", &"shop_discount")
+	# design §6.3 軌 B（S5-AC-010）：挑戰詞綴的經濟壓力以 shop_surcharge 表達（amount≥0＝加價
+	# 幅度），與折扣同一作用點取淨值——offer 成本 ＝ cost + surcharge − discount，下限 clamp
+	# 沿用 _generate_offers 既有的 maxi(1, ...)，不另設規則。
+	return discount - _economy_surcharge(request)
+
+## design §6.3 軌 B（S5-AC-010、W4-F4 修正 2026-07-25）：挑戰詞綴的 shop_surcharge 貢獻
+## （slot-gated＋always-active，消費順序同 design §6.1）。獨立抽出而非併入 _economy_discount，
+## 因為兩個消費點對 surcharge／discount 的套用並不對稱：offer 成本（_generate_offers，經
+## _economy_discount）兩者都套；reroll 成本（quote_refresh）**只套 surcharge、不套
+## discount**——使用者裁決：discount 維持 S4 既有行為不套用到 reroll，避免動到已完成切片
+## （S4 economy-expedition）的平衡，此不對稱為刻意設計，非遺漏（design.md §6.3 已同步補註）。
+func _economy_surcharge(request: ShopStateRequest) -> int:
+	if request.relic_table == null:
+		return 0
+	var surcharge := request.relic_table.sum_operation_amount(
+		request.active_relic_ids, &"economy", &"shop_surcharge"
+	)
+	surcharge += request.relic_table.sum_always_active(&"economy", &"shop_surcharge")
+	return surcharge
 
 func _generate_offers(
 	run_id: StringName, node_id: StringName, economy: EconomyState,

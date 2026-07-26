@@ -141,9 +141,10 @@ func _build_profile() -> ProfileState:
 	var unlocked: Array[StringName] = [COMMANDER_ID]
 	var discovered: Array[StringName] = []
 	var settlements: Array[SettlementReceiptState] = []
+	var records: Array[CommanderChallengeRecordState] = []
 	return ProfileState.new(
 		_PROFILE_ID, U64Bits.one(), 0, unlocked, discovered, 0, settlements,
-		&"settings.default"
+		&"settings.default", null, records
 	)
 
 func _build_initial_run() -> RunState:
@@ -229,11 +230,13 @@ func _build_initial_run() -> RunState:
 	)
 	var resolution := RewardPendingResolutionState.new(pending)
 
+	var empty_names: Array[StringName] = []
 	var run := RunState.new(
 		run_id, run_key, zero, _bootstrap.content_snapshot, zero, _serial(2),
 		_serial(6), COMMANDER_ID, 0, 0, map, OptionalStringValue.new(_NODE_ID),
 		RunState.RunPhase.REWARD, 100, economy, UnitPoolState.new(pool), roster, 0, 0, 0,
-		rng_states, empty_strings, empty_ints, owners, transactions, claims, resolution
+		rng_states, empty_strings, empty_ints, owners, transactions, claims, resolution,
+		empty_names
 	)
 	return run
 

@@ -119,6 +119,16 @@ script = ExtResource("1_3yr7h")
 key_u32 = 2
 value_u32 = 3
 
+[sub_resource type="Resource" id="Resource_xp001"]
+script = ExtResource("1_3yr7h")
+key_u32 = 1
+value_u32 = 2
+
+[sub_resource type="Resource" id="Resource_xp002"]
+script = ExtResource("1_3yr7h")
+key_u32 = 2
+value_u32 = 3
+
 [sub_resource type="Resource" id="Resource_xp003"]
 script = ExtResource("1_3yr7h")
 key_u32 = 3
@@ -157,8 +167,13 @@ streak_rewards = Array[ExtResource("1_3yr7h")]([SubResource("Resource_sr001"), S
 loss_subsidy = Array[ExtResource("1_3yr7h")]([SubResource("Resource_ls001")])
 pool_copies_by_tier = Array[ExtResource("1_3yr7h")]([SubResource("Resource_yuetx"), SubResource("Resource_kyx4y"), SubResource("Resource_umapg"), SubResource("Resource_m33wd"), SubResource("Resource_0k3l8")])
 unit_costs_by_tier = Array[ExtResource("1_3yr7h")]([SubResource("Resource_7nome"), SubResource("Resource_4qhrn"), SubResource("Resource_tghom"), SubResource("Resource_8ugvu"), SubResource("Resource_ob2t3")])
-xp_thresholds = Array[ExtResource("1_3yr7h")]([SubResource("Resource_xp003"), SubResource("Resource_xp004"), SubResource("Resource_xp005"), SubResource("Resource_xp006"), SubResource("Resource_xp007"), SubResource("Resource_xp008")])
+xp_thresholds = Array[ExtResource("1_3yr7h")]([SubResource("Resource_xp001"), SubResource("Resource_xp002"), SubResource("Resource_xp003"), SubResource("Resource_xp004"), SubResource("Resource_xp005"), SubResource("Resource_xp006"), SubResource("Resource_xp007"), SubResource("Resource_xp008")])
 id = &"economy.slice_default"
 display_name_key = &"loc.economy_slice_default"
 # TUNE: layer_income/streak_rewards/loss_subsidy/xp_thresholds 為佔位數值，
 # 沿用 tests/fixtures/economy/economy_test_fixture.gd 的合理設定，待正式數值設計。
+# TUNE (S5 T11 缺口 3)：xp_thresholds 補上 level 1=2、2=3。新遠征自
+# RunBootstrapService.STARTING_ECONOMY_LEVEL(=1) 起步，缺這兩級時第一次拿 XP 就會在
+# battle_settlement_service.gd 的 _add_xp() 撞上 -1 fallback → REWARD_CONFIG_INVALID。
+# 數值延續既有 3..8 曲線（4/8/16/28/44/64，增量 4/8/12/16/20）的「前期便宜、後期陡」
+# 形狀：1→2、2→3 之後銜接 3→4，遞增單調不倒退。

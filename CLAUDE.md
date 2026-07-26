@@ -33,6 +33,8 @@
 - 內容以 immutable-style Resource authoring、canonical snapshot 與 pinned manifest digest 傳遞；舊 run 必須持有 catalog lease。
 - `BattleSimulation`／`EffectResolver` 已由 S2 實作；兩者只讀 hashed `BattleSetup` 與 pinned rules，不得讀 latest catalog 或 presentation mutable state。
 - `ShopService`、三幕地圖、節點收入與戰果／遠征 HP／獎勵 exactly-once 結算已由 S3 實作；S2 只產生 canonical result/proposal，只有 S3 settlement/reward transaction 可提交局內持久變更。
+- S4 羈絆／裝備／遺物與 S5 局外成長已完成；AppRoot 是 CAMP↔RUN↔RESULTS 唯一 composition root，四個 run command 由 `RunCommandFactory` 顯式注入 pinned `relic_table`。
+- 所有一般 Camp writer 必須 fresh load 且只在 `RunStatus.NONE` 時寫入；decoded retained run 只能 expected-run-id 明示棄置，`INCOMPATIBLE_PRESERVED` 必須保留並 boot failure。
 
 ## 文件工作流
 
@@ -47,3 +49,4 @@
 - S2 `combat-core`：已完成；規格與複檢紀錄位於 `specs/combat-core/`，完成證據位於 `artifacts/test/`。
 - S3 `economy-expedition`：階段 0～6、逐 AC 證據與獨立 T00R／T11B 已完成；複檢紀錄位於 `specs/economy-expedition/final-review.md`。
 - S4 `build-systems`：已完成（2026-07-24）；規格與複檢紀錄位於 `specs/build-systems/`（三件套＋implementation-review.md）。
+- S5 `meta-progression`：已完成實作（2026-07-26）；T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All 與 W5 R4 雙審通過；證據位於 `specs/meta-progression/implementation-review.md`。

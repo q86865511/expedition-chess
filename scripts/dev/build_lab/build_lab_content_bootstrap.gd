@@ -81,6 +81,13 @@ func run(registry: ContentRegistryService) -> BuildLabBootstrapResult:
 		return BuildLabBootstrapResult.failure(
 			"content_snapshot build failed: %s" % snapshot_result.error.field_path
 		)
+	var meta_reward_table := MetaRewardTableReader.new().try_read(
+		registry, digest, ids.meta_reward_table_id
+	)
+	if meta_reward_table == null:
+		return BuildLabBootstrapResult.failure(
+			"MetaRewardTableReader failed: %s" % String(ids.meta_reward_table_id)
+		)
 
 	var battle_roots: Array[StringName] = []
 	battle_roots.append_array(ids.unit_ids)
@@ -141,6 +148,12 @@ func run(registry: ContentRegistryService) -> BuildLabBootstrapResult:
 	result.consumable_rules = ConsumableRuleTable.new(digest, [consumable_rule])
 	result.economy_catalog = economy_result.catalog
 	result.economy_config_id = ids.economy_config_id
+	result.unit_ids = ids.unit_ids
+	result.encounter_ids = ids.encounter_ids
+	result.commander_ids = ids.commander_ids
+	result.base_profile_unlocked_content_ids = ids.base_profile_unlocked_content_ids
+	result.meta_reward_table_id = ids.meta_reward_table_id
+	result.meta_reward_table = meta_reward_table
 	result.player_unit_ids = ids.player_unit_ids
 	result.equipment_ids = ids.equipment_ids
 	result.item_component_ids = ids.item_component_ids
@@ -154,6 +167,11 @@ func run(registry: ContentRegistryService) -> BuildLabBootstrapResult:
 class _CollectedIds:
 	var all_ids: Array[StringName] = []
 	var unit_ids: Array[StringName] = []
+	## S5 T11：正式 run composition 需要的兩類（build lab 自己用不到）。
+	var encounter_ids: Array[StringName] = []
+	var commander_ids: Array[StringName] = []
+	## wave5 A2：新 profile 的起始解鎖集合（unlock_kind == base_profile）。
+	var base_profile_unlocked_content_ids: Array[StringName] = []
 	var player_unit_ids: Array[StringName] = []
 	var equipment_ids: Array[StringName] = []
 	var item_component_ids: Array[StringName] = []
@@ -194,16 +212,27 @@ func _collect_ids(definitions: Array[ContentDefinition]) -> _CollectedIds:
 				var unlock := definition as UnlockDef
 				if unlock.unlock_kind == &"challenge":
 					ids.challenge_unlock_ids.append(definition.id)
+				elif unlock.unlock_kind == &"base_profile":
+					for content_id: StringName in unlock.unlocked_content_refs:
+						if not ids.base_profile_unlocked_content_ids.has(content_id):
+							ids.base_profile_unlocked_content_ids.append(content_id)
 			&"economy_config":
 				ids.economy_config_id = definition.id
 			&"consumable":
 				var consumable := definition as ConsumableDef
 				if consumable.use_timing == &"dismantle":
 					ids.dismantle_consumable_id = definition.id
+			&"encounter":
+				ids.encounter_ids.append(definition.id)
+			&"commander":
+				ids.commander_ids.append(definition.id)
 			&"meta_reward_table":
 				ids.meta_reward_table_id = definition.id
 	ids.all_ids.sort_custom(_name_less)
 	ids.unit_ids.sort_custom(_name_less)
+	ids.encounter_ids.sort_custom(_name_less)
+	ids.commander_ids.sort_custom(_name_less)
+	ids.base_profile_unlocked_content_ids.sort_custom(_name_less)
 	ids.player_unit_ids.sort_custom(_name_less)
 	ids.equipment_ids.sort_custom(_name_less)
 	ids.item_component_ids.sort_custom(_name_less)

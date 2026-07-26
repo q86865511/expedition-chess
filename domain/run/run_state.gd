@@ -30,6 +30,7 @@ var reservation_owners: Array[ReservationOwnerState] = []
 var transaction_receipts: Array[TransactionReceiptState] = []
 var claim_receipts: Array[ClaimReceiptState] = []
 var resolution_state: ResolutionState
+var discovered_content_ids: Array[StringName] = []
 
 func _init(
 	p_run_id: String,
@@ -58,7 +59,8 @@ func _init(
 	p_reservation_owners: Array[ReservationOwnerState],
 	p_transaction_receipts: Array[TransactionReceiptState],
 	p_claim_receipts: Array[ClaimReceiptState],
-	p_resolution_state: ResolutionState
+	p_resolution_state: ResolutionState,
+	p_discovered_content_ids: Array[StringName]
 ) -> void:
 	run_id = p_run_id
 	run_key = p_run_key.deep_clone()
@@ -91,6 +93,7 @@ func _init(
 	for receipt: ClaimReceiptState in p_claim_receipts:
 		claim_receipts.append(receipt.deep_clone())
 	resolution_state = p_resolution_state.deep_clone()
+	discovered_content_ids.assign(p_discovered_content_ids)
 
 func deep_clone() -> RunState:
 	return RunState.new(
@@ -100,5 +103,6 @@ func deep_clone() -> RunState:
 		run_phase, expedition_hp, economy_state, unit_pool_state, roster_state,
 		cleared_normal_count, cleared_elite_count, defeated_boss_count,
 		rng_stream_states, income_claimed_node_ids, loss_stipend_claimed_act_ids,
-		reservation_owners, transaction_receipts, claim_receipts, resolution_state
+		reservation_owners, transaction_receipts, claim_receipts, resolution_state,
+		discovered_content_ids
 	)

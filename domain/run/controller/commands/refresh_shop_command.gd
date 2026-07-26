@@ -31,6 +31,10 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	))
 	if not result.ok: return _failure(result.error.code, result.error.field_path)
 	EconomyCommandSupport.apply_shop_transaction(draft, result.transaction)
+	# T09 / S5-AC-012 (design.md §8): 商店出現 -> every freshly-offered unit is
+	# discovered in the same copy-validate-save-swap transaction.
+	for offer: ShopOffer in draft.economy_state.shop_offers:
+		RunDiscoveryLog.mark(draft, offer.unit_def_id)
 	return CommandApplyResult.success(draft)
 
 func _preflight(draft: RunState) -> ShopError:

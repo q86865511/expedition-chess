@@ -111,7 +111,9 @@ func compile(
 	if not traits_result.ok:
 		return traits_result
 	preview.active_traits = traits_result.preview.active_traits
-	var affix_result := _compile_affixes(encounter.affix_ids, catalog)
+	var affix_result := _compile_affixes(
+		encounter.affix_ids, request.challenge_affix_effect_ids, catalog
+	)
 	if not affix_result.ok:
 		return affix_result
 	preview.affix_effects = affix_result.preview.affix_effects
@@ -314,13 +316,25 @@ func _compile_traits(
 		partial.active_traits.append(trait_snapshot)
 	return EncounterCompileResult.success(partial)
 
+## design §6.3 軌 A（S5-AC-010）：encounter 自帶詞綴與挑戰詞綴走同一條敵方管線。
+## encounter 自身 affix_ids 內部重複仍是內容錯誤（既有 S2/S4 行為，維持 RULE_INVALID）；
+## 「跨來源」重複（挑戰詞綴撞上 encounter 原生詞綴）則去重、不視為錯誤——合併後統一決定性排序，
+## 輸出不分流來源（source_category 一律 encounter_affix、source_side 一律 enemy）。
 func _compile_affixes(
 	affix_ids: Array[StringName],
+	challenge_affix_effect_ids: Array[StringName],
 	catalog: BattleRuleCatalog
 ) -> EncounterCompileResult:
 	var sorted_ids: Array[StringName] = affix_ids.duplicate()
 	sorted_ids.sort_custom(_string_name_before)
+	for effect_id: StringName in challenge_affix_effect_ids:
+		if not sorted_ids.has(effect_id):
+			sorted_ids.append(effect_id)
+	sorted_ids.sort_custom(_string_name_before)
 	var partial := EncounterPreviewSnapshot.new()
+	# 合併只在「來源間」去重，故排序後仍相鄰的重複必來自 encounter 自身的 affix_ids（既有
+	# S2/S4 內容錯誤）。重複判定與規則查表維持既有的逐筆交錯順序——先前把重複掃描整段前移會讓
+	# 「同一 id 既重複又缺失」的錯誤碼由 RULE_MISSING 反轉成 RULE_INVALID（缺失應優先於重複）。
 	for index: int in range(sorted_ids.size()):
 		var effect_id: StringName = sorted_ids[index]
 		if index > 0 and sorted_ids[index - 1] == effect_id:

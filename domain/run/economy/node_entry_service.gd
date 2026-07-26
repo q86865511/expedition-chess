@@ -13,7 +13,8 @@ func enter(
 	target_node_id: String,
 	catalog: EconomyExpeditionCatalog,
 	battle_catalog: BattleRuleCatalog = null,
-	relic_table: RunRelicTable = null
+	relic_table: RunRelicTable = null,
+	challenge_affix_effect_ids: Array[StringName] = []
 ) -> NodeEntryResult:
 	if run == null or target_node_id.is_empty() or catalog == null or run.map_state == null:
 		return NodeEntryResult.failure(NodeEntryError.INPUT_INVALID, &"request")
@@ -59,6 +60,9 @@ func enter(
 		compile_request.act_index = node.act_index
 		compile_request.depth = node.layer_index
 		compile_request.challenge_level = draft.challenge_level
+		# design §6.3 軌 A：呼叫端（EnterNodeEvent）已用 ChallengeAffixResolver 解好本次遠征
+		# 生效的敵方詞綴——與 relic_table 同一慣例，由持有 registry 的一側預先解析後傳入。
+		compile_request.challenge_affix_effect_ids = challenge_affix_effect_ids.duplicate()
 		var compiled := EncounterCompiler.new().compile(
 			compile_request, battle_catalog
 		)

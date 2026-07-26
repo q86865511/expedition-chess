@@ -11,6 +11,7 @@ func test_request_has_only_pinned_encounter_and_difficulty_context() -> void:
 		script_fields,
 		[
 			"act_index",
+			"challenge_affix_effect_ids",
 			"challenge_level",
 			"depth",
 			"encounter_id",

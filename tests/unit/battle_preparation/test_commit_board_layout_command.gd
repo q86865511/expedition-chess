@@ -122,6 +122,43 @@ func test_command_uses_level_only_until_authoritative_population_builder_exists(
 		String(BoardValidationIssue.OVER_CAPACITY)
 	)
 
+func test_command_applies_an_injected_try_commander_population_source() -> void:
+	# S5 / design.md SS4.2 (W3-F3): the commander's population_bonus raises capacity
+	# as an EXTRA population source on top of economy_state.level -- it must never be
+	# folded into the level itself, which is also the shop tier-odds key and the XP
+	# ladder. Same layout as the test above, which is OVER_CAPACITY without a source.
+	var draft := SaveRootFixture.create_valid_root().run
+	draft.run_phase = RunState.RunPhase.PREPARE
+	draft.economy_state.level = 1
+	var no_equipment: Array[String] = []
+	var units: Array[UnitInstance] = [
+		_unit("u_0000000000000001", 1, 1, no_equipment),
+		_unit("u_0000000000000002", 1, 2, no_equipment),
+	]
+	draft.roster_state.unit_instances = units
+	var pool_entries: Array[UnitPoolEntryState] = [
+		UnitPoolEntryState.new(&"unit.fixture", 2, 0, 0, 2),
+	]
+	draft.unit_pool_state = UnitPoolState.new(pool_entries)
+	var placements: Array[BoardPlacementState] = [
+		BoardPlacementState.new(0, 0, units[0].instance_id),
+		BoardPlacementState.new(0, 1, units[1].instance_id),
+	]
+	var no_bench: Array[String] = []
+	var sources: Array[PopulationSourceSnapshot] = [
+		RunBootstrapService.try_commander_population_source(draft.commander_id, 1),
+	]
+
+	var result := CommitBoardLayoutCommand.new(
+		BoardState.new(placements), no_bench, _empty_catalog(), sources
+	).apply_to(draft)
+
+	assert_true(result.ok, "level 1 + a commander bonus of 1 must seat two units")
+	if not result.ok:
+		return
+	assert_eq(result.draft.roster_state.board.placements.size(), 2)
+
+
 func _unit(
 	instance_id: String,
 	star: int,

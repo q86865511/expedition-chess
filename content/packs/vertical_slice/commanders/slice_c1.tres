@@ -17,7 +17,7 @@ count_u32 = 1
 [resource]
 script = ExtResource("2_tl3pn")
 starting_pack = Array[ExtResource("3_im1ml")]([SubResource("Resource_srhw0")])
-passive_effect_refs = Array[StringName]([&"effect.slice_commander_passive"])
+passive_effect_refs = Array[StringName]([&"effect.slice_commander_passive_01"])
 route_preferences = Array[ExtResource("1_8lyp8")]([SubResource("Resource_5x7m1")])
 id = &"commander.slice_c1"
 display_name_key = &"loc.commander_slice_c1"

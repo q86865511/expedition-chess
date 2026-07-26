@@ -1,10 +1,13 @@
 class_name PopulationSourceSnapshot
 extends RefCounted
 
+## COMMANDER (S5, design.md SS4.2) is appended last so the existing kinds keep
+## their wire ordinals and their position in PopulationCalculator's identity sort.
 enum SourceKind {
 	EVENT = 0,
 	RELIC = 1,
 	TRAIT = 2,
+	COMMANDER = 3,
 }
 
 var source_kind: SourceKind

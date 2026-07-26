@@ -72,7 +72,27 @@ func _encode_profile(profile: ProfileState) -> String:
 		receipts.append(_encode_settlement_receipt(receipt))
 	fields.append(_field("settlement_receipts", _array(receipts)))
 	fields.append(_field("settings_ref", _quote(String(profile.settings_ref))))
+	fields.append(_field(
+		"last_selection",
+		_encode_last_selection(profile.last_selection) if profile.last_selection != null else "null"
+	))
+	var records: Array[String] = []
+	for record: CommanderChallengeRecordState in profile.commander_challenge_records:
+		records.append(_encode_commander_challenge_record(record))
+	fields.append(_field("commander_challenge_records", _array(records)))
 	return _object(fields)
+
+func _encode_last_selection(selection: ProfileLastSelectionState) -> String:
+	return _object([
+		_field("commander_id", _quote(String(selection.commander_id))),
+		_field("challenge_level", str(selection.challenge_level)),
+	])
+
+func _encode_commander_challenge_record(record: CommanderChallengeRecordState) -> String:
+	return _object([
+		_field("commander_id", _quote(String(record.commander_id))),
+		_field("highest_cleared_level", str(record.highest_cleared_level)),
+	])
 
 func _encode_settlement_receipt(receipt: SettlementReceiptState) -> String:
 	return _object([
@@ -123,6 +143,7 @@ func _encode_run(run: RunState) -> String:
 		claims.append(_encode_claim_receipt(receipt))
 	fields.append(_field("claim_receipts", _array(claims)))
 	fields.append(_field("resolution_state", _encode_resolution(run.resolution_state)))
+	fields.append(_field("discovered_content_ids", _name_array(run.discovered_content_ids)))
 	return _object(fields)
 
 func _encode_content_snapshot(snapshot: ContentSnapshotState) -> String:
@@ -664,7 +685,8 @@ func _decode_profile(value: Variant) -> ProfileState:
 	var data := _read_object(value, &"profile")
 	if data == null or not _exact_keys(data, [
 		"profile_id", "next_run_serial", "meta_currency", "unlocked_content_ids",
-		"discovered_content_ids", "highest_challenge_level", "settlement_receipts", "settings_ref"
+		"discovered_content_ids", "highest_challenge_level", "settlement_receipts", "settings_ref",
+		"last_selection", "commander_challenge_records"
 	], &"profile"):
 		return null
 	var unlocked := _migrate_profile_names(
@@ -687,6 +709,22 @@ func _decode_profile(value: Variant) -> ProfileState:
 	var next_serial := _read_u64(data["next_run_serial"], &"profile.next_run_serial")
 	if next_serial == null:
 		return null
+	var last_selection: ProfileLastSelectionState = null
+	if data["last_selection"] != null:
+		last_selection = _decode_last_selection(data["last_selection"], &"profile.last_selection")
+		if last_selection == null:
+			return null
+	var record_values := _read_array(data["commander_challenge_records"], &"profile.commander_challenge_records")
+	if record_values == null:
+		return null
+	var records: Array[CommanderChallengeRecordState] = []
+	for index: int in range(record_values.size()):
+		var record := _decode_commander_challenge_record(
+			record_values[index], StringName("profile.commander_challenge_records.%d" % index)
+		)
+		if record == null:
+			return null
+		records.append(record)
 	return ProfileState.new(
 		_read_string(data, "profile_id", &"profile.profile_id"),
 		next_serial,
@@ -695,7 +733,27 @@ func _decode_profile(value: Variant) -> ProfileState:
 		discovered,
 		_read_int(data, "highest_challenge_level", &"profile.highest_challenge_level"),
 		receipts,
-		StringName(_read_string(data, "settings_ref", &"profile.settings_ref"))
+		StringName(_read_string(data, "settings_ref", &"profile.settings_ref")),
+		last_selection,
+		records
+	)
+
+func _decode_last_selection(value: Variant, path: StringName) -> ProfileLastSelectionState:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, ["commander_id", "challenge_level"], path):
+		return null
+	return ProfileLastSelectionState.new(
+		StringName(_read_string(data, "commander_id", StringName(String(path) + ".commander_id"))),
+		_read_int(data, "challenge_level", StringName(String(path) + ".challenge_level"))
+	)
+
+func _decode_commander_challenge_record(value: Variant, path: StringName) -> CommanderChallengeRecordState:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, ["commander_id", "highest_cleared_level"], path):
+		return null
+	return CommanderChallengeRecordState.new(
+		StringName(_read_string(data, "commander_id", StringName(String(path) + ".commander_id"))),
+		_read_int(data, "highest_cleared_level", StringName(String(path) + ".highest_cleared_level"))
 	)
 
 func _decode_settlement_receipt(value: Variant, path: StringName) -> SettlementReceiptState:
@@ -889,7 +947,7 @@ func _decode_run(data: Dictionary, receipt: PinnedCatalogBuildReceipt) -> RunSta
 		"unit_pool_state", "roster_state", "cleared_normal_count", "cleared_elite_count",
 		"defeated_boss_count", "rng_stream_states", "income_claimed_node_ids",
 		"loss_stipend_claimed_act_ids", "reservation_owners", "transaction_receipts",
-		"claim_receipts", "resolution_state"
+		"claim_receipts", "resolution_state", "discovered_content_ids"
 	], &"run"):
 		return null
 	_active_receipt_ids.assign(receipt.active_entry_ids)
@@ -936,7 +994,8 @@ func _decode_run(data: Dictionary, receipt: PinnedCatalogBuildReceipt) -> RunSta
 		rng_states,
 		_read_string_array(data["income_claimed_node_ids"], &"run.income_claimed_node_ids"),
 		_read_int_array(data["loss_stipend_claimed_act_ids"], &"run.loss_stipend_claimed_act_ids"),
-		owners, transactions, claims, resolution
+		owners, transactions, claims, resolution,
+		_read_name_array(data["discovered_content_ids"], &"run.discovered_content_ids")
 	)
 
 func _decode_map(value: Variant) -> MapState:

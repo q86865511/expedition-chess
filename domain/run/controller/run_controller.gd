@@ -131,6 +131,18 @@ func committed_combat_snapshot() -> CombatCommittedSnapshot:
 func roster_snapshot() -> RosterState:
 	return _session.run_snapshot().roster_state.deep_clone()
 
+## S5 wave5 (design.md §8) -- read-only deep-clone accessor in the same family as
+## roster_snapshot(): the run presentation needs the map's nodes/edges to offer the
+## reachable-node choice, and must never hold a reference into the canonical run.
+func map_snapshot() -> MapState:
+	return _session.run_snapshot().map_state.deep_clone()
+
+## S5 wave5 (design.md §8) -- read-only deep-clone accessor in the same family as
+## roster_snapshot(): RunViewState carries only the aggregate economy numbers, while
+## the shop offers themselves are needed to drive a purchase.
+func economy_snapshot() -> EconomyState:
+	return _session.run_snapshot().economy_state.deep_clone()
+
 ## T10 (design.md §8) -- read-only deep-clone accessor for ViewModels; null
 ## when the run's resolution_state is not currently a
 ## RewardPendingResolutionState (i.e. no pending reward to preview/resolve).
@@ -193,7 +205,13 @@ func _commit_draft(
 				validation_result.error.code
 			)
 		)
-	var candidate := _save_root_factory.build(_session.profile_snapshot(), draft)
+	# T09 / S5-AC-012 (design.md §8): fold the run-scoped discovery ledger into
+	# profile' -- discovery is the profile's only mutable face during a run -- so
+	# it commits atomically in the same copy-validate-save-swap as the action
+	# that revealed the content. Idempotent union: reload/replay never duplicates.
+	var committed_profile := _session.profile_snapshot()
+	RunDiscoveryLog.union_into_profile(committed_profile, draft)
+	var candidate := _save_root_factory.build(committed_profile, draft)
 	var save_result := _save_repository.save(candidate)
 	if not save_result.ok:
 		var save_field := save_result.error.field_path if save_result.error != null else &"save"
@@ -201,7 +219,7 @@ func _commit_draft(
 		return RunCommitResult.failure(
 			RunCommitError.new(RunCommitError.Kind.SAVE, save_field, save_code)
 		)
-	return RunCommitResult.success(_session._commit_saved_draft(draft))
+	return RunCommitResult.success(_session._commit_saved_draft(draft, committed_profile))
 
 func _edge_is_allowed(from_phase: RunState.RunPhase, to_phase: RunState.RunPhase) -> bool:
 	match from_phase:

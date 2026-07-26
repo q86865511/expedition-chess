@@ -9,13 +9,15 @@ const BASIS_POINTS: int = 10000
 
 func compile(
 	committed_roster: RosterState,
-	catalog: BattleRuleCatalog
+	catalog: BattleRuleCatalog,
+	commander_passive_effect_ids: Array[StringName] = []
 ) -> BattleSetupSourceBundle:
 	var on_field := _collect_on_field(committed_roster, catalog)
 	var player_units := _compile_player_units(on_field)
 	var active_traits := _compile_traits(on_field, catalog)
 	var equipment_effects := _compile_equipment_effects(on_field, committed_roster, catalog)
 	var relic_effects := _compile_relic_effects(committed_roster, catalog)
+	var commander_effects := _compile_commander_effects(commander_passive_effect_ids)
 	var empty_effects: Array[BattleEffectSnapshot] = []
 	return BattleSetupSourceBundle.new(
 		catalog.manifest_digest_value(),
@@ -23,7 +25,7 @@ func compile(
 		active_traits,
 		equipment_effects,
 		relic_effects,
-		empty_effects,
+		commander_effects,
 		empty_effects,
 		true, true, true, true, true, true
 	)
@@ -243,6 +245,35 @@ func _compile_relic_effects(
 				[] as Array[StringName]
 			))
 			effect_index += 1
+	return result
+
+# ---------------------------------------------------------------------------
+# 指揮官 player 被動效果（design §6.2、S5-AC-003）
+# ---------------------------------------------------------------------------
+
+## 呼叫端已把 CommanderDef.passive_effect_refs 解析成 effect id 清單傳入（本編譯器只消費、不
+## 解析 CommanderDef，比照 relic 消費 battle_effect_ids 的方式）。比照戰鬥遺物效果
+## （_compile_relic_effects）產出 source_category=commander、source_side=player 的 snapshot：
+## commander 效果無槽位/instance 概念（source_slot=0、source_instance_id=null、target_ids 空）。
+## 依 effect_id 字典序穩定排序，對齊 BattleSetupInputsValidator 對 commander 類的
+## source_stable_id 排序要求；隨 BattleSetup hash 凍結進模擬。
+func _compile_commander_effects(
+	commander_passive_effect_ids: Array[StringName]
+) -> Array[BattleEffectSnapshot]:
+	var sorted_ids: Array[StringName] = commander_passive_effect_ids.duplicate()
+	sorted_ids.sort_custom(_string_name_before)
+	var result: Array[BattleEffectSnapshot] = []
+	for effect_id: StringName in sorted_ids:
+		result.append(_build_effect(
+			&"commander",
+			&"player",
+			effect_id,
+			null,
+			0,
+			0,
+			effect_id,
+			[] as Array[StringName]
+		))
 	return result
 
 # ---------------------------------------------------------------------------

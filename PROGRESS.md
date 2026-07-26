@@ -4,10 +4,11 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S4 四個切片全部完成：S4 `build-systems`（羈絆／裝備鍛造／遺物）12 任務收尾——構築三系統 run-layer 邏輯、首批正式內容雙 pack（build_systems＋vertical_slice，TUNE 佔位）、`presentation/viewmodels/` 介面層與 Build Lab 灰盒。最終 gate：Gut 399/399、`-Suite All` exit 0、10,000-seed 構築 soak（40,000 次決定性構築操作）通過；逐 AC 證據見 `specs/build-systems/implementation-review.md`。
+主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成實作，G1 灰盒全系統閉環成立：S5 `meta-progression` 提供營地五設施、指揮官／挑戰、局外解鎖、圖鑑發現、exactly-once meta 結算、AppRoot CAMP↔RUN↔RESULTS composition 與可恢復／明示棄置流程。最終 fresh gate：Gut 737/737（9332 asserts）、10,000-seed ExpeditionSoak（64 replay／10,000 pool checks／40,000 build operations）與 `-Suite All` exit 0；逐 AC 證據見 `specs/meta-progression/implementation-review.md`。
 
 ## 已完成
 
+- [2026-07-26] ✅ S5 `meta-progression` 完成（wave1～6／T01～T12） — schema 3 meta profile/run 欄位、指揮官與 challenge 雙軌、claim_scope 真語意、圖鑑 discovery union、Camp/Start/Meta exactly-once 原子交易、五設施 ViewModel、AppRoot 正式 composition 與 Camp/Run/Results 灰盒均落地；W5 R2/R3 修正 retained run fail-closed、expected-run-id 明示棄置、canonical readers／starting pack、兩種 combat pending resume 與 FakeSaveStorage 隔離。W5 R4 雙審零未決。最終 Gut 737/737（9332 asserts）、10k ExpeditionSoak 與 All exit 0；S5-AC-001～014 為 14/14 PASS。
 - [2026-07-24] ✅ S4 `build-systems` 完成（wave4：T11 Build Lab／T12 整合驗收） — Build Lab 灰盒以真雙 pack＋ContentRegistryReceiptAdapter 完整接線（五種構築操作經 ViewModel、save/load 往返、Smoke 綠），並揭露修復兩個內容缺口（經濟 config 必填欄位、meta_reward_table 佔位）；T12 落地死亡不重算整合案例、claim_scope S4 語意（always，validator＋builder 雙層封洞）、四 service 世代守衛、生產層 relic 接線補洞、soak 織入四步決定性構築操作。雙審（Opus＋Sonnet）W4-F1~F9 裁決全數落地。最終 fresh gate：Gut 399/399（6226 asserts）、10,000-seed soak（40,000 構築操作）exit 0、`-Suite All` exit 0。逐 AC 證據落檔 `specs/build-systems/implementation-review.md`。
 - [2026-07-23] ✅ S4 wave3（T05 overflow／T09 伴生內容／T10 ViewModel） — ResolveOverflowCommand（tray 逐件 equip/forge/abandon、具名 error）＋overflow 硬 gate 集中進 validator 最終防線（COMBAT/MAP/RESULTS 期 tray 必空，service 早退保留）＋出售帶裝棋 crash/load 回歸；`content/packs/vertical_slice/` 100 個 TUNE 佔位 .tres（32 棋子羈絆對應含 4 隻三標籤），完整雙 pack manifest 0 issue、digest 可 pin；`presentation/viewmodels/` 四件套（讀端 deep-clone、寫端經 dispatch、pinned catalog 接線）＋HANDOFF 消費契約更新。雙審三份（Opus×2＋Sonnet）W3-F1~F8 裁決全修（F7 除外）。Gut 376/376、Spec 3274 cases、`-Suite All` exit 0、10000-seed soak exit 0。
 - [2026-07-23] ✅ S4 wave2（T02 戰鬥編譯器／T03 鍛造／T06 遺物作用點／T08 內容 pack） — BattleSetupSourceCompiler（羈絆計數/戰前快照/裝備/battle 遺物編譯，preview 與開戰同源）；ForgeEquipmentCommand（21 配方、自配、serial/overflow）；遺物 run-layer 作用點（income add_gold／shop 折扣拆新 kind shop_discount／map route 覆寫無新 entropy／settlement 治療與減傷，槽序升序、不經 EffectResolver）；首批正式內容 `content/packs/build_systems/` 90 個 .tres（12 羈絆/6 零件/21 裝備/16 遺物四類/拆卸道具/效果）。雙審（Opus＋Sonnet）W2-F1~F3/F6 裁決全修：帶裝備開戰路徑修通（validator 依 design §4 對齊）、builder 拒不支援 intent、4 件死內容遺物修正、NORMAL/ELITE 規則數不變式。Gut 333/333、`-Suite All` exit 0、10000-seed soak exit 0。
@@ -24,21 +25,22 @@
 
 ## 進行中
 
-- （無——S4 已收尾；S5 `meta-progression` 待另行 plan session 起草三件套。）
+- S5 實作、驗證與文件已完成；下一階段轉入正式 UI／內容 TUNE 與發行準備。
 
 ## 待辦
 
-- S5 `meta-progression`：營地／指揮官／解鎖（REQ-META-001~004）三件套規格與實作；正式 composition root 接線時 command 的 `relic_table` 必傳（HANDOFF §4「S5 接手檢查項」）；claim_scope 真語意（once_per_node/on_first_clear 防重放）。
-- 橫切工作：正式像素內容與 UI（Codex，見 HANDOFF）、最低規格效能、完整單局驗收（AC-030）、TUNE 數值平衡。
+- 橫切工作：正式像素內容與 UI（Codex，見 HANDOFF）、最低規格效能、TUNE 數值平衡與 G2 完整內容。
 
 ## 已知問題
 
-- Combat Lab 與 Expedition Lab 都是開發用灰盒，不是正式遊戲 UI；羈絆、正式裝備／遺物內容、RESULTS 後的 Profile settlement 與完整產品流程仍由 S4–S5／橫切工作負責。
-- `AC-030` 完整單局 soak 仍是 downstream；S2 `soak.json` 的 scope 明確為 `combat-core`。
+- Combat／Expedition／Build／Camp／Run／Results Lab 都是開發用灰盒，不是正式產品 UI；正式美術、音效與 UX 仍屬 G2 橫切工作。
+- `INCOMPATIBLE_PRESERVED` run 採資料保留硬停，需相容內容或 migration 恢復；不提供缺乏可靠 decoded run-id 的刪除入口。
+- SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
 
+- [2026-07-26] S5 retained run 採 fail-closed：所有一般 Camp writer 只在 fresh load 明確 `RunStatus.NONE` 時寫入；decoded unresumable run 只能以 expected run-id 明示棄置，opaque incompatible run 保留並 boot failure。MetaReward/Commander 皆由 pinned canonical payload reader 重建 clone。
 - [2026-07-22] S3 reward generation 的 standard stage 固定三選一且必要時保留最後一格給合法非棋子候選；event grant 使用同一 table 但只建立單一 pending offer。菁英 standard→relic 期間保留 shop，最後 stage 與 overflow 全解決後才釋放。
 - [2026-07-22] RewardTable conditions 以 roster／inventory／HP／pool 決定性過濾並由 content gate 要求 stage fallback；unit-only event 在卡池耗盡時提交零效果 EVENT choice，不虛構副本。非戰鬥節點透過正式 command 離開 PREPARE，避免路線軟鎖。
 - [2026-07-18] S3 階段 0～3 沿用 save schema 2；空 shop slot 以缺少該 `slot_index` 的 0～5 筆排序 offer 表示，不引入 sentinel Unit ID。地圖與商店分別只消費具名 `map`／`shop` PCG32 stream，所有提交仍走 `RunController` 原子交易。

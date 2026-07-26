@@ -51,7 +51,13 @@ func has_catalog_pin() -> bool:
 		and _catalog_lease.manifest_digest == _canonical_run.content_snapshot.manifest_digest_value() \
 		and _catalog_lease.is_active()
 
-func _commit_saved_draft(draft: RunState) -> RunViewState:
+## Swaps in the newly committed run (and, when provided, the profile carrying
+## its T09 discovery union) only after the save succeeded, keeping the in-memory
+## snapshot consistent with what was just persisted. profile stays untouched
+## when null so non-discovery callers keep the run's existing profile.
+func _commit_saved_draft(draft: RunState, profile: ProfileState = null) -> RunViewState:
 	_canonical_run = draft.deep_clone()
+	if profile != null:
+		_profile = profile.deep_clone()
 	_publication_serial = _publication_serial.add(U64Bits.one())
 	return view_state()

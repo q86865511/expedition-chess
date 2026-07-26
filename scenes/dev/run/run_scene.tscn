@@ -1,0 +1,103 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/dev/run/run_screen.gd" id="1"]
+
+[node name="RunScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="Columns" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Actions" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+
+[node name="Title" type="Label" parent="Margin/Columns/Actions"]
+layout_mode = 2
+text = "S5 遠征灰盒｜真 RunController"
+
+[node name="GenerateMapButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "生成地圖"
+
+[node name="EnterNodeButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "進入可達節點"
+
+[node name="RefreshShopButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "刷新商店"
+
+[node name="BuyOfferButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "購買第一個報價"
+
+[node name="CommitBoardButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "提交備戰佈陣"
+
+[node name="StartCombatButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "開戰"
+
+[node name="SettleBattleButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "結算戰鬥"
+
+[node name="ResolveRewardButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "領取獎勵"
+
+[node name="ResolveNodeButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "解決非戰鬥節點"
+
+[node name="AbandonButton" type="Button" parent="Margin/Columns/Actions"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "放棄 Boss 重戰"
+
+[node name="Detail" type="VBoxContainer" parent="Margin/Columns"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SummaryLabel" type="RichTextLabel" parent="Margin/Columns/Detail"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="SettleRunButton" type="Button" parent="Margin/Columns/Detail"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "結算遠征"
+
+[node name="StatusLabel" type="Label" parent="Margin/Columns/Detail"]
+unique_name_in_owner = true
+layout_mode = 2

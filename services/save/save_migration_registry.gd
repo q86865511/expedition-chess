@@ -37,13 +37,15 @@ func migrate(raw_json_text: String) -> MigrationResult:
 		return _failure(known, MigrationError.STEP_MISSING, &"schema_version")
 	if source_schema == SaveJsonCodec.SCHEMA_VERSION:
 		return _decode_current(raw_json_text, known)
+	if source_schema == 2:
+		return _upgrade_two_to_three(data, raw_json_text, known)
 	if source_schema == 0:
 		var zero_error := _upgrade_zero_to_one(data)
 		if not zero_error.is_empty():
 			return _failure(known, MigrationError.PARSE_INVALID, zero_error)
 	elif source_schema != 1:
 		return _failure(known, MigrationError.STEP_MISSING, &"schema_version")
-	return _upgrade_one_to_two(data, raw_json_text, known)
+	return _upgrade_one_to_current(data, raw_json_text, known)
 
 
 func _decode_current(raw_json_text: String, source_schema: SourceSchemaVersionState) -> MigrationResult:
@@ -78,11 +80,31 @@ func _upgrade_zero_to_one(data: Dictionary) -> StringName:
 	return &""
 
 
-func _upgrade_one_to_two(
+## S5 meta-progression (design.md SS2/SS10): schema 2 lacks the three new wire
+## fields ProfileState.last_selection, ProfileState.commander_challenge_records
+## and RunState.discovered_content_ids. Every upgrade path that eventually
+## decodes with today's codec (0->.., 1->.., 2->..) must default these fields
+## onto the raw dict before decoding, since the current codec's exact-keys
+## check now requires them. Idempotent: leaves already-present keys untouched.
+func _default_meta_progression_fields(data: Dictionary) -> void:
+	if data.get("profile") is Dictionary:
+		var profile: Dictionary = data["profile"]
+		if not profile.has("last_selection"):
+			profile["last_selection"] = null
+		if not profile.has("commander_challenge_records"):
+			profile["commander_challenge_records"] = []
+	if data.get("run") is Dictionary:
+		var run: Dictionary = data["run"]
+		if not run.has("discovered_content_ids"):
+			run["discovered_content_ids"] = []
+
+
+func _upgrade_one_to_current(
 	data: Dictionary,
 	original_json_text: String,
 	source_schema: SourceSchemaVersionState
 ) -> MigrationResult:
+	_default_meta_progression_fields(data)
 	var profile := _decode_profile_for_preservation(data)
 	if profile == null:
 		return _failure(source_schema, MigrationError.PARSE_INVALID, &"profile")
@@ -154,6 +176,47 @@ func _upgrade_one_to_two(
 		[],
 		migrated.migration_receipt,
 		diagnostics
+	)
+
+
+## S5 meta-progression (design.md SS2/SS10, REQ-SAVE-003): pure structural
+## upgrade -- schema 2->3 only adds the three new wire fields (defaulted by
+## _default_meta_progression_fields), it does not touch content_snapshot shape
+## or require any content-generation migration (that is a separate axis,
+## handled via catalog lease at load time -- see design.md SS13). Mirrors
+## _decode_current's handling of an incompatible active run (profile
+## preserved, run dropped) rather than _decode_and_canonicalize's, because
+## unlike that helper's original (run==null-only) call site, a schema-2 input
+## here may carry a real active run whose content_snapshot no longer matches
+## the currently pinned receipt.
+func _upgrade_two_to_three(
+	data: Dictionary,
+	original_json_text: String,
+	source_schema: SourceSchemaVersionState
+) -> MigrationResult:
+	_default_meta_progression_fields(data)
+	var decoded := _decode_candidate(data)
+	if decoded.run_status == LoadResult.RunStatus.INCOMPATIBLE_PRESERVED:
+		return MigrationResult.incompatible_preserved(
+			source_schema,
+			original_json_text,
+			decoded.profile,
+			decoded.diagnostics,
+			decoded.incompatible_content_ids
+		)
+	if not decoded.ok or decoded.root == null:
+		var path := decoded.error.field_path if decoded.error != null else &"root"
+		return _failure(source_schema, MigrationError.PARSE_INVALID, path)
+	var encoded := _codec.encode(decoded.root)
+	if not encoded.ok:
+		return _failure(source_schema, MigrationError.PARSE_INVALID, encoded.error.field_path)
+	return MigrationResult.success(
+		source_schema,
+		encoded.json_text.value,
+		decoded.root,
+		decoded.incompatible_content_ids,
+		null,
+		decoded.diagnostics
 	)
 
 

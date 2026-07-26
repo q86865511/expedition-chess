@@ -80,6 +80,10 @@ func test_commander_with_no_run_operations_does_not_fail_build_and_contributes_n
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var fixture := SyntheticContentFixture.build_valid()
+	# T10：commander.c0 的 SyntheticContentFixture 預設被動現在帶 add_gold（三名被動多樣性規則
+	# 要求三者機制互不相同），本測試要驗證的是「被動不帶任何 run_operations」這個情境，故顯式
+	# 清空，不依賴 fixture 的預設值。
+	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = []
 	var installed := registry.install_validated(fixture, "fixture.run_modifier.2", [&"pack.core"])
 	assert_true(installed.ok)
 	if not installed.ok:
@@ -328,6 +332,11 @@ func _fixture_with_renamed_challenge_chain() -> ContentValidationInput:
 	for level in range(1, 6):
 		var unlock := _find(fixture, StringName("unlock.slice_challenge_%d" % level)) as UnlockDef
 		unlock.prerequisite_refs = [StringName("unlock.slice_challenge_%d" % (level - 1))]
+	# T10：SyntheticContentFixture 的 commander.c0 現在預設帶一個 always-active add_gold 被動
+	# （滿足新的 CONTENT_COMMANDER_PASSIVE_HOMOGENEOUS 三名被動多樣性規則），這些測試只想量測
+	# challenge 鏈自身的 always-active 貢獻，故清空 c0 的被動，避免其 add_gold 污染下方
+	# sum_always_active(&"economy", &"add_gold") 的斷言。
+	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = []
 	return fixture
 
 func _append_add_gold_effect(fixture: ContentValidationInput, effect_id: StringName, amount: int) -> void:
@@ -339,7 +348,9 @@ func _append_add_gold_effect(fixture: ContentValidationInput, effect_id: StringN
 	effect.id = effect_id
 	effect.schema_version = 1
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
-	effect.content_role = &"general"
+	# T10：CONTENT_CHALLENGE_AFFIX_ROLE 收緊為「必須恰為 challenge_affix」（不再放行預設的
+	# &"general"），這些探針效果全部被 challenge 鏈 modifier_refs 引用，改用合規角色。
+	effect.content_role = &"challenge_affix"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"
 	effect.max_stacks = 1

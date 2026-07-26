@@ -9,6 +9,8 @@ extends RefCounted
 ## without collision (see tests/fixtures/camp/purchase_unlock_test_fixture.gd).
 
 const INVALID_COMMAND: StringName = &"CAMP_INVALID_COMMAND"
+const LOAD_FAILED: StringName = &"CAMP_LOAD_FAILED"
+const ACTIVE_RUN_EXISTS: StringName = &"CAMP_ACTIVE_RUN_EXISTS"
 const VALIDATION_FAILED: StringName = &"CAMP_VALIDATION_FAILED"
 const SAVE_FAILED: StringName = &"CAMP_SAVE_FAILED"
 const TRANSACTION_BUSY: StringName = &"CAMP_TRANSACTION_BUSY"

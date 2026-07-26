@@ -148,11 +148,12 @@ func test_dispatch_save_failure_leaves_canonical_profile_and_store_unchanged() -
 	var repository := PurchaseUnlockTestFixture.repository_for(storage)
 	add_child_autofree(repository)
 	# controller_for() performs one seed save (occurrence 0 of the
-	# DIRECTORY/MAIN fault counter); occurrence 1 is this test's own dispatch
-	# save attempt -- mirrors
+	# DIRECTORY/MAIN fault counter); W5 R3's fail-closed writer guard consumes
+	# occurrence 1 while fresh-loading the persisted run status, so occurrence 2
+	# is this test's own dispatch save attempt -- mirrors
 	# test_forge_equipment_command_transaction.gd's DIRECTORY-fault precedent.
 	var controller := PurchaseUnlockTestFixture.controller_for(profile, repository)
-	storage.inject_fault(StorageFaultKey.new(StorageFaultKey.DIRECTORY, StorageFaultKey.MAIN, 1))
+	storage.inject_fault(StorageFaultKey.new(StorageFaultKey.DIRECTORY, StorageFaultKey.MAIN, 2))
 	var no_prereqs: Array[StringName] = []
 	var grants: Array[StringName] = [&"commander.mike"]
 	var unlock := PurchaseUnlockTestFixture.make_unlock_def(

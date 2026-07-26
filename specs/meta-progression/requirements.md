@@ -42,7 +42,7 @@ AppRoot 正式接線＋Camp 灰盒入本片；指揮官被動經遺物作用點�
 ### S5-AC-002 — 指揮官建立遠征與鎖定（Covers REQ-META-001；對應 AC-021）
 - Given 基礎 profile 與三位已解鎖指揮官
 - When 分別以三位指揮官建立遠征
-- Then 指揮官不出現在棋盤/上場區、不佔人口；三者起始包與被動 refs 各自不同；RunState.commander_id 於建立時鎖定，遠征中無任何 command 可更換
+- Then 指揮官不出現在棋盤/上場區、不佔人口；三者起始包與被動 refs 各自不同；RunState.commander_id 於建立時鎖定，遠征中無任何 command 可更換；starting_pack 依 pinned canonical `(content_id, count_u32)` 順序配發，authoring 陣列排列不同不得改變 unit serial／bench／pool 結果
 
 ### S5-AC-003 — 指揮官被動經作用點實際生效（Covers REQ-META-001/§7.2；使用者裁決）
 - Given 指揮官 def 含 passive_effect_refs 與 population_bonus
@@ -72,7 +72,7 @@ AppRoot 正式接線＋Camp 灰盒入本片；指揮官被動經遺物作用點�
 ### S5-AC-008 — 端到端結算原子交易與營地回返（對應 AC-042/AC-043）
 - Given 新 profile 位於營地
 - When 選指揮官完成三幕通關結算；或遠征 HP 歸零/Boss 重戰放棄進入失敗結算
-- Then 解鎖、貨幣、里程碑、挑戰紀錄、receipt 與 active run 清除在同一原子存檔交易提交；結算後回到可操作營地（灰盒）；重載 RESULTS 不重複發放
+- Then 只有 `run_phase=RESULTS` 可提交 meta 結算；解鎖、貨幣、里程碑、挑戰紀錄、receipt 與 active run 清除在同一原子存檔交易提交；結算後回到可操作營地（灰盒）；重載 RESULTS 不重複發放；active run 載入成功但 composition 失敗時不得自動清除，營地須提供比對 expected run_id 的玩家明示棄置原子交易，run 已更換／不存在／存檔失敗皆具名拒絕且 profile 不變；所有一般 Camp writer 交易前須重新 load 並只在明確 `RunStatus.NONE` 時寫入，load 故障、`LOADED`、`INCOMPATIBLE_PRESERVED` 一律 fail-closed 且不得清除／覆寫保存資料；同程序開局已提交但 composition 失敗時 Camp 五設施須立即改讀已提交的 `profile'`
 
 ### S5-AC-009 — 挑戰階級進度按指揮官記錄（Covers §7.4）
 - Given Challenge 0 基礎與 1..5 逐階
@@ -102,7 +102,7 @@ AppRoot 正式接線＋Camp 灰盒入本片；指揮官被動經遺物作用點�
 ### S5-AC-014 — 正式接線 relic_table 顯式傳入（HANDOFF §4；Covers REQ-TECH-002）
 - Given AppRoot 正式 composition root 與 SceneRouter CAMP↔RUN↔RESULTS
 - When 由營地開始遠征、進行至任一含遺物作用點的 command
-- Then GenerateExpeditionMapCommand/RefreshShopCommand/SettleBattleResultCommand/EnterNodeEvent 均以顯式非 null relic_table 建構（含指揮官被動與挑戰詞綴）；有測試證明正式接線路徑效果生效（防「忘傳靜默跳過」回歸）
+- Then GenerateExpeditionMapCommand/RefreshShopCommand/SettleBattleResultCommand/EnterNodeEvent 均以顯式非 null relic_table 建構（含指揮官被動與挑戰詞綴）；有測試證明正式接線路徑效果生效（防「忘傳靜默跳過」回歸）；Run 灰盒重載 `COMBAT + CombatPendingResolutionState` 或 `COMBAT + BattleResultPendingResolutionState` 時均不得重送 `StartCombatEvent`，後者依 coordinator 的 `resumed_committed_result` 直接返回成功
 
 ## 開放問題
 

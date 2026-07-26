@@ -22,9 +22,11 @@ static func catalog(manifest_digest: String = MANIFEST) -> EconomyExpeditionCata
 	for tier: int in range(1, 6):
 		config.pool_copies_by_tier.append(EconomyValueRule.new(tier, copies[tier - 1]))
 		config.unit_costs_by_tier.append(EconomyValueRule.new(tier, tier))
-	var thresholds := [4, 8, 16, 28, 44, 64]
-	for level: int in range(3, 9):
-		config.xp_thresholds.append(EconomyValueRule.new(level, thresholds[level - 3]))
+	# W5 雙審 B5 裁定修正：門檻須覆蓋 level 1..8（新遠征從 economy level 1 起步），
+	# 比照 slice_default.tres 的曲線在 3..8 之前補 1=2、2=3。
+	var thresholds := [2, 3, 4, 8, 16, 28, 44, 64]
+	for level: int in range(1, 9):
+		config.xp_thresholds.append(EconomyValueRule.new(level, thresholds[level - 1]))
 	var units: Array[ShopUnitRule] = [
 		ShopUnitRule.new(&"unit.test_a", 1, 1),
 		ShopUnitRule.new(&"unit.test_b", 1, 1),

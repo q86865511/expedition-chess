@@ -66,8 +66,24 @@ func dispatch(command: PurchaseUnlockCommand) -> CampCommandResult:
 			CampCommandError.new(CampCommandError.TRANSACTION_BUSY, &"transaction")
 		)
 	_transaction_active = true
-	# 3. clone -> apply; domain rejection propagates its code straight through.
-	var draft := _profile.deep_clone()
+	# 3. Fresh-load the whole persisted root before any profile-only write. A Camp
+	#    writer is permitted only when storage explicitly says there is no run;
+	#    load failure and every retained-run shape fail closed so this run=null
+	#    transaction cannot bypass the expected-run-id discard boundary.
+	var stored := _save_repository.load()
+	if not stored.ok:
+		_transaction_active = false
+		return CampCommandResult.failure(
+			CampCommandError.new(CampCommandError.LOAD_FAILED, &"save")
+		)
+	if stored.run_status != LoadResult.RunStatus.NONE:
+		_transaction_active = false
+		return CampCommandResult.failure(
+			CampCommandError.new(CampCommandError.ACTIVE_RUN_EXISTS, &"save.run")
+		)
+	# 4. The freshly loaded profile is authoritative. This also prevents a stale
+	#    CampController instance from overwriting a newer profile-only commit.
+	var draft := stored.profile.deep_clone()
 	var apply_result := command.apply_to(draft)
 	if not apply_result.ok:
 		_transaction_active = false
@@ -80,7 +96,7 @@ func dispatch(command: PurchaseUnlockCommand) -> CampCommandResult:
 			else UnlockPurchaseError.INPUT_INVALID
 		)
 		return CampCommandResult.failure(CampCommandError.new(apply_code, apply_field))
-	# 4. validate: a real, independently observable step before any save.
+	# 5. validate: a real, independently observable step before any save.
 	var validation := _validator.validate_profile(apply_result.profile)
 	if not validation.ok:
 		_transaction_active = false
@@ -90,7 +106,7 @@ func dispatch(command: PurchaseUnlockCommand) -> CampCommandResult:
 		return CampCommandResult.failure(
 			CampCommandError.new(CampCommandError.VALIDATION_FAILED, validation_field)
 		)
-	# 5. save: run == null SaveRoot through the atomic SaveRepository. On
+	# 6. save: run == null SaveRoot through the atomic SaveRepository. On
 	# failure the in-memory profile is NOT swapped.
 	var candidate := _save_root_factory.build(apply_result.profile, _content_version)
 	var save_result := _save_repository.save(candidate)
@@ -99,7 +115,7 @@ func dispatch(command: PurchaseUnlockCommand) -> CampCommandResult:
 		return CampCommandResult.failure(
 			CampCommandError.new(CampCommandError.SAVE_FAILED, &"save")
 		)
-	# 6. swap: canonical profile becomes the committed draft.
+	# 7. swap: canonical profile becomes the committed draft.
 	_profile = apply_result.profile.deep_clone()
 	_transaction_active = false
 	return CampCommandResult.success(apply_result.profile)
@@ -125,8 +141,25 @@ func dispatch_start_expedition(command: StartExpeditionCommand) -> StartExpediti
 			CampCommandError.new(CampCommandError.TRANSACTION_BUSY, &"transaction")
 		)
 	_transaction_active = true
-	# 3. clone -> apply; a domain rejection propagates its code straight through.
-	var draft := _profile.deep_clone()
+	# 3. Fresh-load and fail closed. A successful start replaces SaveRoot.run, so
+	#    only an explicit RunStatus.NONE grants permission to continue. Both a
+	#    decoded active run and preserved incompatible run bytes are barriers.
+	var stored := _save_repository.load()
+	if not stored.ok:
+		_transaction_active = false
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(CampCommandError.LOAD_FAILED, &"save")
+		)
+	if stored.run_status != LoadResult.RunStatus.NONE:
+		_transaction_active = false
+		return StartExpeditionCampResult.failure(
+			CampCommandError.new(
+				StartExpeditionError.EXPEDITION_ACTIVE_RUN_EXISTS, &"save.run"
+			)
+		)
+	# 4. Use the freshly loaded profile as the transaction subject so a stale
+	#    controller cannot overwrite a newer profile-only commit.
+	var draft := stored.profile.deep_clone()
 	var apply_result := command.apply_to(draft)
 	if not apply_result.ok:
 		_transaction_active = false
@@ -141,7 +174,7 @@ func dispatch_start_expedition(command: StartExpeditionCommand) -> StartExpediti
 		return StartExpeditionCampResult.failure(
 			CampCommandError.new(apply_code, apply_field)
 		)
-	# 4. validate: build the candidate profile'+run SaveRoot and run the full
+	# 5. validate: build the candidate profile'+run SaveRoot and run the full
 	#    RunStateValidator BEFORE any save (a real, independently observable step).
 	var candidate := _run_save_root_factory.build(
 		apply_result.profile, apply_result.run
@@ -155,7 +188,7 @@ func dispatch_start_expedition(command: StartExpeditionCommand) -> StartExpediti
 		return StartExpeditionCampResult.failure(
 			CampCommandError.new(CampCommandError.VALIDATION_FAILED, validation_field)
 		)
-	# 5. save: profile'+run committed atomically. On failure the in-memory
+	# 6. save: profile'+run committed atomically. On failure the in-memory
 	#    profile is NOT swapped and no active run is persisted.
 	var save_result := _save_repository.save(candidate)
 	if not save_result.ok:
@@ -163,8 +196,62 @@ func dispatch_start_expedition(command: StartExpeditionCommand) -> StartExpediti
 		return StartExpeditionCampResult.failure(
 			CampCommandError.new(CampCommandError.SAVE_FAILED, &"save")
 		)
-	# 6. swap: canonical profile becomes profile'. CampController does not retain
-	#    the RunState -- only the persisted SaveRoot does.
+	# 7. swap: canonical profile becomes profile'. CampController does not retain
+	#    the RunState -- only the persisted SaveRoot does. The SaveResult travels
+	#    back untouched: it is the one-time commit proof T11's composition root
+	#    hands to AppStateMachine.transition_after_save(START_RUN, ...).
 	_profile = apply_result.profile.deep_clone()
 	_transaction_active = false
-	return StartExpeditionCampResult.success(apply_result.profile, apply_result.run)
+	return StartExpeditionCampResult.success(
+		apply_result.profile, apply_result.run, save_result
+	)
+
+
+## S5-AC-008：玩家明示的 compare-and-clear 交易。以交易當下重新 load 的持久化 root
+## 為權威，不相信 CampController 建立時的 profile snapshot；expected_run_id 不符、沒有
+## active run、load/validation/save 任一失敗都不 swap 記憶體 profile，也不改存檔。
+func dispatch_discard_active_run(command: DiscardActiveRunCommand) -> CampCommandResult:
+	if command == null or not command.is_concrete():
+		return CampCommandResult.failure(CampCommandError.new(
+			DiscardActiveRunError.INPUT_INVALID, &"command.expected_run_id"
+		))
+	if _transaction_active:
+		return CampCommandResult.failure(CampCommandError.new(
+			CampCommandError.TRANSACTION_BUSY, &"transaction"
+		))
+	_transaction_active = true
+	var loaded := _save_repository.load()
+	if not loaded.ok:
+		_transaction_active = false
+		return CampCommandResult.failure(CampCommandError.new(
+			DiscardActiveRunError.LOAD_FAILED, &"save"
+		))
+	if loaded.run_status != LoadResult.RunStatus.LOADED or loaded.run == null:
+		_transaction_active = false
+		return CampCommandResult.failure(CampCommandError.new(
+			DiscardActiveRunError.NOT_FOUND, &"save.run"
+		))
+	if loaded.run.run_id != command.expected_run_id:
+		_transaction_active = false
+		return CampCommandResult.failure(CampCommandError.new(
+			DiscardActiveRunError.RUN_CHANGED, &"save.run.run_id"
+		))
+	var validation := _validator.validate_profile(loaded.profile)
+	if not validation.ok:
+		_transaction_active = false
+		var validation_field: StringName = (
+			validation.error.field_path if validation.error != null else &"profile"
+		)
+		return CampCommandResult.failure(CampCommandError.new(
+			CampCommandError.VALIDATION_FAILED, validation_field
+		))
+	var candidate := _save_root_factory.build(loaded.profile, _content_version)
+	var save_result := _save_repository.save(candidate)
+	if not save_result.ok:
+		_transaction_active = false
+		return CampCommandResult.failure(CampCommandError.new(
+			CampCommandError.SAVE_FAILED, &"save"
+		))
+	_profile = loaded.profile.deep_clone()
+	_transaction_active = false
+	return CampCommandResult.success(loaded.profile)

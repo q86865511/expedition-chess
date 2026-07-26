@@ -136,6 +136,48 @@ func test_dispatch_fails_named_error_when_no_active_run_to_settle() -> void:
 	assert_eq(loaded.profile.settlement_receipts.size(), 0)
 
 
+func test_dispatch_rejects_non_results_run_without_changing_save_receipt_or_run() -> void:
+	# W5 R2 #3：presentation 的 disabled 按鈕不是 domain 守衛。持久化 run 尚在
+	# MAP/PREPARE/COMBAT/REWARD 任一非終局階段時，MetaSettlementCommand 必須以
+	# 固定具名碼拒絕，且 storage bytes、receipt 與 active run 都保持原樣。
+	var run := SaveRootFixture.create_valid_root().run
+	run.commander_id = &"commander.fixture"
+	run.challenge_level = 2
+	run.cleared_normal_count = 2
+	run.cleared_elite_count = 1
+	var storage := FakeSaveStorage.new()
+	var repository := SaveRootFixture.create_repository(storage)
+	add_child_autofree(repository)
+	assert_true(repository.save(_seed_root(run, 7, 1, [])).ok)
+	var bytes_before := storage.file_bytes(StorageFaultKey.MAIN)
+	assert_not_null(bytes_before)
+
+	var result := MetaSettlementCommand.new(
+		repository, _reward_table(), "0.1.0", FixedRunCommitClock.new()
+	).dispatch()
+
+	assert_false(result.ok, "a non-RESULTS run is not eligible for meta settlement")
+	if result.ok:
+		return
+	assert_eq(result.error.code, &"META_SETTLEMENT_RUN_NOT_TERMINAL")
+	assert_eq(result.error.field_path, &"run.run_phase")
+	assert_null(result.save_result)
+	assert_eq(
+		storage.file_bytes(StorageFaultKey.MAIN).value, bytes_before.value,
+		"rejected settlement must be byte-for-byte non-mutating"
+	)
+	var loaded := repository.load()
+	assert_true(loaded.ok)
+	if not loaded.ok:
+		return
+	assert_eq(loaded.run_status, LoadResult.RunStatus.LOADED)
+	assert_not_null(loaded.run)
+	assert_eq(loaded.run.run_id, run.run_id)
+	assert_eq(loaded.run.run_phase, RunState.RunPhase.MAP)
+	assert_eq(loaded.profile.meta_currency, 7)
+	assert_eq(loaded.profile.settlement_receipts.size(), 0)
+
+
 func test_each_storage_fault_point_terminates_leaving_prior_state_intact_then_retry_succeeds_exactly_once() -> void:
 	var faults: Array[StorageFaultKey] = [
 		StorageFaultKey.new(StorageFaultKey.DIRECTORY, StorageFaultKey.MAIN, 0),

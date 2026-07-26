@@ -30,6 +30,8 @@
 - `ForgeViewModel`（`presentation/viewmodels/forge_view_model.gd`） — 鍛造介面（零件清單、配方預覽）
 - `InventoryViewModel`（`presentation/viewmodels/inventory_view_model.gd`） — 物品庫／棋子裝備／overflow tray
 - `RelicSlotViewModel`（`presentation/viewmodels/relic_slot_view_model.gd`） — 遺物槽序與第六件替換
+- `CampViewModel`（`presentation/viewmodels/camp_view_model.gd`） — 營地五設施的單一 ProfileState 投影
+- `ExpeditionGateViewModel`／`CommanderHallViewModel`／`CollectionViewModel`／`UnlockWorkshopViewModel`／`ChallengeMonumentViewModel` — S5 局外成長各設施讀取介面
 - （S2/S3 既有）戰鬥 event/result clone、商店 offer 表、地圖節點狀態——見各 Lab 的 session/presentation 腳本示範消費方式
 
 ## 3. 進度地圖（接手時從這裡看）
@@ -40,7 +42,7 @@
 | S2 `combat-core` | ✅ 完成，複檢 PASS | `specs/combat-core/`（含 final-review.md） | `artifacts/test/`、10,000-seed soak |
 | S3 `economy-expedition` | ✅ 完成，複檢 PASS | `specs/economy-expedition/`（final-review.md＋implementation-review.md） | 11/11 S4-AC evidence、10,000-seed ExpeditionSoak |
 | S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
-| S5 `meta-progression` | 📋 規劃 | 未建立 | — |
+| S5 `meta-progression` | ✅ 實作完成（2026-07-26） | `specs/meta-progression/`（三件套＋implementation-review.md） | T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All exit 0、W5 R4 雙審零未決 |
 | 橫切 UX/QA 15 REQ | 📋 未動工 | `docs/implementation-slices.md` | 正式 UI／美術（Codex）＋效能／QA gate |
 
 - 測試 gate：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`（其餘 suite 見專案 `CLAUDE.md`）。`artifacts/test/` 為本機驗證輸出。
@@ -52,4 +54,5 @@
 - **Claude**：功能片走 `specs/<切片>/` 三件套（逐段核可）→ 依 tasks 波次實作（TDD 分代理：測試先行→紅證據→實作轉綠→fresh 重驗）→ 雙審（Sonnet 5 一審＋Opus 4.8 二審，兩獨立 session；使用者裁決不用 Codex review）→ 更新 PROGRESS.md 與本檔。
 - **Codex**：接手 UI 時（1）讀本檔 §2 契約與 §3 進度地圖；（2）從對應 Lab 的 session 腳本看 ViewModel 消費示範；（3）正式場景放 `scenes/`（非 `scenes/dev/`），經 `SceneRouter` 掛入；（4）改動不得觸碰 `domain/`／`services/` 邏輯——需要新資料介面時，在 PROGRESS.md 待辦記需求由 Claude 補 ViewModel；（5）改動後跑 `-Suite All` 確認灰盒與邏輯測試不受影響。
 - 規格／數值變更：先改 `docs/game-architecture/` 對應章節＋§14 追溯矩陣，再改程式（見專案 `CLAUDE.md`）。
-- **S5 接手檢查項**：`GenerateExpeditionMapCommand`／`RefreshShopCommand`／`SettleBattleResultCommand`／`EnterNodeEvent` 的 `relic_table`／`active_relic_ids` 皆為選填參數（預設 `null`／空陣列），目前只有測試與 soak runner 會傳；正式 composition root 真正接線這些 command 時（S5 或任何串接生產流程的切片）必須顯式傳入 `relic_table`，忘傳不會有任何警告——世代守衛只在 `relic_table != null` 時才比對，忘傳只會靜默跳過遺物效果，不會報錯。
+- **S5 接線完成記錄**：`RunCommandFactory` 已成為 `GenerateExpeditionMapCommand`／`RefreshShopCommand`／`SettleBattleResultCommand`／`EnterNodeEvent` 的唯一正式建構點，顯式注入非 null `relic_table` 與 pinned generation；`test_run_command_factory*.gd`、Run 灰盒與 10k soak 已鎖定此契約。
+- **Retained run 契約**：一般 Camp writer 僅在 fresh load 明確 `RunStatus.NONE` 時可寫；decoded composition failure 以 expected run-id 明示棄置，`INCOMPATIBLE_PRESERVED` 則 boot failure 保留原始資料。正式 UI 不得提供繞過此流程的「直接重開」或刪檔按鈕。

@@ -28,6 +28,7 @@ static func build_valid(add_fourth_population_source: bool = false) -> ContentVa
 	consumable.stack_limit = 1
 	definitions.append(consumable)
 	for index in 15: definitions.append(_relic(index))
+	definitions.append_array(_commander_passive_effects())
 	for index in 3: definitions.append(_commander(index))
 	definitions.append(_battle_encounter(&"normal"))
 	definitions.append(_battle_encounter(&"elite"))
@@ -386,13 +387,49 @@ static func _commander(index: int) -> CommanderDef:
 	amount.content_id = StringName("unit.player_%02d" % index)
 	amount.count_u32 = 1
 	value.starting_pack = [amount]
-	value.passive_effect_refs = [&"effect.general"]
+	value.passive_effect_refs = [_commander_passive_effect_id(index)]
 	var preference := WeightedEnumDef.new()
 	preference.enum_key = &"normal"
 	preference.weight_i32 = 1
 	value.route_preferences = [preference]
 	value.population_bonus = 1 if index == 0 else 0
 	return value
+
+## T10（design §7.2／docs/game-architecture/04-content-and-meta-progression.md:81「三名指揮官的
+## 優勢不得只是相同被動的數值階級」）：三名指揮官被動改用三種不同 operation 機制，比照真實內容
+## content/packs/vertical_slice/commanders/ 的既定分工——c0=AddGold(economy)／
+## c1=HealExpeditionHp(rule)／c2=ModifyStat(battle，無 run_operations)——避免觸發 T10 新增的
+## CONTENT_COMMANDER_PASSIVE_HOMOGENEOUS 規則（原本三者皆指向同一個零操作 effect.general）。
+static func _commander_passive_effect_id(index: int) -> StringName:
+	return StringName("effect.commander_passive_%d" % index)
+
+static func _commander_passive_effects() -> Array[ContentDefinition]:
+	var result: Array[ContentDefinition] = []
+	var gold_effect := _effect(_commander_passive_effect_id(0), &"general")
+	var add_gold := AddGoldOperationDef.new()
+	add_gold.operation_index = 0
+	add_gold.amount = 1
+	add_gold.claim_scope = &"always"
+	gold_effect.run_operations = [add_gold]
+	result.append(gold_effect)
+	var heal_effect := _effect(_commander_passive_effect_id(1), &"general")
+	var heal := HealExpeditionHpOperationDef.new()
+	heal.operation_index = 0
+	heal.amount = 1
+	heal.claim_scope = &"always"
+	heal_effect.run_operations = [heal]
+	result.append(heal_effect)
+	var modify_effect := _effect(_commander_passive_effect_id(2), &"general")
+	var modify := ModifyStatOperationDef.new()
+	modify.operation_index = 0
+	modify.stat = &"attack"
+	modify.mode = &"flat"
+	modify.amount = 1
+	modify.duration_ticks = 20
+	modify.target = &"self"
+	modify_effect.battle_operations = [modify]
+	result.append(modify_effect)
+	return result
 
 static func _boss_encounter(index: int) -> EncounterDef:
 	var value := EncounterDef.new()
@@ -557,11 +594,13 @@ static func _economy() -> EconomyConfigDef:
 		cost.key_u32 = tier
 		cost.value_u32 = tier
 		value.unit_costs_by_tier.append(cost)
-	var thresholds := [4, 8, 16, 28, 44, 64]
-	for level in range(3, 9):
+	# W5 雙審 B5 裁定修正：門檻須覆蓋 level 1..8（新遠征從 economy level 1 起步），
+	# 比照 slice_default.tres 的曲線在 3..8 之前補 1=2、2=3。
+	var thresholds := [2, 3, 4, 8, 16, 28, 44, 64]
+	for level in range(1, 9):
 		var threshold := U32PairDef.new()
 		threshold.key_u32 = level
-		threshold.value_u32 = thresholds[level - 3]
+		threshold.value_u32 = thresholds[level - 1]
 		value.xp_thresholds.append(threshold)
 	return value
 

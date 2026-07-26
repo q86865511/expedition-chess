@@ -27,7 +27,7 @@
 ## 對應 G0/G1/G2 門檻(§3.2)
 
 - **G0 灰盒核心** ≈ S1 + S2 + S3 + S4 精簡版 + 1 Boss,固定種子可重現、兩種構築擊敗 Boss。
-- **G1 全系統切片** ≈ 再加 S5、完整 S4、3 幕與存檔/局外解鎖。
+- **G1 全系統切片** ≈ 再加 S5、完整 S4、3 幕與存檔/局外解鎖。**2026-07-26：灰盒系統層已達成**（正式視覺／內容完整度仍屬 G2）。
 - **G2 內容完整** = 32 完整美術 + 全 UI + 全內容,通過所有 AC 與外部複檢。
 
 ## 建議實作順序
@@ -55,4 +55,5 @@
 - S1 `foundation-core`：已完成；三件套位於 `specs/foundation-core/`，完整 headless gate 通過。
 - S2 `combat-core`：已完成；三件套、程式實作、Combat Lab、正式 soak 與複檢紀錄均已落地。
 - S3 `economy-expedition`：階段 0～6、戰果／獎勵、Expedition Lab、正式 acceptance、10,000-seed soak 與獨立 T00R／T11B 複檢均已完成。
-- S4–S5：維持規劃階段。
+- S4 `build-systems`：已完成；13/13 S4-AC、10k soak、All 通過。
+- S5 `meta-progression`：已完成實作；T01～T12、14/14 S5-AC、Gut 737/737、10k ExpeditionSoak、All 與 W5 R4 雙審均通過。

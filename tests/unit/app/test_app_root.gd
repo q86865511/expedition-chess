@@ -4,13 +4,28 @@ extends GutTest
 func test_main_scene_has_fixed_node_contract() -> void:
 	var scene: PackedScene = load("res://app/main.tscn") as PackedScene
 	assert_not_null(scene)
+	if scene == null:
+		return
 	var instance: Node = scene.instantiate()
-	add_child_autofree(instance)
-	assert_eq(instance.name, &"Main")
 	var app_root := instance.get_node_or_null("AppRoot") as ApplicationRoot
 	assert_not_null(app_root)
+	if app_root == null:
+		instance.free()
+		return
+	var registry := ContentRegistryService.new()
+	add_child_autofree(registry)
+	var repository := SaveRepository.new(FakeSaveStorage.new())
+	add_child_autofree(repository)
+	var router := SceneRouterService.new()
+	add_child_autofree(router)
+	assert_eq(
+		app_root.bind_services(registry, repository, router), &"",
+		"main-scene test must inject in-memory save storage before tree entry"
+	)
+	add_child_autofree(instance)
+	assert_eq(instance.name, &"Main")
 	assert_not_null(instance.get_node_or_null("AppRoot/PresentationHost"))
-	assert_eq(app_root.app_state(), AppStateMachine.State.MENU)
+	assert_eq(app_root.app_state(), AppStateMachine.State.CAMP)
 	assert_false(app_root.has_active_run())
 
 

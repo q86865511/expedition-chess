@@ -82,18 +82,26 @@ func build(
 	#    starting_pack must be rejected by name here rather than surfacing as the
 	#    generic VALIDATION_FAILED that RunStateValidator's bench bound would raise
 	#    only once the player presses "start expedition".
+	var canonical_starting_pack: Array[ContentAmountDef] = []
 	var seeded_total := 0
 	for entry: ContentAmountDef in commander_def.starting_pack:
 		if entry == null or entry.count_u32 < 0:
 			return _failure(&"commander_def.starting_pack")
+		canonical_starting_pack.append(entry)
 		seeded_total += entry.count_u32
 	if seeded_total > BoardPreparationValidator.BENCH_CAPACITY:
 		return _failure(&"commander_def.starting_pack")
+	canonical_starting_pack.sort_custom(
+		func(left: ContentAmountDef, right: ContentAmountDef) -> bool:
+			if left.content_id != right.content_id:
+				return String(left.content_id) < String(right.content_id)
+			return left.count_u32 < right.count_u32
+	)
 	var empty_equipment: Array[String] = []
 	var units: Array[UnitInstance] = []
 	var bench_ids: Array[String] = []
 	var running_serial := 0
-	for entry: ContentAmountDef in commander_def.starting_pack:
+	for entry: ContentAmountDef in canonical_starting_pack:
 		for _copy_index: int in range(entry.count_u32):
 			var instance_id := "u_%016x" % running_serial
 			var acquired := U64Bits.from_u32(0, running_serial)

@@ -348,6 +348,12 @@ func _fixture_with_renamed_challenge_chain() -> ContentValidationInput:
 	for level in range(1, 6):
 		var unlock := _find(fixture, StringName("unlock.slice_challenge_%d" % level)) as UnlockDef
 		unlock.prerequisite_refs = [StringName("unlock.slice_challenge_%d" % (level - 1))]
+	# T10：SyntheticContentFixture 的 commander.c0 現在預設帶一個 always-active add_gold 被動
+	# （滿足新的 CONTENT_COMMANDER_PASSIVE_HOMOGENEOUS 三名被動多樣性規則），這些測試只想量測
+	# challenge 鏈自身的 always-active 貢獻（economy/shop_surcharge、rule/drain_expedition_hp、
+	# always_active_count(&"economy")），故清空 c0 的被動，避免其 add_gold 額外貢獻一筆
+	# economy 類 always-active 規則污染 always_active_count 的斷言。
+	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = []
 	return fixture
 
 

@@ -16,6 +16,10 @@ const INPUT_INVALID: StringName = &"EXPEDITION_INPUT_INVALID"
 ## convention every other serial bump in the project follows (see
 ## battle_settlement_service.gd's next_transaction_serial guard).
 const SERIAL_EXHAUSTED: StringName = &"EXPEDITION_SERIAL_EXHAUSTED"
+## S5 wave5 修正 #4：開新遠征會把 profile'＋新 run 寫成同一筆存檔，若儲存中已經有一局
+## active run，那一局會被無聲覆蓋。CampController 在提交前先讀存檔守衛，並以本碼具名拒絕
+## （續跑是 boot 分流的職責，camp 不做「要不要蓋掉」的裁決）。
+const EXPEDITION_ACTIVE_RUN_EXISTS: StringName = &"EXPEDITION_ACTIVE_RUN_EXISTS"
 
 var code: StringName
 var field_path: StringName

@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_wa54g")
 unlock_kind = &"base_profile"
-unlocked_content_refs = Array[StringName]([&"unit.slice_player_00", &"unit.slice_player_06", &"unit.slice_player_12"])
+unlocked_content_refs = Array[StringName]([&"commander.slice_c0", &"unit.slice_player_00", &"unit.slice_player_06", &"unit.slice_player_12"])
 id = &"unlock.slice_base_profile"
 display_name_key = &"loc.unlock_slice_base_profile"

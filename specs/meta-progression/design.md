@@ -69,7 +69,7 @@ ViewModel 契約 (Codex 接正式 UI; 全部只持 ProfileState/RunState clone):
 
 輸入：`commander_id`、`challenge_level`。流程（`CampController.dispatch`）：
 1. 驗證（否則具名 error，零變更）：commander 已在 `profile.unlocked_content_ids`；`challenge_level` 的 prerequisite 滿足——`commander_challenge_records` 中該指揮官最高通關 ≥ level−1（level 0 無前置；§7.4 逐階解鎖）。
-2. `RunBootstrapService.build(profile, commander_def, challenge_level, pinned_receipt)`→初始 `RunState`：`commander_id` 鎖定（`domain/run/run_state.gd:13`，遠征中無 command 可改）、`challenge_level`、`content_snapshot`＝釘當前 generation（REQ-META-003）、`run_seed` 決定性衍生自 run key（profile_id＋next_run_serial）、`roster_state` 以 commander `starting_pack` 播種、`run_phase=MAP`、`expedition_hp`／`economy_state` 初值。指揮官**不入 board placements／不佔人口**；population cap 於此套用 `commander.population_bonus`。
+2. `RunBootstrapService.build(profile, commander_def, challenge_level, pinned_receipt)`→初始 `RunState`：`commander_id` 鎖定（`domain/run/run_state.gd:13`，遠征中無 command 可改）、`challenge_level`、`content_snapshot`＝釘當前 generation（REQ-META-003）、`run_seed` 決定性衍生自 run key（profile_id＋next_run_serial）、`roster_state` 以 commander `starting_pack` 播種、`run_phase=MAP`、`expedition_hp`／`economy_state` 初值。starting_pack 在配 serial 前依 `(content_id, count_u32)` 排序，與 pinned canonical set 一致；authoring 陣列順序不具 gameplay 語意。指揮官**不入 board placements／不佔人口**；population cap 於此套用 `commander.population_bonus`。
 3. 建 `SaveRoot(profile', run)`：`profile'`＝`next_run_serial+1`、`last_selection`=（commander_id, challenge_level）。save→`transition_after_save(START_RUN)`（CAMP→RUN）。
 
 ### 4.3 PurchaseUnlockCommand（S5-AC-011）
@@ -78,7 +78,15 @@ ViewModel 契約 (Codex 接正式 UI; 全部只持 ProfileState/RunState clone):
 
 ### 4.4 AppRoot composition root 與灰盒（S5-AC-001、S5-AC-014）
 
-`_ready` 擴充：boot 後 `load()`；若 `RunStatus.LOADED`→建 `RunSession`（取 lease）＋`RunController`＋`RunCommandFactory`，`transition_after_active_run_load(ACTIVE_RUN_LOADED)`→RUN；否則 CAMP，掛 `CampController`＋`CampScene`。`SceneRouter` 依 app state 換 `CampScene`／run presentation／`ResultsScene`（灰盒 `scenes/dev/`，比照 combat_lab／expedition_lab 慣例；正式 UI 歸 Codex）。
+`_ready` 擴充：boot 後 `load()`；若 `RunStatus.LOADED`→建 `RunSession`（取 lease）＋`RunController`＋`RunCommandFactory`，`transition_after_active_run_load(ACTIVE_RUN_LOADED)`→RUN；若沒有存檔（`ProfileStatus.NOT_FOUND`）才建立基礎 profile 並進 CAMP；INVALID／I/O load 失敗直接 `boot_failed`，不得組出 null-profile 營地。`bind_services()` 只允許 AppRoot 入樹前呼叫，過晚呼叫具名拒絕。`SceneRouter` 依 app state 換 `CampScene`／run presentation／`ResultsScene`（灰盒 `scenes/dev/`，比照 combat_lab／expedition_lab 慣例；正式 UI 歸 Codex）。
+
+active run 已成功 load 但 `_try_compose_active_run()` 因 catalog／modifier／challenge 組裝失敗時，AppRoot 退回 CAMP 並保留 `expected_run_id`，不自動清資料。玩家可從灰盒明示呼叫 `DiscardActiveRunCommand(expected_run_id)`；`CampController.dispatch_discard_active_run()` 重新 load、比對同一 run_id、驗 profile、以 `CampSaveRootFactory` 原子存 `run=null`。不存在、已更換、驗證或存檔失敗皆回具名錯誤且零變更；成功後才解除 active-run guard。
+
+**所有 Camp writer fail-closed**：`PurchaseUnlockCommand`、`StartExpeditionCommand` 等任何會建 `SaveRoot(profile', null)` 或新 run 的一般交易，在 apply 前皆重新 `load()`，只接受 `ok && RunStatus.NONE`；load 故障、`LOADED`、`INCOMPATIBLE_PRESERVED` 均具名拒絕、不得呼叫 save。`INCOMPATIBLE_PRESERVED` 在缺乏可驗證 decoded run_id 時由 AppRoot 直接 `boot_failed`，保留原始 bytes，不能假裝成無 run 進 CAMP。只有 decoded `LOADED` run 的明示棄置交易可清除 active run。
+
+同程序 `start_expedition()` 已原子提交 `profile' + run`、但後續 composition 或 app transition 失敗時，AppRoot 設定 `_unresumable_run_id` 的同時必須以 `started.profile` 重建 CampViewModel，避免五設施仍顯示交易前 `last_selection`／`next_run_serial`。Run 灰盒的 combat resume 對 `CombatPendingResolutionState` 與 `BattleResultPendingResolutionState` 皆直接呼叫 `CombatCoordinator.begin_or_resume()`、不得重送 `StartCombatEvent`；若 `resumed_committed_result=true` 立即回成功，交由既有 settle 流程推進。
+
+App 層不得持有 authoring `.tres` 共享實例。Commander 與 MetaRewardTable 均由 pinned canonical payload reader 重建純值 clone；修改 reader 回傳物不得影響 registry view 或 manifest digest。
 
 **`RunCommandFactory`（防「忘傳靜默跳過」回歸，HANDOFF §4）**：唯一建構 `GenerateExpeditionMapCommand`／`RefreshShopCommand`／`SettleBattleResultCommand`／`EnterNodeEvent` 之處，一律注入本 run 的**非 null** `relic_table`（§6 含指揮官被動）。回歸測試斷言 factory 產物 `relic_table != null` 且效果可觀察（S5-AC-014）。
 
@@ -90,7 +98,7 @@ ViewModel 契約 (Codex 接正式 UI; 全部只持 ProfileState/RunState clone):
 
 局內最終結算（三幕通關 boss 勝、遠征 HP 歸零、Boss 重戰放棄）由既有 `BattleSettlementService`（`battle_settlement_service.gd:45-152`）把 `run_phase` 設為 `RESULTS`、經 `RunController` 提交——**此時尚未發任何局外貨幣**，active run 仍持久於 `run_phase=RESULTS`。
 
-meta 結算＝`FINISH_RUN`（RUN→RESULTS，需存檔提交）這一**單一原子交易**（§7.3：貨幣/里程碑/挑戰紀錄/receipt/active run 清除同一交易）：`MetaSettlementCommand`→`MetaSettlementService.settle(profile, terminal_run, meta_reward_table)`：
+meta 結算＝`FINISH_RUN`（RUN→RESULTS，需存檔提交）這一**單一原子交易**（§7.3：貨幣/里程碑/挑戰紀錄/receipt/active run 清除同一交易）：`MetaSettlementCommand` 先要求持久化 run 的 `run_phase == RESULTS`，否則回 `META_SETTLEMENT_RUN_NOT_TERMINAL` 且零變更；通過後呼叫 `MetaSettlementService.try_settle(profile, terminal_run, meta_reward_table)`：
 1. 判 outcome：`defeated_boss_count == 3`→`COMPLETED`；否則→`FAILED`（含遠征 HP 歸零與 Boss 重戰放棄——S3 兩路徑終態同為 RESULTS＋hp0 不可區分，且 AC-043 本就同列兩者為失敗結算；`SettlementReceiptState.Outcome.ABANDONED` 枚舉值保留不使用。w2 裁決 2026-07-24）。
 2. `currency_delta = MetaRewardComputeService.compute(...)`（§9，純函式）。
 3. `key = build_settlement_receipt(run.run_id)`。**冪等守衛**：若 `profile.settlement_receipts` 已含此 key.digest→`currency_delta` 視為 0（不重發），仍授權清 run。

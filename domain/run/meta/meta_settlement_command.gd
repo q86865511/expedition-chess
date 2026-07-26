@@ -47,6 +47,10 @@ func dispatch() -> MetaSettlementCommandResult:
 		return MetaSettlementCommandResult.failure(
 			MetaSettlementCommandError.NO_ACTIVE_RUN, &"run"
 		)
+	if loaded.run.run_phase != RunState.RunPhase.RESULTS:
+		return MetaSettlementCommandResult.failure(
+			MetaSettlementCommandError.RUN_NOT_TERMINAL, &"run.run_phase"
+		)
 	var content_version := loaded.run.content_snapshot.content_version_value()
 	var settled := MetaSettlementService.try_settle(
 		loaded.profile, loaded.run, _meta_reward_table
@@ -71,4 +75,6 @@ func dispatch() -> MetaSettlementCommandResult:
 			MetaSettlementCommandError.SAVE_FAILED,
 			save_result.error.field_path if save_result.error != null else &"save"
 		)
-	return MetaSettlementCommandResult.success()
+	# 原樣轉呈這次 save() 的一次性提交證明：composition root 靠它呼叫
+	# AppStateMachine.transition_after_save(FINISH_RUN, ...)（design.md §5.1 point5）。
+	return MetaSettlementCommandResult.success(save_result)

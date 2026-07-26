@@ -294,6 +294,8 @@ func _set_modifier_refs(fixture: ContentValidationInput, level: int, effect_ids:
 
 
 ## 純軌 A 探針效果：只有 battle_operations，run_operations 保持空陣列。
+## T10：這兩個探針效果全部透過 _set_modifier_refs 掛進 challenge 鏈，CONTENT_CHALLENGE_AFFIX_ROLE
+## 收緊為「必須恰為 challenge_affix」後不可再用預設的 &"general"。
 func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: StringName) -> void:
 	var operation := ModifyStatOperationDef.new()
 	operation.operation_index = 0
@@ -306,7 +308,7 @@ func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: Stri
 	effect.id = effect_id
 	effect.schema_version = 1
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
-	effect.content_role = &"general"
+	effect.content_role = &"challenge_affix"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"
 	effect.max_stacks = 1
@@ -326,7 +328,7 @@ func _append_run_only_effect(fixture: ContentValidationInput, effect_id: StringN
 	effect.id = effect_id
 	effect.schema_version = 1
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
-	effect.content_role = &"general"
+	effect.content_role = &"challenge_affix"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"
 	effect.max_stacks = 1

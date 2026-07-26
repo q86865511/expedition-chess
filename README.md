@@ -4,9 +4,9 @@
 
 ## 現況
 
-架構規格 v0.2 已核可；S1 `foundation-core`、S2 `combat-core` 已完成，S3 `economy-expedition` 階段 0～6 的可執行工作也已實作。現在具備 Godot 專案骨架、決定性 RNG／canonical codec、內容 registry、版本化存檔、App／Run 狀態機，以及三幕遠征從節點收入、商店、戰鬥結果到持久獎勵與最終離場的可恢復閉環。
+架構規格 v0.2 已核可；S1～S5 五個系統切片均已完成實作，G1 灰盒全系統閉環成立。現在具備決定性 RNG／canonical codec、pinned 內容 registry、schema-3 原子存檔、三幕遠征、羈絆／裝備／遺物構築、營地五設施、指揮官／挑戰、局外解鎖／圖鑑、exactly-once meta 結算，以及 AppRoot CAMP↔RUN↔RESULTS 的可恢復 composition。
 
-S2 提供純 domain `BattleSimulation`／`EffectResolver`、灰盒 Combat Lab、8 隻代理棋子與 normal／兩階段 Boss 遭遇。S3 提供 pinned 經濟／reward catalog、決定性 `MapService`、`ShopService`、戰鬥與非戰鬥節點出口、戰敗／Boss retry、scalar claim、條件式標準／遺物／event reward stages、overflow 解決、Expedition Lab 與 10,000-seed soak；T00R／T11B 已通過。正式羈絆／裝備／遺物內容與 RESULTS 後 Profile settlement 仍屬 S4–S5。
+S2～S4 提供純 domain 戰鬥、經濟遠征與構築系統；S5 補齊 Profile settlement、Camp/Run/Results 灰盒、challenge 詞綴、claim_scope 真語意與 retained-run 安全流程。最終 Gut 737/737、10,000-seed ExpeditionSoak 與 `-Suite All` 均通過；S5-AC 14/14 證據見 `specs/meta-progression/implementation-review.md`。正式像素 UI、美術、音效與 TUNE 平衡仍屬 G2。
 
 ## 技術棧
 
@@ -51,5 +51,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 - S2 功能規格：[specs/combat-core/requirements.md](specs/combat-core/requirements.md)
 - S2 最終獨立複檢：[specs/combat-core/final-review.md](specs/combat-core/final-review.md)
 - S3 功能規格與最終獨立複檢：[specs/economy-expedition/requirements.md](specs/economy-expedition/requirements.md)、[specs/economy-expedition/final-review.md](specs/economy-expedition/final-review.md)
+- S4 功能規格與實作複檢：[specs/build-systems/requirements.md](specs/build-systems/requirements.md)、[specs/build-systems/implementation-review.md](specs/build-systems/implementation-review.md)
+- S5 功能規格與實作複檢：[specs/meta-progression/requirements.md](specs/meta-progression/requirements.md)、[specs/meta-progression/implementation-review.md](specs/meta-progression/implementation-review.md)
 - 進度：[PROGRESS.md](PROGRESS.md)
 - 開發約定：[CLAUDE.md](CLAUDE.md)

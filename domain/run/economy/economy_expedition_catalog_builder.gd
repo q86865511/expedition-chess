@@ -205,7 +205,9 @@ func _valid_config(config: EconomyConfigRule) -> bool:
 		if config.value_for(config.pool_copies_by_tier, tier, -1) < 0 \
 			or config.value_for(config.unit_costs_by_tier, tier, -1) < 1:
 			return false
-	for level: int in range(3, 9):
+	# W5 雙審 B5 裁定修正：與 ContentValidator._validate_economy() 同步——新遠征從
+	# economy level 1 起步(RunBootstrapService.STARTING_ECONOMY_LEVEL)，門檻須覆蓋 1..8。
+	for level: int in range(1, 9):
 		if config.value_for(config.xp_thresholds, level, -1) < 1:
 			return false
 	return true

@@ -131,6 +131,18 @@ func committed_combat_snapshot() -> CombatCommittedSnapshot:
 func roster_snapshot() -> RosterState:
 	return _session.run_snapshot().roster_state.deep_clone()
 
+## S5 wave5 (design.md §8) -- read-only deep-clone accessor in the same family as
+## roster_snapshot(): the run presentation needs the map's nodes/edges to offer the
+## reachable-node choice, and must never hold a reference into the canonical run.
+func map_snapshot() -> MapState:
+	return _session.run_snapshot().map_state.deep_clone()
+
+## S5 wave5 (design.md §8) -- read-only deep-clone accessor in the same family as
+## roster_snapshot(): RunViewState carries only the aggregate economy numbers, while
+## the shop offers themselves are needed to drive a purchase.
+func economy_snapshot() -> EconomyState:
+	return _session.run_snapshot().economy_state.deep_clone()
+
 ## T10 (design.md §8) -- read-only deep-clone accessor for ViewModels; null
 ## when the run's resolution_state is not currently a
 ## RewardPendingResolutionState (i.e. no pending reward to preview/resolve).

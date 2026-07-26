@@ -9,9 +9,11 @@ const STACKING_RULES: Array[StringName] = [&"replace", &"refresh_duration", &"ad
 const BASIC_ATTACK_PROFILES: Array[StringName] = [&"melee", &"ranged", &"magic_projectile"]
 const SHOP_CONDITIONS: Array[StringName] = [&"always", &"unlocked", &"event_only", &"never"]
 const RELIC_CATEGORIES: Array[StringName] = [&"battle", &"economy", &"route", &"rule"]
-## challenge 詞綴專用的 content_role，以及 EffectDef.content_role 的預設（未分類）值。
+## challenge 詞綴專用的 content_role。
 const CHALLENGE_AFFIX_ROLE: StringName = &"challenge_affix"
-const NEUTRAL_EFFECT_ROLE: StringName = &"general"
+## S5-AC-005（design §7.2）：MetaRewardTableDef.challenge_multiplier_bps 每筆的乘數下限
+## （100%，無折扣乘數的合理理由）。
+const CHALLENGE_MULTIPLIER_MINIMUM_BPS: int = 10000
 
 var _issues: Array[ContentValidationIssue] = []
 var _by_id: Dictionary = {}
@@ -32,9 +34,12 @@ func validate(input: ContentValidationInput) -> ContentValidationReport:
 	_validate_relics(input.definitions)
 	_validate_challenge_chain(input.definitions)
 	_validate_always_only_claim_scope(input.definitions)
+	_validate_commander_passive_diversity(input.definitions)
 	_validate_economy(input.definitions)
 	_validate_rewards(input.definitions)
+	_validate_challenge_multiplier_coverage(input.definitions)
 	_validate_unlock_graph(input.definitions)
+	_validate_meta_forbidden_growth(input.definitions)
 	_validate_operations(input.definitions)
 	_validate_encounter_sources(input.definitions)
 	_calculate_population_and_entities(input, report)
@@ -317,6 +322,47 @@ func _validate_effect_refs_always_only(
 				_issue(&"CONTENT_RELIC_EFFECT_SCOPE", source_id, field_path, "%s:claim_scope" % String(effect_id))
 				break
 
+## T10（架構規格 docs/game-architecture/04-content-and-meta-progression.md:81／design.md
+## §7.2）：「三名指揮官的優勢不得只是相同被動的數值階級」。判準（W5 雙審 A6 裁定修正，見
+## .pipeline/reviews/2026-07-25-reviewer-w5.md）：只在內容集合中恰有 3 個 CommanderDef 時檢查
+## （對齊 CONTENT_MINIMUM_COUNTS 對 commanders 數量的既有硬性要求，恆為 3）；把每位指揮官
+## passive_effect_refs 解析出的 EffectDef 的 battle_operations∪run_operations 各自的
+## operation_type() 收斂成一個機制簽章（忽略 amount/duration 等數值欄位——「只有數值不同」正是
+## 本規則要放行的差異）；**兩兩比對**，任兩名的非空機制簽章相等即回一筆聚合 issue（「兩名共用
+## 同一被動機制、只有數值不同」就是 §7.2 字面的「相同被動的數值階級」，不須三者全同才觸發）；
+## 簽章為空（未著作任何 battle/run operation）的指揮官不參與比對——尚未著作被動屬另一層內容
+## 完整性問題，本規則不越權去管，避免「三者皆無被動」被誤判為同質。
+func _validate_commander_passive_diversity(definitions: Array[ContentDefinition]) -> void:
+	var commanders: Array[CommanderDef] = []
+	for definition in definitions:
+		if definition is CommanderDef: commanders.append(definition as CommanderDef)
+	if commanders.size() != 3: return
+	var signatures: Array[Array] = []
+	for commander in commanders: signatures.append(_commander_passive_signature(commander))
+	for i in range(signatures.size()):
+		if signatures[i].is_empty(): continue
+		for j in range(i + 1, signatures.size()):
+			if signatures[j].is_empty(): continue
+			if signatures[i] == signatures[j]:
+				_issue(&"CONTENT_COMMANDER_PASSIVE_HOMOGENEOUS", &"catalog.commanders", &"passive_effect_refs")
+				return
+
+## 指揮官被動的「機制簽章」：passive_effect_refs 解析出的所有效果的 battle/run operation
+## operation_type() 聯集，去重排序後回傳，供 _validate_commander_passive_diversity 兩兩比較。
+func _commander_passive_signature(commander: CommanderDef) -> Array[int]:
+	var types: Dictionary = {}
+	for effect_id in commander.passive_effect_refs:
+		var effect: ContentDefinition = _by_id.get(effect_id)
+		if not effect is EffectDef: continue
+		for operation: BattleOperationDef in (effect as EffectDef).battle_operations:
+			types[operation.operation_type()] = true
+		for operation: RunOperationDef in (effect as EffectDef).run_operations:
+			types[operation.operation_type()] = true
+	var result: Array[int] = []
+	for key in types.keys(): result.append(int(key))
+	result.sort()
+	return result
+
 func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 	var levels: Dictionary = {}
 	for definition in definitions:
@@ -339,9 +385,9 @@ func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 
 ## design §7.2（S5-AC-010）：challenge 鏈 1..5 的 modifier_refs 必須指向 challenge 詞綴自己的
 ## 效果，且五條合起來要覆蓋雙軌的三個可機械判別的桶。
-## - **角色**：引用到別的內容槽位所著作的效果（典型即菁英詞綴 elite_affix）＝內容編排錯誤，
-##   逐效果具名拒絕。EffectDef.content_role 預設值 &"general"（未分類的通用效果）不視為
-##   「別的槽位」，故不在拒絕之列——這條規則管的是「不得挪用他槽內容」，不是強制標註。
+## - **角色**：modifier_refs 引用的效果 content_role 必須恰為 &"challenge_affix"（T10 收緊，
+##   design §7.2 字面要求）——引用到別的內容槽位所著作的效果（典型即菁英詞綴 elite_affix）或
+##   未分類的預設角色 &"general" 皆視為內容編排錯誤，逐效果具名拒絕，不再放行預設角色。
 ## - **覆蓋**：軌 A（battle_operations 非空）／經濟壓力（ShopSurcharge）／遠征傷害
 ##   （DrainExpeditionHp）三桶缺一即回一筆聚合 issue。只在鏈上真的著作了詞綴時才檢查，
 ##   避免對「尚未著作 modifier_refs」的內容重複回報（那是 CONTENT_CHALLENGE_CHAIN 的職責）。
@@ -361,7 +407,7 @@ func _validate_challenge_affix_roles(levels: Dictionary) -> void:
 			authored = true
 			var definition: ContentDefinition = _by_id.get(effect_id)
 			if definition == null: continue
-			if not definition is EffectDef or (definition as EffectDef).content_role not in [CHALLENGE_AFFIX_ROLE, NEUTRAL_EFFECT_ROLE]:
+			if not definition is EffectDef or (definition as EffectDef).content_role != CHALLENGE_AFFIX_ROLE:
 				_issue(&"CONTENT_CHALLENGE_AFFIX_ROLE", effect_id, &"modifier_refs", String(unlock.id))
 				continue
 			var effect := definition as EffectDef
@@ -413,11 +459,40 @@ func _validate_economy(definitions: Array[ContentDefinition]) -> void:
 				_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"unit_costs_by_tier", str(tier))
 		var xp_levels: Dictionary = {}
 		for pair in definition.xp_thresholds: xp_levels[pair.key_u32] = pair.value_u32
-		for level in range(3, 9):
+		# W5 雙審 B5 裁定修正：一個新遠征從 economy level 1 起步
+		# (RunBootstrapService.STARTING_ECONOMY_LEVEL)，門檻必須從 level 1 覆蓋到 8，
+		# 不能只驗 3..8——否則驗證器放行、EconomyExpeditionCatalogBuilder._valid_config()
+		# 卻拒絕的分歧會重演（見 tests/integration/meta_progression/
+		# test_vertical_slice_xp_threshold_gap.gd）。
+		for level in range(1, 9):
 			if int(xp_levels.get(level, 0)) < 1:
 				_issue(&"CONTENT_ECONOMY_CONFIG_INCOMPLETE", definition.id, &"xp_thresholds", str(level))
 	if not has_meta_reward_table:
 		_issue(&"CONTENT_META_REWARD_TABLE_MISSING", &"catalog.meta_reward_table", &"category")
+
+## T10（design §7.2／§9「乘數單一權威＝表內 bps 欄」、§7.3「Challenge 1–5 最後乘以
+## 100%+10%×challenge_level」）：MetaRewardTableDef.challenge_multiplier_bps 必須恰好覆蓋
+## challenge_level 0..5（不缺漏、不含範圍外的 level——集合必須恰等於 {0,1,2,3,4,5}），且每筆
+## basis_points 不得低於 100%（10000 bps，沒有折扣乘數的合理理由）。兩種違規任一成立即回一筆
+## 聚合 issue（比照 CONTENT_ECONOMY_CONFIG_INCOMPLETE 的聚合風格）。
+func _validate_challenge_multiplier_coverage(definitions: Array[ContentDefinition]) -> void:
+	for definition in definitions:
+		if not definition is MetaRewardTableDef: continue
+		var table := definition as MetaRewardTableDef
+		var levels_seen: Dictionary = {}
+		var below_minimum := false
+		for multiplier: ChallengeMultiplierDef in table.challenge_multiplier_bps:
+			if multiplier == null: continue
+			levels_seen[multiplier.challenge_level] = true
+			if multiplier.basis_points < CHALLENGE_MULTIPLIER_MINIMUM_BPS: below_minimum = true
+		var covers_exactly := levels_seen.size() == 6
+		if covers_exactly:
+			for level in range(0, 6):
+				if not levels_seen.has(level):
+					covers_exactly = false
+					break
+		if not covers_exactly or below_minimum:
+			_issue(&"CONTENT_CHALLENGE_MULTIPLIER_COVERAGE", table.id, &"challenge_multiplier_bps")
 
 func _validate_rewards(definitions: Array[ContentDefinition]) -> void:
 	var has_standard := false
@@ -539,6 +614,42 @@ func _unlock_cycle_from(current: StringName, unlocks: Dictionary, visiting: Dict
 	visiting.erase(current)
 	done[current] = true
 	return false
+
+## T10（S5-AC-004／design.md §7.2）：局外成長禁提基礎戰力——unlock 的 unlocked_content_refs／
+## modifier_refs 不得宣告永久基礎生命/攻防提升、商店免費刷新（reroll_cost 歸零）、固定起始
+## 人口。現行 schema 沒有任何「永久修改 UnitDef.base_stats」的 operation 型別（三個禁項在目前
+## schema 下不可能透過「正常」的引用機制真正產生永久基礎戰力提升），這條規則是內容著作期的
+## 防禦性結構檢查，攔阻明顯不合理/會被誤用的引用形狀。三個具體、可機械判別的觸發形狀：
+## a. 免費刷新：引用 id 解析為 EconomyConfigDef 且其 reroll_cost <= 0。
+## b. 固定起始人口：引用 id 解析為 EffectDef，其 run_operations 含至少一個
+##    PopulationSourceOperationDef（現有 schema 中唯一代表「授予起始人口」語意的 operation）。
+## c. 永久基礎生命/攻防提升：僅 modifier_refs（不含 unlocked_content_refs——後者是「解鎖新
+##    棋子」的正常管道，如 base_profile 引用 UnitDef，不可誤傷）中任一 id 直接解析為 UnitDef——
+##    modifier_refs 的語意是「效果/修飾器引用」，直接指向一個 UnitDef 沒有合理解讀。
+func _validate_meta_forbidden_growth(definitions: Array[ContentDefinition]) -> void:
+	for definition in definitions:
+		if not definition is UnlockDef: continue
+		var unlock := definition as UnlockDef
+		for content_id in unlock.unlocked_content_refs:
+			_check_forbidden_growth_ref(unlock.id, &"unlocked_content_refs", content_id, false)
+		for content_id in unlock.modifier_refs:
+			_check_forbidden_growth_ref(unlock.id, &"modifier_refs", content_id, true)
+
+func _check_forbidden_growth_ref(
+	source_id: StringName, field_path: StringName, content_id: StringName, allow_unit_check: bool
+) -> void:
+	var resolved: ContentDefinition = _by_id.get(content_id)
+	if resolved == null: return
+	if resolved is EconomyConfigDef and (resolved as EconomyConfigDef).reroll_cost <= 0:
+		_issue(&"CONTENT_META_FORBIDDEN_GROWTH", source_id, field_path, String(content_id))
+		return
+	if resolved is EffectDef:
+		for operation: RunOperationDef in (resolved as EffectDef).run_operations:
+			if operation is PopulationSourceOperationDef:
+				_issue(&"CONTENT_META_FORBIDDEN_GROWTH", source_id, field_path, String(content_id))
+				return
+	if allow_unit_check and resolved is UnitDef:
+		_issue(&"CONTENT_META_FORBIDDEN_GROWTH", source_id, field_path, String(content_id))
 
 func _validate_operations(definitions: Array[ContentDefinition]) -> void:
 	for definition in definitions:

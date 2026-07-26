@@ -113,6 +113,63 @@ func test_build_seeds_roster_from_starting_pack_and_excludes_commander() -> void
 	assert_eq(result.run.next_unit_serial.to_hex(), U64Bits.from_u32(0, 3).value.to_hex())
 
 
+func test_build_canonicalizes_starting_pack_before_assigning_unit_serials() -> void:
+	# W5 R2 #9 / S5-AC-002：starting_pack 是 canonical set，authoring 陣列順序
+	# 不具 gameplay 語意。相同的 (content_id,count_u32) 集合必須產生完全相同的
+	# instance serial→def 映射、bench 排列與 pool 守恆結果。
+	var authoring_b_first: Array[ContentAmountDef] = [
+		StartExpeditionTestFixture.amount(StartExpeditionTestFixture.UNIT_GAMMA_RECRUIT_B, 2),
+		StartExpeditionTestFixture.amount(StartExpeditionTestFixture.UNIT_GAMMA_RECRUIT_A, 1),
+	]
+	var authoring_a_first: Array[ContentAmountDef] = [
+		StartExpeditionTestFixture.amount(StartExpeditionTestFixture.UNIT_GAMMA_RECRUIT_A, 1),
+		StartExpeditionTestFixture.amount(StartExpeditionTestFixture.UNIT_GAMMA_RECRUIT_B, 2),
+	]
+	var service := StartExpeditionTestFixture.bootstrap_service()
+	var first := service.build(
+		StartExpeditionTestFixture.base_profile(),
+		StartExpeditionTestFixture.commander_with(authoring_b_first),
+		0, StartExpeditionTestFixture.receipt(), StartExpeditionTestFixture.catalog()
+	)
+	var second := service.build(
+		StartExpeditionTestFixture.base_profile(),
+		StartExpeditionTestFixture.commander_with(authoring_a_first),
+		0, StartExpeditionTestFixture.receipt(), StartExpeditionTestFixture.catalog()
+	)
+
+	assert_true(first.ok and second.ok)
+	if not (first.ok and second.ok):
+		return
+	var first_roster := first.run.roster_state
+	var second_roster := second.run.roster_state
+	assert_eq(first_roster.unit_instances.size(), second_roster.unit_instances.size())
+	for index: int in range(first_roster.unit_instances.size()):
+		var left: UnitInstance = first_roster.unit_instances[index]
+		var right: UnitInstance = second_roster.unit_instances[index]
+		assert_eq(left.instance_id, right.instance_id)
+		assert_eq(left.acquired_serial.to_hex(), right.acquired_serial.to_hex())
+		assert_eq(
+			left.def_id, right.def_id,
+			"the same serial must resolve to the same def regardless of authoring order"
+		)
+	assert_eq(
+		first_roster.bench_unit_instance_ids, second_roster.bench_unit_instance_ids,
+		"canonical starting pack order must also define the initial bench order"
+	)
+	assert_eq(
+		first.run.unit_pool_state.entries.size(),
+		second.run.unit_pool_state.entries.size()
+	)
+	for index: int in range(first.run.unit_pool_state.entries.size()):
+		var left_pool: UnitPoolEntryState = first.run.unit_pool_state.entries[index]
+		var right_pool: UnitPoolEntryState = second.run.unit_pool_state.entries[index]
+		assert_eq(left_pool.unit_def_id, right_pool.unit_def_id)
+		assert_eq(left_pool.total_copies, right_pool.total_copies)
+		assert_eq(left_pool.remaining_copies, right_pool.remaining_copies)
+		assert_eq(left_pool.reserved_copies, right_pool.reserved_copies)
+		assert_eq(left_pool.held_copies, right_pool.held_copies)
+
+
 func test_build_rejects_starting_pack_larger_than_the_bench() -> void:
 	# W3-F8: 10 units cannot fit BoardPreparationValidator.BENCH_CAPACITY (9), and
 	# the content gate has no starting_pack size rule -- so bootstrap must name it

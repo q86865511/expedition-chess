@@ -378,8 +378,14 @@ func return_to_menu() -> AppActionResult
 
 `ResultsRenderRetryCapability` 由 fresh committed repository read 發出，單次使用且綁 repository
 identity、receipt id、完整 committed-file digest、fallback route generation 與獨立的
-`retry_attempt_generation`。`retry()` 與兩個 exit 共用 AppRoot results-action single-flight；
-驗 fallback lease／route generation 後取得 repository read ownership，在 ownership 內
+`retry_attempt_generation`。`retry()` 與兩個 exit 共用 non-reentrant AppRoot
+results-action single-flight；每個 public action 的第一個同步步驟是取得 guard，之後才驗
+fallback lease／route generation。guard 從首次驗證一路持有到 App state、presentation route
+與 live/fallback lease 的最終 commit 或 failure cleanup，repository ownership 的取得／釋放
+不影響 guard；所有出口 finally-style 釋放，全段不得 `await`。無法取得 guard 的 reentrant
+caller 在任何 save／candidate mutation 前回 `RESULTS_ACTION_IN_PROGRESS`。
+
+`retry()` 在 guard 內取得 repository read ownership，並在 ownership 內
 fresh-read authoritative committed bytes，重新比對 repository identity、receipt id 與完整
 file digest，並從該次 read 建立 clone-only ResultsPresentationSnapshot。無論比對成功、stale、
 I/O failure 或稍後 presentation failure，此次 attempt 都會原子 consume token、推進
@@ -389,6 +395,14 @@ candidate，成功才 RESULTS_FALLBACK→RESULTS。prepare/bind failure 保持�
 下一次 `prepare_retry()` 必須 fresh-read 並發下一代 token。兩個 return action 沿用 RESULTS
 typed event、零新 save，不依賴 RESULTS scene 安裝成功。results-only port 每次呼叫仍驗
 fallback lease；鍵盤焦點固定包含 retry、Camp、Menu。
+
+`test_results_fallback_retry_and_exit_lifecycle` 必須以可重入 probe 分別在三個 barrier 注入
+Return to Camp 與 Return to Menu：retry 取得 repository ownership 前、authoritative CAS
+完成且 repository ownership 已釋放後、以及 RESULTS candidate bind 中。六個 loser 都必須
+回 `RESULTS_ACTION_IN_PROGRESS`（若 barrier 前 lease 已被外部撤銷則回既有 stale/lease error），
+不得寫 gameplay save或提交 route；outer retry 完成或失敗後，App state、route 與唯一 live
+lease 必須一致。另注入 transient bind failure，驗 guard 已釋放且下一個 fresh exit／retry
+能成功，防止 busy guard 永久卡死。
 
 正式場景：
 
@@ -710,7 +724,7 @@ post-commit diagnostic 保留 committed snapshot，進 safe fallback 並 fresh r
 | R5 | `test_irreversible_confirmation_cancel_and_exactly_once` | forge/relic replace/reward abandon＋cancel/repeat/stale | cancel 零 intent；confirm 一次；重複/stale 具名拒絕 | GUT＋Smoke |
 | R5 | `test_combat_unit_inspection_is_typed_and_read_only` | mouse/keyboard selection＋消失/stale/non-COMBAT | 六類資訊可見；零 command intent；舊資料不殘留 | GUT＋Smoke |
 | R5 | `test_terminal_postcommit_revokes_run_writers_before_results_route` | settlement success＋consume 前競爭 load/write＋RESULTS fault＋舊 callback | joint ownership 無空窗；RESULTS/FALLBACK；無 active run；receipt exactly-once | GUT＋Smoke |
-| R5 | `test_results_fallback_retry_and_exit_lifecycle` | transient/persistent route fault＋consume 前競爭 write／receipt change／read fault＋stale/repeat/sibling token＋keyboard | ownership 內 fresh CAS；attempt generation 撤銷 siblings；retry 可恢復；Camp/Menu 永可退出；零新 save；舊 RUN port 拒絕 | GUT＋Smoke |
+| R5 | `test_results_fallback_retry_and_exit_lifecycle` | transient/persistent route fault＋consume 前競爭 write／receipt change／read fault＋stale/repeat/sibling token＋keyboard；retry 取得 repository ownership 前、CAS/repository release 後、candidate bind 中各注入 Camp/Menu 重入 | ownership 內 fresh CAS；guard 全程持有且六個 loser typed busy/stale、零 route/save；attempt generation 撤銷 siblings；App state/route/lease 一致；fault 後 guard 釋放且 fresh retry/exit 可恢復；舊 RUN port 拒絕 | GUT＋Smoke |
 | R6 | `test_world_viewport_ui_and_pointer_mapping_contract` | 三解析度＋非 16:9＋三 scale | render 正確且 world/hotspot/UI hit target 一致 | Smoke＋整合＋screenshot |
 | R7 | `test_playback_commit_speed_pause_and_backpressure` | 同 setup/seed、save fault、reload、1×/2×/4×、16384 events | precommit accumulator 私有；commit 後 transfer 唯一 owner；session drain≤4096；hash/順序相同 | Combat＋Canonical |
 | R7 | `test_transcript_memory_budget_falls_back_to_committed_summary` | encoded transcript 超 `min(event_budget×1024,64MiB)` | canonical result 保留；buffer 釋放；具名 warning＋summary | GUT＋整合 |

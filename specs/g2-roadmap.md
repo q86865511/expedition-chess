@@ -11,6 +11,7 @@
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R6 雙審全部 2 項修正建議
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R7 雙審唯一 1 項修正建議
 > 規格 checkpoint：2026-07-26 使用者指示記錄 R8 `G2-R8-01` 後提交；不構成修正裁決或 SDD 核可
+> 規格修訂：2026-07-28 `G2-R8-01` 已回寫 SDD 並完成一致性稽查；待 fresh R9 雙獨立複審
 
 ## 1. 目的與完成定義
 
@@ -140,7 +141,7 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 
 | Slice | SDD | Implementation | Review | External gate | Git |
 |---|---|---|---|---|---|
-| `presentation-ui` | R1-R7 FIXES APPLIED; R8-01 RECORDED_UNRESOLVED | NOT STARTED | architecture approved; behavior blocked; see `review-log.md` | visual pilot approval pending | checkpoint commit authorized |
+| `presentation-ui` | R1-R7 FIXES APPLIED; R8-01 RESOLVED_IN_SDD_PENDING_R9 | NOT STARTED | R8 architecture approved; amended behavior awaiting fresh R9; see `review-log.md` | visual pilot approval pending | branch rebased to master; amendment ready for R9 |
 | `content-production` | NOT STARTED | NOT STARTED | NOT STARTED | pilot approval prerequisite | not created |
 | `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |

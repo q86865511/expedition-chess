@@ -4,10 +4,11 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。目前 `presentation-ui` 的 R1～R7 findings 均獲使用者全修裁決並已回寫 SDD；R8 架構審查通過，行為審查新增的 `G2-R8-01` 已依使用者指示記入 `specs/presentation-ui/review-log.md` 並建立規格 checkpoint，但尚未修正或裁決。尚未進入 TDD／production code。
+主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` 的 R1～R7 findings 均已回寫 SDD；R8 架構審查通過，`G2-R8-01` 已於 2026-07-28 補齊 results-action single-flight lifecycle 與六組 retry-vs-Camp/Menu reentrant barriers，目前狀態為 `RESOLVED_IN_SDD_PENDING_R9`。尚未進入 TDD／production code。
 
 ## 已完成
 
+- [2026-07-28] 🧹 G2 worktree 整理與 R8 已知問題修正 — `codex/g2-presentation-ui` 從 ahead 1／behind 2 重放至最新 master，保留 checkpoint 並消除落後提交；`G2-R8-01` 已回寫 requirements／design／T07／T09／named lifecycle test，鎖定 guard 跨 repository unlock 的完整生命週期、六組重入 barrier、typed loser、零 save／route commit、state/route/lease 一致與 failure 後釋放。文件一致性稽查另修正 HANDOFF 的 S3 evidence 誤標；本項不等同 fresh R9 或 SDD 核可。
 - [2026-07-28] ✅ S5 線合回 master — worktree 線 fd64ac2（三件套＋wave1~6）fast-forward 併入；合併後主樹 fresh gate 重驗：10,000-seed ExpeditionSoak exit 0、`-Suite All` exit 0（含 Gut/Combat/Expedition/Spec 全綠）。修復主樹 CRLF 假陽性（repo-local `core.autocrlf false`）。
 - [2026-07-26] ✅ S5 `meta-progression` 完成（wave1～6／T01～T12） — schema 3 meta profile/run 欄位、指揮官與 challenge 雙軌、claim_scope 真語意、圖鑑 discovery union、Camp/Start/Meta exactly-once 原子交易、五設施 ViewModel、AppRoot 正式 composition 與 Camp/Run/Results 灰盒均落地；W5 R2/R3 修正 retained run fail-closed、expected-run-id 明示棄置、canonical readers／starting pack、兩種 combat pending resume 與 FakeSaveStorage 隔離。W5 R4 雙審零未決。最終 Gut 737/737（9332 asserts）、10k ExpeditionSoak 與 All exit 0；S5-AC-001～014 為 14/14 PASS。
 - [2026-07-24] ✅ S4 `build-systems` 完成（wave4：T11 Build Lab／T12 整合驗收） — Build Lab 灰盒以真雙 pack＋ContentRegistryReceiptAdapter 完整接線（五種構築操作經 ViewModel、save/load 往返、Smoke 綠），並揭露修復兩個內容缺口（經濟 config 必填欄位、meta_reward_table 佔位）；T12 落地死亡不重算整合案例、claim_scope S4 語意（always，validator＋builder 雙層封洞）、四 service 世代守衛、生產層 relic 接線補洞、soak 織入四步決定性構築操作。雙審（Opus＋Sonnet）W4-F1~F9 裁決全數落地。最終 fresh gate：Gut 399/399（6226 asserts）、10,000-seed soak（40,000 構築操作）exit 0、`-Suite All` exit 0。逐 AC 證據落檔 `specs/build-systems/implementation-review.md`。
@@ -26,22 +27,23 @@
 
 ## 進行中
 
-- G2 `presentation-ui`：R8 架構審查零未決；`G2-R8-01` 已記錄為 `RECORDED_UNRESOLVED`，checkpoint 不代表 SDD 核可。
+- G2 `presentation-ui`：`G2-R8-01` 已修入 SDD 並完成 Codex consistency audit；等待 fresh R9 兩份獨立規格複審，尚未核可或開始實作。
 
 ## 待辦
 
-- `presentation-ui` 的 `G2-R8-01` 經使用者裁決、修訂並通過下一輪雙審後才建立 TDD 紅燈；視覺樣板完成後仍需使用者核可，才可進 `content-production` 量產。
+- `presentation-ui` 執行 fresh R9 雙獨立規格複審；只有兩份皆 zero unresolved findings 才標示 SDD Approved 並建立 TDD 紅燈。視覺樣板完成後仍需使用者核可，才可進 `content-production` 量產。
 - 後續三片：完整內容／資產、TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
 
 ## 已知問題
 
 - Combat／Expedition／Build／Camp／Run／Results Lab 都是開發用灰盒，不是正式產品 UI；正式美術、音效與 UX 仍屬 G2 橫切工作。
-- G1 的 `INCOMPATIBLE_PRESERVED` 仍採資料保留硬停；G2 `presentation-ui` 將依 AC-070 新增 opaque committed-bytes digest token 與 archive-before-clear recovery，實作前仍須完成 `G2-R8-01` 裁決、下一輪雙審與 TDD。
+- G1 的 `INCOMPATIBLE_PRESERVED` 仍採資料保留硬停；G2 `presentation-ui` 將依 AC-070 新增 opaque committed-bytes digest token 與 archive-before-clear recovery，實作前仍須完成 fresh R9 雙審與 TDD。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
 
+- [2026-07-28] G2 `presentation-ui` R8 修正：採納 `G2-R8-01`，results-action guard 改為在首次 fallback lease 驗證前取得，跨 repository ownership release 持有到 route commit/failure cleanup，全段無 `await`；named test 固定在 repository ownership 前、CAS/repository release 後、candidate bind 中各注入 Camp/Menu 重入，並驗 typed loser、零 save/route、state/route/lease 一致與 guard 可恢復。狀態僅為 `RESOLVED_IN_SDD_PENDING_R9`。
 - [2026-07-26] G2 `presentation-ui` R8 checkpoint：使用者指示先記錄 `G2-R8-01` 並更新交接後 commit；此指示不視為採納修正。finding 要求補 retry-vs-Camp／Menu 三個 barrier 的 single-flight 競爭紅燈，下一位接手者須先取得裁決、修訂並通過 R9 雙審，才可進 TDD。
 - [2026-07-26] G2 `presentation-ui` R7 唯一一項裁決採用：RESULTS fallback retry token 增加獨立 retry-attempt generation；consume 必須在 repository read ownership 內 fresh-read authoritative bytes 並重新核對 receipt／完整 file digest。任何 attempt 都消耗 token、推進 generation 並撤銷同代 sibling token；競爭寫入、receipt replacement、read fault 與 sibling token 納入 TDD。
 - [2026-07-26] G2 `presentation-ui` R6 兩項裁決全採用：terminal settlement 的 save commit、internal capability consume、RUN writer lease 撤銷、session invalidation 與 RESULTS transition 必須位於同一 AppRoot single-flight＋SaveRepository writer ownership，禁止中途釋放或 await；postcommit presentation failure 進 typed `RESULTS_FALLBACK`，只提供 repository／receipt／完整檔案 digest／fallback generation 綁定的單次 retry 與零新 save 的 Camp／Menu 離開路徑。

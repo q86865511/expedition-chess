@@ -98,6 +98,11 @@
     與 retry-attempt generation；consume 在 repository read ownership 內 fresh-read 並重新比對
     authoritative receipt/full digest，任何 attempt 都 consume token、推進 attempt generation 並
     撤銷同代 sibling token，失敗後只可 fresh 取得下一代 token；兩個 exit 不依賴 RESULTS scene；
+    retry/Camp/Menu 共用 non-reentrant results-action guard，必須在首次 fallback lease 驗證前取得，
+    並持有到最終 route commit/failure cleanup；repository unlock 不得釋放 guard，全段不得 await；
+    在 repository ownership 前、CAS/repository release 後、candidate bind 中的 Camp/Menu 重入
+    loser 回 typed busy/stale、零 gameplay save／零 route commit；所有出口維持 App state/route/
+    lease 一致並釋放 guard，transient failure 後 fresh action 可再次前進；
     production screen context
     絕不含 raw RunPresentationSession/RunController/facade，唯一 writer 為每次驗
     lease id/parent/generation 的 typed LiveScreenIntentPort；舊 port 的 navigation、dispatch、
@@ -135,7 +140,11 @@
     Camp/Menu 仍可退出且零新 save；retry/exit stale/repeat 具名拒絕；retry consume 前插入
     competing write、receipt replacement、repository read fault 與同 generation 雙 token，
     驗 fresh authoritative CAS、failure 保持 fallback、attempt generation 前進且 sibling token
-    失效，下一次只能 fresh 取新 token；
+    失效，下一次只能 fresh 取新 token；`test_results_fallback_retry_and_exit_lifecycle` 以
+    reentrant probe 在取得 repository ownership 前、CAS/repository release 後與 candidate bind
+    中，分別注入 Camp/Menu（六組 barrier），驗 loser typed busy/stale、零 gameplay save／零
+    route commit、outer action 後 App state/route/lease 一致；transient bind failure 後 guard
+    必須釋放，下一個 fresh retry 或 exit 可成功；
     AC-004 列出全部非法部署原因、AC-005 顯示 12 人上限／超員拒絕、AC-049 UI 不複製 TUNE。
 
 ## Gate C — 渲染、播放與無障礙

@@ -163,6 +163,15 @@ typed snapshot 並處理 typed intent；正式 screen 只能透過 lease-bound r
   consume attempt 不論驗證或後續 presentation 成敗，都必須推進 retry-attempt generation 並
   撤銷同 generation 的所有 sibling token；失敗後只能 fresh 取得下一代 token。持續 fault 下
   兩個鍵盤 exit 仍可用，且所有操作零新 gameplay save。
+- retry、Return to Camp 與 Return to Menu 必須共用 non-reentrant AppRoot results-action
+  single-flight。每個 action 在首次 fallback lease／route generation 驗證前取得 guard，並持有到
+  最終 App state／presentation route／live lease commit 或 failure cleanup 完成；repository
+  ownership 的取得或釋放不得縮短 guard 生命週期，全段不得 `await`。在取得 repository ownership
+  前、authoritative CAS 後／repository release 後、以及 RESULTS 或 exit candidate bind 中發生的
+  retry-vs-Camp／retry-vs-Menu 重入，loser 必須回 typed `RESULTS_ACTION_IN_PROGRESS` 或既有
+  stale/lease error，且零 gameplay save、零 route commit。每個出口都必須保持 App state、
+  presentation route 與 live/fallback lease 一致並 finally-style 釋放 guard；transient route
+  failure 後，下一個 fresh 合法 action 必須可以成功取得 guard。
 
 ### R6 世界與 UI 分離渲染
 

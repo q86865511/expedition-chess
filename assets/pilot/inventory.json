@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "slice": "presentation-ui",
+  "task": "T13",
+  "status": "user_approved",
+  "user_approved": true,
+  "tool_mode": "built-in_image_gen",
+  "generation_seed": "not_exposed_by_builtin_image_gen",
+  "palette": "res://assets/pilot/palette.json",
+  "character_sheet": "res://assets/pilot/character-pilot.png",
+  "characters": [
+    {
+      "id": "player-cost-1-scout",
+      "kind": "player",
+      "cost": 1,
+      "board": [
+        "res://assets/pilot/board/player-cost-1-scout/front.png",
+        "res://assets/pilot/board/player-cost-1-scout/back.png",
+        "res://assets/pilot/board/player-cost-1-scout/left.png",
+        "res://assets/pilot/board/player-cost-1-scout/right.png"
+      ],
+      "portrait": "res://assets/pilot/portraits/player-cost-1-scout.png"
+    },
+    {
+      "id": "player-cost-3-warden",
+      "kind": "player",
+      "cost": 3,
+      "board": [
+        "res://assets/pilot/board/player-cost-3-warden/front.png",
+        "res://assets/pilot/board/player-cost-3-warden/back.png",
+        "res://assets/pilot/board/player-cost-3-warden/left.png",
+        "res://assets/pilot/board/player-cost-3-warden/right.png"
+      ],
+      "portrait": "res://assets/pilot/portraits/player-cost-3-warden.png"
+    },
+    {
+      "id": "player-cost-5-sovereign",
+      "kind": "player",
+      "cost": 5,
+      "board": [
+        "res://assets/pilot/board/player-cost-5-sovereign/front.png",
+        "res://assets/pilot/board/player-cost-5-sovereign/back.png",
+        "res://assets/pilot/board/player-cost-5-sovereign/left.png",
+        "res://assets/pilot/board/player-cost-5-sovereign/right.png"
+      ],
+      "portrait": "res://assets/pilot/portraits/player-cost-5-sovereign.png"
+    },
+    {
+      "id": "monster-forest-horror",
+      "kind": "monster",
+      "cost": 0,
+      "board": [
+        "res://assets/pilot/board/monster-forest-horror/front.png",
+        "res://assets/pilot/board/monster-forest-horror/back.png",
+        "res://assets/pilot/board/monster-forest-horror/left.png",
+        "res://assets/pilot/board/monster-forest-horror/right.png"
+      ],
+      "portrait": "res://assets/pilot/portraits/monster-forest-horror.png"
+    },
+    {
+      "id": "boss-void-regent",
+      "kind": "boss",
+      "cost": 0,
+      "board": [
+        "res://assets/pilot/board/boss-void-regent/front.png",
+        "res://assets/pilot/board/boss-void-regent/back.png",
+        "res://assets/pilot/board/boss-void-regent/left.png",
+        "res://assets/pilot/board/boss-void-regent/right.png"
+      ],
+      "portrait": "res://assets/pilot/portraits/boss-void-regent.png"
+    }
+  ],
+  "environment": {
+    "id": "camp-corner",
+    "view": "three-quarter",
+    "path": "res://assets/pilot/camp-corner.png"
+  },
+  "core_ui": {
+    "path": "res://assets/pilot/core-ui.png",
+    "reference_size": [1280, 720],
+    "contains": [
+      "panel",
+      "button_states",
+      "keyboard_focus",
+      "tooltip_depth_two",
+      "resource_bar",
+      "status_shape_cues",
+      "rarity_shape_cues"
+    ]
+  },
+  "responsive_screenshots": [
+    "res://assets/pilot/screenshots/16x9-720p-ui100.png",
+    "res://assets/pilot/screenshots/16x9-1080p-ui125.png",
+    "res://assets/pilot/screenshots/16x9-1440p-ui150.png",
+    "res://assets/pilot/screenshots/4x3-1024x768-ui100.png",
+    "res://assets/pilot/screenshots/16x10-1920x1200-ui125.png"
+  ],
+  "color_vision_screenshots": {
+    "default": "res://assets/pilot/screenshots/16x9-720p-ui100.png",
+    "protanopia": "res://assets/pilot/screenshots/color-protanopia-720p.png",
+    "deuteranopia": "res://assets/pilot/screenshots/color-deuteranopia-720p.png",
+    "tritanopia": "res://assets/pilot/screenshots/color-tritanopia-720p.png"
+  },
+  "selected_sources": [
+    "res://assets/pilot/source/character-pilot-chroma.png",
+    "res://assets/pilot/source/core-ui-protanopia.png",
+    "res://assets/pilot/source/core-ui-deuteranopia.png",
+    "res://assets/pilot/source/core-ui-tritanopia.png"
+  ],
+  "provenance": "res://assets/pilot/provenance.md",
+  "processing_script": "res://tools/render-presentation-pilot.ps1"
+}

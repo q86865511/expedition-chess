@@ -2,12 +2,23 @@ class_name FileSaveStorage
 extends SaveStoragePort
 
 const _BASE_DIR: String = "user://saves"
+const _RECOVERY_DIR: String = "user://saves/recovery"
+const _RECOVERY_PREFIX: String = "recovery/"
 
 func ensure_directory() -> StorageVoidResult:
 	var absolute := ProjectSettings.globalize_path(_BASE_DIR)
 	var result := DirAccess.make_dir_recursive_absolute(absolute)
 	if result != OK:
 		return StorageVoidResult.failure(_storage_error(StorageError.DIRECTORY_FAILED, StorageFaultKey.DIRECTORY, StorageFaultKey.MAIN))
+	var recovery_result := DirAccess.make_dir_recursive_absolute(
+		ProjectSettings.globalize_path(_RECOVERY_DIR)
+	)
+	if recovery_result != OK:
+		return StorageVoidResult.failure(_storage_error(
+			StorageError.DIRECTORY_FAILED,
+			StorageFaultKey.DIRECTORY,
+			&"recovery"
+		))
 	return StorageVoidResult.success()
 
 func exists(logical_path: StringName) -> StorageExistsResult:
@@ -113,6 +124,30 @@ func remove(logical_path: StringName) -> StorageVoidResult:
 		return StorageVoidResult.failure(_storage_error(StorageError.REMOVE_FAILED, StorageFaultKey.REMOVE, logical_path))
 	return StorageVoidResult.success()
 
+func logical_paths() -> Array[StringName]:
+	var output: Array[StringName] = []
+	for path: StringName in [
+		StorageFaultKey.MAIN,
+		StorageFaultKey.BACKUP,
+		StorageFaultKey.TMP,
+		StorageFaultKey.OLD,
+		StorageFaultKey.QUARANTINE_PATH,
+	]:
+		var resolved := _path_for(path)
+		if not resolved.is_empty() and FileAccess.file_exists(resolved):
+			output.append(path)
+	var recovery := DirAccess.open(_RECOVERY_DIR)
+	if recovery == null:
+		return output
+	recovery.list_dir_begin()
+	var file_name := recovery.get_next()
+	while not file_name.is_empty():
+		if not recovery.current_is_dir():
+			output.append(StringName(_RECOVERY_PREFIX + file_name))
+		file_name = recovery.get_next()
+	recovery.list_dir_end()
+	return output
+
 func _rename_with_code(
 	source: StringName,
 	destination: StringName,
@@ -144,7 +179,21 @@ func _path_for(logical_path: StringName) -> String:
 		StorageFaultKey.QUARANTINE_PATH:
 			return _BASE_DIR + "/save.corrupt.json"
 		_:
+			var dynamic_path := String(logical_path)
+			if _is_safe_recovery_path(dynamic_path):
+				return _BASE_DIR + "/" + dynamic_path
 			return ""
+
+func _is_safe_recovery_path(logical_path: String) -> bool:
+	if not logical_path.begins_with(_RECOVERY_PREFIX):
+		return false
+	var file_name := logical_path.trim_prefix(_RECOVERY_PREFIX)
+	return (
+		not file_name.is_empty()
+		and not file_name.contains("/")
+		and not file_name.contains("\\")
+		and not file_name.contains("..")
+	)
 
 func _storage_error(code: StringName, operation: StringName, path: StringName) -> StorageError:
 	return StorageError.new(code, operation, path, 0)

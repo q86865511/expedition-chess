@@ -40,6 +40,22 @@ func restore(source: StringName, _destination: StringName) -> StorageVoidResult:
 func remove(logical_path: StringName) -> StorageVoidResult:
 	return _unsupported(StorageFaultKey.REMOVE, logical_path, StorageError.REMOVE_FAILED)
 
+## Enumerates adapter-owned logical files so the repository can discard
+## transaction residue before selecting an authoritative save. File-backed
+## adapters override this directly. In-memory adapters used by deterministic
+## tests expose their stored-file collection as an inherited object property;
+## this conservative fallback only reads entries carrying a logical_path.
+func logical_paths() -> Array[StringName]:
+	var output: Array[StringName] = []
+	if not _has_property(self, &"_files"):
+		return output
+	var stored_files: Variant = get("_files")
+	if stored_files is Array:
+		for stored: Variant in stored_files:
+			if stored is Object and _has_property(stored, &"logical_path"):
+				output.append(StringName(stored.get("logical_path")))
+	return output
+
 func _unsupported(operation: StringName, path: StringName, code: StringName) -> StorageVoidResult:
 	return StorageVoidResult.failure(_error(code, operation, path))
 
@@ -51,3 +67,9 @@ func _write_handle_path(handle: StorageWriteHandle) -> StringName:
 
 func _read_handle_path(handle: StorageReadHandle) -> StringName:
 	return handle.logical_path if handle != null else &"invalid_handle"
+
+func _has_property(target: Object, property_name: StringName) -> bool:
+	for property: Dictionary in target.get_property_list():
+		if StringName(property.get("name", "")) == property_name:
+			return true
+	return false

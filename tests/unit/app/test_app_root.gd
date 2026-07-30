@@ -24,8 +24,13 @@ func test_main_scene_has_fixed_node_contract() -> void:
 	)
 	add_child_autofree(instance)
 	assert_eq(instance.name, &"Main")
-	assert_not_null(instance.get_node_or_null("AppRoot/PresentationHost"))
-	assert_eq(app_root.app_state(), AppStateMachine.State.CAMP)
+	assert_not_null(
+		instance.get_node_or_null(
+			"AppRoot/UiLayer/UiRoot/PresentationHost"
+		),
+		"production PresentationHost is owned by the independent UI layer"
+	)
+	assert_eq(app_root.app_state(), AppStateMachine.State.MENU)
 	assert_false(app_root.has_active_run())
 
 

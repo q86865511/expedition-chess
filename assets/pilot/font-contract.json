@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "tokens": {
+    "font.cjk": {
+      "runtime_source": "godot.system_font.cjk_fallback",
+      "bundled_font_asset": null,
+      "preferred_system_families": [
+        "Microsoft JhengHei UI",
+        "Microsoft JhengHei",
+        "Noto Sans CJK TC",
+        "Noto Sans TC",
+        "PingFang TC",
+        "Arial Unicode MS",
+        "sans-serif"
+      ],
+      "allow_system_fallback": true,
+      "required_unicode_ranges": [
+        "U+3400-U+4DBF",
+        "U+4E00-U+9FFF",
+        "U+F900-U+FAFF"
+      ],
+      "verification": "runtime has_char probe plus rendered screenshot",
+      "provenance": "OS-managed system font selected through Godot SystemFont; no third-party font file added"
+    },
+    "font.latin": {
+      "runtime_source": "godot.theme_db.fallback_font",
+      "bundled_font_asset": null,
+      "verification": "runtime measured bounds",
+      "provenance": "Engine-managed Godot ThemeDB fallback; no third-party font file added"
+    }
+  },
+  "limitations": [
+    "ThemeDB.fallback_font alone lacked at least one required zh_TW probe glyph in the pinned headless run.",
+    "The concrete SystemFont fallback face can vary with the pinned OS and platform.",
+    "Release evidence must retain the zh_TW required-glyph report and screenshot."
+  ]
+}

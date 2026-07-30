@@ -36,6 +36,8 @@ func test_start_compose_failure_refreshes_camp_projection_from_committed_profile
 	assert_eq(app_root.bind_services(registry, repository, router), &"")
 	add_child_autofree(app_root)
 	assert_true(app_root.is_booted())
+	assert_eq(app_root.app_state(), AppStateMachine.State.MENU)
+	assert_true(app_root.open_camp().ok)
 	assert_eq(app_root.app_state(), AppStateMachine.State.CAMP)
 	var initial := app_root.try_camp_view_model()
 	assert_not_null(initial)
@@ -50,10 +52,22 @@ func test_start_compose_failure_refreshes_camp_projection_from_committed_profile
 	var before_serial := before_profile.next_run_serial.to_hex()
 	assert_null(initial.expedition_gate_last_selection())
 
-	var error := app_root.start_expedition(commanders[0], 0)
+	var result := app_root.start_expedition(
+		StartExpeditionRequest.new(commanders[0], 0)
+	)
 
-	assert_eq(error, ApplicationRoot.ERROR_RUN_BATTLE_CATALOG_FAILED)
-	assert_eq(app_root.app_state(), AppStateMachine.State.CAMP)
+	assert_false(result.ok)
+	assert_true(result.committed)
+	assert_eq(
+		result.error.source_code,
+		ApplicationRoot.ERROR_RUN_BATTLE_CATALOG_FAILED
+	)
+	assert_eq(
+		app_root.app_state(),
+		AppStateMachine.State.MENU,
+		"a postcommit composition failure returns to the recovery-capable menu"
+	)
+	assert_true(app_root.current_menu_snapshot().has_recovery)
 	assert_true(app_root.has_unresumable_active_run())
 	var projected := app_root.try_camp_view_model()
 	assert_not_null(projected)
@@ -83,20 +97,24 @@ func test_start_compose_failure_refreshes_camp_projection_from_committed_profile
 	await wait_process_frames(2)
 
 
-func test_incompatible_preserved_run_fails_boot_and_preserves_original_bytes() -> void:
+func test_incompatible_preserved_run_boots_menu_with_recovery_and_preserves_original_bytes() -> void:
 	var storage := FakeSaveStorage.new()
 	var legacy_text := _legacy_prepare_text()
 	storage.seed_file(StorageFaultKey.MAIN, legacy_text.to_utf8_buffer())
 	var bytes_before := storage.file_bytes(StorageFaultKey.MAIN)
 	var harness := _boot(storage)
 
-	assert_false(
+	assert_true(
 		harness.app_root.is_booted(),
-		"an incompatible preserved active run is not a run-free CAMP profile"
+		"opaque retained bytes must boot to the recovery-capable MENU"
 	)
-	assert_eq(harness.boot_error, MigrationError.RUN_INCOMPATIBLE_PRESERVED)
-	assert_eq(harness.app_root.app_state(), AppStateMachine.State.BOOT)
-	assert_null(harness.app_root.try_camp_view_model())
+	assert_eq(harness.boot_error, &"")
+	assert_eq(harness.app_root.app_state(), AppStateMachine.State.MENU)
+	var menu := harness.app_root.current_menu_snapshot()
+	assert_true(menu.has_recovery)
+	assert_false(menu.can_start)
+	assert_false(menu.can_continue)
+	assert_eq(menu.warning_key, &"error.presentation.run_incompatible")
 	assert_eq(storage.file_bytes(StorageFaultKey.MAIN).value, bytes_before.value)
 	var loaded := harness.repository.load()
 	assert_true(loaded.ok)

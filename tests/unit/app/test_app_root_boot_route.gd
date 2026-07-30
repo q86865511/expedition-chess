@@ -94,6 +94,9 @@ func test_first_boot_bootstraps_a_playable_profile_and_opens_camp() -> void:
 	var harness := _boot(self, storage)
 
 	assert_true(harness.app_root.is_booted(), "boot must succeed on a clean environment")
+	assert_eq(harness.app_root.app_state(), AppStateMachine.State.MENU)
+	var opened := harness.app_root.open_camp()
+	assert_true(opened.ok, "a clean profile must be able to enter CAMP from MENU")
 	assert_eq(harness.app_root.app_state(), AppStateMachine.State.CAMP)
 	var view_model := harness.app_root.try_camp_view_model()
 	assert_not_null(view_model, "a clean boot must leave the camp projection usable (A2)")
@@ -122,10 +125,10 @@ func test_first_boot_bootstraps_a_playable_profile_and_opens_camp() -> void:
 	)
 	if commanders.is_empty():
 		return
-	assert_eq(
-		harness.app_root.start_expedition(commanders[0], 0), &"",
-		"the expedition gate must be operable straight after a clean boot"
+	var started := harness.app_root.start_expedition(
+		StartExpeditionRequest.new(commanders[0], 0)
 	)
+	assert_true(started.ok, "the expedition gate must be operable straight after a clean boot")
 	assert_eq(harness.app_root.app_state(), AppStateMachine.State.RUN)
 	assert_true(harness.app_root.has_active_run())
 	assert_not_null(harness.app_root.try_run_command_factory())
@@ -135,11 +138,14 @@ func test_first_boot_bootstraps_a_playable_profile_and_opens_camp() -> void:
 func test_boot_with_persisted_active_run_resumes_it_without_touching_the_save() -> void:
 	var storage := FakeSaveStorage.new()
 	var first := _boot(self, storage)
+	assert_true(first.app_root.open_camp().ok)
 	var commanders := first.app_root.try_camp_view_model().commander_hall_unlocked_commander_ids()
 	assert_false(commanders.is_empty())
 	if commanders.is_empty():
 		return
-	assert_eq(first.app_root.start_expedition(commanders[0], 0), &"")
+	assert_true(first.app_root.start_expedition(
+		StartExpeditionRequest.new(commanders[0], 0)
+	).ok)
 	assert_eq(first.app_root.app_state(), AppStateMachine.State.RUN)
 
 	var before := first.repository.load()
@@ -154,14 +160,20 @@ func test_boot_with_persisted_active_run_resumes_it_without_touching_the_save() 
 	var second := _boot(self, storage)
 	assert_true(second.app_root.is_booted())
 	assert_eq(
-		second.app_root.app_state(), AppStateMachine.State.RUN,
-		"a persisted active run must resume straight into RUN (A1)"
+		second.app_root.app_state(), AppStateMachine.State.MENU,
+		"G2 boot always rests at MENU even when a retained run is resumable"
 	)
 	assert_true(second.app_root.has_active_run())
 	assert_not_null(
 		second.app_root.try_run_command_factory(),
 		"resuming must rebuild the run-scoped command factory"
 	)
+	assert_true(
+		second.app_root.current_menu_snapshot().can_continue,
+		"retained run must expose Continue on MENU"
+	)
+	assert_true(second.app_root.continue_active_run().ok)
+	assert_eq(second.app_root.app_state(), AppStateMachine.State.RUN)
 
 	var after := second.repository.load()
 	assert_true(after.ok)
@@ -203,6 +215,8 @@ func test_storage_io_failure_fails_boot_while_not_found_still_bootstraps() -> vo
 
 	var missing := _boot(self, FakeSaveStorage.new())
 	assert_true(missing.app_root.is_booted(), "NOT_FOUND remains the only bootstrap branch")
+	assert_eq(missing.app_root.app_state(), AppStateMachine.State.MENU)
+	assert_true(missing.app_root.open_camp().ok)
 	assert_eq(missing.app_root.app_state(), AppStateMachine.State.CAMP)
 	assert_not_null(missing.app_root.try_camp_view_model())
 	await _flush_freed_scenes()
@@ -223,6 +237,7 @@ func test_bind_services_succeeds_only_before_tree_entry_and_late_call_keeps_old_
 	)
 	add_child_autofree(main)
 	assert_true(app_root.is_booted())
+	assert_true(app_root.open_camp().ok)
 
 	var late_registry := ContentRegistryService.new()
 	add_child_autofree(late_registry)
@@ -237,7 +252,9 @@ func test_bind_services_succeeds_only_before_tree_entry_and_late_call_keeps_old_
 	var commanders := app_root.try_camp_view_model().commander_hall_unlocked_commander_ids()
 	assert_false(commanders.is_empty())
 	if not commanders.is_empty():
-		assert_eq(app_root.start_expedition(commanders[0], 0), &"")
+		assert_true(app_root.start_expedition(
+			StartExpeditionRequest.new(commanders[0], 0)
+		).ok)
 	var original := first_repository.load()
 	var untouched_late := late_repository.load()
 	assert_true(original.ok)
@@ -250,11 +267,14 @@ func test_bind_services_succeeds_only_before_tree_entry_and_late_call_keeps_old_
 func test_compose_failure_preserves_run_until_player_explicitly_discards_it() -> void:
 	var storage := FakeSaveStorage.new()
 	var first := _boot(self, storage)
+	assert_true(first.app_root.open_camp().ok)
 	var commanders := first.app_root.try_camp_view_model().commander_hall_unlocked_commander_ids()
 	assert_false(commanders.is_empty())
 	if commanders.is_empty():
 		return
-	assert_eq(first.app_root.start_expedition(commanders[0], 0), &"")
+	assert_true(first.app_root.start_expedition(
+		StartExpeditionRequest.new(commanders[0], 0)
+	).ok)
 	var active := first.repository.load()
 	assert_true(active.ok)
 	if not active.ok or active.run == null:
@@ -264,7 +284,7 @@ func test_compose_failure_preserves_run_until_player_explicitly_discards_it() ->
 
 	var failed := _boot_with_root(self, storage, CompositionFailingApplicationRoot.new())
 	assert_true(failed.app_root.is_booted())
-	assert_eq(failed.app_root.app_state(), AppStateMachine.State.CAMP)
+	assert_eq(failed.app_root.app_state(), AppStateMachine.State.MENU)
 	assert_eq(
 		storage.file_bytes(StorageFaultKey.MAIN).value, bytes_before.value,
 		"composition failure must not auto-delete the active run"

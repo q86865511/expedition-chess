@@ -59,9 +59,11 @@ func _run(label: String, action: Callable) -> void:
 func _settle_run() -> void:
 	if _root == null:
 		return
-	var error := _root.settle_active_run()
-	if not error.is_empty():
-		status_label.text = "結算遠征失敗：%s" % String(error)
+	var result := _root.settle_active_run()
+	if not result.ok:
+		status_label.text = "結算遠征失敗：%s" % String(
+			result.error.source_code
+		)
 		_render()
 
 

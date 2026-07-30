@@ -57,3 +57,9 @@
 - S3 `economy-expedition`：階段 0～6、戰果／獎勵、Expedition Lab、正式 acceptance、10,000-seed soak 與獨立 T00R／T11B 複檢均已完成。
 - S4 `build-systems`：已完成；13/13 S4-AC、10k soak、All 通過。
 - S5 `meta-progression`：已完成實作；T01～T12、14/14 S5-AC、Gut 737/737、10k ExpeditionSoak、All 與 W5 R4 雙審均通過。
+- G2 `presentation-ui`：T00～T15 與 R12～R16 findings closure 已完成，T13
+  視覺樣板獲使用者核可；final Gut 945/945（16295 assertions）、runtime 10/10、
+  10k ExpeditionSoak、static gate 與 155/155 manifest references 全綠，19 條
+  owning AC 為 final PASS。使用者明示 R16 後不再次雙審／不啟動 R17；原 R16
+  `NOT APPROVED` 報告與 closure table 均保留。branch 已發布並建立
+  draft PR #5；merge 前不得開始 `content-production`。

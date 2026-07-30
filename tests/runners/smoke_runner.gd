@@ -63,16 +63,19 @@ func _run() -> void:
 				failures.append("Main scene root must be named Main")
 			if app_root == null:
 				pass
-			elif app_root.get_node_or_null("PresentationHost") == null:
-				failures.append("Main/AppRoot/PresentationHost is missing")
+			elif app_root.get_node_or_null(
+				"UiLayer/UiRoot/PresentationHost"
+			) == null:
+				failures.append(
+					"Main/AppRoot/UiLayer/UiRoot/PresentationHost is missing"
+				)
 			elif not app_root.has_method("is_booted") or not bool(app_root.call("is_booted")):
 				failures.append("AppRoot did not complete minimal boot")
-			# S5 T11 (specs/meta-progression/design.md §4.4): boot now branches on
-			# SaveRepository.load() -- an active run resumes straight into RUN, and
-			# "otherwise CAMP". A smoke run has no committed save, so the expected
-			# resting state is CAMP (BOOT -> MENU -> CAMP), not the S1-era MENU.
-			elif app_root.app_state() != AppStateMachine.State.CAMP:
-				failures.append("AppRoot did not transition BOOT to CAMP")
+			# G2 presentation-ui T05 intentionally supersedes the S5 greybox boot
+			# shortcut. Every successful no-save, run-free or active-run boot now
+			# rests at MENU; Continue/Start are explicit typed actions.
+			elif app_root.app_state() != AppStateMachine.State.MENU:
+				failures.append("AppRoot did not transition BOOT to MENU")
 			elif app_root.has_active_run():
 				failures.append("Minimal boot fabricated an active run")
 			get_root().remove_child(main_instance)

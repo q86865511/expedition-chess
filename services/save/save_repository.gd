@@ -8,9 +8,22 @@ var _migration_registry: SaveMigrationRegistry
 var _generation_migration_port: ContentGenerationMigrationPort
 var _operation_mutex := Mutex.new()
 var _operation_in_progress: bool = false
+## G2 T05: process-local ownership/CAS identity. These values are deliberately
+## never serialized; every public repository operation advances the epoch.
+var _repository_identity: RefCounted = RefCounted.new()
+var _operation_epoch: int = 0
 var _content_ports_configured: bool = false
 var _commit_repository_nonce: RefCounted = RefCounted.new()
 var _consumed_commit_uses: Dictionary = {}
+var _terminal_capability_issuer: RefCounted = RefCounted.new()
+var _issued_terminal_capabilities: Dictionary = {}
+var _terminal_fallback_capability_issuer: RefCounted = RefCounted.new()
+var _issued_terminal_fallback_capabilities: Dictionary = {}
+## Set only by a successful `_save_while_owned()` in the current operation.
+## Terminal handoff consumes this in-memory authoritative commit result instead
+## of rereading storage after the irreversible save boundary.
+var _terminal_authoritative_commit_digest: String = ""
+var _terminal_authoritative_commit_epoch: int = -1
 
 func _init(
 	storage: SaveStoragePort = null,
@@ -92,6 +105,7 @@ func migrate(raw_json_text: String) -> MigrationResult:
 	return result
 
 func _save_while_owned(state: SaveRoot) -> SaveResult:
+	_clear_terminal_authoritative_commit()
 	if state == null:
 		return _save_failure(SaveError.DTO_INVALID, &"root")
 	var source_validation := _validator.validate_root(state)
@@ -163,6 +177,8 @@ func _save_while_owned(state: SaveRoot) -> SaveResult:
 	var remove_old := _remove_if_exists(StorageFaultKey.OLD)
 	if not remove_old.ok:
 		warnings.append(SaveWarning.new(remove_old.error.code, &"old"))
+	_terminal_authoritative_commit_digest = encoded.digest.value
+	_terminal_authoritative_commit_epoch = _operation_epoch
 	return SaveResult._repository_success(
 		encoded.digest.value,
 		warnings,
@@ -173,9 +189,16 @@ func _save_while_owned(state: SaveRoot) -> SaveResult:
 	)
 
 func _load_while_owned() -> LoadResult:
+	# A storage observation supersedes any digest retained from a preceding save.
+	# Terminal settlement always performs its save after this load and therefore
+	# installs a fresh in-memory authoritative commit again.
+	_clear_terminal_authoritative_commit()
 	var directory_result := _storage.ensure_directory()
 	if not directory_result.ok:
 		return _load_storage_failure(directory_result.error)
+	var residue_cleanup := _cleanup_transient_residue_while_owned()
+	if not residue_cleanup.ok:
+		return _load_storage_failure(residue_cleanup.error)
 	var main := _read_candidate(StorageFaultKey.MAIN)
 	if main.storage_error != null:
 		return _load_storage_failure(main.storage_error)
@@ -205,10 +228,15 @@ func _to_load_result(candidate: StoredSaveCandidate, recovered_backup: bool) -> 
 	for diagnostic: LoadDiagnostic in candidate.decoded.diagnostics:
 		diagnostics.append(diagnostic.deep_clone())
 	if candidate.decoded.run_status == LoadResult.RunStatus.INCOMPATIBLE_PRESERVED:
+		var opaque_digest := _commit_digest(candidate.bytes)
 		return LoadResult._repository_success(
 			candidate.decoded.profile, null, LoadResult.RunStatus.INCOMPATIBLE_PRESERVED,
 			OptionalStringValue.new(String(candidate.logical_path)), diagnostics,
-			"", null
+			opaque_digest,
+			_issue_commit_capability(
+				PersistenceCommitCapability.ACTIVE_RUN_LOAD,
+				opaque_digest
+			)
 		)
 	var root: SaveRoot = candidate.decoded.root
 	var committed_digest := _commit_digest(candidate.bytes)
@@ -286,6 +314,458 @@ func _commit_digest(bytes: PackedByteArray) -> String:
 	if context.update(bytes) != OK:
 		return ""
 	return context.finish().hex_encode()
+
+## Internal G2 ownership surface. Public presentation code never receives the
+## identity object; repository-owned coordinators compare it by object identity.
+func _repository_identity_token() -> Object:
+	return _repository_identity
+
+func _current_operation_epoch() -> int:
+	return _operation_epoch
+
+func _begin_writer_ownership() -> bool:
+	return _begin_operation()
+
+func _release_writer_ownership() -> void:
+	_end_operation()
+
+func _claim_operation_if_epoch(expected_epoch: int) -> bool:
+	if not _operation_mutex.try_lock():
+		return false
+	if _operation_in_progress or expected_epoch != _operation_epoch:
+		_operation_mutex.unlock()
+		return false
+	_operation_in_progress = true
+	_operation_epoch += 1
+	_operation_mutex.unlock()
+	return true
+
+func _committed_file_digest() -> String:
+	var main := _read_candidate(StorageFaultKey.MAIN)
+	if main.storage_error == null and main.valid:
+		return _commit_digest(main.bytes)
+	var backup := _read_candidate(StorageFaultKey.BACKUP)
+	if backup.storage_error == null and backup.valid:
+		return _commit_digest(backup.bytes)
+	return ""
+
+
+func _issue_terminal_settlement_presentation_capability(
+	run_id: StringName,
+	receipt_id: StringName
+) -> TerminalSettlementPresentationCapability:
+	if (
+		not _operation_in_progress
+		or run_id.is_empty()
+		or receipt_id.is_empty()
+		or not _has_terminal_authoritative_commit(true)
+	):
+		return null
+	var capability := TerminalSettlementPresentationCapability.new(
+		_repository_identity,
+		_operation_epoch,
+		_terminal_authoritative_commit_digest,
+		run_id,
+		receipt_id,
+		StringName("terminal.%d" % (_issued_terminal_capabilities.size() + 1)),
+		_terminal_capability_issuer
+	)
+	_operation_mutex.lock()
+	_issued_terminal_capabilities[capability] = true
+	_operation_mutex.unlock()
+	return capability
+
+
+func _consume_terminal_settlement_presentation_capability(
+	capability: TerminalSettlementPresentationCapability,
+	snapshot: ResultsPresentationSnapshot
+) -> bool:
+	if capability == null or snapshot == null:
+		return false
+	_operation_mutex.lock()
+	if (
+		not _operation_in_progress
+		or not _issued_terminal_capabilities.has(capability)
+	):
+		_operation_mutex.unlock()
+		return false
+	var consumed := capability._consume(
+		_terminal_capability_issuer,
+		_repository_identity,
+		_operation_epoch,
+		_terminal_authoritative_commit_digest,
+		snapshot
+	)
+	if consumed:
+		_issued_terminal_capabilities.erase(capability)
+	_operation_mutex.unlock()
+	return consumed
+
+
+func _revoke_terminal_settlement_presentation_capability(
+	capability: TerminalSettlementPresentationCapability
+) -> void:
+	if capability == null:
+		return
+	_operation_mutex.lock()
+	_issued_terminal_capabilities.erase(capability)
+	_operation_mutex.unlock()
+
+
+func _issue_terminal_postcommit_fallback_capability(
+	run_id: StringName,
+	receipt_id: StringName
+) -> TerminalPostcommitFallbackCapability:
+	if (
+		not _operation_in_progress
+		or run_id.is_empty()
+		or receipt_id.is_empty()
+		or not _has_terminal_authoritative_commit()
+	):
+		return null
+	var capability := TerminalPostcommitFallbackCapability.new(
+		_repository_identity,
+		_operation_epoch,
+		_terminal_authoritative_commit_digest,
+		run_id,
+		receipt_id,
+		StringName(
+			"terminal.fallback.%d"
+			% (_issued_terminal_fallback_capabilities.size() + 1)
+		),
+		_terminal_fallback_capability_issuer
+	)
+	_operation_mutex.lock()
+	_issued_terminal_fallback_capabilities[capability] = true
+	_operation_mutex.unlock()
+	return capability
+
+
+func _consume_terminal_postcommit_fallback_capability(
+	capability: TerminalPostcommitFallbackCapability,
+	snapshot: ResultsPresentationSnapshot
+) -> bool:
+	if capability == null or snapshot == null:
+		return false
+	_operation_mutex.lock()
+	if (
+		not _operation_in_progress
+		or not _issued_terminal_fallback_capabilities.has(capability)
+	):
+		_operation_mutex.unlock()
+		return false
+	var consumed := capability._consume(
+		_terminal_fallback_capability_issuer,
+		_repository_identity,
+		_operation_epoch,
+		_terminal_authoritative_commit_digest,
+		snapshot
+	)
+	if consumed:
+		_issued_terminal_fallback_capabilities.erase(capability)
+	_operation_mutex.unlock()
+	return consumed
+
+
+func _revoke_terminal_postcommit_fallback_capability(
+	capability: TerminalPostcommitFallbackCapability
+) -> void:
+	if capability == null:
+		return
+	_operation_mutex.lock()
+	_issued_terminal_fallback_capabilities.erase(capability)
+	_operation_mutex.unlock()
+
+
+func _has_terminal_authoritative_commit(
+	allow_immediate_next_operation: bool = false
+) -> bool:
+	return (
+		not _terminal_authoritative_commit_digest.is_empty()
+		and (
+			_terminal_authoritative_commit_epoch == _operation_epoch
+			or (
+				allow_immediate_next_operation
+				and _terminal_authoritative_commit_epoch + 1 == _operation_epoch
+			)
+		)
+	)
+
+
+func _clear_terminal_authoritative_commit() -> void:
+	_terminal_authoritative_commit_digest = ""
+	_terminal_authoritative_commit_epoch = -1
+
+
+func _issue_results_render_retry_capability(
+	installed_snapshot: ResultsPresentationSnapshot,
+	route_generation: int,
+	attempt_generation: int,
+	issuer: Object
+) -> ResultsRenderRetryCapability:
+	if (
+		installed_snapshot == null
+		or route_generation < 0
+		or attempt_generation < 0
+		or issuer == null
+		or not _begin_writer_ownership()
+	):
+		return null
+	var loaded := _load_while_owned()
+	var observation_digest := _committed_file_digest()
+	if (
+		observation_digest.is_empty()
+		or not _results_retry_receipt_matches(loaded, installed_snapshot)
+	):
+		_release_writer_ownership()
+		return null
+	var capability := ResultsRenderRetryCapability.new(
+		_repository_identity,
+		installed_snapshot.receipt_id,
+		installed_snapshot.presentation_digest(),
+		observation_digest,
+		route_generation,
+		attempt_generation,
+		StringName("results.retry.%d" % attempt_generation),
+		_operation_epoch,
+		issuer
+	)
+	_release_writer_ownership()
+	return capability
+
+
+func _consume_results_render_retry_capability(
+	capability: ResultsRenderRetryCapability,
+	installed_snapshot: ResultsPresentationSnapshot,
+	route_generation: int,
+	attempt_generation: int,
+	issuer: Object
+) -> bool:
+	if (
+		capability == null
+		or installed_snapshot == null
+		or issuer == null
+		or not _begin_writer_ownership()
+	):
+		return false
+	var loaded := _load_while_owned()
+	var observation_digest := _committed_file_digest()
+	var valid := (
+		not observation_digest.is_empty()
+		and _results_retry_receipt_matches(loaded, installed_snapshot)
+		and capability._matches(
+			issuer,
+			_repository_identity,
+			installed_snapshot.receipt_id,
+			installed_snapshot.presentation_digest(),
+			observation_digest,
+			route_generation,
+			attempt_generation,
+			_operation_epoch
+		)
+		and capability._consume()
+	)
+	_release_writer_ownership()
+	return valid
+
+
+func _results_retry_receipt_matches(
+	loaded: LoadResult,
+	installed_snapshot: ResultsPresentationSnapshot
+) -> bool:
+	if (
+		loaded == null
+		or not loaded.ok
+		or loaded.profile == null
+		or installed_snapshot == null
+		or installed_snapshot.receipt == null
+	):
+		return false
+	for receipt: SettlementReceiptState in loaded.profile.settlement_receipts:
+		if (
+			receipt.key != null
+			and StringName(receipt.key.digest) == installed_snapshot.receipt_id
+			and receipt.outcome == installed_snapshot.receipt.outcome
+			and receipt.currency_delta == installed_snapshot.receipt.currency_delta
+			and receipt.payload_digest == installed_snapshot.receipt.payload_digest
+		):
+			return true
+	return false
+
+func _issue_retained_run_recovery_token(
+	loaded: LoadResult,
+	expected_run_id: StringName
+) -> RetainedRunRecoveryToken:
+	if loaded == null \
+		or not loaded.ok \
+		or loaded._committed_digest.is_empty() \
+		or loaded._commit_capability == null \
+		or not loaded._commit_capability._matches(
+			_commit_repository_nonce,
+			PersistenceCommitCapability.ACTIVE_RUN_LOAD,
+			loaded._committed_digest
+		):
+		return RetainedRunRecoveryToken.new()
+	if not expected_run_id.is_empty() \
+		and (
+			loaded.run_status != LoadResult.RunStatus.LOADED
+			or loaded.run == null
+			or StringName(loaded.run.run_id) != expected_run_id
+			):
+		return RetainedRunRecoveryToken.new()
+	return RetainedRunRecoveryToken.new(
+		_repository_identity,
+		_operation_epoch,
+		loaded._committed_digest,
+		expected_run_id,
+		&"retained_run_recovery"
+	)
+
+func _discard_retained_run_while_owned(
+	token: RetainedRunRecoveryToken
+) -> SaveResult:
+	if token == null \
+		or token._repository_identity != _repository_identity \
+		or token._operation_epoch + 1 != _operation_epoch:
+		return _save_failure(&"RECOVERY_TOKEN_STALE", &"recovery.token")
+	var authoritative := _authoritative_candidate_while_owned()
+	if authoritative.storage_error != null:
+		return _save_storage_failure(authoritative.storage_error)
+	if not authoritative.valid or authoritative.decoded == null:
+		return _save_failure(
+			SaveError.NO_VALID_COMMITTED,
+			&"recovery.committed"
+		)
+	var committed_digest := _commit_digest(authoritative.bytes)
+	if committed_digest.is_empty() \
+		or committed_digest != token._committed_file_digest:
+		return _save_failure(
+			&"RECOVERY_COMMITTED_FILE_REPLACED",
+			&"recovery.committed_digest"
+		)
+	if not token.is_opaque():
+		if authoritative.decoded.root == null \
+			or authoritative.decoded.root.run == null \
+			or StringName(authoritative.decoded.root.run.run_id) \
+				!= token._expected_run_id:
+			return _save_failure(
+				&"RECOVERY_RUN_REPLACED",
+				&"recovery.expected_run_id"
+			)
+
+	# G2-R12-A02 review debt remains open: terminal Results snapshot capture
+	# ownership is deliberately not decided by this recovery transaction.
+	var archived := _archive_committed_bytes_while_owned(
+		authoritative.bytes,
+		committed_digest
+	)
+	if not archived.ok:
+		return _save_storage_failure(archived.error)
+	var cleared_root := _cleared_root_from_candidate(authoritative)
+	if cleared_root == null:
+		return _save_failure(
+			SaveError.CODEC_INVALID,
+			&"recovery.clear_root"
+		)
+	return _save_while_owned(cleared_root)
+
+func _authoritative_candidate_while_owned() -> StoredSaveCandidate:
+	var main := _read_candidate(StorageFaultKey.MAIN)
+	if main.storage_error != null or main.valid:
+		return main
+	var backup := _read_candidate(StorageFaultKey.BACKUP)
+	if backup.storage_error != null or backup.valid:
+		return backup
+	return main if main.exists else backup
+
+func _archive_committed_bytes_while_owned(
+	bytes: PackedByteArray,
+	digest: String
+) -> StorageVoidResult:
+	var archive_path := StringName("recovery/%s.save" % digest)
+	var archive_exists := _storage.exists(archive_path)
+	if not archive_exists.ok:
+		return StorageVoidResult.failure(archive_exists.error)
+	if archive_exists.exists.value:
+		var existing := _read_raw_bytes_while_owned(archive_path)
+		if not existing.ok:
+			return StorageVoidResult.failure(existing.error)
+		if existing.bytes.value == bytes:
+			return StorageVoidResult.success()
+		return StorageVoidResult.failure(StorageError.new(
+			&"RECOVERY_ARCHIVE_DIGEST_COLLISION",
+			StorageFaultKey.READ,
+			archive_path,
+			0
+		))
+
+	var archive_tmp_path := StringName("recovery/%s.save.tmp" % digest)
+	var remove_tmp := _remove_if_exists(archive_tmp_path)
+	if not remove_tmp.ok:
+		return remove_tmp
+	var written := _write_file(archive_tmp_path, bytes)
+	if not written.ok:
+		return written
+	var readback := _read_raw_bytes_while_owned(archive_tmp_path)
+	if not readback.ok:
+		return StorageVoidResult.failure(readback.error)
+	if readback.bytes.value != bytes:
+		return StorageVoidResult.failure(StorageError.new(
+			&"RECOVERY_ARCHIVE_READBACK_INVALID",
+			StorageFaultKey.READ,
+			archive_tmp_path,
+			0
+		))
+	return _storage.rename(archive_tmp_path, archive_path)
+
+func _cleared_root_from_candidate(
+	candidate: StoredSaveCandidate
+) -> SaveRoot:
+	if candidate.decoded.root != null:
+		var draft := candidate.decoded.root.deep_clone()
+		draft.run = null
+		return draft
+	var parsed: Variant = JSON.parse_string(candidate.bytes.get_string_from_utf8())
+	if not parsed is Dictionary or candidate.decoded.profile == null:
+		return null
+	var fields: Dictionary = parsed
+	return SaveRoot.new(
+		SaveSchemaContract.CURRENT,
+		String(fields.get("content_version", "")),
+		String(fields.get("app_version", "0.2.0")),
+		int(fields.get("rng_version", 1)),
+		int(fields.get("hash_version", 1)),
+		String(fields.get("saved_at_utc", "")),
+		candidate.decoded.profile,
+		null
+	)
+
+func _read_raw_bytes_while_owned(path: StringName) -> StorageReadResult:
+	var opened := _storage.open_read(path)
+	if not opened.ok:
+		return StorageReadResult.failure(opened.error)
+	var read := _storage.read_all(opened.handle)
+	if not read.ok:
+		_storage.close_read(opened.handle)
+		return read
+	var closed := _storage.close_read(opened.handle)
+	if not closed.ok:
+		return StorageReadResult.failure(closed.error)
+	return StorageReadResult.success(read.bytes.value)
+
+func _cleanup_transient_residue_while_owned() -> StorageVoidResult:
+	var paths: Array[StringName] = _storage.logical_paths()
+	for path: StringName in paths:
+		var text := String(path)
+		if path == StorageFaultKey.TMP \
+			or (
+				text.begins_with("recovery/")
+				and text.contains(".tmp")
+			):
+			var removed := _storage.remove(path)
+			if not removed.ok:
+				return removed
+	return StorageVoidResult.success()
 
 func _repair_from_backup_while_owned(backup: StoredSaveCandidate) -> void:
 	var write_result := _write_file(StorageFaultKey.TMP, backup.bytes)
@@ -425,6 +905,7 @@ func _begin_operation() -> bool:
 		_operation_mutex.unlock()
 		return false
 	_operation_in_progress = true
+	_operation_epoch += 1
 	_operation_mutex.unlock()
 	return true
 

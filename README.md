@@ -6,7 +6,7 @@
 
 架構規格 v0.2 已核可；S1～S5 五個系統切片均已完成實作，G1 灰盒全系統閉環成立。現在具備決定性 RNG／canonical codec、pinned 內容 registry、schema-3 原子存檔、三幕遠征、羈絆／裝備／遺物構築、營地五設施、指揮官／挑戰、局外解鎖／圖鑑、exactly-once meta 結算，以及 AppRoot CAMP↔RUN↔RESULTS 的可恢復 composition。
 
-S2～S4 提供純 domain 戰鬥、經濟遠征與構築系統；S5 補齊 Profile settlement、Camp/Run/Results 灰盒、challenge 詞綴、claim_scope 真語意與 retained-run 安全流程。G2 `presentation-ui` 的 T00～T15 與 R12～R16 findings closure 已完成：typed facade/settings/audio、production scene/router/lease、AppRoot-owned viewport/UI、playback/accessibility/static gate、formal typed controls，以及獲使用者核可的原創像素視覺樣板。final Gut 945/945（16295 assertions）、10-case runtime、All、10,000-seed ExpeditionSoak 與 155/155 manifest references 全綠，19 條 owning AC 為 PASS。使用者明示 R16 後不再次雙審，並已通過 Git 發布 gate；merge 仍未授權，合併前不開始 `content-production`。完整內容量產、TUNE 平衡與 release gate 屬後續 G2 切片。
+S2～S4 提供純 domain 戰鬥、經濟遠征與構築系統；S5 補齊 Profile settlement、Camp/Run/Results 灰盒、challenge 詞綴、claim_scope 真語意與 retained-run 安全流程。G2 `presentation-ui` 的 T00～T15 與 R12～R16 findings closure 已完成：typed facade/settings/audio、production scene/router/lease、AppRoot-owned viewport/UI、playback/accessibility/static gate、formal typed controls，以及獲使用者核可的原創像素視覺樣板。final Gut 945/945（16295 assertions）、10-case runtime、All、10,000-seed ExpeditionSoak 與 155/155 manifest references 全綠，19 條 owning AC 為 PASS。使用者明示 R16 後不再次雙審；draft PR #5 已建立，merge 仍未授權，合併前不開始 `content-production`。完整內容量產、TUNE 平衡與 release gate 屬後續 G2 切片。
 
 ## 技術棧
 

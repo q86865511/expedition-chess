@@ -43,13 +43,13 @@
 | S3 `economy-expedition` | ✅ 完成，複檢 PASS | `specs/economy-expedition/`（final-review.md＋implementation-review.md） | 11/11 S3-AC evidence、10,000-seed ExpeditionSoak |
 | S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
 | S5 `meta-progression` | ✅ 實作完成（2026-07-26） | `specs/meta-progression/`（三件套＋implementation-review.md） | T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All exit 0、W5 R4 雙審零未決 |
-| PROD／SCOPE／UX／QA 橫切 15 REQ | ✅ G2 `presentation-ui` T15／R16 closure 完成；Git 發布中 | `specs/g2-roadmap.md`、`specs/presentation-ui/review-log.md` | R12～R16 findings closure；Gut 945/16295、runtime 10/10、10k soak、static gate、manifests 155/155；19 AC PASS；no R17 by user override |
+| PROD／SCOPE／UX／QA 橫切 15 REQ | ✅ G2 `presentation-ui` T15／R16 closure 完成；draft PR #5 | `specs/g2-roadmap.md`、`specs/presentation-ui/review-log.md` | R12～R16 findings closure；Gut 945/16295、runtime 10/10、10k soak、static gate、manifests 155/155；19 AC PASS；no R17 by user override |
 
 - 測試 gate：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`（其餘 suite 見專案 `CLAUDE.md`）。`artifacts/test/` 為本機驗證輸出。
 - 表現層現況：production scene catalog/shell、typed router/lease、settings/audio、
   真 SubViewport/UI layer、playback/accessibility、formal typed controls 與 T13
   原創像素 pilot 已建立，pilot 已獲使用者核可。R16 findings closure 與 T15
-  final evidence 已完成；使用者明示不做 R17，並已通過 Git 發布 gate。完整內容／資產
+  final evidence 已完成；使用者明示不做 R17；draft PR #5 已建立。完整內容／資產
   量產尚未開始。
 - **T11 內容缺口修復記錄**（S4 wave4 收尾，2026-07-23）：Build Lab（T11）首次把 `content/packs/vertical_slice/` 餵進 production `EconomyExpeditionCatalogBuilder`／`ContentRegistryReceiptAdapter` 後，暴露兩個此前從未被真正觸發過的內容缺口，已一併修復：(1) `economy_configs/slice_default.tres` 原缺 `layer_income`／`xp_thresholds`，被 builder 判定不合法而驗證器當時未攔——`content/validation/content_validator.gd:298` 已補上與 builder 一致的必填欄位檢查（新增 `CONTENT_ECONOMY_CONFIG_INCOMPLETE`）；(2) 雙 pack 合併後完全沒有 `meta_reward_table` 分類內容，導致 `ContentRegistryReceiptAdapter` 的 save/load 在 receipt 重建階段必定失敗（`PINNED_CATALOG_REFERENCE_MISSING`）——已新增 `meta_reward_tables/slice_default.tres` 佔位內容＋驗證器 `CONTENT_META_REWARD_TABLE_MISSING` 規則。細節見 `content/packs/vertical_slice/README.md`「T11 wave4 內容缺口修復」與 `scripts/dev/build_lab/build_lab_content_bootstrap.gd:14` 註解。
 
@@ -89,5 +89,5 @@
   references match。使用者明示 R16 後不再次雙審，故未開 R17；原 R16
   `NOT APPROVED` 報告維持歷史原文，closure table 在
   `.pipeline/reviews/2026-07-30-presentation-ui-r16-closure.md`。使用者已通過
-  Git 發布 gate，正在建立 commit/push/PR；merge 仍須另行批准；
+  Git 發布 gate，branch 已推送並建立 draft PR #5；merge 仍須另行批准；
   `content-production` 等本片合併後才開始。

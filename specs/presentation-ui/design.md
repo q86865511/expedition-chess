@@ -1,6 +1,6 @@
 # G2 presentation-ui — 技術設計
 
-> 建立日期：2026-07-26｜狀態：已核可並完成實作（2026-07-30 R16 closure；Git 發布中）
+> 建立日期：2026-07-26｜狀態：已核可並完成實作（2026-07-30 R16 closure；draft PR #5）
 > 對照：[requirements.md](requirements.md) R1～R14
 > 既有基線：`app/app_root.gd`、`app/state/app_state_machine.gd`、
 > `services/scene/scene_router_service.gd`、`scripts/dev/run/run_lab_session.gd`

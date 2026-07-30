@@ -1,6 +1,6 @@
 # G2 內容完整切片 — 四切片交付 Roadmap
 
-> 建立日期：2026-07-26｜狀態：執行中（presentation-ui 完成；Git 發布中）
+> 建立日期：2026-07-26｜狀態：執行中（presentation-ui 完成；draft PR #5）
 > 架構基線：`docs/game-architecture/`、`docs/implementation-slices.md`
 > 基準提交：`5ddf80a30481ee701ba90be48e0fd474bc8c2715`（S5 merged）
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R1 雙審全部 14 項修正建議
@@ -150,7 +150,7 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 
 | Slice | SDD | Implementation | Review | External gate | Git |
 |---|---|---|---|---|---|
-| `presentation-ui` | R12–R16 FINDINGS APPLIED; USER-OVERRIDDEN NO R17 | T00–T15 COMPLETE; 19 AC PASS | R16 historical reviews retained; closure table＋fresh evidence；no re-review by user decision | T13 USER APPROVED; Gut 945/945; runtime 10/10; 10k soak; static gate; manifests 155/155 | Git gate approved；commit/push/PR in progress；merge not approved |
+| `presentation-ui` | R12–R16 FINDINGS APPLIED; USER-OVERRIDDEN NO R17 | T00–T15 COMPLETE; 19 AC PASS | R16 historical reviews retained; closure table＋fresh evidence；no re-review by user decision | T13 USER APPROVED; Gut 945/945; runtime 10/10; 10k soak; static gate; manifests 155/155 | draft PR #5 open；merge not approved |
 | `content-production` | NOT STARTED | NOT STARTED | NOT STARTED | pilot approval prerequisite | not created |
 | `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |

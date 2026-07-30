@@ -1,7 +1,7 @@
 # G2 presentation-ui — Implementation Closure
 
 > 日期：2026-07-30
-> 狀態：`T00～T15 COMPLETE / 19 AC PASS / GIT PUBLISHING`
+> 狀態：`T00～T15 COMPLETE / 19 AC PASS / DRAFT PR #5`
 
 ## Review disposition
 
@@ -65,5 +65,6 @@ Machine evidence：
 ## Final gate
 
 T00～T15 與 19 條 owning AC 已完成。使用者於 2026-07-30 明示繼續，
-通過 stage／commit／push／PR 發布 gate；merge 仍需另行批准。
+通過 stage／commit／push／PR 發布 gate；draft PR #5 已建立，
+merge 仍需另行批准。
 `content-production` 必須等本片合併後，再從最新 master 建立。

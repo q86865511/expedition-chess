@@ -61,5 +61,5 @@
   視覺樣板獲使用者核可；final Gut 945/945（16295 assertions）、runtime 10/10、
   10k ExpeditionSoak、static gate 與 155/155 manifest references 全綠，19 條
   owning AC 為 final PASS。使用者明示 R16 後不再次雙審／不啟動 R17；原 R16
-  `NOT APPROVED` 報告與 closure table 均保留。使用者已通過 Git 發布 gate，
-  正在建立 commit／push／PR；merge 前不得開始 `content-production`。
+  `NOT APPROVED` 報告與 closure table 均保留。branch 已發布並建立
+  draft PR #5；merge 前不得開始 `content-production`。

@@ -54,5 +54,5 @@
   T13 視覺樣板獲使用者核可。Gut 945/945、runtime 10/10、10k
   ExpeditionSoak、static gate、155/155 manifest references 全綠，19-row owning AC
   為 PASS。使用者明示 R16 後不再次雙審／不啟動 R17；原 review verdict 與 closure
-  table 均保留。使用者已通過 Git 發布 gate，正在建立 commit／push／PR；
-  merge 仍未授權，合併前亦不得開始 `content-production`。
+  table 均保留。branch 已發布並建立 draft PR #5；merge 仍未授權，
+  合併前亦不得開始 `content-production`。

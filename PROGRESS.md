@@ -4,7 +4,7 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` T00～T15 與 R12～R16 findings closure 已完成，T13 視覺候選獲使用者明示核可並接受 seed provenance warning。final Gut 945/945（16295 assertions）、10-case production runtime、10k soak、static gate 與 155/155 manifest references 全綠，19 條 owning AC 為 PASS。使用者明示 R16 後直接進下一步、不再次雙審，並已通過 Git 發布 gate；目前建立 commit／push／PR 中，merge 仍未授權，合併前不開始 `content-production`。
+主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` T00～T15 與 R12～R16 findings closure 已完成，T13 視覺候選獲使用者明示核可並接受 seed provenance warning。final Gut 945/945（16295 assertions）、10-case production runtime、10k soak、static gate 與 155/155 manifest references 全綠，19 條 owning AC 為 PASS。使用者明示 R16 後直接進下一步、不再次雙審；branch 已發布並建立 draft PR #5，merge 仍未授權，合併前不開始 `content-production`。
 
 ## 已完成
 
@@ -52,13 +52,13 @@
 
 ## 進行中
 
-- G2 `presentation-ui`：程式、測試、T15、19 AC 與交接文件已收口；Git 發布 gate
-  已通過，正在建立 commit／push／PR。merge 仍需另行批准。
+- G2 `presentation-ui`：程式、測試、T15、19 AC 與交接文件已收口；
+  draft PR #5 已建立，等待 merge 授權。
 
 ## 待辦
 
-- `presentation-ui`：完成繁中 commit、push 與 PR，回填 PR 連結；merge 另行批准。
-  `content-production` 只能從本片合併後的最新 master 建立。
+- `presentation-ui`：審閱 draft PR #5；merge 另行批准。`content-production`
+  只能從本片合併後的最新 master 建立。
 - 後續三片：完整內容／資產、TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
 
 ## 已知問題

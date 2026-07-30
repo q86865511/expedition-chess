@@ -45,6 +45,12 @@ func drain_window(
 	return _session.drain_playback_window(expected_identity, max_count)
 
 
+func advance_playback(delta_ms: float) -> BattleEventWindowResult:
+	if not _is_active():
+		return BattleEventWindowResult.failure(_screen_not_active_error())
+	return _session.advance_playback(delta_ms)
+
+
 func _is_active() -> bool:
 	return (
 		_session != null

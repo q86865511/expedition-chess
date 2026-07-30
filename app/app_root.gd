@@ -1095,7 +1095,7 @@ func _revoke_run_writers() -> void:
 func _invalidate_run_session() -> void:
 	# No facade or dev wrapper may retain a dispatch path after terminal save.
 	_run_lab_session = null
-	_run_presentation_session = null
+	_release_run_presentation_session()
 
 
 # === boot 分流 =============================================================
@@ -1710,13 +1710,21 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 	)
 	if not table_result.ok:
 		return ERROR_RUN_MODIFIER_TABLE_FAILED
+	# G2 H1 前置：指揮官被動效果只從 commander 定義可達，不在 unit/encounter 的遞移閉包內。
+	# 不把它們一起 pin，BattleSetupSourceCompiler 帶進來的 commander_effects 會讓
+	# StartCombatEvent 以 BATTLE_RULES_REFERENCE_MISSING 被拒——正式路徑連 COMBAT 都進不去。
+	var commander_passive_effect_ids := CommanderContentReader.new().passive_effect_ids(
+		_content_registry, digest, run.commander_id
+	)
+	var battle_root_ids := _battle_root_ids(content)
+	battle_root_ids.append_array(commander_passive_effect_ids)
 	# 缺口 1（§6.3 軌 A）：required_ids 必須帶上 challenge unlock 鏈，否則挑戰詞綴只透過
 	# unlock.slice_challenge_N 的 modifier_refs 可達、不在 unit/encounter 的遞移閉包內，
 	# challenge>=1 的戰鬥節點會以 EncounterCompiler.RULE_MISSING 進不去。
 	var battle_result := BattleRuleCatalogBuilder.new().build(
 		_content_registry, digest,
 		RunCompositionSupport.required_battle_ids(
-			_battle_root_ids(content), run.challenge_level
+			battle_root_ids, run.challenge_level
 		)
 	)
 	if not battle_result.ok:
@@ -1750,8 +1758,8 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 		_run_controller,
 		_run_command_factory,
 		battle_result.catalog,
-		CommanderContentReader.new().passive_effect_ids(
-			_content_registry, digest, run.commander_id
+		_battle_commander_passive_effect_ids(
+			battle_result.catalog, commander_passive_effect_ids
 		)
 	)
 	_run_lab_session = RunLabSession.new(_run_presentation_session)
@@ -1770,12 +1778,43 @@ func _battle_root_ids(content: ProjectContentBootstrapResult) -> Array[StringNam
 	return roots
 
 
+## G2 H1 前置：只有「純戰鬥」的指揮官被動能進 BattleSetupSourceCompiler。帶 scalar
+## run_operations 的被動依內容契約一律 always-scope
+## （content_validator._validate_always_only_claim_scope），而 battle setup 只接受
+## once_per_node／on_first_clear，混進去會讓 StartCombatEvent 以 BATTLE_INPUT_INVALID 拒絕
+## 整場戰鬥；那部分本來就由 RunModifierTable 的 always-active 路徑消費。
+func _battle_commander_passive_effect_ids(
+	catalog: BattleRuleCatalog,
+	passive_effect_ids: Array[StringName]
+) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if catalog == null:
+		return result
+	for effect_id: StringName in passive_effect_ids:
+		var rule := catalog.try_effect_rule(effect_id)
+		if (
+			rule != null
+			and not rule.battle_operations.is_empty()
+			and rule.run_operations.is_empty()
+		):
+			result.append(effect_id)
+	return result
+
+
 func _release_active_run() -> void:
 	_run_lab_session = null
-	_run_presentation_session = null
+	_release_run_presentation_session()
 	_run_command_factory = null
 	_run_controller = null
 	_run_session = null
+
+
+## facade 與 CombatCoordinator 互持強引用（皆為 RefCounted），只把 AppRoot 這一邊的
+## 參照設 null 不會釋放任何一方；離開 run 範疇必須先顯式解綁。
+func _release_run_presentation_session() -> void:
+	if _run_presentation_session != null:
+		_run_presentation_session.release()
+	_run_presentation_session = null
 
 
 # === camp 範疇組裝 =========================================================

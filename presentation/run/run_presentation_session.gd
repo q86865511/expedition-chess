@@ -12,6 +12,9 @@ const PENDING_TRANSCRIPT_REVOKED: StringName = &"PENDING_TRANSCRIPT_REVOKED"
 const PRESENTATION_TRANSCRIPT_MEMORY_BUDGET_EXCEEDED: StringName = \
 	&"PRESENTATION_TRANSCRIPT_MEMORY_BUDGET_EXCEEDED"
 const COMBAT_STEP_LIMIT: StringName = &"RUN_PRESENTATION_COMBAT_STEP_LIMIT"
+## commit-before-present（design.md §10）：START_OR_RESUME_COMBAT 一定把 canonical
+## simulation 跑到 result 提交才回應，presentation 之後只重播已提交 transcript。
+const COMBAT_COMMIT_STEP_LIMIT: int = 100000
 const MapNodePresentationType = preload(
 	"res://presentation/run/map_node_presentation.gd"
 )
@@ -27,6 +30,9 @@ var _battle_transcript_buffer: BattleTranscriptBuffer
 var _battle_playback_controller: BattlePlaybackController
 var _committed_summary_only: bool = false
 var _playback_warning: DiagnosticError
+## 戰鬥檢視只能由 COMBAT_PENDING 的 battle_setup 建；result 提交後 canonical 只留
+## BattleResultPendingResolutionState（無 setup），故 COMBAT 期間保留最後一份投影。
+var _retained_combat_inspections: Array[CombatUnitInspectionSnapshot] = []
 
 
 func _init(
@@ -194,6 +200,55 @@ func drain_playback_window(
 	return result
 
 
+## 每 frame 的播放推進：presentation 時鐘走到哪個 canonical tick，就取到哪裡的事件，
+## 再由同一個 private cursor 前進。暫停時不推進時鐘也不回 exhausted，故暫停不會結算。
+func advance_playback(delta_ms: float) -> BattleEventWindowResult:
+	if _battle_playback_controller == null or _battle_transcript_buffer == null:
+		return BattleEventWindowResult.failure(_error(
+			PLAYBACK_NOT_AVAILABLE, &"error.presentation.playback_not_available"
+		))
+	if _battle_playback_controller.is_paused():
+		return BattleEventWindowResult.new(true, _idle_playback_window(false), null)
+	var max_tick := _battle_playback_controller._advance_presentation_tick(delta_ms)
+	var state := _battle_playback_controller.snapshot()
+	var budget := _battle_transcript_buffer._events_through_tick(state.cursor, max_tick)
+	if budget <= 0:
+		return BattleEventWindowResult.new(
+			true,
+			_idle_playback_window(_battle_playback_controller.has_reached_end()),
+			null
+		)
+	var result := _battle_transcript_buffer.drain_window(
+		state.transcript_identity,
+		budget,
+		state.cursor
+	)
+	if result.ok:
+		_battle_playback_controller._consume_events(result.window.events.size())
+	return result
+
+
+func _idle_playback_window(exhausted: bool) -> BattleEventWindow:
+	var window := BattleEventWindow.new()
+	window.identity = _battle_playback_controller.snapshot().transcript_identity
+	window.exhausted = exhausted
+	return window
+
+
+## 離開 run 範疇時的顯式解綁。session 與 CombatCoordinator 互持強引用（皆為
+## RefCounted），沒有這一步整組 run 物件圖永不釋放。
+func release() -> void:
+	release_playback(&"run_scope_released")
+	if _combat != null and _combat.has_method(&"unbind_presentation_session"):
+		_combat.call(&"unbind_presentation_session")
+	_combat = null
+	_controller = null
+	_factory = null
+	_battle_catalog = null
+	_retained_combat_inspections.clear()
+	_snapshot = RunPresentationSnapshot.new()
+
+
 ## Internal final-save boundary called only by CombatCoordinator. This method
 ## receives the sole precommit owner, seals/transfers its storage, and never
 ## exposes the buffer or raw array through the returned result.
@@ -292,6 +347,23 @@ func _first_target_serial(
 	return 0
 
 
+## COMBAT 期間的檢視投影：COMBAT_PENDING 有 battle_setup 時重建並保留，result 提交後
+## canonical 只剩 BattleResultPendingResolutionState，改用保留的同一份；離開 COMBAT 即清空。
+func _resolve_combat_inspections(
+	view: RunViewState
+) -> Array[CombatUnitInspectionSnapshot]:
+	var result: Array[CombatUnitInspectionSnapshot] = []
+	if view == null or view.run_phase != RunState.RunPhase.COMBAT:
+		_retained_combat_inspections.clear()
+		return result
+	var built := _build_combat_inspections()
+	if not built.is_empty():
+		_retained_combat_inspections = built
+	for inspection: CombatUnitInspectionSnapshot in _retained_combat_inspections:
+		result.append(inspection.deep_clone())
+	return result
+
+
 func _build_combat_inspections() -> Array[CombatUnitInspectionSnapshot]:
 	var result: Array[CombatUnitInspectionSnapshot] = []
 	if _controller == null:
@@ -312,12 +384,16 @@ func _build_combat_inspections() -> Array[CombatUnitInspectionSnapshot]:
 		return result
 	var inputs := pending.battle_setup.inputs.deep_clone()
 	var units: Array[UnitBattleSnapshot] = []
+	# 陣營旗標與單位同步 append：以索引界線判陣營會在跳過 null 後把敵方誤判成我方。
+	var player_flags: Array[bool] = []
 	for player: UnitBattleSnapshot in inputs.player_units:
 		if player != null:
 			units.append(player.deep_clone())
+			player_flags.append(true)
 	for enemy: UnitBattleSnapshot in inputs.encounter_snapshot.enemy_units:
 		if enemy != null:
 			units.append(enemy.deep_clone())
+			player_flags.append(false)
 	var serial_by_instance: Dictionary = {}
 	for index: int in units.size():
 		var unit := units[index]
@@ -326,7 +402,7 @@ func _build_combat_inspections() -> Array[CombatUnitInspectionSnapshot]:
 	var empty_equipment_effects: Array[BattleEffectSnapshot] = []
 	for index: int in units.size():
 		var unit := units[index]
-		var is_player := index < inputs.player_units.size()
+		var is_player := player_flags[index]
 		var traits: Array[TraitBattleSnapshot] = (
 			inputs.player_active_traits
 			if is_player
@@ -363,6 +439,7 @@ func _build_combat_inspection(
 		serial_by_instance
 	)
 	inspection.stats = {
+		"star": unit.star,
 		"health": unit.health,
 		"attack": unit.attack,
 		"armor": unit.armor,
@@ -449,13 +526,21 @@ func drive_current_combat_to_commit(step_limit: int) -> StringName:
 	if _combat_result_already_committed:
 		_combat_result_already_committed = false
 		return &""
+	var error_code := _drive_to_commit(step_limit)
+	if error_code.is_empty():
+		_snapshot = _build_snapshot()
+		snapshot_committed.emit(_snapshot.deep_clone())
+	return error_code
+
+
+## 只跑 canonical simulation 到 result 提交為止，不發 snapshot signal——提交時機由
+## 呼叫端決定（intent 路徑統一在 _commit_success 發一次）。
+func _drive_to_commit(step_limit: int) -> StringName:
 	for _step: int in range(step_limit):
 		var advanced := _combat.advance()
 		if not advanced.ok:
 			return _combat_error_code(advanced.error)
 		if advanced.result_committed:
-			_snapshot = _build_snapshot()
-			snapshot_committed.emit(_snapshot.deep_clone())
 			return &""
 	return COMBAT_STEP_LIMIT
 
@@ -494,7 +579,24 @@ func _start_or_resume_combat(intent: RunPresentationIntent) -> RunPresentationRe
 			presentation_error.emit(combat_error.deep_clone())
 			return RunPresentationResult.postcommit_failure(combat_error, _snapshot)
 		return _precommit_failure(combat_error)
-	_combat_result_already_committed = begun.resumed_committed_result
+	if not begun.resumed_committed_result:
+		# 檢視投影只在 COMBAT_PENDING（有 battle_setup）時建得起來，驅動到 result 提交後
+		# canonical 就只剩 BattleResultPendingResolutionState，故先取一份留給整個 COMBAT。
+		_retained_combat_inspections = _build_combat_inspections()
+		var drive_code := _drive_to_commit(COMBAT_COMMIT_STEP_LIMIT)
+		if not drive_code.is_empty():
+			var drive_error := _error(
+				drive_code, &"error.presentation.combat_drive_failed"
+			)
+			# 驅動失敗前沒有 result 落檔；只有本次已提交的 COMBAT 轉場算 postcommit。
+			if not start_committed:
+				return _precommit_failure(drive_error)
+			_snapshot = _build_snapshot()
+			presentation_error.emit(drive_error.deep_clone())
+			return RunPresentationResult.postcommit_failure(drive_error, _snapshot)
+	# 灰盒 consumer 隨後仍會呼叫 drive_current_combat_to_commit()：旗標讓那一次成為
+	# 冪等的 no-op，而不是對已結束的 simulation 再 advance。
+	_combat_result_already_committed = true
 	return _commit_success()
 
 
@@ -545,7 +647,7 @@ func _build_snapshot() -> RunPresentationSnapshot:
 			result.roster,
 			result.economy.level
 		)
-	result.combat_inspections = _build_combat_inspections()
+	result.combat_inspections = _resolve_combat_inspections(view)
 	for kind_name: String in RunPresentationIntent.Kind.keys():
 		result.available_actions.append(StringName(kind_name))
 	return result

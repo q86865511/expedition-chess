@@ -127,6 +127,13 @@ func localized_content_text(content_id: StringName) -> String:
 	return fallback if resolved == String(key) else resolved
 
 
+## G2 M5：Composition 子畫面取 UI 文案鍵的唯一出口（內容 id 走 localized_content_text）。
+func localized_ui_text(text_key: StringName) -> String:
+	if _context == null or text_key.is_empty():
+		return String(text_key)
+	return _context.resolve_text(text_key)
+
+
 func live_binding_report() -> Dictionary:
 	return {
 		"active": _live_active,

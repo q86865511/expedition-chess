@@ -67,6 +67,19 @@ func transition_after_active_run_load(
 		)
 	return _apply(event)
 
+func transition_after_terminal_handoff(event: AppEvent) -> AppTransitionResult:
+	var validation_error := _validate_edge(event)
+	if validation_error != null:
+		return AppTransitionResult.failure(_state, validation_error)
+	if event.kind != AppEvent.Kind.FINISH_RUN:
+		return AppTransitionResult.failure(
+			_state,
+			AppTransitionError.new(
+				AppTransitionError.COMMIT_REQUIRED, _state, event.kind
+			)
+		)
+	return _apply(event)
+
 func _apply(event: AppEvent) -> AppTransitionResult:
 	_state = _target_for(event.kind)
 	return AppTransitionResult.success(_state)
@@ -83,18 +96,26 @@ func _validate_edge(event: AppEvent) -> AppTransitionError:
 func _edge_is_allowed(from_state: State, event_kind: AppEvent.Kind) -> bool:
 	match from_state:
 		State.BOOT:
+			# ACTIVE_RUN_LOADED remains a proof-gated compatibility edge for
+			# direct state-machine consumers. ApplicationRoot never uses it
+			# during G2 boot: every successful boot dispatches BOOT_COMPLETED
+			# and rests at MENU.
 			return event_kind == AppEvent.Kind.BOOT_COMPLETED \
 				or event_kind == AppEvent.Kind.ACTIVE_RUN_LOADED
 		State.MENU:
-			return event_kind == AppEvent.Kind.OPEN_CAMP
+			return event_kind == AppEvent.Kind.OPEN_CAMP \
+				or event_kind == AppEvent.Kind.CONTINUE_RUN
 		State.CAMP:
 			return event_kind == AppEvent.Kind.RETURN_TO_MENU \
 				or event_kind == AppEvent.Kind.START_RUN
 		State.RUN:
 			return event_kind == AppEvent.Kind.FINISH_RUN \
-				or event_kind == AppEvent.Kind.ABANDON_RUN
+				or event_kind == AppEvent.Kind.ABANDON_RUN \
+				or event_kind == AppEvent.Kind.RETURN_TO_MENU
 		State.RESULTS:
-			return event_kind == AppEvent.Kind.ACKNOWLEDGE_RESULTS
+			return event_kind == AppEvent.Kind.RETURN_RESULTS_TO_CAMP \
+				or event_kind == AppEvent.Kind.RETURN_RESULTS_TO_MENU \
+				or event_kind == AppEvent.Kind.ACKNOWLEDGE_RESULTS
 	return false
 
 func _requires_commit(event_kind: AppEvent.Kind) -> bool:
@@ -111,10 +132,17 @@ func _target_for(event_kind: AppEvent.Kind) -> State:
 			return State.CAMP
 		AppEvent.Kind.RETURN_TO_MENU:
 			return State.MENU
-		AppEvent.Kind.START_RUN, AppEvent.Kind.ACTIVE_RUN_LOADED:
+		AppEvent.Kind.START_RUN:
+			return State.RUN
+		AppEvent.Kind.ACTIVE_RUN_LOADED:
+			return State.RUN
+		AppEvent.Kind.CONTINUE_RUN:
 			return State.RUN
 		AppEvent.Kind.FINISH_RUN:
 			return State.RESULTS
-		AppEvent.Kind.ABANDON_RUN, AppEvent.Kind.ACKNOWLEDGE_RESULTS:
+		AppEvent.Kind.ABANDON_RUN, AppEvent.Kind.ACKNOWLEDGE_RESULTS, \
+		AppEvent.Kind.RETURN_RESULTS_TO_CAMP:
 			return State.CAMP
+		AppEvent.Kind.RETURN_RESULTS_TO_MENU:
+			return State.MENU
 	return _state

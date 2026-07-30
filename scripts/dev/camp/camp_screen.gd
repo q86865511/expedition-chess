@@ -62,11 +62,13 @@ func _start_expedition() -> void:
 	var last_selection := _view_model.expedition_gate_last_selection()
 	if last_selection != null:
 		challenge_level = last_selection.challenge_level
-	var error := _root.start_expedition(commander_id, challenge_level)
+	var result := _root.start_expedition(
+		StartExpeditionRequest.new(commander_id, challenge_level)
+	)
 	status_label.text = (
 		"遠征已開始：%s（挑戰 %d）" % [String(commander_id), challenge_level]
-		if error.is_empty()
-		else "開始遠征失敗：%s" % String(error)
+		if result.ok
+		else "開始遠征失敗：%s" % String(result.error.source_code)
 	)
 
 

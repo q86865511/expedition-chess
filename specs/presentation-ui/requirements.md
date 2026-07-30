@@ -1,6 +1,6 @@
 # G2 presentation-ui — 需求規格
 
-> 建立日期：2026-07-26｜狀態：草稿（未核可）
+> 建立日期：2026-07-26｜狀態：已核可並完成實作（2026-07-30 R16 closure；Git 發布中）
 > 對應全域 owner：REQ-UX-001、REQ-UX-002、REQ-UX-003、REQ-UX-005
 > 全域 AC closure：AC-004、005、006、007、017、020、024、028、029、039、044、049、
 > 055、065、070、072、075、076、077
@@ -17,7 +17,8 @@
 - 包含：production boot／menu／scene routing、`RunPresentationSession`、正式 Camp／Run／
   Results／Collection／五設施畫面、viewport 與 UI 縮放、typed settings、四 audio bus、
   localization catalog、無障礙、錯誤呈現、多解析度 screenshot QA、視覺樣板。
-- 保留：`--combat-lab` 等明示 dev 入口，但 production main path 不得引用 dev script／scene。
+- 保留：本片唯一受支援的 dev CLI flag `--combat-lab`，但 production main path 不得引用
+  dev script／scene。
 - 明確不做：44 棋完整技能與資產量產、事件選擇 schema、save schema 4、content codec 3、
   正式 TUNE、30k balance soak、Windows export／CI、最低規格效能與 90 場真人 Gate。
 - 本片不改 gameplay save schema 3、content codec 2、canonical simulation、RNG 或規則語意。
@@ -35,7 +36,10 @@
 - 從 `app/main.tscn` 啟動至主選單、營地、Run、Results 的 dependency scan 為零 dev path。
 - production content bootstrap 使用真實 `ContentDependencyPort`；缺 asset 或 localization key
   時回具名錯誤並使 boot／content gate 失敗。
-- 明示 dev CLI 入口仍可啟動，且改為消費相同 production facade，不另建第二套規則流程。
+- 本片唯一受支援的 dev CLI flag 為 `--combat-lab`；它仍可啟動，但必須改為消費相同
+  `ProjectContentBootstrap` 與 production facade／battle ports，不得保留第二套內容安裝、
+  command 建構或戰鬥規則流程。headless smoke 必須以 fake services 啟動此 flag 並證明 runner
+  存活、入口可 bind、production dependency scan 仍為零 dev reference。
 
 ### R2 啟動固定進主選單
 
@@ -68,6 +72,9 @@
   file bytes SHA-256**；opaque 路徑不得使用或猜測 run bytes digest。兩者明示棄置前都先封存
   原始 committed file bytes；取消、錯 token、run 已更換、archive 或 save failure 都須保留
   至少一份 byte-identical committed copy／archive，並可在重啟時決定性恢復。
+  repository/root evidence 必須逐一覆蓋 decoded／opaque 的 wrong、stale、replaced token 與
+  archive/save fault；UI confirmation evidence 另驗兩種 recovery 的 cancel 都是零 dispatch。
+  兩份 evidence 分屬不同 wave/test manifest，不得靠同一測試後續加 assertion。
 - 玩家在 CAMP 選定 commander 與 challenge 後，正式 UI 應以 typed
   `StartExpeditionRequest` 呼叫 ApplicationRoot；成功須原子提交 active run 並 CAMP→RUN，
   具名拒絕與 presentation failure 不得覆寫或重複建立 run。
@@ -76,7 +83,11 @@
   fresh-read、比對 repository identity／operation epoch／完整 committed-file digest 與 typed
   run expectation，再 apply→validate→internal-save；期間不得 `await`、不得釋放 ownership，
   stale candidate 不得覆寫其他已提交 Camp mutation。
-- Settings 可開啟／返回主選單；Exit 只發出可攔截的 quit request，測試不得直接終止 runner。
+- Settings 可開啟／返回主選單；Exit 只在 `MENU_MAIN` 可用，且只發出一次可攔截的
+  `exit_requested` signal，不得由 ApplicationRoot／screen 直接呼叫 `SceneTree.quit()`。
+  signal 發出後 App state、route 與 save 必須不變；同一 pending request 的重複呼叫回
+  `EXIT_REQUEST_ALREADY_PENDING`，錯 lifecycle 回既有 `APP_ACTION_NOT_AVAILABLE`，兩者都不得
+  再發 signal。headless test 以 fake host 攔截 signal 並證明 runner 仍存活。
 
 ### R4 正式場景與路由
 
@@ -125,6 +136,10 @@
   writer-capable facade；唯一寫入口是綁定目前 `LiveScreenLease`／route generation 的 typed
   `LiveScreenIntentPort`。所有 dispatch、confirmation begin/confirm/cancel 與 navigation
   每次都先驗 lease；舊 port 即使 underlying session 仍供新 RUN 畫面使用也必須具名拒絕。
+- 戰鬥畫面的 playback read／speed／pause／drain 只能經 lease-bound
+  `LiveScreenPlaybackPort`；port 每次驗目前 `LiveScreenLease`、parent state 與 route generation，
+  不得把 raw RunPresentationSession、BattlePlaybackController 或 buffer 交給 screen。stale
+  port 一律回 `SCREEN_NOT_ACTIVE` 且不改 playback、canonical state 或 save。
 
 ### R5 RunPresentationSession
 
@@ -143,16 +158,22 @@ typed snapshot 並處理 typed intent；正式 screen 只能透過 lease-bound r
 - `RunLabSession` 成為 facade 的 dev consumer 或薄 wrapper，不保留另一套流程語意。
 - `snapshot()`、signal payload 及所有 collection accessor 每次都回 deep clone；合法「目前沒有
   playback」狀態以 typed result 表示，不得回 null、buffer reference 或殘留的舊 controller。
-- 鍛造、遺物替換、放棄遺物／Boss retry 等不可逆操作必須先建立 typed confirmation draft；
+- 鍛造、遺物替換、放棄遺物與 `ABANDON_BOSS_RETRY` 等不可逆操作必須先建立 typed
+  confirmation draft；
   cancel 不派送 intent／不寫入，confirm 只能消耗 draft 並 exactly-once 派送一次。第二片的
-  event choice 必須重用同一 confirmation contract。
+  event choice 必須重用同一 confirmation contract。`ABANDON_BOSS_RETRY` 必須逐一驗 begin
+  零寫、cancel 零 intent、confirm exactly-once，以及 repeat／stale／換場 lease 拒絕。
 - 戰鬥畫面必須能以滑鼠或鍵盤選取單位並查看 typed `CombatUnitInspectionSnapshot`，至少包含
   source、target、stats、equipment、traits 與 statuses；檢視與選取純唯讀，不得產生 gameplay intent。
 - terminal/meta settlement 成功後，RESULTS 只能從已提交 settlement result／receipt 與
-  fresh committed profile 的 clone-only `ResultsPresentationSnapshot` 重建，不得讀取或持有
-  結算前 RunPresentationSession；route failure 時存檔仍無 active run，receipt／reward exactly-once。
-  Terminal intent dispatch 不得在撤銷 lease/session、consume capability 與安裝 RESULTS state
-  完成前返回舊 screen；該同步 no-fail handoff 全段不得 `await`。
+  同一次 repository writer ownership 內的 authoritative committed candidate/bytes 建立
+  receipt／完整 file digest 綁定、clone-only `ResultsPresentationSnapshot`；不得在 ownership
+  釋放後以 public load 重建，也不得讀取或持有結算前 RunPresentationSession。AppRoot 必須在
+  ownership 內先撤銷 lease/session、consume capability、安裝該 snapshot 並提交 RESULTS state，
+  才能釋放 repository ownership；解鎖後 scene compose／bind／route 只能取得已安裝 snapshot
+  的 fresh clone。Terminal intent dispatch 在上述同步 no-fail handoff 完成前不得返回舊
+  screen，且全段不得 `await`。即使解鎖後插入競爭 load/write，已安裝與後續呈現的
+  receipt/profile pair 仍須一致；route failure 時存檔仍無 active run，receipt／reward exactly-once。
 - RESULTS compose／bind／route 失敗時，presentation route 必須進 typed `RESULTS_FALLBACK`，
   App state 維持 RESULTS。fallback 只取得 receipt-bound results-only navigation port，提供
   retry render、Return to Camp、Return to Menu；不得取得 gameplay intent/session。每次 retry
@@ -163,6 +184,17 @@ typed snapshot 並處理 typed intent；正式 screen 只能透過 lease-bound r
   consume attempt 不論驗證或後續 presentation 成敗，都必須推進 retry-attempt generation 並
   撤銷同 generation 的所有 sibling token；失敗後只能 fresh 取得下一代 token。持續 fault 下
   兩個鍵盤 exit 仍可用，且所有操作零新 gameplay save。
+- repository-issued `TerminalSettlementPresentationCapability` 只能在 writer ownership 內由
+  application layer 原子 consume 一次，consume 後永久失效，且不得傳入解鎖後的 presentation
+  adapter。AppRoot 安裝 RESULTS state/snapshot 成功後另發單次
+  `InstalledResultsPresentationCapability`，綁 installed snapshot digest、RESULTS state 與
+  target/fallback route generation；T07 adapter 只能消耗後者。duplicate install/present、
+  direct replay、錯 snapshot、stale generation 與 reentrant activation 都具名拒絕且不更換
+  state、route 或 lease。
+- fallback retry capability 分別綁 installed settlement digest 與本次 current repository
+  observation digest。repository read 只驗 current digest、receipt 存在性與 retry generation；
+  candidate 永遠取 AppRoot installed Results snapshot 的 fresh clone，不得從 read result 重建。
+  合法的 unrelated post-settlement profile write 不得使 fresh retry 永久失效或漂移 receipt/profile pair。
 - retry、Return to Camp 與 Return to Menu 必須共用 non-reentrant AppRoot results-action
   single-flight。每個 action 在首次 fallback lease／route generation 驗證前取得 guard，並持有到
   最終 App state／presentation route／live lease commit 或 failure cleanup 完成；repository
@@ -183,6 +215,9 @@ nearest-neighbor 與整數縮放；UI 應在獨立 1280×720 reference `CanvasLa
 - 世界 viewport 固定 640×360，texture filter 為 nearest；整數倍率可用時不採非整數世界縮放。
 - 1280×720、1920×1080、2560×1440 screenshot 中世界像素邊界無模糊，必要 UI 不裁切。
 - 非 16:9 或不足整數倍率時採 letterbox／安全區，不拉伸世界；UI 仍可操作。
+- `PresentationHost`、active `ProductionScreen` 與 production accessibility runtime 必須在
+  掛載後使用完整可見 viewport；視窗 resize 後三層同步更新。renderer 收到 zero-size root
+  必須回 `ACCESSIBILITY_ROOT_SIZE_INVALID`，不得靜默假設 1280×720 形成假綠。
 - 720p／1080p／1440p、非 16:9 與 100／125／150% UI scale 下，pointer→world tile、
   pointer→camp hotspot 及 pointer→UI control 的座標映射皆命中同一目標。
 
@@ -198,7 +233,11 @@ nearest-neighbor 與整數縮放；UI 應在獨立 1280×720 reference `CanvasLa
   `PendingBattleTranscriptAccumulator`，公開事件數必為 0；
   save failure 不得讓玩家看到未提交戰鬥。
 - pause 時模擬結果與事件資料已提交邏輯不被撤回；只停止 presentation cursor 前進。
-- 不接受 0、負值或未支援倍率；回具名錯誤並保持目前倍率。
+- 不接受 0、負值或未支援正倍率；`0/-1/-4/3/5/8` named matrix 均回
+  `PLAYBACK_SPEED_INVALID`，且保持目前倍率、cursor、pause、result identity、event
+  bytes/order/hash、save-facing snapshot 與 transcript ownership，並產生零 gameplay dispatch。
+- 正式 RUN_COMBAT screen 必須只綁 `LiveScreenPlaybackPort` 操作 1×／2×／4×、
+  pause/resume 與 drain；換場後舊 port 的合法與非法命令都回 `SCREEN_NOT_ACTIVE`。
 - 已提交 result 重載而沒有 transcript 時只顯示 committed summary，不虛構重播。私有 transcript
   受 canonical `event_budget`（目前預設 16384）限制；公開待處理 window 不超過 4096，
   超限時以 backpressure 分批，不丟失或重排規則事件。
@@ -243,6 +282,10 @@ nearest-neighbor 與整數縮放；UI 應在獨立 1280×720 reference `CanvasLa
   驗 digest 後才提交 repository；提交後只執行不可失敗 activation。競爭／重入 apply 具名拒絕；
   preflight／save failure 零 runtime 變更；不可預期的 post-commit presentation failure 保留
   committed settings，進安全 fallback，並從 repository 重建全部 consumer。
+- Settings screen 只依賴可注入的 typed `SettingsApplicationPort`。T08 以 fake port 鎖定
+  draft、typed submit、error mapping 與 focus 的 component behavior；T12 才綁定 concrete
+  `SettingsApplicationCoordinator`，並負責 locale restart、四 bus/runtime apply 與 production
+  wiring 的整合證據。T08 不得為了提早轉綠而實作或直連 T12 ownership。
 
 ### R9 AudioCoordinator 分 bus 控制
 
@@ -267,7 +310,9 @@ localization key 經 dependency port 解析；預設 locale 為 `zh_TW`。
 - `zh_TW` 每個必要 key 有非空值，`en` 具有完全相同 key 集合。
 - Settings UI 只能在 `zh_TW|en` 間切換；切換成功後立即套用，重啟仍讀回同一 locale；
   任何其他 locale wire value 必須由 repository 具名拒絕。
-- 靜態掃描正式場景／script／ContentDefinition 不得出現硬編碼玩家文字。
+- 靜態掃描正式場景／script／ContentDefinition 不得出現硬編碼玩家文字；`.gd` 必須涵蓋
+  英文／混合語言直接寫入 `text`、`tooltip_text`、`placeholder_text`、`add_item`、
+  `set_item_text` 等 player-visible sink。空值、localization resolver 與純格式 token 不誤判。
 - 缺 key 時開發 build 顯示 key 本身並回可診斷 issue；Content gate 非零退出。
 - 本片先提供全部 key 的可運作繁中／英文文字；第二片可潤飾內容，但不得改 stable key。
 
@@ -280,9 +325,20 @@ localization key 經 dependency port 解析；預設 locale 為 `zh_TW`。
 
 - 100／125／150% UI 下可只用鍵盤走完主選單、營地五設施、地圖、備戰、戰鬥控制、
   獎勵與結算；焦點不陷入隱藏／disabled control。
+- focus graph 使用正式 route kind，完整覆蓋 conditional MENU、Settings、五設施、
+  RUN_MAP／PREPARE／COMBAT／REWARD、RUN_ROUTE_FALLBACK、RESULTS／RESULTS_FALLBACK
+  的可見 action；不得以舊抽象 route 子集通過 static gate。每個 action id 必須映射為
+  唯一、跨 relocalize／route rebuild 穩定的具名 Control。
 - 四種色覺模式中，敵我關係、羈絆、稀有度、傷害類型與危險狀態不只靠顏色區分。
-- reduced motion／flash／particles 開啟後對應效果確實減少，且不隱藏規則資訊。
-- tooltip 巢狀規則詞彙最多兩層；長文使用可讀 CJK 字型。
+- reduced motion／flash／particles 開啟後，runtime report 與 screenshot 必須分別證明對應
+  effect flag 生效且規則資訊仍可讀；傷害數字密度 `off|reduced|full` 必須有具名 runtime
+  matrix，且 disabled/reduced 路徑不得殘留粒子或數字 emitter。
+- tooltip 巢狀規則詞彙最多兩層；超過兩層以具名拒絕且不部分套用。繁中長文 probe 必須以
+  engine/runtime font fallback 產出可讀 CJK glyph report，並納入 static gate 與 screenshot evidence。
+- 上述 evidence 必須載入真 production RUN_COMBAT 與 production tooltip/CJK host，並透過
+  AppRoot 使用的 `PresentationSettingsRuntimeConsumer`／SettingsApplicationPort 套用 committed
+  settings；只對 test fixture 生效不算通過。motion、flash、particles 必須各有獨立 toggle
+  screenshot/report，static gate 必須拒絕缺少 production accessibility binding 的正式 scene。
 
 ### R12 錯誤、recovery 與玩家可見性
 

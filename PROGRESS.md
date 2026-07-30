@@ -4,10 +4,35 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` 的 R1～R7 findings 均已回寫 SDD；R8 架構審查通過，`G2-R8-01` 已於 2026-07-28 補齊 results-action single-flight lifecycle 與六組 retry-vs-Camp/Menu reentrant barriers，目前狀態為 `RESOLVED_IN_SDD_PENDING_R9`。尚未進入 TDD／production code。
+主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` T00～T15 與 R12～R16 findings closure 已完成，T13 視覺候選獲使用者明示核可並接受 seed provenance warning。final Gut 945/945（16295 assertions）、10-case production runtime、10k soak、static gate 與 155/155 manifest references 全綠，19 條 owning AC 為 PASS。使用者明示 R16 後直接進下一步、不再次雙審，並已通過 Git 發布 gate；目前建立 commit／push／PR 中，merge 仍未授權，合併前不開始 `content-production`。
 
 ## 已完成
 
+- [2026-07-30] ✅ G2 `presentation-ui` R16 findings closure／T15 final —
+  R16 architecture 2H/1M 與 behavior 4H/2M 全部採納；移除 split retry、補真
+  world hit、雙方 inspection、COMBAT overlay、authoritative PREPARE report、
+  formal PREPARE/COLLECTION/RESULTS loops、15-editor focus 與 typed non-color/
+  damage semantics。R16 targeted 13 tests 全綠；final Gut 243 scripts、945/945
+  （16295）、Spec 3696、All exit 0、10k ExpeditionSoak zero failures、static
+  gate zero issues；42 manifests／155/155 references match。使用者明示不做
+  R17／再次雙審；原 R16 `NOT APPROVED` 歷史報告與 closure table 均保留。
+  T15 與 19 owning AC 已完成；2026-07-30 使用者已通過 Git 發布 gate。
+- [2026-07-29] 🟡 G2 `presentation-ui` R15 修正／T15 fresh candidate — R15 的 retry root transaction、terminal no-fail seal、真 viewport/UI ownership、typed formal controls、production focus/modal、zero-size fail-closed、double-fault stale callback 與 evidence drift 八群已修正。有效 green：architecture 1/1（11）、terminal 3/3（62）、behavior 8/8（152）；完整 Gut 239 scripts、932/932（16123）。人工 runtime read-back 另以有效 red 修掉 4:3 long typed label overflow 與 125/150% CJK/action overlap，最終 10/10 PNG zero issues；static gate zero issues；ExpeditionSoak 10000 seeds／40000 operations zero failures；39 manifests、151/151 references match。下一步 fresh R16 雙審；最多到 R18，Git 與下一切片仍封鎖。
+- [2026-07-29] 🟡 G2 `presentation-ui` T15 automation/supplemental green — 新增正式 CAMP 五設施、RUN_PREPARE/COMBAT/REWARD 非 terminal composition，補 pinned definition/catalog clone、authoritative population TUNE projection，以及 Windows OpenGL runtime screenshot matrix。supplemental 3/3（256）＋4/4（183），runtime 12/12 PNG 零 issue；final 九組 suites 全 exit 0，Gut 836/836（14072）、Spec 3667、10k soak 40000 build operations。static gate 零 issue，21 manifests 84/84 entries match。Godot access violation 已定位為不存在 log parent；dummy headless null texture/orphan與空白首幀均有撤銷／修正證據。R12/R13/雙 implementation review 未完成，T15 仍不勾。
+- [2026-07-29] 🟡 G2 `presentation-ui` T15 fresh baseline＋AC audit — fresh Gut、Smoke、Content、Canonical、Combat、Expedition、Spec、All、10k ExpeditionSoak 九組皆 exit 0；Gut 829/829（13601 assertions）、Spec 3662、soak 10000 seeds／40000 build operations／零 failures。T13 validator 36 hashes／0 issues／user-approved，T14 production gate 零 issue，19 active manifests 74/74 entries 相符。19-row owning AC 初審未假造 PASS：發現正式非 terminal scenes、runtime screenshots 與 exact cross-layer evidence 缺口，已進 supplemental TDD；R12/R13/implementation reviews 仍未放行，因此 T15 checkbox 保持未勾。
+- [2026-07-29] ✅ G2 `presentation-ui` wave5/T13 user-approved＋T14 green — T13 產出五角色 20 張 64×64 方向 sprite、5 portrait、3/4 營地、core UI、720p/1080p/1440p＋4:3/16:10 與四色覺 screenshots；deterministic asset validator 36 hashes／0 issues。使用者明示核可候選並接受 built-in ImageGen seed 不可取得的 provenance warning；完整 prompt/call id/處理參數/SHA 已留痕。T14 valid red 11/11，green 11/11（175）、6/6 manifest，正式專案 gate exit 0／零 issue。wave5 All exit 0，Gut 829/829（13601）、Spec 3662。wave6/T15 可開始；R12/R13/Git gate 未放行。
+- [2026-07-29] ✅ G2 `presentation-ui` wave4/T10～T12 green — T10 viewport/input 4/4（225）、T11 playback/transcript 8/8（234）、T12 settings 4/4（295）、accessibility/error 8/8（362）、runtime integration 2/2（817）。補上四 concrete adapter、AppRoot SettingsService/AudioService typed port wiring、production load/fail-closed rebuild、locale/UI scale/四 bus apply 與 restart rebuild。runtime 首次 green 的 10 個 test-owned Node orphan 只以 `autofree` lifecycle cleanup 修正，舊 manifest 明確撤銷；最終五份 manifest 共 20 hash 全一致。首輪 All 唯一 Spec failure（public untyped helper）改為 private 後，最終 All exit 0：Gut 818/818（13426）、Spec 3662 cases，其餘 suites 全綠。rebuild adapter `void` 診斷傳播列 residual risk；R12/R13/Git gate 未放行。下一步 wave5 T13/T14。
+- [2026-07-29] ✅ G2 `presentation-ui` wave3/T08、T09 component green — T08 完成 clone-only Collection browser、injected MENU exit、decoded/opaque recovery cancel 與 typed settings draft/port/error/focus，限定 4/4（59）；T09 完成 19-intent route allowlist、四項 irreversible exactly-once confirmation 與 clone-only read-only combat inspection，限定 3/3（121）。T09 首輪 green 的 captured integer counter 為無效測試，主迴圈改用 `Array[int]` 後把 production 暫移出 `res://` 重建 exact-hash red，再恢復 production 取得 final green；兩份 manifest 最終皆相符。wave3 All exit 0，Gut 792/792（11493 assertions），其餘 suites 全綠。broader scene composition 與 R12-A01/A02 terminal/results authority 未誤標完成；下一步 wave4 T10/T11 red。
+- [2026-07-29] ✅ G2 `presentation-ui` wave3/T07 core green 與 hidden parse omission 修復 — 完成 15 條 production scene catalog/shell、staged read-only context、parent/generation subroute token、lease registry、stale live intent/navigation port、SceneRouter instantiate/bind-before-swap fault preservation，以及 AppRoot MENU/CAMP/RUN/RESULTS production route mapping；component 6/6（184）、integration 2/2（30）。主迴圈另拒收一輪「exit 0 但兩個舊 AppRoot scripts parse-failed」的假綠，將非 locked callers 同步至 typed StartExpeditionRequest、Boot→MENU 與 opaque recovery；最終 All exit 0，Gut 158 scripts、785/785 tests、11313 assertions，Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3630，零 parse/load/unexpected/orphan。R12-A01/A02 terminal/results integration 仍交 Claude，T07 不標整項完成。
+- [2026-07-28] ✅ G2 `presentation-ui` wave2/T06 與整波收尾 — T06 鎖定 decoded/opaque repository identity/epoch/full-file-digest token、wrong/stale/replaced CAS、archive-before-clear 全 fault preservation 與 4×4 restart residue runtime matrix；無效首跑的 parser/orphan 不列紅證據，修正後有效紅 2 tests/155 assertions，production green 2/2（300 assertions）。RetainedRunRecoveryService、SaveRepository/StoragePort restart cleanup 與 AppRoot recovery wiring 落地；opaque 無 run digest，tmp 永不升格，R12-A02 仍標 review debt。wave2 最終 All exit 0；Gut 769/769（10987 assertions、0 failures/errors/orphans）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3628 cases 全綠。
+- [2026-07-28] ✅ G2 `presentation-ui` wave2/T03、T05 — T03 完成 typed 四 bus atomic audio port/coordinator；原 test helper 與 fake public API 兩次不合格均明確撤銷舊 manifest 後重建，四項行為 assertions 不變，最終 4/4（93）。T05 完成固定 Boot→MENU、typed menu/continue/start/results/exit、repository identity/epoch、共享 Camp transaction、prepared capability 與 terminal handoff skeleton，限定 7/7（159）。修正 public Variant/Dictionary Spec failures、舊 Smoke/AppRoot boot 假設、opaque LoadResult invariant 與 discard 精確診斷後，All exit 0；Gut 767/767（10687 assertions）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3622 cases 全綠。R12 四項仍 unresolved。
+- [2026-07-28] ✅ G2 `presentation-ui` wave1/T01、T02、T04 — 五份 behavioral tests 先紅後鎖定 SHA manifest，再完成 production content bootstrap＋210-key `zh_TW|en` catalog、schema-1 原子 SettingsRepository、24-intent RunPresentationSession/RunCommandFactory 與 Run/Combat Lab 薄包裝。主迴圈重驗 T01 7/7（464 assertions）、T02 4/4（403）、T04 12/12（55），五份 hash 全一致；wave-end All exit 0，Gut 764/764（10530 assertions、0 failures/errors/orphans）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3555 cases 全綠。R12 四項仍 unresolved，未執行 Git。
+- [2026-07-28] ✅ G2 `presentation-ui` wave0/T00 — 有效 contract red 為 4 tests 中 3 個 assertion failures、parser/import 0；locked SHA `684bad…cadd13`。新增 AppActionResult、settings schema 1/port、run/session/playback、screen lease/capability 與 terminal handoff 等 35 個 compile-safe contracts；ResultInvariant Spec 契約修正後限定 GUT 4/4（276 assertions）、Spec 3481 cases、All 741 tests/9608 assertions 全綠。只完成 skeleton，無 runtime behavior。
+- [2026-07-28] ⚠️ G2 `presentation-ui` review Gate override — 使用者明確指示 R12/R13 審查先跳過並繼續下一步；只放行本地 baseline/TDD/implementation，R12 四項仍 unresolved，Git/PR 與最終完成宣稱未放行。
+- [2026-07-28] 📦 G2 `presentation-ui` R12 交接收斂 — 架構／行為雙審原文、4 項 Medium finding 與 proposed fixes 已同步 review-log、roadmap、PROGRESS、HANDOFF 及 `.pipeline`；使用者指定下一手由 Claude 修訂，fresh R13 雙審結果仍須先落檔。
+- [2026-07-28] 📝 G2 `presentation-ui` R11 裁決回寫 — Exit root/UI-host tests 拆為兩個 wave manifest；T08 settings 改為 injected fake port component、T12 獨占 concrete coordinator 與 restart/四 bus production integration；T06/T08 分別鎖 recovery fault-preservation 與 cancel 零 dispatch evidence，等待 fresh R12。
+- [2026-07-28] 📝 G2 `presentation-ui` R10 ownership 裁決回寫 — 使用者採納兩項整合建議：T05 成為 Exit root API／pending lifecycle 與 `--combat-lab` parse/route/bind/integrated smoke 的唯一 AppRoot owner；T01/T04/T08 收斂為 component／UI consumer，R1 追溯補 T04/T05，等待 fresh R11。
+- [2026-07-28] 📝 G2 `presentation-ui` R9 裁決回寫 — 使用者採納三項 named-test coverage finding：Exit 改由可攔截 signal 且 runner-safe、`ABANDON_BOSS_RETRY` 納入 confirmation exactly-once 矩陣、`--combat-lab` exact dev allowlist 必須共用 production bootstrap/facade；已同步 requirements／design／tasks／review ledger，等待 fresh R10。
 - [2026-07-28] 🧹 G2 worktree 整理與 R8 已知問題修正 — `codex/g2-presentation-ui` 從 ahead 1／behind 2 重放至最新 master，保留 checkpoint 並消除落後提交；`G2-R8-01` 已回寫 requirements／design／T07／T09／named lifecycle test，鎖定 guard 跨 repository unlock 的完整生命週期、六組重入 barrier、typed loser、零 save／route commit、state/route/lease 一致與 failure 後釋放。文件一致性稽查另修正 HANDOFF 的 S3 evidence 誤標；本項不等同 fresh R9 或 SDD 核可。
 - [2026-07-28] ✅ S5 線合回 master — worktree 線 fd64ac2（三件套＋wave1~6）fast-forward 併入；合併後主樹 fresh gate 重驗：10,000-seed ExpeditionSoak exit 0、`-Suite All` exit 0（含 Gut/Combat/Expedition/Spec 全綠）。修復主樹 CRLF 假陽性（repo-local `core.autocrlf false`）。
 - [2026-07-26] ✅ S5 `meta-progression` 完成（wave1～6／T01～T12） — schema 3 meta profile/run 欄位、指揮官與 challenge 雙軌、claim_scope 真語意、圖鑑 discovery union、Camp/Start/Meta exactly-once 原子交易、五設施 ViewModel、AppRoot 正式 composition 與 Camp/Run/Results 灰盒均落地；W5 R2/R3 修正 retained run fail-closed、expected-run-id 明示棄置、canonical readers／starting pack、兩種 combat pending resume 與 FakeSaveStorage 隔離。W5 R4 雙審零未決。最終 Gut 737/737（9332 asserts）、10k ExpeditionSoak 與 All exit 0；S5-AC-001～014 為 14/14 PASS。
@@ -27,22 +52,31 @@
 
 ## 進行中
 
-- G2 `presentation-ui`：`G2-R8-01` 已修入 SDD 並完成 Codex consistency audit；等待 fresh R9 兩份獨立規格複審，尚未核可或開始實作。
+- G2 `presentation-ui`：程式、測試、T15、19 AC 與交接文件已收口；Git 發布 gate
+  已通過，正在建立 commit／push／PR。merge 仍需另行批准。
 
 ## 待辦
 
-- `presentation-ui` 執行 fresh R9 雙獨立規格複審；只有兩份皆 zero unresolved findings 才標示 SDD Approved 並建立 TDD 紅燈。視覺樣板完成後仍需使用者核可，才可進 `content-production` 量產。
+- `presentation-ui`：完成繁中 commit、push 與 PR，回填 PR 連結；merge 另行批准。
+  `content-production` 只能從本片合併後的最新 master 建立。
 - 後續三片：完整內容／資產、TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
 
 ## 已知問題
 
 - Combat／Expedition／Build／Camp／Run／Results Lab 都是開發用灰盒，不是正式產品 UI；正式美術、音效與 UX 仍屬 G2 橫切工作。
-- G1 的 `INCOMPATIBLE_PRESERVED` 仍採資料保留硬停；G2 `presentation-ui` 將依 AC-070 新增 opaque committed-bytes digest token 與 archive-before-clear recovery，實作前仍須完成 fresh R9 雙審與 TDD。
+- Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
 
+- [2026-07-28] G2 `presentation-ui` 使用者 override：R12/R13 規格複審先延後，允許繼續本地 baseline/TDD/implementation；R12 findings 不視為 resolved，R13 與 Git/PR gate 未豁免。
+- [2026-07-28] G2 `presentation-ui` R12 後續 ownership：使用者指定四項 finding 保留待修，交由 Claude 完成；R13 雙審原文與彙整狀態必須先同步 review-log／PROGRESS／HANDOFF／roadmap，未達雙 zero findings 不進 TDD。
+- [2026-07-28] G2 `presentation-ui` R12 雙審未通過：terminal handoff DAG/ownership 循環、Results snapshot commit boundary 矛盾、invalid playback multiplier 與完整 accessibility runtime/static evidence 缺口；4 項均待使用者裁決，TDD 硬停。
+- [2026-07-28] G2 `presentation-ui` R11 三項 findings 全採納：Exit evidence 拆成 T05/T08 兩份 immutable tests；T08 settings 只做 injected-port component、T12 做 concrete integration；T06/T08 分別覆蓋 recovery fault preservation/cancel。狀態為 `R11_FIXES_APPLIED_PENDING_R12`。
+- [2026-07-28] G2 `presentation-ui` R11 雙審未通過：Exit named test 跨 wave 與 SHA lock 衝突、T08 settings UI 依賴後置 T12 concrete coordinator、AC-070 recovery cancel/fault preservation 缺 fresh named matrix；3 項均待使用者裁決，TDD 硬停。
+- [2026-07-28] G2 `presentation-ui` R10 ownership findings 全採納：T05 單獨擁有 Exit root lifecycle 與 CLI composition/integrated smoke；T01 僅 bootstrap component、T04 僅 facade/dev wrapper component、T08 僅 UI button/host smoke。R1→Tasks 補 T04/T05，狀態為 `OWNERSHIP_FIXES_APPLIED_PENDING_R11`。
+- [2026-07-28] G2 `presentation-ui` R9 三項 finding 全採納：Exit 只在 MENU_MAIN 發一次可攔截 request、重複／錯 lifecycle 具名拒絕且不終止 runner；`ABANDON_BOSS_RETRY` 逐項納入 begin/cancel/confirm/repeat/stale/lease confirmation test；dev CLI allowlist 精確為 `--combat-lab` 並共用 production bootstrap/facade。狀態為 `FIXES_APPLIED_PENDING_R10`。
 - [2026-07-28] G2 `presentation-ui` R8 修正：採納 `G2-R8-01`，results-action guard 改為在首次 fallback lease 驗證前取得，跨 repository ownership release 持有到 route commit/failure cleanup，全段無 `await`；named test 固定在 repository ownership 前、CAS/repository release 後、candidate bind 中各注入 Camp/Menu 重入，並驗 typed loser、零 save/route、state/route/lease 一致與 guard 可恢復。狀態僅為 `RESOLVED_IN_SDD_PENDING_R9`。
 - [2026-07-26] G2 `presentation-ui` R8 checkpoint：使用者指示先記錄 `G2-R8-01` 並更新交接後 commit；此指示不視為採納修正。finding 要求補 retry-vs-Camp／Menu 三個 barrier 的 single-flight 競爭紅燈，下一位接手者須先取得裁決、修訂並通過 R9 雙審，才可進 TDD。
 - [2026-07-26] G2 `presentation-ui` R7 唯一一項裁決採用：RESULTS fallback retry token 增加獨立 retry-attempt generation；consume 必須在 repository read ownership 內 fresh-read authoritative bytes 並重新核對 receipt／完整 file digest。任何 attempt 都消耗 token、推進 generation 並撤銷同代 sibling token；競爭寫入、receipt replacement、read fault 與 sibling token 納入 TDD。

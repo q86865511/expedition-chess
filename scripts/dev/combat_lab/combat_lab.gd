@@ -11,7 +11,7 @@ extends Control
 @onready var encounter_button: Button = %EncounterButton
 
 var _presenter := CombatLabPresenter.new()
-var _session := CombatLabSession.new()
+var _session := CombatLabSession.new(BattleSimulationPort.new())
 var _running: bool = false
 var _paused: bool = false
 var _speed: int = 1

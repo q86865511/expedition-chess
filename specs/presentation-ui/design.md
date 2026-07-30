@@ -1,6 +1,6 @@
 # G2 presentation-ui — 技術設計
 
-> 建立日期：2026-07-26｜狀態：草稿（未核可）
+> 建立日期：2026-07-26｜狀態：已核可並完成實作（2026-07-30 R16 closure；Git 發布中）
 > 對照：[requirements.md](requirements.md) R1～R14
 > 既有基線：`app/app_root.gd`、`app/state/app_state_machine.gd`、
 > `services/scene/scene_router_service.gd`、`scripts/dev/run/run_lab_session.gd`
@@ -106,9 +106,24 @@ preflight 一個不可失敗的 lease/session revoke plan，再取得 SaveReposi
 repository 建立 internal-only、單次 `TerminalSettlementPresentationCapability`，綁 repository
 identity、settlement operation epoch、run id、receipt id 與完整 committed-file SHA-256。
 capability 不得返回 public caller；coordinator 仍持有 writer ownership時立即驗證／consume，
-依 preflight plan revoke active RUN lease→invalidate/release session→安裝 clone-only
-ResultsPresentationSnapshot→提交 App state RESULTS，最後才按反序釋放 repository ownership
-與 terminal guard。全段同步、無 `await`；其他 public load/write 必須等 handoff 完成。
+並直接從該次 authoritative committed candidate/bytes 捕捉 receipt／digest 綁定的 clone-only
+`ResultsPresentationSnapshot`。它再依 preflight plan revoke active RUN lease→invalidate/release
+session→透過 `ApplicationTerminalHandoffPort.install_application_handoff()` 安裝 snapshot 並提交
+App state RESULTS，最後才按反序釋放 repository ownership與 terminal guard。全段同步、無
+`await`；其他 public load/write 必須等 application handoff 完成。解鎖後
+`present_installed_handoff()` 只把 AppRoot 已安裝 snapshot 的 fresh clone 交給
+`TerminalPresentationHandoffPort`，不得重新 public-read repository。
+
+repository authority 與 scene activation 使用兩種互不相容的單次 token：
+
+- `TerminalSettlementPresentationCapability` 只能由 SaveRepository internal factory 發出；
+  `install_application_handoff()` 在 writer ownership 內原子 consume 後永久失效，terminal
+  token 不得被保存至 unlock 後或傳給 T07。
+- application install 成功後，AppRoot 發出 `InstalledResultsPresentationCapability`，綁
+  installed snapshot digest、RESULTS state 與 route generation。unlock 後
+  `present_installed_handoff()` 不接 terminal capability，只把 sealed installed clone 與
+  installed capability 交給 concrete adapter；adapter consume 一次後 repeat/stale/reentrant
+  一律拒絕。
 
 preflight／settlement save 前 failure 保留 RUN live state；save 一旦成功，handoff contract 的
 意外 internal failure 也必須先 fail-closed revoke/invalidate 舊 RUN writer並由 committed bytes
@@ -216,8 +231,31 @@ save 仍不在本片保證範圍；若未另加 OS file lock，正式文件與 d
 5. command 前失敗留 CAMP 且零寫；save 後 compose／route failure 保留已提交 active run，
    回 `committed=true, presentation_ok=false`，顯示 recovery／Continue，不重建第二個 run。
 
-Exit 只發 `exit_requested` signal；production main 接 signal 呼叫 `SceneTree.quit()`，
-headless test 以 fake host 驗 signal，不終止 runner。
+Exit 只在 App state=MENU 且 subroute=`MENU_MAIN` 可 request。`ApplicationRoot.request_exit()`
+不得直接呼叫 `SceneTree.quit()`；它第一次合法呼叫只把 `_exit_request_pending` 從 false
+切成 true、發一次 `exit_requested` signal，並回成功但 `committed=false` 的 `AppActionResult`。
+production main host 接 signal 後才可呼叫 `SceneTree.quit()`。pending 期間重複呼叫在任何
+signal／route／save mutation 前回 `EXIT_REQUEST_ALREADY_PENDING`；非 MENU_MAIN 回
+`APP_ACTION_NOT_AVAILABLE`。發 signal 前後 App state、route、live lease 與 save digest
+均不變。headless test 以 fake host 計數 signal、保留 SceneTree，明驗首次一次、重複零次、
+錯 lifecycle 零次且 runner 繼續執行。
+
+Exit evidence 固定拆成兩個不可跨 wave 修改的測試檔：T05/wave2 的
+`test_exit_request_root_contract_is_single_flight_and_interceptable` 只鎖
+ApplicationRoot signal/API/pending/lifecycle/state invariants；T08/wave3 的
+`test_exit_button_host_binding_keeps_fake_runner_alive` 只鎖 MENU button、production-host
+binding 邊界與 fake runner 存活。兩者共同證明 R3，但 T08 不得修改 T05 manifest 內測試。
+
+本片 dev CLI allowlist 精確為 `{ "--combat-lab" }`。入口解析仍由 composition root 負責，
+但 `--combat-lab` 不得直接組第二套內容或規則圖：它以 fake/injected storage 可測地取得
+`ProjectContentBootstrap` 的同一 validated receipt，並把 production facade／battle ports
+交給 dev screen consumer。T01 只負責 production bootstrap／receipt component 與 component
+test；T04 只負責 production facade／battle ports 以及 Combat Lab／Run Lab dev wrapper
+component，不改 AppRoot。T05 作為唯一 AppRoot integration owner，負責 exact allowlist parse、
+CLI route/bind、注入前述 components，並單獨擁有 integrated test file
+`test_supported_dev_cli_entries_consume_production_facade`。該測試以 allowlist 逐一啟動，
+驗入口 bind 成功、production bootstrap 只執行一次、沒有 dev fake 進 production graph，
+並保持 runner 存活；wave1 只要求 T01／T04 component tests 轉綠，完整 smoke 在 T05 後轉綠。
 
 ### 3. RunPresentationSession
 
@@ -232,12 +270,19 @@ func snapshot() -> RunPresentationSnapshot
 func reachable_nodes() -> Array[MapNodePresentation]
 func dispatch(intent: RunPresentationIntent) -> RunPresentationResult
 func try_playback() -> BattlePlaybackStateResult
+func set_playback_speed(multiplier: int) -> BattlePlaybackCommandResult
+func set_playback_paused(paused: bool) -> BattlePlaybackCommandResult
 func drain_playback_window(
 	expected_identity: BattleTranscriptIdentity,
 	max_count: int
 ) -> BattleEventWindowResult
 func inspect_combat_unit(unit_serial: int) -> CombatUnitInspectionResult
 ```
+
+正式 screen 不直接取得上述 raw session API。T07/T09 建立 `LiveScreenPlaybackPort`，以
+lease id、parent state 與 route generation 綁定 session，公開 `try_playback()`、
+`set_speed()`、`set_paused()`、`drain_window()`；每次先驗 lease。RUN_COMBAT screen 只綁此
+port，舊 screen port 不得因同一 session 延續而重新生效。
 
 `RunPresentationIntent.Kind` 首片覆蓋既有可玩閉環：
 
@@ -370,29 +415,33 @@ generation，再轉送 internal RunPresentationSession；不以 port 建構時�
 `ResultsFallbackNavigationPort`：
 
 ```gdscript
-func prepare_retry() -> ResultsRenderRetryCapabilityResult
-func retry(capability: ResultsRenderRetryCapability) -> AppActionResult
+func retry_installed() -> AppActionResult
 func return_to_camp() -> AppActionResult
 func return_to_menu() -> AppActionResult
 ```
 
-`ResultsRenderRetryCapability` 由 fresh committed repository read 發出，單次使用且綁 repository
-identity、receipt id、完整 committed-file digest、fallback route generation 與獨立的
-`retry_attempt_generation`。`retry()` 與兩個 exit 共用 non-reentrant AppRoot
+retry capability 是 AppRoot-owned atomic action 內部的 repository authority，不得由 public
+screen port 發出、傳回或分成 prepare／consume 兩次呼叫。內部 authority 由 fresh committed
+repository read 發出，單次使用且綁 repository
+identity、receipt id、installed settlement digest、本次 current repository observation digest、
+fallback route generation 與獨立的
+`retry_attempt_generation`。`retry_installed()` 與兩個 exit 共用 non-reentrant AppRoot
 results-action single-flight；每個 public action 的第一個同步步驟是取得 guard，之後才驗
 fallback lease／route generation。guard 從首次驗證一路持有到 App state、presentation route
 與 live/fallback lease 的最終 commit 或 failure cleanup，repository ownership 的取得／釋放
 不影響 guard；所有出口 finally-style 釋放，全段不得 `await`。無法取得 guard 的 reentrant
 caller 在任何 save／candidate mutation 前回 `RESULTS_ACTION_IN_PROGRESS`。
 
-`retry()` 在 guard 內取得 repository read ownership，並在 ownership 內
-fresh-read authoritative committed bytes，重新比對 repository identity、receipt id 與完整
-file digest，並從該次 read 建立 clone-only ResultsPresentationSnapshot。無論比對成功、stale、
+`retry_installed()` 在 guard 內取得 repository read ownership，並在 ownership 內
+fresh-read authoritative committed bytes，重新比對 repository identity、receipt id 與 current
+observation digest，但不從該次 read 建立 Results snapshot。無論比對成功、stale、
 I/O failure 或稍後 presentation failure，此次 attempt 都會原子 consume token、推進
 `retry_attempt_generation` 並撤銷舊 generation 全部 sibling token，才釋放 repository ownership。
-比對失敗具名拒絕並保持 fallback；比對成功後才以捕捉的 fresh snapshot prepare/bind RESULTS
+比對失敗具名拒絕並保持 fallback；比對成功後才以 AppRoot installed snapshot 的 fresh clone
+prepare/bind RESULTS
 candidate，成功才 RESULTS_FALLBACK→RESULTS。prepare/bind failure 保持原 fallback lease，
-下一次 `prepare_retry()` 必須 fresh-read 並發下一代 token。兩個 return action 沿用 RESULTS
+下一次 `retry_installed()` 必須在同一 atomic action 內 fresh-read 並發／consume 下一代
+internal token。兩個 return action 沿用 RESULTS
 typed event、零新 save，不依賴 RESULTS scene 安裝成功。results-only port 每次呼叫仍驗
 fallback lease；鍵盤焦點固定包含 retry、Camp、Menu。
 
@@ -533,6 +582,12 @@ presentation 只透過 coordinator 寫設定，不能先 `SettingsRepository.sav
 func apply(candidate: SettingsSnapshot) -> SettingsApplicationResult
 ```
 
+Settings screen 的 compile-time 邊界是只暴露同一 typed `apply()` 契約的
+`SettingsApplicationPort`；T08 注入 fake port，僅做 draft／typed submit／error／focus component
+red-green。T12 才以 concrete `SettingsApplicationCoordinator` 實作並接上 production port，
+擁有 locale restart、四 bus/runtime apply、repository commit 與 production wiring 的整合測試。
+因此 T08 green 不依賴尚未完成的 T12，也不得直接取得 coordinator 或 repository。
+
 流程：
 
 1. 以 process-local `_apply_in_progress` 取得 non-reentrant single-flight ownership；已持有時
@@ -637,11 +692,16 @@ canonical simulation 因 event budget 失敗則沿用既有 typed error，不產
   candidate/bind failure 留 RESULTS，舊按鈕 callback 因 lease revoked 不得重入。
 - terminal postcommit：TerminalSettlementCoordinator 持有 AppRoot guard＋repository ownership，
   settlement save success→internal 驗證／consume `TerminalSettlementPresentationCapability`→
-  立即 revoke RUN `LiveScreenLease`→invalidate/release RunPresentationSession→將 App state 設
-  RESULTS→釋放 ownership→以 committed
-  settlement result/receipt＋fresh profile 建 clone-only ResultsPresentationSnapshot→prepare/bind
-  RESULTS scene。後段 failure 保留舊 scene 但切成無 intent/navigation 的 read-only fallback，
+  從同一次 authoritative committed candidate/bytes 捕捉 receipt／完整 file digest 綁定的
+  clone-only ResultsPresentationSnapshot→立即 revoke RUN `LiveScreenLease`→invalidate/release
+  RunPresentationSession→在 ownership 內安裝 snapshot 並將 App state 設 RESULTS→釋放
+  ownership→以已安裝 snapshot 的 fresh clone prepare/bind RESULTS scene。ownership 釋放後
+  不得以 public load 重建 Results snapshot；後段 failure 保留舊 scene 但切成無
+  intent/navigation 的 read-only fallback，
   安裝 `RESULTS_FALLBACK` results-only port；不得重建 active run 或重送 settlement。
+  concrete adapter 若 RESULTS install 失敗，必須 atomic install `RESULTS_FALLBACK` scene、
+  啟用唯一 fallback lease並綁可用的 receipt-bound `ResultsFallbackNavigationPort`；
+  retry/Camp/Menu 共用 guard，舊 RUN lease/callback 全失效，不得留下無 writer 的舊 RUN soft-lock。
 
 ### UI intent
 
@@ -650,11 +710,28 @@ lifecycle check→command factory→RunController transaction→成功重建 sna
 cancel 零 dispatch。戰鬥 inspection 與 Collection query/compare 只讀 clone，不進 command factory。
 失敗映射 loc error並保留前 snapshot。
 
+### R14 收斂：viewport、focus 與 localization gate
+
+- SceneRouter 在 candidate 加入 `PresentationHost` 後立即套用 `PRESET_FULL_RECT`；active
+  screen 與其 accessibility child 以 viewport 實際尺寸 reflow。只有 detached production
+  evidence 可使用 scene 明示的 `design_size`；renderer 本身對 zero-size fail-closed，不藏
+  1280×720 fallback。
+- `KeyboardFocusGraph` 的 key 採正式 route kind，action order 與 production control catalog
+  一致；只公開 session 是否仍由 coordinator 內部持有的 opaque predicate，不回 raw
+  `RunPresentationSession`。conditional／dialog action 由 blocked/active state 過濾。
+- 動態 Control 名稱由完整 dotted action id 轉換，例如
+  `menu.recovery.confirm→MenuRecoveryConfirmButton`，不得只取第一段造成 sibling collision。
+- production static gate 對 `.gd` 解析 player-visible assignment/call sink，直接英文或混合
+  literal 與 CJK 一樣回 `PUI_HARDCODED_PLAYER_TEXT`；localization 值檔、resolver、空字串與
+  `%d`／`%s` 類純格式 token列入窄 allowlist。
+
 ### Settings
 
-Settings screen 編輯獨立 draft→`SettingsApplicationCoordinator.apply()` 取得 single-flight→
-clone/normalize＋digest→四 adapter 各自 private plan preflight→驗四 token digest→repository
-clone-in/validate/atomic commit→四 token no-fail activation→發 clone-out `settings_committed`。
+Settings screen 編輯獨立 draft→typed `SettingsApplicationPort.apply()`；T08 component test
+以 fake port 驗 draft／submit／error／focus。T12 production binding 將該 port 接到
+`SettingsApplicationCoordinator.apply()`，再取得 single-flight→clone/normalize＋digest→四
+adapter 各自 private plan preflight→驗四 token digest→repository clone-in/validate/atomic
+commit→四 token no-fail activation→發 clone-out `settings_committed`。
 reentrant／競爭 apply、token mismatch、preflight/save failure 零 runtime mutation；意外
 post-commit diagnostic 保留 committed snapshot，進 safe fallback 並 fresh rebuild 全 consumer。
 
@@ -702,6 +779,26 @@ post-commit diagnostic 保留 committed snapshot，進 safe fallback 並 fresh r
   不算有效 behavioral red。
 - 視覺樣板可能不被使用者接受；硬停且不量產，保留可替換 token／atlas contract。
 
+### R15 implementation convergence
+
+- `ApplicationRoot` 是 RESULTS retry 與 terminal seal 的唯一 transaction root。
+  retry guard 必須在發出 repository authority/capability 前取得，直到 candidate bind、
+  route commit、generation revoke 與 cleanup 全部完成才釋放；Camp/Menu/retry sibling
+  重入一律 typed busy/stale 且零 save/route。
+- durable terminal save 成功後立刻撤銷真 `LiveScreenLeaseRegistry` 與 session，
+  並以同一 committed candidate 安裝 application-local RESULTS clone。任何後續 proof、
+  fallback authority、render 或 route fault 都不得回到 RUN 或恢復舊 callback。
+- production composition 固定由 `app/main.tscn` 擁有 640×360 `SubViewport`、
+  1280×720 `UiRoot` 與 `ProductionViewportCoordinator`；resize、pointer mapping、
+  nearest filtering 與 UI metrics 都對真 nodes 生效。
+- formal screens 只取得 clone-only staged/live context 與 lease-bound action、
+  navigation、intent、playback、inspection ports。CAMP、MAP、PREPARE、COMBAT、
+  REWARD 的選擇都由可見 typed controls 驅動；不得自動選第一筆隱藏資料。
+- runtime screenshot gate 除 required accessibility nodes/action buttons 外，也檢查
+  所有非空 Label 與 ItemList/OptionButton leaf 的非零/global viewport rect，並檢查
+  CJK 說明區不得與 action rect 相交。4:3/16:10、125/150% 是正式 release evidence，
+  不是 fixture-only policy test。
+
 ## 測試策略
 
 測試框架與指令：GUT 9.7.1＋既有 PowerShell runner。Godot 路徑由 `-GodotPath` 傳入，
@@ -710,29 +807,44 @@ post-commit diagnostic 保留 committed snapshot，進 safe fallback 並 fresh r
 | R# | 測試案例名 | 輸入/前置 | 預期結果 | 層級 |
 |---|---|---|---|---|
 | R1 | `test_production_dependency_graph_has_no_dev_paths` | main scene＋production scripts | dev references=0；真 dependency 缺漏具名失敗 | Spec＋Content |
+| R1 | `test_supported_dev_cli_entries_consume_production_facade`（T05 integration owner；T01/T04 component evidence） | exact allowlist=`--combat-lab`＋fake services | flag 可啟動；production bootstrap 一次；共用 facade/battle ports；runner 存活；無第二套規則流程 | Smoke＋Spec |
 | R2 | `test_boot_always_routes_to_menu` | no-save／run-free／active-run fixtures | 三者成功 boot 都停 MENU；致命 load fail-closed | GUT＋Smoke |
 | R3 | `test_menu_continue_start_and_recovery_are_guarded` | NONE／LOADED／compose-failed／preserved＋operation epoch | consume 鎖內 fresh digest；任一其他 load/write 使 capability stale | GUT＋整合 |
 | R3 | `test_camp_start_expedition_typed_transaction_and_route` | commander/challenge success＋domain/compose/route faults | success 建唯一 run→RUN；pre 零寫；post 保留 committed run＋recovery | GUT＋Smoke |
 | R3 | `test_all_camp_writers_share_atomic_repository_transaction` | unlock/start/decoded discard/opaque discard＋競爭 operation | ownership 內 fresh-read→expectation→apply/validate/save；stale 零寫 | GUT＋整合 |
 | R3 | `test_recovery_restart_cartesian_tmp_residue_matrix` | 四 base states×none/archive_tmp/save_tmp/both | main 優先否則 backup；所有 residue 清理/隔離；retained run 不丟 | GUT＋整合 |
+| R3/R12 | `test_recovery_discard_rejects_stale_tokens_and_preserves_committed_copy_on_faults`（T06 owner） | decoded/opaque wrong/stale/replaced token＋archive/save fault | 零 clear；profile 不變；至少一份 byte-identical committed copy；restart 可恢復 | GUT＋整合 |
+| R3/R12 | `test_recovery_confirmation_cancel_is_zero_dispatch`（T08 component owner） | decoded/opaque confirmation begin/cancel＋fake recovery port | cancel 零 submit／零 clear intent；draft 關閉；localized state 可恢復 | GUT＋Smoke |
+| R3 | `test_exit_request_root_contract_is_single_flight_and_interceptable`（T05 owner） | MENU_MAIN 首次/重複＋錯 lifecycle | 首次 signal=1；重複 pending/錯 lifecycle typed reject 且 signal=0；state/route/lease/save 不變 | GUT |
+| R3 | `test_exit_button_host_binding_keeps_fake_runner_alive`（T08 owner） | MENU Exit button＋fake host | button 只送 request；不直接 quit；host 收一次；runner 存活；state/route/save 不變 | Smoke |
 | R4 | `test_formal_scene_routes_and_command_only_writes` | route／非法 edge／惡意 staging screen／prepare-bind fault | staging intent 拒絕；failure 保留舊三件套；commit 後才 activate | GUT＋Smoke |
 | R4 | `test_parent_bound_subroute_tokens_and_screen_leases` | MENU/CAMP/RUN same-state routes＋stale old callback | 合法矩陣 atomic swap；舊 lease 拒絕；RUN session continuity | GUT＋Smoke |
 | R4 | `test_results_return_actions_are_distinct_and_atomic` | RESULTS→CAMP/MENU＋keyboard/reentry/bind fault | 正確 target；零新 save；failure 保留 RESULTS | GUT＋Smoke |
 | R4 | `test_live_screen_intent_port_rejects_stale_dispatch_and_confirmation` | 舊 context/port＋RUN session continuity＋舊 draft | navigation/dispatch/confirmation 全 SCREEN_NOT_ACTIVE | GUT＋整合 |
 | R4 | `test_collection_filter_search_compare_is_clone_only` | content/recipe/glossary＋filter/search/compare＋鍵盤 | 三類齊全；compare capability typed；修改 draft/view 不回寫 | GUT＋Smoke |
 | R5 | `test_run_presentation_session_dispatches_all_typed_intents` | 全 command 對照 success/failure＋雙 consumer | intent 無缺口；deep clone 無 alias；no playback 為 typed result | GUT |
-| R5 | `test_irreversible_confirmation_cancel_and_exactly_once` | forge/relic replace/reward abandon＋cancel/repeat/stale | cancel 零 intent；confirm 一次；重複/stale 具名拒絕 | GUT＋Smoke |
+| R5 | `test_irreversible_confirmation_cancel_and_exactly_once` | forge/relic replace/reward abandon/`ABANDON_BOSS_RETRY`＋begin/cancel/confirm/repeat/stale/換場 lease | begin/cancel 零 intent/零寫；confirm 一次；重複/stale/換場 lease 具名拒絕 | GUT＋Smoke |
 | R5 | `test_combat_unit_inspection_is_typed_and_read_only` | mouse/keyboard selection＋消失/stale/non-COMBAT | 六類資訊可見；零 command intent；舊資料不殘留 | GUT＋Smoke |
 | R5 | `test_terminal_postcommit_revokes_run_writers_before_results_route` | settlement success＋consume 前競爭 load/write＋RESULTS fault＋舊 callback | joint ownership 無空窗；RESULTS/FALLBACK；無 active run；receipt exactly-once | GUT＋Smoke |
+| R5/R12 | `test_terminal_handoff_captures_authoritative_snapshot_before_release` | committed candidate＋ownership release 後競爭 load/write＋延後 compose | AppRoot 在鎖內安裝 receipt/digest/profile-bound clone；解鎖後 presentation clone 不漂移 | GUT＋整合 |
+| R5/R12 | `test_terminal_capability_consumption_and_production_fallback_are_single_use` | real AppRoot/application port/concrete adapter＋duplicate/reentrant/stale/wrong snapshot＋RESULTS bind fault | terminal token 不跨 unlock；installed token單次；fallback scene/lease/results-only port可用；state/route/lease不漂移 | GUT＋整合 |
 | R5 | `test_results_fallback_retry_and_exit_lifecycle` | transient/persistent route fault＋consume 前競爭 write／receipt change／read fault＋stale/repeat/sibling token＋keyboard；retry 取得 repository ownership 前、CAS/repository release 後、candidate bind 中各注入 Camp/Menu 重入 | ownership 內 fresh CAS；guard 全程持有且六個 loser typed busy/stale、零 route/save；attempt generation 撤銷 siblings；App state/route/lease 一致；fault 後 guard 釋放且 fresh retry/exit 可恢復；舊 RUN port 拒絕 | GUT＋Smoke |
 | R6 | `test_world_viewport_ui_and_pointer_mapping_contract` | 三解析度＋非 16:9＋三 scale | render 正確且 world/hotspot/UI hit target 一致 | Smoke＋整合＋screenshot |
 | R7 | `test_playback_commit_speed_pause_and_backpressure` | 同 setup/seed、save fault、reload、1×/2×/4×、16384 events | precommit accumulator 私有；commit 後 transfer 唯一 owner；session drain≤4096；hash/順序相同 | Combat＋Canonical |
+| R7 | `test_invalid_playback_multiplier_preserves_committed_session_ownership` | `0/-1/-4/3/5/8`＋已提交 x2 transcript | 全回 PLAYBACK_SPEED_INVALID；speed/cursor/result/event/save/transcript ownership 不變；零 gameplay dispatch | GUT |
+| R7 | `test_live_screen_playback_port_is_lease_bound` | RUN_COMBAT production binding＋1×/2×/4×＋pause/resume＋stale lease | screen無raw session；合法控制生效；舊port SCREEN_NOT_ACTIVE且零 gameplay dispatch | GUT＋Smoke |
 | R7 | `test_transcript_memory_budget_falls_back_to_committed_summary` | encoded transcript 超 `min(event_budget×1024,64MiB)` | canonical result 保留；buffer 釋放；具名 warning＋summary | GUT＋整合 |
 | R8 | `test_settings_repository_atomic_round_trip_and_faults` | 全欄位／locale／fault／corrupt／future＋input/consumer mutation | clone-in/out 無 alias；exact reject；fault 零 swap；future bytes 保留 | GUT |
+| R8/R11/R12 | `test_settings_screen_submits_typed_draft_through_injected_port`（T08 component owner） | fake SettingsApplicationPort＋valid/invalid draft＋keyboard focus | typed submit 一次；error 可見；無 repository/coordinator dependency；focus 不陷落 | GUT＋Smoke |
 | R8 | `test_settings_application_coordinator_two_phase_apply` | adapter faults/mutator＋save fault＋reentrant/競爭 apply＋post diagnostic | single-flight；digest-bound token；pre/save 零 runtime；post 保留 commit＋重建 | GUT＋整合 |
+| R8/R9 | `test_settings_production_binding_round_trips_locale_and_four_buses`（T12 integration owner） | production port＋locale restart＋四 bus volume/mute | concrete coordinator 唯一 writer；restart 值一致；四 bus/runtime 由 committed snapshot 重建 | GUT＋Smoke |
 | R9 | `test_audio_coordinator_applies_four_buses_atomically` | 四 bus volume/mute＋缺 bus／before-commit fault | round-trip；preflight；失敗四 bus 全不變 | GUT |
 | R10 | `test_localization_catalog_key_sets_and_no_hardcoded_text` | exact zh_TW/en set＋正式 scene/content scan | key set 相等、繁中非空、其他 locale 拒絕、缺 key 非零、硬編碼=0 | Content＋Spec |
 | R11 | `test_keyboard_focus_accessibility_and_scale_contract` | 主要畫面×3 scale×4 color modes | 敵我等資訊有非色彩提示、focus 可達、無裁切 | Smoke＋visual |
+| R11 | `test_runtime_effect_flags_and_damage_density` | reduced motion/flash/particles true/false＋density off/reduced/full | runtime effect/emitter report 精確生效且規則文字保留 | GUT＋screenshot |
+| R11 | `test_tooltip_depth_runtime_guard` | tooltip depth 0/1/2/3＋重入 | ≤2 可用；>2 具名拒絕且無部分套用 | GUT＋static |
+| R10/R11 | `test_zh_tw_runtime_glyph_readability` | 繁中長文/CJK probe＋runtime fallback font | glyph 全可顯示、無 tofu、font provenance 可追溯 | GUT＋screenshot |
+| R8/R11 | `test_production_accessibility_binding_applies_committed_settings` | real settings port＋RUN_COMBAT/tooltip/CJK production scenes＋三 flag individual＋density matrix | concrete production nodes生效；fixture-only wiring由static gate拒絕；各效果 screenshot可獨立判定 | GUT＋Smoke＋screenshot |
 | R12 | `test_presentation_errors_distinguish_commit_boundary` | pre/post commit route/bind/I/O/lifecycle fail | pre 保留舊 state；post 保留新 commit＋fallback＋可 reload | GUT＋整合 |
 | R13 | `pilot_asset_inventory_and_visual_review` | 核可樣板 inventory＋images＋provenance | 數量／尺寸／透明／色盤／原創性／screenshots 全 PASS | 靜態＋人工 |
 | R14 | `presentation_slice_release_gate` | fresh suites、10k soak、雙審、review ledger | 全部有新鮮證據；任一缺漏保持 FAIL | 實跑＋人工 |
@@ -758,7 +870,7 @@ R14 是證據聚合，免 TDD；其餘 R1～R12 先由測試代理建立紅燈�
 | AC-049 | R5/R10 | T04/T14 | UI/static scan 無複製 TUNE；改值後顯示同步 |
 | AC-055 | R5 | T04/T09 | roster 單一 authority、UI clone 不共享集合 |
 | AC-065 | R5/R12 | T04/T09 | UI mutation／save faults 零部分變更 |
-| AC-070 | R3/R12 | T06 | decoded/opaque cancel、錯 token、archive-before-clear fault matrix |
+| AC-070 | R3/R12 | T06/T08 | T06 decoded/opaque wrong/stale/replaced token＋archive/save fault preservation；T08 cancel 零 dispatch |
 | AC-072 | R5 | T04/T09 | 多 stage reward／overflow 正式操作可恢復 |
 | AC-075 | R1/R5 | T04/T14 | 修改 definition view 不影響 registry/digest/result |
 | AC-076 | R5/R12 | T04/T12 | 公開 presentation API 具名 error、無 silent null |
@@ -783,7 +895,9 @@ R14 是證據聚合，免 TDD；其餘 R1～R12 先由測試代理建立紅燈�
   RUN writer lease、invalidate/release session並進 RESULTS；commit 到 handoff 全部在同一 AppRoot
   terminal guard＋repository writer ownership，其他 public operation 不得插入。presentation
   failure 進 typed RESULTS_FALLBACK，只暴露 receipt-bound retry與零-save Camp/Menu navigation；
-  Results snapshot 只從 committed receipt/result＋fresh profile clone 重建。fallback retry
+  Results snapshot 只從同一次 authoritative committed candidate/bytes 捕捉，綁 receipt／完整
+  file digest／profile clone，並在 ownership 內安裝；解鎖後 scene 只取 installed clone，不得
+  public-read 重建。fallback retry
   consume 必須在 repository read ownership 內 fresh-read 後以 receipt＋完整 file digest 作
   CAS；每次 attempt 都推進 retry-attempt generation並撤銷同代 sibling token。
 - RESULTS→CAMP／MENU 是分離 typed event，只在已提交 terminal/meta receipt 後執行且零新 save；

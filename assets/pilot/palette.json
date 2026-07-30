@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "expedition-pilot-dark-tactical",
+  "tokens": {
+    "navy_950": "#080f19",
+    "navy_800": "#14263a",
+    "parchment_300": "#d7c39a",
+    "off_white": "#ede4d0",
+    "amber_500": "#d79b3a",
+    "teal_500": "#2f9a96",
+    "crimson_500": "#a94d58",
+    "violet_500": "#76539b",
+    "stone_500": "#69717b",
+    "focus_high": "#f5f0df"
+  },
+  "rules": [
+    "Affiliation, rarity, damage type, status, and danger require non-color shape or symbol cues.",
+    "Keyboard focus uses a thick high-luminance frame with corner notches.",
+    "World sprites and UI chrome use nearest-neighbor sampling."
+  ]
+}

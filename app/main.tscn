@@ -1,13 +1,59 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://app/app_root.gd" id="1_app_root"]
+[ext_resource type="Script" path="res://presentation/viewport/production_viewport_coordinator.gd" id="2_viewport"]
+[ext_resource type="Script" path="res://presentation/viewport/production_world_surface.gd" id="3_world"]
 
 [node name="Main" type="Node"]
 
 [node name="AppRoot" type="Node" parent="."]
 script = ExtResource("1_app_root")
 
-[node name="PresentationHost" type="Control" parent="AppRoot"]
+[node name="WorldViewportContainer" type="SubViewportContainer" parent="AppRoot"]
+offset_right = 1280.0
+offset_bottom = 720.0
+texture_filter = 1
+stretch = true
+mouse_filter = 1
+
+[node name="WorldViewport" type="SubViewport" parent="AppRoot/WorldViewportContainer"]
+size = Vector2i(640, 360)
+render_target_update_mode = 4
+canvas_item_default_texture_filter = 0
+snap_2d_transforms_to_pixel = true
+snap_2d_vertices_to_pixel = true
+
+[node name="ProductionWorld" type="Control" parent="AppRoot/WorldViewportContainer/WorldViewport"]
+offset_right = 640.0
+offset_bottom = 360.0
+mouse_filter = 2
+script = ExtResource("3_world")
+
+[node name="BoardTileTarget" type="ColorRect" parent="AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"]
+offset_left = 128.0
+offset_top = 64.0
+offset_right = 192.0
+offset_bottom = 112.0
+color = Color(0.176471, 0.643137, 0.768627, 1)
+mouse_filter = 0
+metadata/target_id = &"world.board_tile"
+
+[node name="CampHotspotTarget" type="ColorRect" parent="AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"]
+offset_left = 412.0
+offset_top = 196.0
+offset_right = 460.0
+offset_bottom = 228.0
+color = Color(0.94902, 0.694118, 0.247059, 1)
+mouse_filter = 0
+metadata/target_id = &"world.camp_hotspot"
+
+[node name="UiLayer" type="CanvasLayer" parent="AppRoot"]
+
+[node name="UiRoot" type="Control" parent="AppRoot/UiLayer"]
+offset_right = 1280.0
+offset_bottom = 720.0
+
+[node name="PresentationHost" type="Control" parent="AppRoot/UiLayer/UiRoot"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,3 +62,10 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
+[node name="ViewportCoordinator" type="Node" parent="AppRoot" node_paths=PackedStringArray("world_container_path", "world_viewport_path", "ui_layer_path", "ui_root_path", "presentation_host_path")]
+script = ExtResource("2_viewport")
+world_container_path = NodePath("../WorldViewportContainer")
+world_viewport_path = NodePath("../WorldViewportContainer/WorldViewport")
+ui_layer_path = NodePath("../UiLayer")
+ui_root_path = NodePath("../UiLayer/UiRoot")
+presentation_host_path = NodePath("../UiLayer/UiRoot/PresentationHost")

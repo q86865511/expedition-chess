@@ -1,6 +1,6 @@
 # G2 內容完整切片 — 四切片交付 Roadmap
 
-> 建立日期：2026-07-26｜狀態：草稿（未核可）
+> 建立日期：2026-07-26｜狀態：執行中（presentation-ui 完成；Git 發布中）
 > 架構基線：`docs/game-architecture/`、`docs/implementation-slices.md`
 > 基準提交：`5ddf80a30481ee701ba90be48e0fd474bc8c2715`（S5 merged）
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R1 雙審全部 14 項修正建議
@@ -12,6 +12,15 @@
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R7 雙審唯一 1 項修正建議
 > 規格 checkpoint：2026-07-26 使用者指示記錄 R8 `G2-R8-01` 後提交；不構成修正裁決或 SDD 核可
 > 規格修訂：2026-07-28 `G2-R8-01` 已回寫 SDD 並完成一致性稽查；待 fresh R9 雙獨立複審
+> 規格裁決：2026-07-28 使用者採用 R9 三項 named-test coverage 修正；待 fresh R10 雙獨立複審
+> 規格裁決：2026-07-28 使用者採用 R10 兩項 AppRoot ownership／wave 修正；待 fresh R11 雙獨立複審
+> 規格審查：2026-07-28 fresh R11 新增 3 項 Medium findings；待使用者裁決，TDD 硬停
+> 規格裁決：2026-07-28 使用者採用 R11 三項 wave/test-evidence 修正；待 fresh R12 雙獨立複審
+> 規格審查：2026-07-28 fresh R12 確認 R11 修正封閉，新增 4 項 Medium findings；待使用者裁決
+> 工作交接：2026-07-28 使用者指定 R12 四項 findings 保留待修並交由 Claude；修訂後 fresh R13 雙審結果先落交接文件
+> Gate override：2026-07-28 使用者指示審查先跳過並繼續本地 implementation；R12 unresolved、R13/Git gate 延後未取消
+> Implementation closure：2026-07-30 R16 findings 全採納、fresh gates 全綠；使用者明示
+> 不啟動 R17／不再次雙審，直接進 T15 文件與 Git handoff。Git 仍需另行確認。
 
 ## 1. 目的與完成定義
 
@@ -141,7 +150,7 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 
 | Slice | SDD | Implementation | Review | External gate | Git |
 |---|---|---|---|---|---|
-| `presentation-ui` | R1-R7 FIXES APPLIED; R8-01 RESOLVED_IN_SDD_PENDING_R9 | NOT STARTED | R8 architecture approved; amended behavior awaiting fresh R9; see `review-log.md` | visual pilot approval pending | branch rebased to master; amendment ready for R9 |
+| `presentation-ui` | R12–R16 FINDINGS APPLIED; USER-OVERRIDDEN NO R17 | T00–T15 COMPLETE; 19 AC PASS | R16 historical reviews retained; closure table＋fresh evidence；no re-review by user decision | T13 USER APPROVED; Gut 945/945; runtime 10/10; 10k soak; static gate; manifests 155/155 | Git gate approved；commit/push/PR in progress；merge not approved |
 | `content-production` | NOT STARTED | NOT STARTED | NOT STARTED | pilot approval prerequisite | not created |
 | `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |

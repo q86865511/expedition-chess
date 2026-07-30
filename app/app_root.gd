@@ -7,23 +7,16 @@ extends Node
 ## （RunSession 取 catalog lease ＋ RunController ＋ RunCommandFactory，
 ## `transition_after_active_run_load` → RUN）；否則 BOOT→MENU→CAMP，掛 CampController
 ## ＋ CampViewModel ＋ Camp 灰盒（存檔不存在時先建初始 profile 並落檔，wave5 修正 A2）。
-## `SceneRouter` 依 app state 換 Camp／Run／Results 場景（皆為 `scenes/dev/` 灰盒，比照
-## combat_lab／build_lab 慣例；正式 UI 歸 Codex，見 HANDOFF.md）。
+## `SceneRouter` 依 app state 與 clone-only snapshot 安裝 `scenes/production/` 的正式 shell；
+## 唯一保留的 dev route 是明示 `--combat-lab` CLI。
 ##
-## 內容安裝委派給既有的 BuildLabContentBootstrap（`scripts/dev/build_lab/`）：它是本專案
-## 唯一「從磁碟讀正式 .tres pack → ContentValidator → install_validated → 四個 production
-## builder」的入口。app/ 層依 spec 契約不得直接載入 authoring Resource，故 AppRoot 只消費
-## 它交出來的 pinned 產物，不自行 load 內容。
+## 內容安裝只經 ProjectContentBootstrap；production root 不依賴 dev bootstrap。
 
 signal boot_completed
 signal boot_failed(error_code: StringName)
+signal exit_requested
 
 const COMBAT_LAB_SCENE_PATH: String = "res://scenes/dev/combat_lab/combat_lab.tscn"
-const CAMP_SCENE_PATH: String = "res://scenes/dev/camp/camp_scene.tscn"
-const RESULTS_SCENE_PATH: String = "res://scenes/dev/results/results_scene.tscn"
-## RUN 狀態的 presentation：wave5 修正 A4 起改成綁真 RunController／RunCommandFactory 的
-## 最小 run 灰盒（scripts/dev/run/），取代原本純記憶體 demo 的 S3 expedition_lab。
-const RUN_SCENE_PATH: String = "res://scenes/dev/run/run_scene.tscn"
 
 ## 單槽 profile 的固定 id：RunStateValidator 要求 32 位小寫 hex
 ## （run_state_validator.gd:8 的 _PROFILE_PATTERN），故不是 "profile.default" 這種 stable id。
@@ -44,8 +37,22 @@ const ERROR_RUN_SESSION_UNAVAILABLE: StringName = &"APP_RUN_SESSION_UNAVAILABLE"
 const ERROR_RUN_MODIFIER_TABLE_FAILED: StringName = &"APP_RUN_MODIFIER_TABLE_FAILED"
 const ERROR_RUN_BATTLE_CATALOG_FAILED: StringName = &"APP_RUN_BATTLE_CATALOG_FAILED"
 const ERROR_RUN_CHALLENGE_AFFIX_FAILED: StringName = &"APP_RUN_CHALLENGE_AFFIX_FAILED"
+const ERROR_ACTION_NOT_AVAILABLE: StringName = &"APP_ACTION_NOT_AVAILABLE"
+const ERROR_EXIT_ALREADY_PENDING: StringName = &"EXIT_REQUEST_ALREADY_PENDING"
+const ERROR_RETAINED_RUN_EXISTS: StringName = &"APP_RETAINED_RUN_EXISTS"
+const ERROR_PREPARED_RUN_STALE: StringName = &"APP_PREPARED_RUN_STALE"
+const ERROR_RUN_SNAPSHOT_UNAVAILABLE: StringName = &"APP_RUN_SNAPSHOT_UNAVAILABLE"
+const ERROR_RUN_PHASE_INVALID: StringName = &"APP_RUN_PHASE_INVALID"
+const ERROR_SETTINGS_RUNTIME_MISSING: StringName = &"APP_SETTINGS_RUNTIME_MISSING"
+const ERROR_SETTINGS_REBUILD_FAILED: StringName = &"APP_SETTINGS_REBUILD_FAILED"
+const RESULTS_ACTION_IN_PROGRESS: StringName = &"RESULTS_ACTION_IN_PROGRESS"
+const ERROR_ROUTE_PREPARE_INVALID: StringName = &"APP_ROUTE_PREPARE_INVALID"
+const ERROR_ROUTE_ACTIVATION_INVALID: StringName = \
+	&"APP_ROUTE_ACTIVATION_INVALID"
+const ERROR_CAMP_EXPEDITION_SELECTION_REQUIRED: StringName = \
+	&"CAMP_EXPEDITION_SELECTION_REQUIRED"
 
-@onready var presentation_host: Control = $PresentationHost
+@onready var presentation_host: Control = _resolve_presentation_host()
 
 var _booted: bool = false
 var _app_state_machine: AppStateMachine = AppStateMachine.new()
@@ -53,17 +60,39 @@ var _run_session: RunSession
 var _run_controller: RunController
 var _run_command_factory: RunCommandFactory
 var _run_lab_session: RunLabSession
+var _run_presentation_session: RunPresentationSession
 var _camp_controller: CampController
 var _camp_view_model: CampViewModel
+var _camp_profile_snapshot: ProfileState
 var _content_registry: ContentRegistryService
 var _save_repository: SaveRepository
 var _scene_router: SceneRouterService
 var _services_bound: bool = false
-var _content: BuildLabBootstrapResult
+var _content: ProjectContentBootstrapResult
+var _content_bootstrap: ProjectContentBootstrap
+var _content_bootstrap_result: ProjectContentBootstrapResult
 var _content_attempted: bool = false
 ## 只有「持久化 active run 載入成功，但 production composition 失敗」才設定。
 ## 玩家明示棄置時同時作為 compare-and-clear 的 expected_run_id。
 var _unresumable_run_id: String = ""
+var _run_preparation_service: RunPreparationService
+var _prepared_run_capability: PreparedRunCapability
+var _retained_run_recovery_token: RetainedRunRecoveryToken
+var _retained_run_recovery_service: RetainedRunRecoveryService
+var _menu_snapshot: MainMenuSnapshot = MainMenuSnapshot.new()
+var _exit_request_pending: bool = false
+var _terminal_settlement_coordinator: TerminalSettlementCoordinator
+var _terminal_presentation_snapshot: ResultsPresentationSnapshot
+var _terminal_route_handoff_port: TerminalPresentationHandoffPort
+var _settings_application: SettingsApplicationPort
+var _settings_repository_override: Object
+var _settings_audio_override: AudioCoordinator
+var _settings_repository_runtime: Object
+var _live_lease_registry := LiveScreenLeaseRegistry.new()
+var _route_generation: int = 0
+var _active_route_kind: StringName
+var _results_action_in_progress: bool = false
+var _recovery_confirmation_presenter: RecoveryConfirmationPresenter
 
 
 ## 服務來源：production（main.tscn）走 design.md §4.4 的五個 Autoload；本方法讓呼叫端在
@@ -87,10 +116,77 @@ func bind_services(
 	return &""
 
 
+## SettingsRepository／AudioCoordinator 與呈現 runtime 的綁定同樣只能發生在進樹之前。
+## Port 只有在 repository fresh read 與四 adapter rebuild 全部完成後才會公開。
+func bind_settings_runtime(
+	p_repository: Object,
+	p_audio_coordinator: AudioCoordinator,
+	p_runtime_consumer: Object
+) -> StringName:
+	if is_inside_tree() or _booted:
+		return ERROR_SERVICE_BIND_TOO_LATE
+	return _configure_settings_runtime(
+		p_repository,
+		p_audio_coordinator,
+		p_runtime_consumer
+	)
+
+
+func bind_settings_services(
+	p_repository: Object,
+	p_audio_coordinator: AudioCoordinator
+) -> StringName:
+	if is_inside_tree() or _booted:
+		return ERROR_SERVICE_BIND_TOO_LATE
+	if p_repository == null or p_audio_coordinator == null:
+		return ERROR_SETTINGS_RUNTIME_MISSING
+	_settings_repository_override = p_repository
+	_settings_audio_override = p_audio_coordinator
+	return &""
+
+
+func settings_application_port() -> SettingsApplicationPort:
+	return _settings_application
+
+
+func bind_terminal_presentation_handoff(
+	port: TerminalPresentationHandoffPort
+) -> StringName:
+	if is_inside_tree() or _booted:
+		return ERROR_SERVICE_BIND_TOO_LATE
+	if port == null:
+		return &"APP_TERMINAL_HANDOFF_PORT_MISSING"
+	_terminal_route_handoff_port = port
+	return &""
+
+
 func _ready() -> void:
 	if presentation_host == null:
 		boot_failed.emit(&"APP_PRESENTATION_HOST_MISSING")
 		return
+	if _settings_application == null:
+		var settings_repository: Object = (
+			_settings_repository_override
+			if _settings_repository_override != null
+			else get_node_or_null("/root/SettingsService")
+		)
+		var audio_coordinator := (
+			_settings_audio_override
+			if _settings_audio_override != null
+			else get_node_or_null("/root/AudioService") as AudioCoordinator
+		)
+		_ensure_production_audio_buses()
+		var settings_error := _configure_settings_runtime(
+			settings_repository,
+			audio_coordinator,
+			PresentationSettingsRuntimeConsumer.new(
+				presentation_host,
+				_production_viewport_runtime()
+			)
+		)
+		if not settings_error.is_empty():
+			boot_failed.emit(settings_error)
+			return
 	if not _services_bound:
 		_content_registry = get_node_or_null("/root/ContentRegistry") as ContentRegistryService
 		_save_repository = get_node_or_null("/root/SaveService") as SaveRepository
@@ -107,8 +203,38 @@ func _ready() -> void:
 		boot_failed.emit(save_configuration.error.code)
 		return
 	_app_state_machine = AppStateMachine.new(_save_repository)
+	_run_preparation_service = RunPreparationService.new(_save_repository)
+	_retained_run_recovery_service = RetainedRunRecoveryService.new(
+		_save_repository
+	)
+	_content_bootstrap = ProjectContentBootstrap.new(
+		ProjectContentDependencyPort.new(LocalizationCatalog.new())
+	)
 	_scene_router.bind_presentation_host(presentation_host)
-	# S2 既有 dev override：--combat-lab 直接進 combat lab，不做 boot→load 分流。
+	var catalog_error := _scene_router.bind_production_catalog(
+		ProductionSceneCatalog.new()
+	)
+	if not catalog_error.is_empty():
+		boot_failed.emit(catalog_error)
+		return
+	if _terminal_route_handoff_port == null:
+		_terminal_route_handoff_port = (
+			SceneRouterTerminalPresentationHandoffAdapter.new(
+				_scene_router,
+				_live_lease_registry,
+				SaveRepositoryResultsRenderRetryAuthority.new(
+					_save_repository
+				),
+				Callable(self, "_terminal_presentation_snapshot_clone"),
+				Callable(self, "_return_results_to_camp_owned"),
+				Callable(self, "_return_results_to_menu_owned"),
+				Callable(self, "_begin_results_action"),
+				Callable(self, "_end_results_action"),
+				Callable(self, "_terminal_staged_context")
+			)
+		)
+	# Exact G2 dev CLI allowlist: --combat-lab. It reuses the production
+	# ProjectContentBootstrap and production facade/battle ports.
 	if OS.get_cmdline_user_args().has("--combat-lab"):
 		var lab_error := _boot_combat_lab()
 		if not lab_error.is_empty():
@@ -123,6 +249,96 @@ func _ready() -> void:
 		return
 	_booted = true
 	boot_completed.emit()
+
+
+func _resolve_presentation_host() -> Control:
+	var production_host := get_node_or_null(
+		"UiLayer/UiRoot/PresentationHost"
+	) as Control
+	if production_host != null:
+		return production_host
+	return get_node_or_null("PresentationHost") as Control
+
+
+func _production_viewport_runtime() -> Object:
+	var runtime := get_node_or_null("ViewportCoordinator")
+	if (
+		runtime == null
+		or not runtime.has_method(&"apply_ui_scale")
+		or not runtime.has_method(&"window_size")
+	):
+		return null
+	return runtime
+
+
+func _configure_settings_runtime(
+	repository: Object,
+	audio_coordinator: AudioCoordinator,
+	runtime_consumer: Object
+) -> StringName:
+	_settings_application = null
+	if (
+		repository == null
+		or not repository.has_method("save")
+		or not repository.has_method("current_snapshot")
+		or audio_coordinator == null
+		or runtime_consumer == null
+		or not runtime_consumer.has_method("preflight")
+		or not runtime_consumer.has_method("activate")
+		or not runtime_consumer.has_method("activate_safe_fallback")
+	):
+		return ERROR_SETTINGS_RUNTIME_MISSING
+	if repository.has_method("load"):
+		var load_result: Variant = repository.call("load")
+		if not _settings_result_ok(load_result):
+			return ERROR_SETTINGS_REBUILD_FAILED
+	var window_size := Vector2i(1280, 720)
+	if is_inside_tree():
+		window_size = Vector2i(get_viewport().get_visible_rect().size)
+	var viewport_runtime := _production_viewport_runtime()
+	var window_size_provider := Callable()
+	if viewport_runtime != null:
+		window_size_provider = Callable(viewport_runtime, &"window_size")
+	var coordinator := SettingsApplicationCoordinator.new(
+		repository,
+		ThemeSettingsAdapter.new(runtime_consumer),
+		ViewportSettingsAdapter.new(
+			runtime_consumer,
+			WorldViewportPolicy.new(),
+			WindowCoordinateMapper.new(),
+			window_size,
+			window_size_provider
+		),
+		LocalizationSettingsAdapter.new(
+			runtime_consumer,
+			LocalizationCatalog.new()
+		),
+		AudioSettingsAdapter.new(audio_coordinator)
+	)
+	var rebuilt: SettingsApplicationResult = (
+		coordinator.rebuild_from_repository()
+	)
+	if not rebuilt.ok:
+		return ERROR_SETTINGS_REBUILD_FAILED
+	_settings_repository_runtime = repository
+	_settings_application = coordinator
+	return &""
+
+
+func _settings_result_ok(value: Variant) -> bool:
+	if typeof(value) == TYPE_DICTIONARY:
+		return bool((value as Dictionary).get("ok", false))
+	if value is Object:
+		return bool((value as Object).get("ok"))
+	return false
+
+
+func _ensure_production_audio_buses() -> void:
+	for bus: StringName in AudioBusKind.ordered_names():
+		if AudioServer.get_bus_index(bus) >= 0:
+			continue
+		AudioServer.add_bus()
+		AudioServer.set_bus_name(AudioServer.bus_count - 1, bus)
 
 
 func is_booted() -> bool:
@@ -146,26 +362,6 @@ func has_unresumable_active_run() -> bool:
 	return not _unresumable_run_id.is_empty()
 
 
-## S5-AC-008：玩家明示棄置；expected id 由 composition 失敗當下釘住，CampController
-## 仍會在交易內重新 load 比對。任何失敗都保留提示與持久化 run，成功才清除並刷新營地。
-func discard_unresumable_active_run() -> StringName:
-	if _app_state_machine.state() != AppStateMachine.State.CAMP:
-		return ERROR_STATE_INVALID
-	if _camp_controller == null:
-		return ERROR_CAMP_UNAVAILABLE
-	if _unresumable_run_id.is_empty():
-		return DiscardActiveRunError.NOT_FOUND
-	var discarded := _camp_controller.dispatch_discard_active_run(
-		DiscardActiveRunCommand.new(_unresumable_run_id)
-	)
-	if not discarded.ok:
-		return discarded.error.code
-	_unresumable_run_id = ""
-	_compose_camp(discarded.profile)
-	_bind_routed_screen()
-	return &""
-
-
 ## 營地五設施的唯讀投影（S5-AC-001）；尚未載入 profile 時為 null。
 func try_camp_view_model() -> CampViewModel:
 	return _camp_view_model
@@ -178,101 +374,735 @@ func try_run_command_factory() -> RunCommandFactory:
 	return _run_command_factory
 
 
-## 遠征門：以已解鎖指揮官開新遠征。回 &"" 表成功，否則為具名失敗碼（結構性 APP_* 或
-## CampController 傳回的 domain 拒絕碼）。成功時 CAMP→RUN 並換場。
-func start_expedition(commander_id: StringName, challenge_level: int) -> StringName:
+func current_menu_snapshot() -> MainMenuSnapshot:
+	return _menu_snapshot.deep_clone()
+
+
+func current_run_presentation() -> RunPresentationSessionResult:
+	if _run_presentation_session == null:
+		return RunPresentationSessionResult.failure(
+			DiagnosticError.new(
+				ERROR_RUN_SESSION_UNAVAILABLE,
+				&"error.presentation.run_session_unavailable"
+			)
+		)
+	return RunPresentationSessionResult.success(_run_presentation_session)
+
+
+func open_main_menu() -> AppActionResult:
+	if _app_state_machine.state() == AppStateMachine.State.MENU:
+		return AppActionResult.success(false)
+	return return_to_menu()
+
+
+func open_camp() -> AppActionResult:
+	if _app_state_machine.state() != AppStateMachine.State.MENU \
+		or not _menu_snapshot.can_start:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var loaded := _save_repository.load()
+	if not loaded.ok:
+		return _action_failure(loaded.error.code)
+	if loaded.run_status != LoadResult.RunStatus.NONE:
+		_update_menu_from_load(loaded)
+		return _action_failure(ERROR_RETAINED_RUN_EXISTS)
+	_compose_camp(loaded.profile)
+	var prepared := _prepare_route(
+		AppStateMachine.State.CAMP,
+		&"CAMP_WORLD",
+		null,
+		loaded.profile
+	)
+	if not bool(prepared.get("ok", false)):
+		return _action_failure(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+	var transitioned := _app_state_machine.transition(
+		AppEvent.new(AppEvent.Kind.OPEN_CAMP)
+	)
+	if not transitioned.ok:
+		_discard_route(prepared)
+		return _action_failure(transitioned.error.code)
+	_commit_route(prepared)
+	return AppActionResult.success(false)
+
+
+func continue_active_run() -> AppActionResult:
+	if _app_state_machine.state() != AppStateMachine.State.MENU \
+		or not _menu_snapshot.can_continue:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var capability := _prepared_run_capability
+	var consumed := (
+		_run_preparation_service.consume(capability)
+		if capability != null
+		else null
+	)
+	if consumed == null or not consumed.ok:
+		var loaded := _save_repository.load()
+		if not loaded.ok or loaded.run_status != LoadResult.RunStatus.LOADED \
+			or loaded.run == null:
+			return _action_failure(ERROR_PREPARED_RUN_STALE)
+		var compose_error := _try_compose_active_run(loaded.profile, loaded.run)
+		if not compose_error.is_empty():
+			_update_menu_from_load(loaded, compose_error)
+			return _action_failure(compose_error)
+		var prepared := _run_preparation_service.prepare(loaded)
+		if not prepared.ok:
+			return AppActionResult.failure(prepared.error)
+		capability = prepared.capability
+		consumed = _run_preparation_service.consume(capability)
+	if consumed == null or not consumed.ok:
+		return _action_failure(ERROR_PREPARED_RUN_STALE)
+	var fresh_compose_error := _try_compose_active_run(
+		consumed.profile, consumed.run
+	)
+	if not fresh_compose_error.is_empty():
+		return _action_failure(fresh_compose_error)
+	var run_snapshot := _run_presentation_session.snapshot()
+	var target_route := _run_route_for_snapshot(run_snapshot)
+	var prepared_route := _prepare_route(
+		AppStateMachine.State.RUN,
+		target_route,
+		run_snapshot
+	)
+	if not bool(prepared_route.get("ok", false)):
+		_release_active_run()
+		return _action_failure(
+			StringName(
+				prepared_route.get("error", ERROR_ROUTE_PREPARE_INVALID)
+			)
+		)
+	var transitioned := _app_state_machine.transition(
+		AppEvent.new(AppEvent.Kind.CONTINUE_RUN)
+	)
+	if not transitioned.ok:
+		_discard_route(prepared_route)
+		_release_active_run()
+		return _action_failure(transitioned.error.code)
+	_prepared_run_capability = null
+	_commit_route(prepared_route)
+	return AppActionResult.success(false)
+
+
+func return_to_menu() -> AppActionResult:
+	if _app_state_machine.state() not in [
+		AppStateMachine.State.CAMP,
+		AppStateMachine.State.RUN,
+	]:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var loaded := _save_repository.load()
+	if loaded.ok:
+		_update_menu_from_load(loaded)
+	var prepared := _prepare_route(
+		AppStateMachine.State.MENU,
+		&"MENU_MAIN",
+		_menu_snapshot
+	)
+	if not bool(prepared.get("ok", false)):
+		return _action_failure(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+	var transitioned := _app_state_machine.transition(
+		AppEvent.new(AppEvent.Kind.RETURN_TO_MENU)
+	)
+	if not transitioned.ok:
+		_discard_route(prepared)
+		return _action_failure(transitioned.error.code)
+	_commit_route(prepared)
+	_release_active_run()
+	return AppActionResult.success(false)
+
+
+func start_expedition(request: StartExpeditionRequest) -> AppActionResult:
 	if _app_state_machine.state() != AppStateMachine.State.CAMP:
-		return ERROR_STATE_INVALID
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
 	if _camp_controller == null:
-		return ERROR_CAMP_UNAVAILABLE
+		return _action_failure(ERROR_CAMP_UNAVAILABLE)
+	if request == null:
+		return _action_failure(StartExpeditionError.INPUT_INVALID)
 	var content := _try_content()
 	if content == null:
-		return ERROR_CONTENT_UNAVAILABLE
-	var commander_def := _try_commander_def(content, commander_id)
+		return _action_failure(ERROR_CONTENT_UNAVAILABLE)
+	var commander_def := _try_commander_def(content, request.commander_id)
 	if commander_def == null:
-		return ERROR_COMMANDER_UNKNOWN
+		return _action_failure(ERROR_COMMANDER_UNKNOWN)
 	var started := _camp_controller.dispatch_start_expedition(StartExpeditionCommand.new(
-		commander_id, commander_def, challenge_level, content.receipt, content.economy_catalog
+		request.commander_id,
+		commander_def,
+		request.challenge_level,
+		content.receipt,
+		content.economy_catalog
 	))
 	if not started.ok:
-		return started.error.code
-	# wave5 修正 A3：dispatch_start_expedition() 成功時 profile'＋新 run **已經**以單筆原子
-	# 存檔提交、next_run_serial 已遞增——這裡的 compose 只是把記憶體物件接起來，不是
-	# 「還沒動持久狀態」。因此 compose 失敗不會回滾任何東西：存檔裡已經有一個 active run，
-	# 重開遊戲會走 boot 的續跑分流（A1 修好後成立），玩家不會失去這局。
-	# 未消耗的一次性提交 token 隨 SaveResult 一起丟棄，不會被別的轉移冒用。
+		return _action_failure(started.error.code)
 	var compose_error := _try_compose_active_run(started.profile, started.run)
 	if not compose_error.is_empty():
-		_unresumable_run_id = started.run.run_id
-		# The transaction has already committed profile'+run. Keep CAMP's
-		# projection/controller on that committed profile while exposing the
-		# explicit discard entry; rebinding the old ViewModel would be stale.
-		_compose_camp(started.profile)
-		push_warning(
-			"AppRoot started a run that could not be composed (the run is persisted and"
-			+ " will resume on next boot): %s" % String(compose_error)
+		return _enter_start_route_recovery(
+			started.profile,
+			started.run,
+			compose_error
 		)
-		_bind_routed_screen()
-		return compose_error
+	var run_snapshot := _run_presentation_session.snapshot()
+	var target_route := _run_route_for_snapshot(run_snapshot)
+	var prepared_route := _prepare_route(
+		AppStateMachine.State.RUN,
+		target_route,
+		run_snapshot
+	)
+	if not bool(prepared_route.get("ok", false)):
+		return _enter_start_route_recovery(
+			started.profile,
+			started.run,
+			StringName(
+				prepared_route.get("error", ERROR_ROUTE_PREPARE_INVALID)
+			)
+		)
 	var transitioned := _app_state_machine.transition_after_save(
 		AppEvent.new(AppEvent.Kind.START_RUN), started.save_result
 	)
 	if not transitioned.ok:
-		_release_active_run()
-		_unresumable_run_id = started.run.run_id
-		# transition failure also occurs after the atomic start commit.
-		_compose_camp(started.profile)
-		_bind_routed_screen()
-		return transitioned.error.code
+		_discard_route(prepared_route)
+		return _enter_start_route_recovery(
+			started.profile,
+			started.run,
+			transitioned.error.code
+		)
 	_camp_view_model = CampViewModel.new(started.profile)
-	return _route_for_state()
+	var commit_error := _commit_route(prepared_route)
+	if not commit_error.is_empty():
+		_discard_route(prepared_route)
+		return _enter_start_route_recovery(
+			started.profile,
+			started.run,
+			commit_error
+		)
+	return AppActionResult.success(true)
 
 
-## 遠征終局的 meta 結算（design.md §5.1）：單一原子交易發貨幣/receipt/挑戰紀錄並清 active
-## run，成功後 RUN→RESULTS 並換場。回 &"" 表成功。
-func settle_active_run() -> StringName:
+func _enter_start_route_recovery(
+	profile: ProfileState,
+	run: RunState,
+	source_code: StringName
+) -> AppActionResult:
+	_release_active_run()
+	_unresumable_run_id = run.run_id if run != null else ""
+	var loaded := _save_repository.load()
+	_compose_camp(loaded.profile if loaded.ok else profile)
+	_update_menu_from_load(loaded, source_code)
+	var prepared := _prepare_route(
+		AppStateMachine.State.MENU,
+		&"MENU_MAIN",
+		_menu_snapshot
+	)
+	var transitioned := _app_state_machine.transition(
+		AppEvent.new(AppEvent.Kind.RETURN_TO_MENU)
+	)
+	if not transitioned.ok:
+		if bool(prepared.get("ok", false)):
+			_discard_route(prepared)
+		_live_lease_registry.revoke_active()
+	elif not bool(prepared.get("ok", false)):
+		_live_lease_registry.revoke_active()
+	else:
+		var menu_commit_error := _commit_route(prepared)
+		if not menu_commit_error.is_empty():
+			_live_lease_registry.revoke_active()
+	return AppActionResult.committed_presentation_failure(
+		DiagnosticError.new(
+			source_code,
+			&"error.presentation.start_postcommit"
+		)
+	)
+
+
+func discard_retained_run(
+	token: RetainedRunRecoveryToken
+) -> AppActionResult:
+	if _app_state_machine.state() != AppStateMachine.State.MENU \
+		or token == null \
+		or _retained_run_recovery_service == null:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var discarded := _retained_run_recovery_service.discard(token)
+	if not discarded.ok:
+		return _action_failure(discarded.error.code)
+	var loaded := _save_repository.load()
+	if not loaded.ok or loaded.run_status != LoadResult.RunStatus.NONE:
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				loaded.error.code if not loaded.ok else ERROR_RETAINED_RUN_EXISTS,
+				&"error.presentation.recovery_postcommit"
+			)
+		)
+	_unresumable_run_id = ""
+	_compose_camp(loaded.profile)
+	_update_menu_from_profile(loaded.profile)
+	return AppActionResult.success(true)
+
+
+func discard_unresumable_active_run() -> StringName:
+	var result := discard_retained_run(_retained_run_recovery_token)
+	return &"" if result.ok else result.error.source_code
+
+
+func _begin_menu_recovery() -> AppActionResult:
+	if (
+		_app_state_machine.state() != AppStateMachine.State.MENU
+		or not _menu_snapshot.has_recovery
+		or _retained_run_recovery_token == null
+	):
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	if _recovery_confirmation_presenter == null:
+		_recovery_confirmation_presenter = RecoveryConfirmationPresenter.new()
+		var bind_error := _recovery_confirmation_presenter.bind(self)
+		if not bind_error.is_empty():
+			return _action_failure(bind_error)
+	var begin_error := _recovery_confirmation_presenter.begin_confirmation(
+		_retained_run_recovery_token,
+		_menu_snapshot.warning_key
+	)
+	return (
+		AppActionResult.success(false)
+		if begin_error.is_empty()
+		else _action_failure(begin_error)
+	)
+
+
+func _confirm_menu_recovery() -> AppActionResult:
+	if (
+		_recovery_confirmation_presenter == null
+		or not _recovery_confirmation_presenter.is_confirmation_open()
+	):
+		return _action_failure(
+			RecoveryConfirmationPresenter.CONFIRMATION_NOT_OPEN
+		)
+	var discarded := _recovery_confirmation_presenter.confirm_confirmation()
+	if discarded == null or not discarded.ok:
+		return _action_failure(
+			discarded.error.code
+			if discarded != null and discarded.error != null
+			else &"RECOVERY_DISCARD_FAILED"
+		)
+	return AppActionResult.success(true)
+
+
+func _cancel_menu_recovery() -> AppActionResult:
+	if _recovery_confirmation_presenter == null:
+		return _action_failure(
+			RecoveryConfirmationPresenter.CONFIRMATION_NOT_OPEN
+		)
+	var cancel_error := (
+		_recovery_confirmation_presenter.cancel_confirmation()
+	)
+	return (
+		AppActionResult.success(false)
+		if cancel_error.is_empty()
+		else _action_failure(cancel_error)
+	)
+
+
+func submit_discard(token: RetainedRunRecoveryToken) -> SaveResult:
+	if _retained_run_recovery_service == null:
+		return SaveResult.failure(
+			SaveError.new(&"RECOVERY_SERVICE_INVALID", &"recovery.service")
+		)
+	var discarded := _retained_run_recovery_service.discard(token)
+	if not discarded.ok:
+		return discarded
+	var loaded := _save_repository.load()
+	if loaded.ok:
+		_unresumable_run_id = ""
+		_compose_camp(loaded.profile)
+		_update_menu_from_load(loaded)
+		var prepared := _prepare_route(
+			AppStateMachine.State.MENU,
+			&"MENU_MAIN",
+			_menu_snapshot
+		)
+		if bool(prepared.get("ok", false)):
+			_commit_route(prepared)
+	return discarded
+
+
+func open_settings() -> AppActionResult:
+	if _app_state_machine.state() not in [
+		AppStateMachine.State.MENU,
+		AppStateMachine.State.CAMP,
+	]:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	return _navigate_subroute(&"SETTINGS")
+
+
+func close_settings() -> AppActionResult:
+	var parent := _app_state_machine.state()
+	if parent not in [
+		AppStateMachine.State.MENU,
+		AppStateMachine.State.CAMP,
+	]:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	return _navigate_subroute(
+		&"CAMP_WORLD"
+		if parent == AppStateMachine.State.CAMP
+		else &"MENU_MAIN"
+	)
+
+
+func _apply_settings_from_active_screen() -> AppActionResult:
+	var screen := _active_production_screen()
+	var composition := (
+		screen.get_node_or_null("Composition") as SettingsScreenComposition
+		if screen != null and screen.route_kind == &"SETTINGS"
+		else null
+	)
+	if composition == null or _settings_application == null:
+		return _action_failure(ERROR_SETTINGS_RUNTIME_MISSING)
+	var draft := composition.settings_draft()
+	if draft == null:
+		composition.set_control_status_code(
+			SettingsScreenComposition.DRAFT_INVALID
+		)
+		return _action_failure(SettingsScreenComposition.DRAFT_INVALID)
+	var applied := _settings_application.apply(draft)
+	if applied == null:
+		composition.set_control_status_code(ERROR_SETTINGS_RUNTIME_MISSING)
+		return _action_failure(ERROR_SETTINGS_RUNTIME_MISSING)
+	if applied.snapshot != null:
+		composition.mark_committed(applied.snapshot)
+	var source_code := (
+		applied.error.source_code
+		if applied.error != null
+		else &""
+	)
+	composition.set_control_status_code(source_code)
+	if applied.ok:
+		screen.relocalize(
+			applied.snapshot.locale,
+			_localized_text_map(applied.snapshot.locale)
+		)
+		return AppActionResult.success(true)
+	if applied.committed:
+		if applied.snapshot != null:
+			screen.relocalize(
+				applied.snapshot.locale,
+				_localized_text_map(applied.snapshot.locale)
+			)
+		return AppActionResult.committed_presentation_failure(
+			applied.error
+			if applied.error != null
+			else DiagnosticError.new(
+				ERROR_SETTINGS_REBUILD_FAILED,
+				&"error.settings.application_failed"
+			)
+		)
+	return _action_failure(
+		source_code
+		if not source_code.is_empty()
+		else ERROR_SETTINGS_REBUILD_FAILED
+	)
+
+
+func request_exit() -> AppActionResult:
+	if _app_state_machine.state() != AppStateMachine.State.MENU:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	if _exit_request_pending:
+		return _action_failure(ERROR_EXIT_ALREADY_PENDING)
+	_exit_request_pending = true
+	exit_requested.emit()
+	return AppActionResult.success(false)
+
+
+func settle_active_run() -> AppActionResult:
 	if _app_state_machine.state() != AppStateMachine.State.RUN:
-		return ERROR_STATE_INVALID
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
 	var content := _try_content()
 	if content == null or content.meta_reward_table == null:
-		return ERROR_CONTENT_UNAVAILABLE
-	var settled := MetaSettlementCommand.new(
-		_save_repository, content.meta_reward_table
-	).dispatch()
-	if not settled.ok:
-		return settled.error.code
-	# wave5 修正 B2：dispatch 一旦成功，存檔裡的 active run 就已經被清掉、貨幣/receipt 也已
-	# 發放——此時仍握著的 RunSession／RunController 是**已結算 run 的舊 session**，它的下一次
-	# dispatch 會拿結算前的 profile 覆寫回去（等於讓已結算的 run 復活、獎勵二次發放）。
-	# 故釋放必須綁在「dispatch 成功」而不是「轉移也成功」上。
-	_release_active_run()
-	var transitioned := _app_state_machine.transition_after_save(
-		AppEvent.new(AppEvent.Kind.FINISH_RUN), settled.save_result
-	)
-	if not transitioned.ok:
-		# run 已結算、session 已釋放，只是 app 狀態沒跟上：具名回報，重開遊戲會回到營地。
-		_refresh_camp_from_storage()
-		return transitioned.error.code
-	_refresh_camp_from_storage()
-	return _route_for_state()
+		return _action_failure(ERROR_CONTENT_UNAVAILABLE)
+	if _terminal_settlement_coordinator == null:
+		var application_handoff := ApplicationTerminalHandoffPort.new(
+			_commit_terminal_handoff,
+			null,
+			_commit_fail_closed_terminal_handoff
+		)
+		var bind_error := application_handoff.bind_presentation_port(
+			_terminal_route_handoff_port
+		)
+		if not bind_error.is_empty():
+			return AppActionResult.committed_presentation_failure(
+				DiagnosticError.new(
+					bind_error,
+					&"error.presentation.terminal_handoff"
+				)
+			)
+		_terminal_settlement_coordinator = TerminalSettlementCoordinator.new(
+			_save_repository,
+			application_handoff,
+			_revoke_run_writers,
+			_invalidate_run_session,
+			_release_active_run,
+			_commit_fail_closed_terminal_handoff
+		)
+	return _terminal_settlement_coordinator.settle(content.meta_reward_table)
 
 
-## RESULTS→CAMP（無存檔提交）。回 &"" 表成功。
-func acknowledge_results() -> StringName:
+func return_results_to_camp() -> AppActionResult:
+	if not _begin_results_action():
+		return _action_failure(RESULTS_ACTION_IN_PROGRESS)
+	var result := _return_results_to_camp_owned()
+	_end_results_action()
+	return result
+
+
+func _return_results_to_camp_owned() -> AppActionResult:
 	if _app_state_machine.state() != AppStateMachine.State.RESULTS:
-		return ERROR_STATE_INVALID
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	_refresh_camp_from_storage()
+	var prepared := _prepare_route(
+		AppStateMachine.State.CAMP,
+		&"CAMP_WORLD",
+		null,
+		_camp_profile_snapshot
+	)
+	if not bool(prepared.get("ok", false)):
+		return _action_failure(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
 	var transitioned := _app_state_machine.transition(
-		AppEvent.new(AppEvent.Kind.ACKNOWLEDGE_RESULTS)
+		AppEvent.new(AppEvent.Kind.RETURN_RESULTS_TO_CAMP)
 	)
 	if not transitioned.ok:
-		return transitioned.error.code
-	_refresh_camp_from_storage()
-	return _route_for_state()
+		_discard_route(prepared)
+		return _action_failure(transitioned.error.code)
+	_commit_route(prepared)
+	return AppActionResult.success(false)
 
 
-# --- boot 分流 -------------------------------------------------------------
+func return_results_to_menu() -> AppActionResult:
+	if not _begin_results_action():
+		return _action_failure(RESULTS_ACTION_IN_PROGRESS)
+	var result := _return_results_to_menu_owned()
+	_end_results_action()
+	return result
+
+
+func _return_results_to_menu_owned() -> AppActionResult:
+	if _app_state_machine.state() != AppStateMachine.State.RESULTS:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var loaded := _save_repository.load()
+	if loaded.ok:
+		_update_menu_from_load(loaded)
+	var prepared := _prepare_route(
+		AppStateMachine.State.MENU,
+		&"MENU_MAIN",
+		_menu_snapshot
+	)
+	if not bool(prepared.get("ok", false)):
+		return _action_failure(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+	var transitioned := _app_state_machine.transition(
+		AppEvent.new(AppEvent.Kind.RETURN_RESULTS_TO_MENU)
+	)
+	if not transitioned.ok:
+		_discard_route(prepared)
+		return _action_failure(transitioned.error.code)
+	_commit_route(prepared)
+	return AppActionResult.success(false)
+
+
+func acknowledge_results() -> StringName:
+	var result := return_results_to_camp()
+	return &"" if result.ok else result.error.source_code
+
+
+func _action_failure(code: StringName) -> AppActionResult:
+	return AppActionResult.failure(
+		DiagnosticError.new(code, &"error.presentation.app_action")
+	)
+
+
+func _update_menu_from_profile(profile: ProfileState) -> void:
+	_prepared_run_capability = null
+	_retained_run_recovery_token = null
+	_menu_snapshot = MainMenuSnapshot.new()
+	_menu_snapshot.can_start = profile != null
+
+
+func _update_menu_from_load(
+	loaded: LoadResult,
+	compose_error: StringName = &""
+) -> void:
+	_prepared_run_capability = null
+	_retained_run_recovery_token = null
+	_menu_snapshot = MainMenuSnapshot.new()
+	if loaded == null or not loaded.ok:
+		_menu_snapshot.warning_key = &"error.presentation.save_unavailable"
+		return
+	match loaded.run_status:
+		LoadResult.RunStatus.NONE:
+			_menu_snapshot.can_start = true
+		LoadResult.RunStatus.LOADED:
+			if loaded.run == null:
+				_menu_snapshot.warning_key = &"error.presentation.run_unavailable"
+				return
+			if compose_error.is_empty() and _run_presentation_session == null:
+				compose_error = _try_compose_active_run(loaded.profile, loaded.run)
+			if compose_error.is_empty():
+				var prepared := _run_preparation_service.prepare(loaded)
+				if prepared.ok:
+					_prepared_run_capability = prepared.capability
+					_menu_snapshot.can_continue = true
+					_menu_snapshot.active_run_id_display = loaded.run.run_id
+					return
+				compose_error = prepared.error.source_code
+			_unresumable_run_id = loaded.run.run_id
+			_retained_run_recovery_token = (
+				_retained_run_recovery_service.issue_token(
+					loaded,
+					StringName(loaded.run.run_id)
+				)
+			)
+			_menu_snapshot.has_recovery = (
+				_retained_run_recovery_token.is_issued()
+			)
+			_menu_snapshot.active_run_id_display = loaded.run.run_id
+			_menu_snapshot.warning_key = &"error.presentation.run_recovery"
+		LoadResult.RunStatus.INCOMPATIBLE_PRESERVED:
+			_retained_run_recovery_token = (
+				_retained_run_recovery_service.issue_token(loaded, &"")
+			)
+			_menu_snapshot.has_recovery = (
+				_retained_run_recovery_token.is_issued()
+			)
+			_menu_snapshot.warning_key = &"error.presentation.run_incompatible"
+
+
+func _commit_terminal_handoff(
+	capability: TerminalSettlementPresentationCapability,
+	snapshot: ResultsPresentationSnapshot
+) -> AppActionResult:
+	if (
+		capability == null
+		or snapshot == null
+		or not capability._authorizes_snapshot(snapshot)
+	):
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				&"RESULTS_FALLBACK", &"error.presentation.results_fallback"
+			)
+		)
+	if _app_state_machine.state() == AppStateMachine.State.RESULTS:
+		return (
+			AppActionResult.success(true)
+			if _terminal_snapshot_matches(snapshot)
+			else AppActionResult.committed_presentation_failure(
+				DiagnosticError.new(
+					&"RESULTS_FALLBACK",
+					&"error.presentation.results_fallback"
+				)
+			)
+		)
+	if _app_state_machine.state() != AppStateMachine.State.RUN:
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				&"RESULTS_FALLBACK", &"error.presentation.results_fallback"
+			)
+		)
+	var transitioned := _app_state_machine.transition_after_terminal_handoff(
+		AppEvent.new(AppEvent.Kind.FINISH_RUN)
+	)
+	if not transitioned.ok:
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				transitioned.error.code, &"error.presentation.results_fallback"
+			)
+		)
+	_terminal_presentation_snapshot = snapshot.deep_clone()
+	return AppActionResult.success(true)
+
+
+func _commit_fail_closed_terminal_handoff(
+	snapshot: ResultsPresentationSnapshot,
+	_cause: StringName
+) -> AppActionResult:
+	if (
+		snapshot == null
+		or not snapshot.has_authoritative_pair()
+	):
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				&"RESULTS_FALLBACK",
+				&"error.presentation.results_fallback"
+			)
+		)
+	if _app_state_machine.state() == AppStateMachine.State.RESULTS:
+		return (
+			AppActionResult.success(true)
+			if _terminal_snapshot_matches(snapshot)
+			else AppActionResult.committed_presentation_failure(
+				DiagnosticError.new(
+					&"RESULTS_FALLBACK",
+					&"error.presentation.results_fallback"
+				)
+			)
+		)
+	if _app_state_machine.state() != AppStateMachine.State.RUN:
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				&"RESULTS_FALLBACK",
+				&"error.presentation.results_fallback"
+			)
+		)
+	var transitioned := _app_state_machine.transition_after_terminal_handoff(
+		AppEvent.new(AppEvent.Kind.FINISH_RUN)
+	)
+	if not transitioned.ok:
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				transitioned.error.code,
+				&"error.presentation.results_fallback"
+			)
+		)
+	_terminal_presentation_snapshot = snapshot.deep_clone()
+	return AppActionResult.success(true)
+
+
+func _terminal_snapshot_matches(
+	snapshot: ResultsPresentationSnapshot
+) -> bool:
+	return (
+		snapshot != null
+		and _terminal_presentation_snapshot != null
+		and not snapshot.presentation_digest().is_empty()
+		and snapshot.presentation_digest()
+			== _terminal_presentation_snapshot.presentation_digest()
+	)
+
+
+func _terminal_presentation_snapshot_clone() -> ResultsPresentationSnapshot:
+	return (
+		_terminal_presentation_snapshot.deep_clone()
+		if _terminal_presentation_snapshot != null
+		else null
+	)
+
+
+func _revoke_run_writers() -> void:
+	# Durable terminal commit invalidates the actual callback authority before
+	# any repository proof or presentation route can fail.
+	_live_lease_registry.revoke_active()
+	_run_command_factory = null
+	_run_controller = null
+
+
+func _invalidate_run_session() -> void:
+	# No facade or dev wrapper may retain a dispatch path after terminal save.
+	_run_lab_session = null
+	_run_presentation_session = null
+
+
+# === boot 分流 =============================================================
 
 func _boot_combat_lab() -> StringName:
+	if _try_content() == null:
+		return ERROR_CONTENT_UNAVAILABLE
 	var scene := load(COMBAT_LAB_SCENE_PATH) as PackedScene
 	if scene == null:
 		return SceneRouterService.ERROR_SCENE_INVALID
@@ -301,49 +1131,34 @@ func _boot_route() -> StringName:
 	var loaded := _save_repository.load()
 	if not loaded.ok and loaded.profile_status != LoadResult.ProfileStatus.NOT_FOUND:
 		return loaded.error.code
-	if loaded.ok and loaded.run_status == LoadResult.RunStatus.INCOMPATIBLE_PRESERVED:
-		# The profile is readable but opaque active-run bytes are intentionally
-		# retained. Treating this as run-free CAMP would let ordinary writers
-		# overwrite the preserved data without an expected run id.
-		return MigrationError.RUN_INCOMPATIBLE_PRESERVED
-	if loaded.ok and loaded.run_status == LoadResult.RunStatus.LOADED and loaded.run != null:
-		var compose_error := _try_compose_active_run(loaded.profile, loaded.run)
-		if compose_error.is_empty():
-			var resumed := _app_state_machine.transition_after_active_run_load(
-				AppEvent.new(AppEvent.Kind.ACTIVE_RUN_LOADED), loaded
-			)
-			if not resumed.ok:
-				_release_active_run()
-				return resumed.error.code
-			_camp_view_model = CampViewModel.new(loaded.profile)
-			return _route_for_state()
-		# 接不回來（世代不符／內容不可用／表建不起來）時不吞掉存檔裡的 run：退回營地，
-		# active run 仍持久，修好內容後重開即可續跑。wave5 修正 B3：各失敗原因具名可區分。
-		push_warning("AppRoot could not resume the active run: %s" % String(compose_error))
-		_unresumable_run_id = loaded.run.run_id
-		_release_active_run()
-	var booted := _app_state_machine.transition(AppEvent.new(AppEvent.Kind.BOOT_COMPLETED))
-	if not booted.ok:
-		return booted.error.code
-	var camp := _app_state_machine.transition(AppEvent.new(AppEvent.Kind.OPEN_CAMP))
-	if not camp.ok:
-		return camp.error.code
 	var profile := loaded.profile if loaded.ok else null
+	var compose_error: StringName = &""
+	if loaded.ok and loaded.run_status == LoadResult.RunStatus.LOADED and loaded.run != null:
+		compose_error = _try_compose_active_run(loaded.profile, loaded.run)
+		if not compose_error.is_empty():
+			_unresumable_run_id = loaded.run.run_id
+			_release_active_run()
 	if profile == null and loaded.profile_status == LoadResult.ProfileStatus.NOT_FOUND:
-		# wave5 修正 A2：乾淨環境沒有任何 production 路徑會建 profile，營地因此一直是
-		# 「尚未載入 profile」的死畫面。這裡建初始 profile 並**立即落檔**（run == null 的
-		# CampSaveRootFactory 存檔），後續營地交易才有可寫回的基準。
 		profile = _try_bootstrap_profile(content)
 		if profile == null:
 			return ERROR_PROFILE_BOOTSTRAP_FAILED
 	_compose_camp(profile)
+	if loaded.ok:
+		_update_menu_from_load(loaded, compose_error)
+	else:
+		_update_menu_from_profile(profile)
+	var booted := _app_state_machine.transition(
+		AppEvent.new(AppEvent.Kind.BOOT_COMPLETED)
+	)
+	if not booted.ok:
+		return booted.error.code
 	return _route_for_state()
 
 
 ## 首次啟動的初始 profile：起始解鎖集合來自內容（unlock_kind == base_profile 的
 ## unlocked_content_refs），其餘欄位全是「什麼都還沒發生」的零值。建好即以單筆存檔提交，
 ## 失敗回 null（呼叫端轉成具名 boot 失敗）。
-func _try_bootstrap_profile(content: BuildLabBootstrapResult) -> ProfileState:
+func _try_bootstrap_profile(content: ProjectContentBootstrapResult) -> ProfileState:
 	var unlocked: Array[StringName] = content.base_profile_unlocked_content_ids.duplicate()
 	unlocked.sort_custom(func(left: StringName, right: StringName) -> bool:
 		return String(left) < String(right)
@@ -366,53 +1181,511 @@ func _try_bootstrap_profile(content: BuildLabBootstrapResult) -> ProfileState:
 	return profile
 
 
-# --- 換場（SceneRouter 依 app state）---------------------------------------
+# === 換場（SceneRouter 依 app state）=======================================
 
 func _route_for_state() -> StringName:
-	var scene_path := _scene_path_for_state()
-	if scene_path.is_empty():
-		# BOOT／MENU 無對應 presentation：不換場也不是錯誤。
-		return &""
-	var scene := load(scene_path) as PackedScene
-	if scene == null:
-		return SceneRouterService.ERROR_SCENE_INVALID
-	var route_error := _scene_router.replace_presentation(scene)
+	var route_kind: StringName = &""
+	var snapshot: RefCounted
+	var profile: ProfileState
+	match _app_state_machine.state():
+		AppStateMachine.State.MENU:
+			route_kind = &"MENU_MAIN"
+			snapshot = _menu_snapshot
+		AppStateMachine.State.CAMP:
+			route_kind = &"CAMP_WORLD"
+			profile = _camp_profile_snapshot
+		AppStateMachine.State.RUN:
+			if _run_presentation_session == null:
+				return ERROR_RUN_SESSION_UNAVAILABLE
+			var run_snapshot := _run_presentation_session.snapshot()
+			if run_snapshot == null:
+				return ERROR_RUN_SNAPSHOT_UNAVAILABLE
+			match run_snapshot.app_phase:
+				&"MAP":
+					route_kind = &"RUN_MAP"
+				&"PREPARE":
+					route_kind = &"RUN_PREPARE"
+				&"COMBAT":
+					route_kind = &"RUN_COMBAT"
+				&"REWARD":
+					route_kind = &"RUN_REWARD"
+				_:
+					return ERROR_RUN_PHASE_INVALID
+			snapshot = run_snapshot
+		AppStateMachine.State.RESULTS:
+			route_kind = &"RESULTS"
+			snapshot = _terminal_presentation_snapshot
+		_:
+			return ERROR_STATE_INVALID
+	var prepared := _prepare_route(
+		_app_state_machine.state(),
+		route_kind,
+		snapshot,
+		profile
+	)
+	if not bool(prepared.get("ok", false)):
+		return StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+	return _commit_route(prepared)
+
+
+func _prepare_route(
+	target_parent_state: int,
+	route_kind: StringName,
+	snapshot: RefCounted = null,
+	profile: ProfileState = null
+) -> Dictionary:
+	if _scene_router == null or route_kind.is_empty():
+		return {"ok": false, "error": ERROR_ROUTE_PREPARE_INVALID}
+	var generation := _next_route_generation()
+	var activation := _live_lease_registry.prepare_activation(
+		target_parent_state,
+		generation
+	)
+	var lease := _live_lease_registry.prepared_lease(activation)
+	if activation == null or lease == null:
+		return {"ok": false, "error": ERROR_ROUTE_PREPARE_INVALID}
+	var navigation_port := LiveScreenNavigationPort.new(
+		lease,
+		_live_lease_registry,
+		Callable(self, "_navigate_subroute")
+	)
+	var intent_port: LiveScreenIntentPort
+	var playback_port: LiveScreenPlaybackPort
+	var inspection_port: LiveScreenInspectionPort
+	if target_parent_state == AppStateMachine.State.RUN:
+		if _run_presentation_session == null:
+			_live_lease_registry.cancel_activation(activation)
+			return {"ok": false, "error": ERROR_RUN_SESSION_UNAVAILABLE}
+		intent_port = LiveScreenIntentPort.new(
+			lease,
+			_live_lease_registry,
+			_run_presentation_session,
+			Callable(self, "_handle_run_route_after_intent")
+		)
+		if route_kind == &"RUN_COMBAT":
+			playback_port = LiveScreenPlaybackPort.new(
+				lease,
+				_live_lease_registry,
+				_run_presentation_session
+			)
+			inspection_port = LiveScreenInspectionPort.new(
+				lease,
+				_live_lease_registry,
+				_run_presentation_session
+			)
+	var action_port := ProductionScreenActionPort.new(
+		lease,
+		_live_lease_registry,
+		_action_callbacks(route_kind)
+	)
+	var collection_projection: CollectionBrowserSnapshot
+	if route_kind == &"COLLECTION":
+		var content := _try_content()
+		if content != null and content.ok:
+			collection_projection = content.collection_snapshot(profile)
+	var staged := _staged_context(route_kind, snapshot, profile)
+	var live := ProductionLiveScreenContext.new(
+		route_kind,
+		snapshot,
+		profile,
+		action_port,
+		navigation_port,
+		intent_port,
+		playback_port,
+		inspection_port,
+		collection_projection
+	)
+	var prepared_result := _scene_router.prepare_production(
+		route_kind,
+		staged,
+		live
+	)
+	if not prepared_result.ok:
+		_live_lease_registry.cancel_activation(activation)
+		return {
+			"ok": false,
+			"error": prepared_result.error.source_code,
+		}
+	return {
+		"ok": true,
+		"route_kind": route_kind,
+		"generation": generation,
+		"activation": activation,
+		"prepared": prepared_result.prepared,
+	}
+
+
+func _commit_route(prepared: Dictionary) -> StringName:
+	if prepared == null or not bool(prepared.get("ok", false)):
+		return ERROR_ROUTE_ACTIVATION_INVALID
+	var activation := prepared.get("activation") as ScreenActivationCapability
+	var route := prepared.get("prepared") as PreparedProductionRoute
+	var staged_lease := _live_lease_registry.prepared_lease(activation)
+	if staged_lease == null:
+		return ERROR_ROUTE_ACTIVATION_INVALID
+	var prepared_error := _scene_router.prepared_error(route)
+	if not prepared_error.is_empty():
+		return prepared_error
+	var route_error := _scene_router.commit_prepared(route)
 	if not route_error.is_empty():
+		_live_lease_registry.cancel_activation(activation)
 		return route_error
-	_bind_routed_screen()
+	var lease := _live_lease_registry.activate_prepared(activation)
+	if lease == null:
+		return ERROR_ROUTE_ACTIVATION_INVALID
+	_route_generation = int(prepared.get("generation", _route_generation))
+	_active_route_kind = StringName(prepared.get("route_kind", &""))
 	return &""
 
 
-func _scene_path_for_state() -> String:
-	match _app_state_machine.state():
-		AppStateMachine.State.CAMP:
-			return CAMP_SCENE_PATH
-		AppStateMachine.State.RUN:
-			return RUN_SCENE_PATH
-		AppStateMachine.State.RESULTS:
-			return RESULTS_SCENE_PATH
-	return ""
+func _discard_route(prepared: Dictionary) -> void:
+	_live_lease_registry.cancel_activation(
+		prepared.get("activation") as ScreenActivationCapability
+	)
+	_scene_router.discard_prepared(
+		prepared.get("prepared") as PreparedProductionRoute
+	)
 
 
-## 灰盒場景由 SceneRouter 實例化，故建構後才由 composition root 餵 ViewModel。
-func _bind_routed_screen() -> void:
-	if presentation_host.get_child_count() == 0:
-		return
-	var screen := presentation_host.get_child(presentation_host.get_child_count() - 1)
-	var camp_screen := screen as CampScreen
-	if camp_screen != null:
-		camp_screen.bind(self, _camp_view_model)
-		return
-	var run_screen := screen as RunScreen
-	if run_screen != null:
-		run_screen.bind(self, _run_lab_session)
-		return
-	var results_screen := screen as ResultsScreen
-	if results_screen != null:
-		results_screen.bind(self, _camp_view_model)
+func _next_route_generation() -> int:
+	var active := _live_lease_registry.active_lease()
+	var active_generation := (
+		active.route_generation if active != null else 0
+	)
+	return maxi(_route_generation, active_generation) + 1
 
 
-# --- run 範疇組裝 -----------------------------------------------------------
+func _navigate_subroute(target_route: StringName) -> AppActionResult:
+	var parent := _app_state_machine.state()
+	var snapshot: RefCounted
+	var profile: ProfileState
+	if target_route == &"SETTINGS":
+		if (
+			parent not in [
+				AppStateMachine.State.MENU,
+				AppStateMachine.State.CAMP,
+			]
+			or _settings_repository_runtime == null
+			or not _settings_repository_runtime.has_method("current_snapshot")
+		):
+			return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+		snapshot = (
+			_settings_repository_runtime.call("current_snapshot")
+			as SettingsSnapshot
+		)
+		if snapshot == null:
+			return _action_failure(ERROR_SETTINGS_RUNTIME_MISSING)
+	elif parent == AppStateMachine.State.RUN:
+		if _run_presentation_session == null:
+			return _action_failure(ERROR_RUN_SESSION_UNAVAILABLE)
+		snapshot = _run_presentation_session.snapshot()
+		var required := _run_route_for_snapshot(
+			snapshot as RunPresentationSnapshot
+		)
+		if target_route != required:
+			return _action_failure(PresentationRouteCoordinator.ROUTE_TARGET_INVALID)
+	elif parent == AppStateMachine.State.CAMP:
+		profile = _camp_profile_snapshot
+	elif parent == AppStateMachine.State.MENU:
+		snapshot = _menu_snapshot
+	else:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var prepared := _prepare_route(parent, target_route, snapshot, profile)
+	if not bool(prepared.get("ok", false)):
+		return _action_failure(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+	var commit_error := _commit_route(prepared)
+	if not commit_error.is_empty():
+		return _action_failure(commit_error)
+	return AppActionResult.success(false)
+
+
+func _handle_run_route_after_intent(
+	result: RunPresentationResult
+) -> AppActionResult:
+	if (
+		result == null
+		or result.snapshot == null
+		or _app_state_machine.state() != AppStateMachine.State.RUN
+	):
+		return _action_failure(ERROR_RUN_SNAPSHOT_UNAVAILABLE)
+	var target := _run_route_for_snapshot(result.snapshot)
+	if target.is_empty():
+		return _action_failure(ERROR_RUN_PHASE_INVALID)
+	var prepared := _prepare_route(
+		AppStateMachine.State.RUN,
+		target,
+		result.snapshot
+	)
+	if not bool(prepared.get("ok", false)):
+		return _install_run_route_fallback(
+			result,
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+	var commit_error := _commit_route(prepared)
+	if not commit_error.is_empty():
+		return _install_run_route_fallback(result, commit_error)
+	return AppActionResult.success(result.committed)
+
+
+func _install_run_route_fallback(
+	result: RunPresentationResult,
+	source_code: StringName
+) -> AppActionResult:
+	var snapshot: RunPresentationSnapshot = (
+		result.snapshot
+		if result != null
+		else null
+	)
+	if snapshot != null:
+		var fallback := _prepare_route(
+			AppStateMachine.State.RUN,
+			&"RUN_ROUTE_FALLBACK",
+			snapshot
+		)
+		if bool(fallback.get("ok", false)):
+			var fallback_error := _commit_route(fallback)
+			if not fallback_error.is_empty():
+				source_code = fallback_error
+		else:
+			source_code = StringName(fallback.get("error", source_code))
+	return AppActionResult.committed_presentation_failure(
+		DiagnosticError.new(
+			source_code,
+			&"error.presentation.run_route_fallback"
+		)
+	)
+
+
+func _retry_run_route_presentation() -> AppActionResult:
+	if (
+		_app_state_machine.state() != AppStateMachine.State.RUN
+		or _run_presentation_session == null
+		or _active_route_kind != &"RUN_ROUTE_FALLBACK"
+	):
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var snapshot := _run_presentation_session.snapshot()
+	var target := _run_route_for_snapshot(snapshot)
+	if target.is_empty():
+		return _action_failure(ERROR_RUN_PHASE_INVALID)
+	var prepared := _prepare_route(
+		AppStateMachine.State.RUN,
+		target,
+		snapshot
+	)
+	if not bool(prepared.get("ok", false)):
+		return _action_failure(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+	var commit_error := _commit_route(prepared)
+	if not commit_error.is_empty():
+		return _action_failure(commit_error)
+	return AppActionResult.success(false)
+
+
+func _run_route_for_snapshot(snapshot: RunPresentationSnapshot) -> StringName:
+	if snapshot == null:
+		return &""
+	match snapshot.app_phase:
+		&"MAP":
+			return &"RUN_MAP"
+		&"PREPARE":
+			return &"RUN_PREPARE"
+		&"COMBAT":
+			return &"RUN_COMBAT"
+		&"REWARD":
+			return &"RUN_REWARD"
+	return &""
+
+
+func _localized_text_map(locale: StringName) -> Dictionary:
+	var result: Dictionary = {}
+	var catalog := LocalizationCatalog.new()
+	for key: StringName in catalog.keys_for_locale(locale):
+		var resolved := catalog.resolve(locale, key)
+		if resolved.ok:
+			result[key] = resolved.value
+	return result
+
+
+func _current_locale() -> StringName:
+	if (
+		_settings_repository_runtime != null
+		and _settings_repository_runtime.has_method("current_snapshot")
+	):
+		var snapshot := (
+			_settings_repository_runtime.call("current_snapshot")
+			as SettingsSnapshot
+		)
+		if snapshot != null and snapshot.locale in [&"zh_TW", &"en"]:
+			return snapshot.locale
+	return &"zh_TW"
+
+
+func _staged_context(
+	route_kind: StringName,
+	snapshot: RefCounted = null,
+	profile: ProfileState = null
+) -> StagedScreenContext:
+	var locale := _current_locale()
+	return StagedScreenContext.new(
+		route_kind,
+		snapshot,
+		profile,
+		locale,
+		_localized_text_map(locale)
+	)
+
+
+func _terminal_staged_context(
+	route_kind: StringName,
+	snapshot: ResultsPresentationSnapshot
+) -> StagedScreenContext:
+	return _staged_context(route_kind, snapshot)
+
+
+func _action_callbacks(route_kind: StringName) -> Dictionary:
+	var actions: Dictionary = {}
+	match route_kind:
+		&"MENU_MAIN":
+			actions[&"menu.continue"] = Callable(self, "continue_active_run")
+			actions[&"menu.start"] = Callable(self, "open_camp")
+			actions[&"menu.settings"] = Callable(self, "open_settings")
+			if _menu_snapshot.has_recovery:
+				actions[&"menu.recovery"] = Callable(
+					self, "_begin_menu_recovery"
+				)
+				actions[&"menu.recovery.confirm"] = Callable(
+					self, "_confirm_menu_recovery"
+				)
+				actions[&"menu.recovery.cancel"] = Callable(
+					self, "_cancel_menu_recovery"
+				)
+			actions[&"menu.exit"] = Callable(self, "request_exit")
+		&"SETTINGS":
+			actions[&"settings.apply"] = Callable(
+				self, "_apply_settings_from_active_screen"
+			)
+			actions[&"settings.back"] = Callable(self, "close_settings")
+		&"CAMP_WORLD":
+			actions[&"camp.expedition_gate"] = Callable(
+				self, "_open_expedition_gate_route"
+			)
+			actions[&"camp.commander_hall"] = Callable(
+				self, "_open_commander_hall_route"
+			)
+			actions[&"camp.collection"] = Callable(
+				self, "_open_collection_route"
+			)
+			actions[&"camp.forge"] = Callable(
+				self, "_open_workshop_route"
+			)
+			actions[&"camp.challenge_monument"] = Callable(
+				self, "_open_challenge_monument_route"
+			)
+			actions[&"camp.settings"] = Callable(self, "open_settings")
+			actions[&"camp.start"] = Callable(
+				self, "_start_selected_camp_expedition"
+			)
+			actions[&"camp.menu"] = Callable(self, "return_to_menu")
+		&"FACILITY_EXPEDITION_GATE", \
+		&"FACILITY_COMMANDER_HALL", \
+		&"COLLECTION", \
+		&"FACILITY_UNLOCK_WORKSHOP", \
+		&"FACILITY_CHALLENGE_MONUMENT":
+			actions[&"camp.back"] = Callable(self, "_return_to_camp_route")
+		&"RUN_MAP", &"RUN_PREPARE", &"RUN_COMBAT", &"RUN_REWARD":
+			actions[&"run.menu"] = Callable(self, "return_to_menu")
+		&"RUN_ROUTE_FALLBACK":
+			actions[&"run.retry_route"] = Callable(
+				self, "_retry_run_route_presentation"
+			)
+			actions[&"run.menu"] = Callable(self, "return_to_menu")
+		&"RESULTS", &"RESULTS_FALLBACK":
+			actions[&"results.camp"] = Callable(
+				self, "return_results_to_camp"
+			)
+			actions[&"results.menu"] = Callable(
+				self, "return_results_to_menu"
+			)
+			actions[&"results.retry"] = Callable(
+				self, "_retry_results_presentation"
+			)
+	return actions
+
+
+func _open_collection_route() -> AppActionResult:
+	return _navigate_subroute(&"COLLECTION")
+
+
+func _open_expedition_gate_route() -> AppActionResult:
+	return _navigate_subroute(&"FACILITY_EXPEDITION_GATE")
+
+
+func _open_commander_hall_route() -> AppActionResult:
+	return _navigate_subroute(&"FACILITY_COMMANDER_HALL")
+
+
+func _open_workshop_route() -> AppActionResult:
+	return _navigate_subroute(&"FACILITY_UNLOCK_WORKSHOP")
+
+
+func _open_challenge_monument_route() -> AppActionResult:
+	return _navigate_subroute(&"FACILITY_CHALLENGE_MONUMENT")
+
+
+func _return_to_camp_route() -> AppActionResult:
+	return _navigate_subroute(&"CAMP_WORLD")
+
+
+func _start_selected_camp_expedition() -> AppActionResult:
+	var screen := _active_production_screen()
+	var composition := (
+		screen.get_node_or_null("Composition") as CampWorldScreen
+		if screen != null and screen.route_kind == &"CAMP_WORLD"
+		else null
+	)
+	var request := (
+		composition.selected_expedition_request()
+		if composition != null
+		else null
+	)
+	if request == null:
+		return _action_failure(ERROR_CAMP_EXPEDITION_SELECTION_REQUIRED)
+	return start_expedition(request)
+
+
+func _active_production_screen() -> ProductionScreen:
+	if presentation_host == null or presentation_host.get_child_count() != 1:
+		return null
+	return presentation_host.get_child(0) as ProductionScreen
+
+
+func _retry_results_presentation() -> AppActionResult:
+	var result := _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	if _terminal_route_handoff_port is SceneRouterTerminalPresentationHandoffAdapter:
+		var adapter := (
+			_terminal_route_handoff_port
+			as SceneRouterTerminalPresentationHandoffAdapter
+		)
+		var navigation := adapter.fallback_navigation_port()
+		result = navigation.retry_installed()
+	return result
+
+
+func _begin_results_action() -> bool:
+	if _results_action_in_progress:
+		return false
+	_results_action_in_progress = true
+	return true
+
+
+func _end_results_action() -> void:
+	_results_action_in_progress = false
+
+
+# === run 範疇組裝 ===========================================================
 
 ## RunSession（取 catalog lease）＋RunController＋RunCommandFactory＋run 灰盒驅動。
 ## 回 &"" 表組裝完成，否則為具名失敗碼（wave5 修正 B3：呼叫端能區分世代不符與其他原因）。
@@ -467,24 +1740,28 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 	_run_command_factory = RunCommandFactory.new(
 		content.economy_catalog, table_result.table, battle_result.catalog,
 		battle_affix_ids, run.commander_id,
-		_commander_population_bonus(digest, run.commander_id)
+		_commander_population_bonus(digest, run.commander_id),
+		content.forge_table,
+		content.consumable_rules
 	)
 	# wave5 修正 A4：RUN 狀態的驅動端。灰盒本身只是功能載體，但它推的是真的
 	# RunController／RunCommandFactory——五個建構方法在此有唯一的正式呼叫端。
-	_run_lab_session = RunLabSession.new(
-		_run_controller, _run_command_factory, content.economy_catalog,
+	_run_presentation_session = RunPresentationSession.new(
+		_run_controller,
+		_run_command_factory,
 		battle_result.catalog,
 		CommanderContentReader.new().passive_effect_ids(
 			_content_registry, digest, run.commander_id
 		)
 	)
+	_run_lab_session = RunLabSession.new(_run_presentation_session)
 	_unresumable_run_id = ""
 	return &""
 
 
 ## BattleRuleCatalogBuilder 的 base roots：棋子／裝備／戰鬥遺物（build lab 既有集合）
 ## 再加遭遇——正式流程會在節點進入時編譯 encounter，故 encounter 必須是 root。
-func _battle_root_ids(content: BuildLabBootstrapResult) -> Array[StringName]:
+func _battle_root_ids(content: ProjectContentBootstrapResult) -> Array[StringName]:
 	var roots: Array[StringName] = []
 	roots.append_array(content.unit_ids)
 	roots.append_array(content.equipment_ids)
@@ -495,19 +1772,21 @@ func _battle_root_ids(content: BuildLabBootstrapResult) -> Array[StringName]:
 
 func _release_active_run() -> void:
 	_run_lab_session = null
+	_run_presentation_session = null
 	_run_command_factory = null
 	_run_controller = null
 	_run_session = null
 
 
-# --- camp 範疇組裝 ---------------------------------------------------------
+# === camp 範疇組裝 =========================================================
 
 func _compose_camp(profile: ProfileState) -> void:
-	_release_active_run()
 	_camp_controller = null
 	_camp_view_model = null
+	_camp_profile_snapshot = null
 	if profile == null:
 		return
+	_camp_profile_snapshot = profile.deep_clone()
 	_camp_view_model = CampViewModel.new(profile)
 	var content := _try_content()
 	if content == null:
@@ -523,27 +1802,30 @@ func _refresh_camp_from_storage() -> void:
 	_compose_camp(loaded.profile if loaded.ok else null)
 
 
-# --- 內容 ------------------------------------------------------------------
+# === 內容 ==================================================================
 
 ## 安裝（並快取）當前 pinned generation。失敗只記一次、不重試（重試也只會撞同一份磁碟內容）。
 ## wave5 修正 A5：boot 路徑的呼叫端（_boot_route）把 null 轉成 boot_failed；boot 之後的
 ## lazy 呼叫端（start_expedition／settle_active_run）維持回傳具名錯誤碼。
-func _try_content() -> BuildLabBootstrapResult:
+func _try_content() -> ProjectContentBootstrapResult:
 	if _content != null or _content_attempted:
 		return _content
 	_content_attempted = true
-	var bootstrap := BuildLabContentBootstrap.new().run(_content_registry)
-	if not bootstrap.ok:
-		push_warning("AppRoot content bootstrap failed: %s" % bootstrap.error_message)
+	_content_bootstrap_result = _content_bootstrap.run(_content_registry)
+	if not _content_bootstrap_result.ok:
+		push_warning(
+			"AppRoot content bootstrap failed: %s"
+			% _content_bootstrap_result.error_message
+		)
 		return null
-	_content = bootstrap
+	_content = _content_bootstrap_result
 	return _content
 
 
 ## wave5 修正 B4（REQ-DATA-008）：指揮官定義一律經 CommanderContentReader 由 registry 的
 ## canonical view 重建，app 層不再碰 authoring 定義的共享實例。
 func _try_commander_def(
-	content: BuildLabBootstrapResult,
+	content: ProjectContentBootstrapResult,
 	commander_id: StringName
 ) -> CommanderDef:
 	return CommanderContentReader.new().try_read(

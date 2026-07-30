@@ -20,6 +20,9 @@ const INSPECTION_STAT_ORDER: Array[String] = [
 const STAT_TEXT_KEY_PREFIX: String = "combat.stat."
 const INSPECTION_NONE_KEY: StringName = &"combat.inspection.none"
 const PLAYBACK_NOT_AVAILABLE: StringName = &"PLAYBACK_NOT_AVAILABLE"
+## G2 F3：SETTLE 失敗後的重試間隔（presentation 節奏，不是 gameplay entropy）。
+## 沒有間隔就會每一影格重送一次被拒絕的命令。
+const SETTLE_RETRY_INTERVAL_MS: float = 500.0
 const SEMANTIC_PALETTES: Dictionary = {
 	&"default": {
 		&"ally": Color("7ee0a1"),
@@ -60,6 +63,7 @@ var _unit_selector: ItemList
 var _selected_unit_serial: int = -1
 var _settle_requested: bool = false
 var _settle_result: RunPresentationResult
+var _settle_retry_countdown_ms: float = 0.0
 
 
 func compose(
@@ -75,6 +79,7 @@ func compose(
 	_selected_unit_serial = -1
 	_settle_requested = false
 	_settle_result = null
+	_settle_retry_countdown_ms = 0.0
 	_build_typed_combat_controls()
 	return &""
 
@@ -83,9 +88,18 @@ func compose(
 ## 提交（commit-before-present），這裡只依 presentation 節奏重播已提交 transcript；
 ## 播放推進用 SceneTree delta，屬 presentation 節奏，不是 gameplay entropy。
 func _process(delta: float) -> void:
-	if _playback_port == null or _settle_requested:
+	advance_presentation_frame(delta * 1000.0)
+
+
+## 每影格的 presentation 驅動入口：播放尚未結束就推播放，已請求 SETTLE 就走重試
+## 倒數。獨立成公開函式是為了讓測試以固定 delta 驅動，不必依賴真實影格時間。
+func advance_presentation_frame(delta_ms: float) -> void:
+	if _playback_port == null:
 		return
-	advance_playback_frame(delta * 1000.0)
+	if _settle_requested:
+		_advance_settle_retry(delta_ms)
+		return
+	advance_playback_frame(delta_ms)
 
 
 func advance_playback_frame(delta_ms: float) -> BattleEventWindowResult:
@@ -95,14 +109,46 @@ func advance_playback_frame(delta_ms: float) -> BattleEventWindowResult:
 	if not result.ok or result.window == null:
 		if _committed_result_awaiting_settlement(result):
 			_settle_requested = true
-			_settle_result = _request_settle()
+			_apply_settle_result(_request_settle())
 		return result
 	if not result.window.events.is_empty():
 		_render_damage_events(result.window.events)
 	if result.window.exhausted:
 		_settle_requested = true
-		_settle_result = _request_settle()
+		_apply_settle_result(_request_settle())
 	return result
+
+
+## G2 F3：SETTLE 失敗以前完全無出口——`_settle_requested` 已為 true、`_process`
+## 之後永遠 early-return、結果沒有任何 production 讀者，玩家停在一場播完的戰鬥前
+## 零訊息，唯一出路是放棄整場 run。現在失敗會顯示在狀態列並定時重試。
+## exactly-once：本重試只在「上一次 SETTLE 明確失敗且未提交」時發生；成功或
+## post-commit（committed=true）的結果都會讓倒數停止，不會產生第二次結算。
+func _advance_settle_retry(delta_ms: float) -> void:
+	if _settle_result == null or _settle_result.ok or _settle_result.committed:
+		return
+	_settle_retry_countdown_ms -= delta_ms
+	if _settle_retry_countdown_ms > 0.0:
+		return
+	_apply_settle_result(_request_settle())
+
+
+func _apply_settle_result(result: RunPresentationResult) -> void:
+	_settle_result = result
+	_settle_retry_countdown_ms = SETTLE_RETRY_INTERVAL_MS
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.report_composition_result(result)
+
+
+## 仍在等待重試的 SETTLE（成功結算後恆為 false）。
+func settle_retry_pending() -> bool:
+	return (
+		_settle_requested
+		and _settle_result != null
+		and not _settle_result.ok
+		and not _settle_result.committed
+	)
 
 
 ## 已提交 result 重載時沒有 transcript authority（design.md §10：只顯示 committed

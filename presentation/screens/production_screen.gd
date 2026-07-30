@@ -29,10 +29,6 @@ const _PRESENTATION_CONFIRMATIONS: Dictionary = {
 		"cancel": &"menu.exit.cancel",
 	},
 }
-## G2 建議項2：誤觸代價高的動作退出焦點環前段。焦點圖只排 primary action，
-## 其餘依 `_required_action_ids()` 順序補齊，`prepare.start` 因此原本排在第二位
-## （調整隊伍之後、所有商店動作之前）。
-const _DEFERRED_FOCUS_ACTIONS: Array[StringName] = [&"prepare.start"]
 
 @export var route_kind: StringName
 
@@ -138,6 +134,19 @@ func status_message_text() -> String:
 ## source_code／message_key）；沒有錯誤時為空 Dictionary。
 func status_report() -> Dictionary:
 	return _status_view.report()
+
+
+## G2 F1：狀態列本體。測試據此驗「畫面上真的看得到」（rect／z 序），
+## 只讀 `status_message_text()` 驗不到被蓋住或被壓成 1px 的缺陷。
+func status_message_control() -> Label:
+	return get_node_or_null(PresentationStatusView.NODE_NAME) as Label
+
+
+## G2 F3：Composition 自行驅動（沒有對應按鈕）的動作失敗回饋出口。自動 SETTLE
+## 這類動作若不接進狀態列，玩家會停在一個播完的戰鬥前面、零訊息也零出路。
+## 只寫狀態列，不動 `_last_control_result`——那是按鈕 dispatch 的結果欄位。
+func report_composition_result(result: Variant) -> void:
+	_status_view.show_result(result, _text_resolver())
 
 
 func is_confirmation_modal_open() -> bool:
@@ -387,11 +396,14 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		and (_last_control_result as AppActionResult).ok
 	):
 		_show_recovery_confirmation(trigger)
-	elif (
-		action_id in [&"menu.recovery.cancel", &"menu.recovery.confirm"]
-		and _last_control_result is AppActionResult
-		and (_last_control_result as AppActionResult).ok
-	):
+	elif action_id in [&"menu.recovery.cancel", &"menu.recovery.confirm"]:
+		# G2 F2：不能只在 ok 時關 modal。app 層的 confirmation 在
+		# RecoveryConfirmationPresenter.confirm_confirmation()／cancel_confirmation()
+		# 一進去就關掉了，之後的失敗（例如 discard 成功但 route commit 失敗）
+		# 只影響畫面。此時若 modal 不關，背景按鈕還被 _disable_modal_background()
+		# 停用，玩家只剩 confirm/cancel 兩顆——而它們的 lease 已被撤銷，
+		# 永遠回 SCREEN_NOT_ACTIVE，App 就此鎖死。失敗訊息已經進狀態列，
+		# 關掉 modal 才有出路。
 		_close_confirmation_modal()
 
 
@@ -771,25 +783,30 @@ func _ordered_focus_controls() -> Array[Control]:
 		scale_percent = int(
 			host.get_meta(&"ui_scale_percent", 100)
 		)
-	var action_order := KeyboardFocusGraph.new().focus_order(
+	var focus_graph := KeyboardFocusGraph.new()
+	var action_order := focus_graph.focus_order(
 		route_kind,
 		scale_percent,
 		blocked
 	)
+	# G2 F9：延後名單的權威只有 KeyboardFocusGraph 一處（以前 ProductionScreen
+	# 另存一份常數，改焦點圖不會反映到畫面）。
+	var deferred := focus_graph.deferred_actions(route_kind)
 	for action_id: StringName in action_order:
-		if action_id in _DEFERRED_FOCUS_ACTIONS:
+		if action_id in deferred:
 			continue
 		var button := _action_button(action_id)
 		if _control_is_focusable(button) and not result.has(button):
 			result.append(button)
 	for action_id: StringName in _required_action_ids():
-		if action_id in _DEFERRED_FOCUS_ACTIONS:
+		if action_id in deferred:
 			continue
 		var button := _action_button(action_id)
 		if _control_is_focusable(button) and not result.has(button):
 			result.append(button)
-	# 誤觸代價高的動作排在所有同畫面動作之後（焦點環仍然涵蓋它，只是不在前段）。
-	for action_id: StringName in _DEFERRED_FOCUS_ACTIONS:
+	# 誤觸代價高的動作排在所有同畫面「動作按鈕」之後（下面的 selector 仍排在它後面；
+	# 焦點環涵蓋它，只是不在按鈕段的前面）。
+	for action_id: StringName in deferred:
 		var button := _action_button(action_id)
 		if _control_is_focusable(button) and not result.has(button):
 			result.append(button)
@@ -933,6 +950,8 @@ func _required_action_ids() -> Array[StringName]:
 			return [&"reward.select", &"reward.confirm", &"run.menu"]
 		&"RUN_ROUTE_FALLBACK":
 			return [&"run.retry_route", &"run.menu"]
+		&"APP_ROUTE_FALLBACK":
+			return [&"app.retry_route", &"menu.exit"]
 		&"RESULTS":
 			return [&"results.camp", &"results.menu"]
 		&"RESULTS_FALLBACK":

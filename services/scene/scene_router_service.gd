@@ -108,17 +108,30 @@ func commit_prepared(prepared: PreparedProductionRoute) -> StringName:
 	return &""
 
 
+## discard 的用途就是把候選畫面收掉，因此驗證失敗不代表可以放著不管：
+## G2 F7——舊寫法在 `prepared_error` 非空時直接 return，candidate 一律不釋放，
+## 而呼叫端（app_root `_commit_route` 的 prepared_error 分支）正是靠這條路徑回收
+## 那棵沒掛上樹的 Control。改成：本 router 發出且未消費的 prepared 一律回收，
+## 驗證碼照舊回傳給呼叫端做診斷；不是本 router 發出的（forged／wrong router）
+## 沒有回收權，維持只回報。
 func discard_prepared(prepared: PreparedProductionRoute) -> StringName:
 	var validation_error := prepared_error(prepared)
-	if not validation_error.is_empty():
+	if (
+		prepared == null
+		or prepared._issuer != _prepared_issuer
+		or prepared._consumed
+	):
 		return validation_error
-	_pending_prepared.erase(prepared._issue_nonce)
+	# nonce 可能已被別的 prepared 佔用（那才是 FORGED 的來源），只在 registry
+	# 仍指向自己時才 erase，避免誤刪他人條目。
+	if _pending_prepared.get(prepared._issue_nonce) == prepared:
+		_pending_prepared.erase(prepared._issue_nonce)
 	prepared._consumed = true
 	var candidate: ProductionScreen = prepared._candidate
 	prepared._candidate = null
-	if candidate != null:
+	if candidate != null and is_instance_valid(candidate):
 		candidate.free()
-	return &""
+	return validation_error
 
 
 func prepared_error(prepared: PreparedProductionRoute) -> StringName:

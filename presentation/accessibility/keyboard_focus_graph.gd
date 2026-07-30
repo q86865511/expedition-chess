@@ -38,6 +38,7 @@ const _PRIMARY_ACTIONS: Dictionary = {
 	],
 	&"RUN_REWARD": [&"reward.select", &"reward.confirm", &"run.menu"],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
+	&"APP_ROUTE_FALLBACK": [&"app.retry_route", &"menu.exit"],
 	&"RESULTS_FALLBACK": [
 		&"results.retry",
 		&"results.camp",
@@ -63,6 +64,14 @@ const _PRIMARY_ACTIONS: Dictionary = {
 	&"RESULTS": [&"results.camp", &"results.menu"],
 }
 
+## G2 建議項2／F9：誤觸代價高的動作退出焦點環的按鈕段前面（仍然鍵盤可達）。
+## 焦點順序的唯一權威在本類別——ProductionScreen 以前另存一份同名常數，
+## 造成改焦點圖不會反映到畫面上的雙權威。
+const _DEFERRED_ACTIONS: Dictionary = {
+	&"RUN_PREPARE": [&"prepare.start"],
+	&"PREPARE": [&"prepare.start"],
+}
+
 
 func focus_order(
 	screen: StringName,
@@ -79,4 +88,15 @@ func focus_order(
 		var action := StringName(action_value)
 		if not blocked_actions.has(action):
 			result.append(action)
+	return result
+
+
+## 本畫面要排到按鈕段最後的動作（無此類動作時回空陣列）。
+func deferred_actions(screen: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
+	var configured: Variant = _DEFERRED_ACTIONS.get(screen)
+	if not configured is Array:
+		return result
+	for action_value: Variant in configured:
+		result.append(StringName(action_value))
 	return result

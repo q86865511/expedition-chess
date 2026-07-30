@@ -157,7 +157,9 @@ func _build_editors() -> void:
 	_editors.clear()
 	_labels.clear()
 	_value_labels.clear()
-	_status_view.attach(self)
+	# row 1：SETTINGS 的 ProductionScreen 自己已經在 row 0 掛了一條狀態列
+	# （動作失敗用），draft 驗證訊息往上疊一格才不會兩句話互相蓋住（G2 F1）。
+	_status_view.attach(self, 1)
 	var rows := VBoxContainer.new()
 	rows.name = "SettingEditors"
 	add_child(rows)

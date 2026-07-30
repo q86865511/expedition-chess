@@ -124,7 +124,7 @@ func _build_node_selector() -> void:
 			_node_selector.set_item_metadata(index, node.node_id)
 			_node_selector.set_item_disabled(
 				index,
-				node.completed
+				not MapNodePresentation.is_reachable(_snapshot.map, node)
 			)
 	elif _map_generation_requested:
 		var generated_id := "map.generated.selection"
@@ -162,10 +162,22 @@ func _on_node_selected(index: int) -> void:
 func _node_text(node: MapNodeState) -> String:
 	return "%s · %s · %d-%d" % [
 		_localized_content_text(node.def_id),
-		String(MapNodeState.node_kind_to_token(node.node_kind)),
+		_localized_node_kind_text(node.node_kind),
 		node.act_index,
 		node.layer_index,
 	]
+
+
+func _localized_node_kind_text(kind: MapNodeState.NodeKind) -> String:
+	var key := StringName(
+		"map.node_kind.%s" % String(MapNodeState.node_kind_to_token(kind))
+	)
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.localized_ui_text(key)
+		if parent_screen != null
+		else String(key)
+	)
 
 
 func _update_parent_action_state() -> void:

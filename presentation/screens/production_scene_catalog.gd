@@ -16,6 +16,7 @@ const REQUIRED_ROUTES: Array[StringName] = [
 	&"RUN_COMBAT",
 	&"RUN_REWARD",
 	&"RUN_ROUTE_FALLBACK",
+	&"APP_ROUTE_FALLBACK",
 	&"RESULTS",
 	&"RESULTS_FALLBACK",
 ]
@@ -57,6 +58,8 @@ func scene_path(route_kind: StringName) -> String:
 			return "res://scenes/production/run_reward.tscn"
 		&"RUN_ROUTE_FALLBACK":
 			return "res://scenes/production/run_route_fallback.tscn"
+		&"APP_ROUTE_FALLBACK":
+			return "res://scenes/production/app_route_fallback.tscn"
 		&"RESULTS":
 			return "res://scenes/production/results.tscn"
 		&"RESULTS_FALLBACK":

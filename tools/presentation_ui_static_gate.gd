@@ -513,6 +513,11 @@ func _validate_screen_writer_boundaries(
 	sources: Dictionary,
 	issues: Array[Dictionary]
 ) -> void:
+	# 掃描範圍限定 screens 與 production scenes 是刻意豁免：
+	# presentation/run 與 presentation/viewmodels 是 HANDOFF.md §2 授權的
+	# writer 通道（session/viewmodel 持 RunController 轉發 command 屬合法設計），
+	# 納入掃描會誤殺正確架構。另本規則為字串比對，僅防低級誤用，
+	# 不防刻意繞過（改名/動態載入）；深層防線是 reviewer 與整合測試。
 	for path: String in _sorted_keys(sources):
 		if (
 			not path.begins_with("res://presentation/screens/")

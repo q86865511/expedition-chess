@@ -78,6 +78,20 @@ func drain_window(
 	return BattleEventWindowResult.new(true, window, null)
 
 
+## Session-private：從 cursor 起、canonical tick <= max_tick 的連續事件數，仍受 4096
+## backpressure 上限約束。只用來換算「這一 frame 可呈現到哪裡」，不取出、不重排事件。
+func _events_through_tick(cursor: int, max_tick: int) -> int:
+	if cursor < 0 or cursor >= _events.size():
+		return 0
+	var count := 0
+	while cursor + count < _events.size() and count < MAX_PUBLIC_WINDOW:
+		var event := _events[cursor + count] as BattleEvent
+		if event == null or event.tick > max_tick:
+			break
+		count += 1
+	return count
+
+
 func revoke() -> void:
 	_events.clear()
 	_identity = null

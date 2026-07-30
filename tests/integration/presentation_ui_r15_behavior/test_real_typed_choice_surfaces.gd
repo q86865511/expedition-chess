@@ -92,7 +92,21 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 	assert_true(node_selector.visible)
 	assert_true(node_selector.focus_mode == Control.FOCUS_ALL)
 	assert_gt(node_selector.item_count, 0)
-	var selected_index := node_selector.item_count - 1
+	# G2 wave2-B M6: RUN_MAP now disables unreachable nodes (not just
+	# completed ones), so a freshly generated map only has the act-1/layer-0
+	# entry node(s) enabled. Pick an enabled node instead of assuming the
+	# last rendered item is clickable.
+	var selected_index := -1
+	for index: int in node_selector.item_count:
+		if not node_selector.is_item_disabled(index):
+			selected_index = index
+			break
+	assert_true(
+		selected_index >= 0,
+		"a freshly generated map must expose at least one reachable node"
+	)
+	if selected_index < 0:
+		return
 	var selected_node_id := String(node_selector.get_item_metadata(selected_index))
 	assert_false(selected_node_id.is_empty())
 	node_selector.select(selected_index)

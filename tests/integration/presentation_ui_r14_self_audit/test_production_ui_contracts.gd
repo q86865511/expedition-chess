@@ -44,6 +44,8 @@ const ROUTE_ACTIONS: Dictionary = {
 	],
 	&"RUN_REWARD": [&"reward.select", &"reward.confirm", &"run.menu"],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
+	# G2 F4：MENU／CAMP／RESULTS 的 post-commit route 失敗共用的復原畫面。
+	&"APP_ROUTE_FALLBACK": [&"app.retry_route", &"menu.exit"],
 	&"RESULTS": [&"results.camp", &"results.menu"],
 	&"RESULTS_FALLBACK": [
 		&"results.retry",

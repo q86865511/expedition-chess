@@ -10,6 +10,26 @@ const SCREEN_COMPOSITION_MISSING: StringName = &"SCREEN_COMPOSITION_MISSING"
 const SCREEN_COMPOSITION_TYPE_INVALID: StringName = \
 	&"SCREEN_COMPOSITION_TYPE_INVALID"
 
+const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
+
+## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
+## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
+## 觸發鍵本身就要 dispatch 才能開啟 app 端 confirmation（見 `_show_recovery_confirmation`）。
+const _PRESENTATION_CONFIRMATIONS: Dictionary = {
+	&"run.menu": {
+		"node": "RunMenuConfirmation",
+		"status_key": &"run.menu.status",
+		"confirm": &"run.menu.confirm",
+		"cancel": &"run.menu.cancel",
+	},
+	&"menu.exit": {
+		"node": "ExitConfirmation",
+		"status_key": &"menu.exit.status",
+		"confirm": &"menu.exit.confirm",
+		"cancel": &"menu.exit.cancel",
+	},
+}
+
 @export var route_kind: StringName
 
 var _context: StagedScreenContext
@@ -17,10 +37,17 @@ var _live_context: ProductionLiveScreenContext
 var _binding_closed: bool = false
 var _live_active: bool = false
 var _last_control_result: Variant
-var _recovery_modal_open: bool = false
-var _recovery_trigger: Button
-var _recovery_background_disabled: Dictionary[int, bool] = {}
-var _recovery_background_focus: Dictionary[int, int] = {}
+var _status_view := PresentationStatusView.new()
+var _modal_open: bool = false
+var _modal_node_name: String = ""
+var _modal_confirm_action: StringName = &""
+var _modal_cancel_action: StringName = &""
+## 非空＝呈現層確認：confirm 之前完全不 dispatch，confirm 時才送出這個動作。
+var _modal_deferred_action: StringName = &""
+var _modal_status_key: StringName = &""
+var _modal_trigger: Button
+var _modal_background_disabled: Dictionary[int, bool] = {}
+var _modal_background_focus: Dictionary[int, int] = {}
 
 
 func _ready() -> void:
@@ -80,7 +107,7 @@ func activate_live() -> void:
 	refresh_interaction_state()
 	var focusable := _ordered_focus_controls()
 	if not focusable.is_empty():
-		focusable[0].grab_focus.call_deferred()
+		call_deferred(&"_grab_focus_deferred", focusable[0])
 
 
 func request_intent(intent: RunPresentationIntent) -> RunPresentationResult:
@@ -96,6 +123,38 @@ func request_intent(intent: RunPresentationIntent) -> RunPresentationResult:
 
 func last_control_result() -> Variant:
 	return _last_control_result
+
+
+## G2 H3：畫面上實際顯示的錯誤文字（成功／未操作時為空字串）。
+func status_message_text() -> String:
+	return _status_view.message_text()
+
+
+## 對應的 `PresentationErrorMapper` 報告（committed／fallback_active／retryable／
+## source_code／message_key）；沒有錯誤時為空 Dictionary。
+func status_report() -> Dictionary:
+	return _status_view.report()
+
+
+## G2 F1：狀態列本體。測試據此驗「畫面上真的看得到」（rect／z 序），
+## 只讀 `status_message_text()` 驗不到被蓋住或被壓成 1px 的缺陷。
+func status_message_control() -> Label:
+	return get_node_or_null(PresentationStatusView.NODE_NAME) as Label
+
+
+## G2 F3：Composition 自行驅動（沒有對應按鈕）的動作失敗回饋出口。自動 SETTLE
+## 這類動作若不接進狀態列，玩家會停在一個播完的戰鬥前面、零訊息也零出路。
+## 只寫狀態列，不動 `_last_control_result`——那是按鈕 dispatch 的結果欄位。
+func report_composition_result(result: Variant) -> void:
+	_status_view.show_result(result, _text_resolver())
+
+
+func is_confirmation_modal_open() -> bool:
+	return _modal_open
+
+
+func confirmation_modal_node_name() -> String:
+	return _modal_node_name
 
 
 func settings_draft() -> SettingsSnapshot:
@@ -127,6 +186,13 @@ func localized_content_text(content_id: StringName) -> String:
 	return fallback if resolved == String(key) else resolved
 
 
+## G2 M5：Composition 子畫面取 UI 文案鍵的唯一出口（內容 id 走 localized_content_text）。
+func localized_ui_text(text_key: StringName) -> String:
+	if _context == null or text_key.is_empty():
+		return String(text_key)
+	return _context.resolve_text(text_key)
+
+
 func live_binding_report() -> Dictionary:
 	return {
 		"active": _live_active,
@@ -153,6 +219,10 @@ func _bind_localized_controls() -> void:
 	var label := get_node_or_null("Label") as Label
 	if label != null:
 		label.text = _context.resolve_text(_route_title_key())
+	# G2 H3：常駐錯誤呈現面。每個 staged route 都要有，才不會出現「某些畫面
+	# 操作失敗完全沒回饋」的死角。
+	_status_view.attach(self)
+	_status_view.clear(_text_resolver())
 	var action_ids := _required_action_ids()
 	if action_ids.is_empty():
 		return
@@ -293,20 +363,31 @@ func _on_action_pressed(button: Button) -> void:
 	):
 		return
 	var action_id := StringName(button.get_meta(&"action_id"))
-	if (
-		_recovery_modal_open
-		and action_id not in [
-			&"menu.recovery.confirm",
-			&"menu.recovery.cancel",
-		]
-	):
+	if _modal_open:
+		if action_id not in [_modal_confirm_action, _modal_cancel_action]:
+			return
+		if not _modal_deferred_action.is_empty():
+			# 呈現層確認：取消是零 dispatch，確認才把原動作送出去。
+			var deferred := _modal_deferred_action
+			var confirmed := action_id == _modal_confirm_action
+			_close_confirmation_modal()
+			if confirmed:
+				_dispatch_action(deferred, null)
+			return
+	elif _PRESENTATION_CONFIRMATIONS.has(action_id):
+		_open_presentation_confirmation(action_id, button)
 		return
+	_dispatch_action(action_id, button)
+
+
+func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 	var local_result: Variant = _invoke_local_control(action_id)
 	_last_control_result = (
 		local_result
 		if local_result != null
 		else _live_context.action_port.invoke(action_id)
 	)
+	_status_view.show_result(_last_control_result, _text_resolver())
 	if String(action_id).begins_with("prepare."):
 		refresh_interaction_state()
 	if (
@@ -314,13 +395,16 @@ func _on_action_pressed(button: Button) -> void:
 		and _last_control_result is AppActionResult
 		and (_last_control_result as AppActionResult).ok
 	):
-		_show_recovery_confirmation(button)
-	elif (
-		action_id in [&"menu.recovery.cancel", &"menu.recovery.confirm"]
-		and _last_control_result is AppActionResult
-		and (_last_control_result as AppActionResult).ok
-	):
-		_close_recovery_confirmation()
+		_show_recovery_confirmation(trigger)
+	elif action_id in [&"menu.recovery.cancel", &"menu.recovery.confirm"]:
+		# G2 F2：不能只在 ok 時關 modal。app 層的 confirmation 在
+		# RecoveryConfirmationPresenter.confirm_confirmation()／cancel_confirmation()
+		# 一進去就關掉了，之後的失敗（例如 discard 成功但 route commit 失敗）
+		# 只影響畫面。此時若 modal 不關，背景按鈕還被 _disable_modal_background()
+		# 停用，玩家只剩 confirm/cancel 兩顆——而它們的 lease 已被撤銷，
+		# 永遠回 SCREEN_NOT_ACTIVE，App 就此鎖死。失敗訊息已經進狀態列，
+		# 關掉 modal 才有出路。
+		_close_confirmation_modal()
 
 
 func _invoke_local_control(action_id: StringName) -> Variant:
@@ -464,16 +548,20 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 			button.text = _context.resolve_text(
 				StringName(button.get_meta(&"action_id"))
 			)
-	var status := get_node_or_null("RecoveryConfirmation/Status") as Label
-	if status != null:
-		status.text = _context.resolve_text(&"menu.recovery.status")
+	if not _modal_node_name.is_empty():
+		var status := get_node_or_null(
+			"%s/Status" % _modal_node_name
+		) as Label
+		if status != null:
+			status.text = _context.resolve_text(_modal_status_key)
+	_status_view.relocalize(_text_resolver())
 	var settings := get_node_or_null("Composition") as SettingsScreenComposition
 	if settings != null:
 		settings.relocalize(localized_text)
 
 
 func refresh_interaction_state() -> void:
-	if _recovery_modal_open:
+	if _modal_open:
 		return
 	var composition := get_node_or_null("Composition")
 	var camp_start := _action_button(&"camp.start")
@@ -509,23 +597,63 @@ func refresh_interaction_state() -> void:
 
 
 func _show_recovery_confirmation(trigger: Button) -> void:
-	if get_node_or_null("RecoveryConfirmation") != null:
+	_show_confirmation_modal(
+		RECOVERY_MODAL_NODE,
+		&"menu.recovery.status",
+		&"menu.recovery.confirm",
+		&"menu.recovery.cancel",
+		&"",
+		trigger
+	)
+
+
+func _open_presentation_confirmation(
+	action_id: StringName,
+	trigger: Button
+) -> void:
+	var plan: Dictionary = _PRESENTATION_CONFIRMATIONS[action_id]
+	_show_confirmation_modal(
+		String(plan["node"]),
+		StringName(plan["status_key"]),
+		StringName(plan["confirm"]),
+		StringName(plan["cancel"]),
+		action_id,
+		trigger
+	)
+
+
+## `deferred_action` 非空＝呈現層確認（確認前零 dispatch）；空字串＝app 層已持有
+## confirmation 狀態，confirm／cancel 都要照常 dispatch 回去（recovery 流程）。
+func _show_confirmation_modal(
+	node_name: String,
+	status_key: StringName,
+	confirm_action: StringName,
+	cancel_action: StringName,
+	deferred_action: StringName,
+	trigger: Button
+) -> void:
+	# G2 L4：舊寫法在「節點還在（queue_free 尚未生效）」時直接 return 而不設旗標，
+	# 同幀二次觸發就會留下「app 層 confirmation 開著、畫面卻沒有 modal」的狀態。
+	# 關閉時已改為立即 remove_child，這裡的守衛因此只代表「真的已經開著」。
+	if _modal_open or get_node_or_null(node_name) != null:
 		return
-	_recovery_modal_open = true
-	_recovery_trigger = trigger
-	_disable_recovery_background()
+	_modal_open = true
+	_modal_node_name = node_name
+	_modal_status_key = status_key
+	_modal_confirm_action = confirm_action
+	_modal_cancel_action = cancel_action
+	_modal_deferred_action = deferred_action
+	_modal_trigger = trigger
+	_disable_modal_background()
 	var dialog := VBoxContainer.new()
-	dialog.name = "RecoveryConfirmation"
+	dialog.name = node_name
 	dialog.set_anchors_preset(Control.PRESET_CENTER)
 	add_child(dialog)
 	var status := Label.new()
 	status.name = "Status"
-	status.text = _context.resolve_text(&"menu.recovery.status")
+	status.text = _context.resolve_text(status_key)
 	dialog.add_child(status)
-	for action_id: StringName in [
-		&"menu.recovery.confirm",
-		&"menu.recovery.cancel",
-	]:
+	for action_id: StringName in [confirm_action, cancel_action]:
 		var button := Button.new()
 		button.name = _button_name(action_id)
 		button.text = _context.resolve_text(action_id)
@@ -538,24 +666,36 @@ func _show_recovery_confirmation(trigger: Button) -> void:
 	if confirm != null and cancel != null:
 		var dialog_controls: Array[Control] = [confirm, cancel]
 		_link_focus_cycle(dialog_controls)
-	var first := confirm
-	if first != null:
-		first.grab_focus.call_deferred()
+	if confirm != null:
+		call_deferred(&"_grab_focus_deferred", confirm)
 
 
-func _close_recovery_confirmation() -> void:
-	var dialog := get_node_or_null("RecoveryConfirmation")
+func _close_confirmation_modal() -> void:
+	var dialog := (
+		get_node_or_null(_modal_node_name)
+		if not _modal_node_name.is_empty()
+		else null
+	)
 	if dialog != null:
+		# 先讓出節點名稱再排隊釋放：queue_free 要到影格結束才生效，光靠它會讓同幀的
+		# 重新開啟被「節點還在」的守衛擋掉（G2 L4）。改名而非 remove_child，
+		# 是為了讓待釋放的節點留在樹上（離開樹會被判定成 orphan）。
+		dialog.name = "%sRetired" % _modal_node_name
 		dialog.queue_free()
-	_recovery_modal_open = false
-	_restore_recovery_background()
+	_modal_open = false
+	_modal_node_name = ""
+	_modal_status_key = &""
+	_modal_confirm_action = &""
+	_modal_cancel_action = &""
+	_modal_deferred_action = &""
+	_restore_modal_background()
 	refresh_interaction_state()
-	call_deferred(&"_restore_recovery_trigger_focus")
+	call_deferred(&"_restore_modal_trigger_focus")
 
 
-func _disable_recovery_background() -> void:
-	_recovery_background_disabled.clear()
-	_recovery_background_focus.clear()
+func _disable_modal_background() -> void:
+	_modal_background_disabled.clear()
+	_modal_background_focus.clear()
 	var actions := get_node_or_null("Actions")
 	if actions == null:
 		return
@@ -564,13 +704,13 @@ func _disable_recovery_background() -> void:
 		if button == null:
 			continue
 		var identity := button.get_instance_id()
-		_recovery_background_disabled[identity] = button.disabled
-		_recovery_background_focus[identity] = button.focus_mode
+		_modal_background_disabled[identity] = button.disabled
+		_modal_background_focus[identity] = button.focus_mode
 		button.disabled = true
 		button.focus_mode = Control.FOCUS_NONE
 
 
-func _restore_recovery_background() -> void:
+func _restore_modal_background() -> void:
 	var actions := get_node_or_null("Actions")
 	if actions != null:
 		for node: Node in actions.find_children(
@@ -583,30 +723,41 @@ func _restore_recovery_background() -> void:
 			if button == null:
 				continue
 			var identity := button.get_instance_id()
-			if _recovery_background_disabled.has(identity):
+			if _modal_background_disabled.has(identity):
 				button.disabled = bool(
-					_recovery_background_disabled[identity]
+					_modal_background_disabled[identity]
 				)
-			if _recovery_background_focus.has(identity):
+			if _modal_background_focus.has(identity):
 				button.focus_mode = int(
-					_recovery_background_focus[identity]
+					_modal_background_focus[identity]
 				)
-	_recovery_background_disabled.clear()
-	_recovery_background_focus.clear()
+	_modal_background_disabled.clear()
+	_modal_background_focus.clear()
 
 
-func _restore_recovery_trigger_focus() -> void:
+## 延後取得焦點的統一入口：目標可能在同一影格內被關閉／換場而離開場景樹，
+## 直接 `grab_focus.call_deferred()` 會在引擎層噴 "!is_inside_tree()"。
+func _grab_focus_deferred(control: Control) -> void:
 	if (
-		_recovery_trigger != null
-		and is_instance_valid(_recovery_trigger)
-		and _recovery_trigger.is_inside_tree()
+		control != null
+		and is_instance_valid(control)
+		and control.is_inside_tree()
 	):
-		_recovery_trigger.grab_focus()
-	_recovery_trigger = null
+		control.grab_focus()
+
+
+func _restore_modal_trigger_focus() -> void:
+	if (
+		_modal_trigger != null
+		and is_instance_valid(_modal_trigger)
+		and _modal_trigger.is_inside_tree()
+	):
+		_modal_trigger.grab_focus()
+	_modal_trigger = null
 
 
 func _apply_keyboard_focus_graph() -> void:
-	if _recovery_modal_open:
+	if _modal_open:
 		return
 	var controls := _ordered_focus_controls()
 	_link_focus_cycle(controls)
@@ -632,16 +783,30 @@ func _ordered_focus_controls() -> Array[Control]:
 		scale_percent = int(
 			host.get_meta(&"ui_scale_percent", 100)
 		)
-	var action_order := KeyboardFocusGraph.new().focus_order(
+	var focus_graph := KeyboardFocusGraph.new()
+	var action_order := focus_graph.focus_order(
 		route_kind,
 		scale_percent,
 		blocked
 	)
+	# G2 F9：延後名單的權威只有 KeyboardFocusGraph 一處（以前 ProductionScreen
+	# 另存一份常數，改焦點圖不會反映到畫面）。
+	var deferred := focus_graph.deferred_actions(route_kind)
 	for action_id: StringName in action_order:
+		if action_id in deferred:
+			continue
 		var button := _action_button(action_id)
 		if _control_is_focusable(button) and not result.has(button):
 			result.append(button)
 	for action_id: StringName in _required_action_ids():
+		if action_id in deferred:
+			continue
+		var button := _action_button(action_id)
+		if _control_is_focusable(button) and not result.has(button):
+			result.append(button)
+	# 誤觸代價高的動作排在所有同畫面「動作按鈕」之後（下面的 selector 仍排在它後面；
+	# 焦點環涵蓋它，只是不在按鈕段的前面）。
+	for action_id: StringName in deferred:
 		var button := _action_button(action_id)
 		if _control_is_focusable(button) and not result.has(button):
 			result.append(button)
@@ -674,10 +839,12 @@ func _ordered_focus_controls() -> Array[Control]:
 	return result
 
 
+## G2 L3：`visible` 只看節點自己。整列 row（或整個 Composition）被隱藏時，
+## 子控制項的 `visible` 仍是 true，焦點環會把看不見的編輯器收進去。
 func _control_is_focusable(control: Control) -> bool:
 	if (
 		control == null
-		or not control.visible
+		or not control.is_visible_in_tree()
 		or control.focus_mode == Control.FOCUS_NONE
 	):
 		return false
@@ -783,6 +950,8 @@ func _required_action_ids() -> Array[StringName]:
 			return [&"reward.select", &"reward.confirm", &"run.menu"]
 		&"RUN_ROUTE_FALLBACK":
 			return [&"run.retry_route", &"run.menu"]
+		&"APP_ROUTE_FALLBACK":
+			return [&"app.retry_route", &"menu.exit"]
 		&"RESULTS":
 			return [&"results.camp", &"results.menu"]
 		&"RESULTS_FALLBACK":
@@ -817,6 +986,17 @@ func _snapshot_board_validation_report(
 				else null
 			)
 	return null
+
+
+## 錯誤呈現面的在地化出口：staged context 尚未繫結時退回鍵名本身（測試與
+## boot 早期路徑都可能在沒有 context 的情況下觸發顯示）。
+func _text_resolver() -> Callable:
+	return func(key: StringName) -> String:
+		return (
+			_context.resolve_text(key)
+			if _context != null
+			else String(key)
+		)
 
 
 func _localized_text_clone() -> Dictionary:

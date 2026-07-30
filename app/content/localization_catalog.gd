@@ -69,8 +69,10 @@ func _register_fixed_keys() -> void:
 	_register(&"screen.run_prepare.title", "備戰", "Prepare")
 	_register(&"screen.run_combat.title", "戰鬥", "Combat")
 	_register(&"screen.run_reward.title", "獎勵", "Reward")
+	_register(&"screen.run_route_fallback.title", "路線顯示修復", "Route Recovery")
 	_register(&"screen.results.title", "遠征結算", "Results")
 	_register(&"screen.results_fallback.title", "結算顯示修復", "Results Recovery")
+	_register(&"screen.app_route_fallback.title", "畫面修復", "Screen Recovery")
 	_register(&"menu.continue", "繼續遠征", "Continue")
 	_register(&"menu.start", "開始", "Start")
 	_register(&"menu.settings", "設定", "Settings")
@@ -114,6 +116,7 @@ func _register_fixed_keys() -> void:
 	_register(&"camp.commander_hall", "指揮官大廳", "Commander Hall")
 	_register(&"camp.challenge_monument", "挑戰紀念碑", "Challenge Monument")
 	_register(&"run.retry_route", "重試畫面", "Retry Screen")
+	_register(&"app.retry_route", "重新載入畫面", "Reload Screen")
 	_register(&"camp.settings", "設定", "Settings")
 	_register(&"camp.start", "開始遠征", "Start Expedition")
 	_register(&"camp.menu", "返回主選單", "Main Menu")
@@ -136,6 +139,17 @@ func _register_fixed_keys() -> void:
 	_register(&"combat.pause", "暫停", "Pause")
 	_register(&"combat.inspect", "檢視單位", "Inspect Unit")
 	_register(&"combat.speed", "戰鬥速度", "Battle Speed")
+	_register(&"combat.inspection.none", "無", "None")
+	_register(&"combat.stat.star", "星級", "Star")
+	_register(&"combat.stat.health", "生命", "Health")
+	_register(&"combat.stat.attack", "攻擊", "Attack")
+	_register(&"combat.stat.armor", "護甲", "Armor")
+	_register(&"combat.stat.magic_resist", "魔抗", "Magic Resist")
+	_register(&"combat.stat.attack_speed_milli", "攻速（千分比）", "Attack Speed (milli)")
+	_register(&"combat.stat.attack_range_cells", "攻擊距離（格）", "Attack Range (cells)")
+	_register(&"combat.stat.start_mana", "初始法力", "Starting Mana")
+	_register(&"combat.stat.max_mana", "法力上限", "Max Mana")
+	_register(&"combat.stat.move_speed_milli", "移速（千分比）", "Move Speed (milli)")
 	_register(&"reward.select", "選擇獎勵", "Select Reward")
 	_register(&"reward.confirm", "確認獎勵", "Confirm Reward")
 	_register(&"run.menu", "返回主選單", "Main Menu")
@@ -195,6 +209,225 @@ func _register_fixed_keys() -> void:
 	_register(&"loc.encounter_slice_elite", "菁英遭遇", "Elite Encounter")
 	_register(&"loc.encounter_slice_normal", "一般遭遇", "Normal Encounter")
 	_register(&"loc.unlock_slice_base_profile", "基礎解鎖", "Base Unlocks")
+	# wave2-B
+	_register(&"error.board.bench_empty_slot", "備戰區有空位未填", "Bench has an empty slot")
+	_register(&"error.board.bench_too_large", "備戰區超過上限", "Bench exceeds capacity")
+	_register(&"error.board.board_cell_overlap", "棋盤格重疊", "Board cells overlap")
+	_register(
+		&"error.board.board_out_of_bounds",
+		"棋子超出棋盤範圍",
+		"Unit is out of board bounds"
+	)
+	_register(
+		&"error.board.board_over_capacity",
+		"戰場超出人口上限",
+		"Board exceeds population capacity"
+	)
+	_register(
+		&"error.board.board_physical_limit",
+		"棋盤超出實體格數上限",
+		"Board exceeds physical cell limit"
+	)
+	_register(&"error.board.board_request_invalid", "佈局請求無效", "Layout request is invalid")
+	_register(
+		&"error.board.board_unit_duplicate",
+		"同一單位重複佈署",
+		"A unit is deployed more than once"
+	)
+	_register(
+		&"error.board.board_unit_reference_missing",
+		"找不到對應單位",
+		"Referenced unit could not be found"
+	)
+	_register(
+		&"error.board.board_unit_unassigned",
+		"有單位未分配位置",
+		"A unit has not been assigned a position"
+	)
+	_register(
+		&"error.board.board_wrong_half",
+		"單位佈署在錯誤半場",
+		"Unit is deployed on the wrong half"
+	)
+	_register(
+		&"error.board.population_invalid",
+		"人口上限數值無效",
+		"Population capacity value is invalid"
+	)
+	_register(&"map.node_kind.normal", "一般戰鬥", "Battle")
+	_register(&"map.node_kind.elite", "菁英戰鬥", "Elite Battle")
+	_register(&"map.node_kind.merchant", "商人", "Merchant")
+	_register(&"map.node_kind.event", "事件", "Event")
+	_register(&"map.node_kind.rest", "休息", "Rest")
+	_register(&"map.node_kind.treasure", "寶藏", "Treasure")
+	_register(&"map.node_kind.boss", "首領", "Boss")
+	# wave2-C
+	_register(
+		&"error.status.pre_commit",
+		"操作未生效（尚未變更，可重試）：",
+		"Action did not apply (nothing changed, retry): "
+	)
+	_register(
+		&"error.status.post_commit",
+		"已生效但畫面未更新（顯示已回退）：",
+		"Applied, but the screen fell back: "
+	)
+	_register(&"error.presentation.failure", "操作失敗", "The action failed")
+	_register(&"error.presentation.app_action", "操作失敗", "The action failed")
+	_register(
+		&"error.presentation.action_not_available",
+		"目前無法執行這個操作",
+		"That action is not available right now"
+	)
+	_register(
+		&"error.presentation.screen_not_active",
+		"畫面尚未啟用，請稍候再試",
+		"The screen is not active yet"
+	)
+	_register(
+		&"error.presentation.camp_selection_required",
+		"請先選擇指揮官與挑戰等級",
+		"Select a commander and challenge level first"
+	)
+	_register(
+		&"error.presentation.retained_run_exists",
+		"已有保留的遠征，請先處理",
+		"A saved run is still retained"
+	)
+	_register(
+		&"error.presentation.prepared_run_stale",
+		"遠征存檔已過期，請重新載入",
+		"The saved run is stale; reload it"
+	)
+	_register(
+		&"error.presentation.exit_already_pending",
+		"離開請求已在處理中",
+		"An exit request is already pending"
+	)
+	_register(
+		&"error.presentation.results_action_in_progress",
+		"結算操作進行中",
+		"A results action is already running"
+	)
+	_register(
+		&"error.presentation.route_prepare_invalid",
+		"無法準備下一個畫面",
+		"The next screen could not be prepared"
+	)
+	_register(
+		&"error.presentation.route_commit_failed",
+		"畫面切換失敗",
+		"The screen could not be switched"
+	)
+	_register(
+		&"error.presentation.route_bind_failed",
+		"畫面繫結失敗",
+		"The screen could not be bound"
+	)
+	_register(
+		&"error.presentation.scene_bind_failed",
+		"場景繫結失敗",
+		"The scene could not be bound"
+	)
+	_register(&"error.presentation.render_failed", "畫面繪製失敗", "Rendering failed")
+	_register(
+		&"error.presentation.run_session_unavailable",
+		"目前沒有可用的遠征",
+		"No expedition session is available"
+	)
+	_register(
+		&"error.presentation.start_postcommit",
+		"遠征已開始，但畫面未能切換",
+		"The run started, but the screen could not follow"
+	)
+	_register(
+		&"error.presentation.recovery_postcommit",
+		"保留遠征已處理，但畫面未能更新",
+		"The retained run was handled, but the screen could not follow"
+	)
+	_register(
+		&"error.presentation.results_fallback",
+		"結算畫面已退回備援顯示",
+		"Results fell back to the recovery screen"
+	)
+	_register(
+		&"error.presentation.run_route_fallback",
+		"遠征畫面已退回備援顯示",
+		"The run screen fell back to the recovery screen"
+	)
+	_register(
+		&"error.presentation.terminal_handoff",
+		"結算交接失敗",
+		"The results handoff failed"
+	)
+	_register(
+		&"error.presentation.save_unavailable",
+		"存檔無法讀取",
+		"The save file could not be read"
+	)
+	_register(
+		&"error.presentation.run_unavailable",
+		"遠征資料無法讀取",
+		"The run data could not be read"
+	)
+	_register(
+		&"error.presentation.run_recovery",
+		"有一個無法載入的遠征待處理",
+		"A run that cannot be loaded is waiting"
+	)
+	_register(
+		&"error.presentation.run_incompatible",
+		"保留的遠征與目前版本不相容",
+		"The retained run is incompatible with this version"
+	)
+	_register(&"error.save.io_failure", "存檔寫入失敗", "Saving failed")
+	_register(
+		&"error.settings.apply_failed",
+		"設定套用失敗",
+		"The settings could not be applied"
+	)
+	_register(&"error.settings.draft_invalid", "設定草稿無效", "The settings draft is invalid")
+	_register(&"error.settings.invalid_enum", "設定選項無效", "That setting option is invalid")
+	_register(
+		&"error.settings.field_out_of_range",
+		"設定數值超出範圍",
+		"That setting value is out of range"
+	)
+	_register(
+		&"error.settings.runtime_missing",
+		"設定執行環境未就緒",
+		"The settings runtime is not ready"
+	)
+	_register(
+		&"error.settings.rebuild_failed",
+		"設定重建失敗",
+		"The settings could not be rebuilt"
+	)
+	_register(
+		&"error.settings.port_invalid",
+		"設定通道無效",
+		"The settings port is invalid"
+	)
+	_register(
+		&"error.settings.application_invalid_result",
+		"設定套用回應無效",
+		"The settings application returned an invalid result"
+	)
+	_register(
+		&"error.settings.application_failed",
+		"設定套用失敗",
+		"The settings could not be applied"
+	)
+	_register(
+		&"run.menu.status",
+		"遠征仍在進行中，確定要返回主選單？",
+		"The expedition is still in progress. Return to the main menu?"
+	)
+	_register(&"run.menu.confirm", "確認返回", "Confirm")
+	_register(&"run.menu.cancel", "繼續遠征", "Keep Playing")
+	_register(&"menu.exit.status", "確定要離開遊戲？", "Exit the game?")
+	_register(&"menu.exit.confirm", "確認離開", "Confirm Exit")
+	_register(&"menu.exit.cancel", "取消", "Cancel")
 
 
 func _register_generated_keys() -> void:

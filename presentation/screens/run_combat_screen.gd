@@ -4,6 +4,25 @@ extends ProductionScreen
 const PLAYBACK_PORT_ALREADY_BOUND: StringName = &"PLAYBACK_PORT_ALREADY_BOUND"
 const INSPECTION_PORT_ALREADY_BOUND: StringName = \
 	&"INSPECTION_PORT_ALREADY_BOUND"
+## 檢視面板的 stat 呈現順序；每個 key 對應 loc 鍵 combat.stat.<key>。
+const INSPECTION_STAT_ORDER: Array[String] = [
+	"star",
+	"health",
+	"attack",
+	"armor",
+	"magic_resist",
+	"attack_speed_milli",
+	"attack_range_cells",
+	"start_mana",
+	"max_mana",
+	"move_speed_milli",
+]
+const STAT_TEXT_KEY_PREFIX: String = "combat.stat."
+const INSPECTION_NONE_KEY: StringName = &"combat.inspection.none"
+const PLAYBACK_NOT_AVAILABLE: StringName = &"PLAYBACK_NOT_AVAILABLE"
+## G2 F3：SETTLE 失敗後的重試間隔（presentation 節奏，不是 gameplay entropy）。
+## 沒有間隔就會每一影格重送一次被拒絕的命令。
+const SETTLE_RETRY_INTERVAL_MS: float = 500.0
 const SEMANTIC_PALETTES: Dictionary = {
 	&"default": {
 		&"ally": Color("7ee0a1"),
@@ -36,25 +55,128 @@ const SEMANTIC_PALETTES: Dictionary = {
 }
 
 var _model := RunCombatIntelModel.new()
+var _presenter: RunScreenPresenter
 var _playback_port: LiveScreenPlaybackPort
 var _inspection_port: LiveScreenInspectionPort
 var _snapshot: RunPresentationSnapshot
 var _unit_selector: ItemList
 var _selected_unit_serial: int = -1
+var _settle_requested: bool = false
+var _settle_result: RunPresentationResult
+var _settle_retry_countdown_ms: float = 0.0
 
 
 func compose(
 	snapshot: RunPresentationSnapshot,
-	_intent_port: LiveScreenIntentPort
+	intent_port: LiveScreenIntentPort
 ) -> StringName:
 	var error_code := _model.compose(snapshot)
 	if not error_code.is_empty():
 		_snapshot = null
 		return error_code
 	_snapshot = snapshot.deep_clone()
+	_presenter = RunScreenPresenter.new(&"RUN_COMBAT", intent_port)
 	_selected_unit_serial = -1
+	_settle_requested = false
+	_settle_result = null
+	_settle_retry_countdown_ms = 0.0
 	_build_typed_combat_controls()
 	return &""
+
+
+## 正式路徑的戰鬥驅動。canonical simulation 已在 START_OR_RESUME_COMBAT 跑到 result
+## 提交（commit-before-present），這裡只依 presentation 節奏重播已提交 transcript；
+## 播放推進用 SceneTree delta，屬 presentation 節奏，不是 gameplay entropy。
+func _process(delta: float) -> void:
+	advance_presentation_frame(delta * 1000.0)
+
+
+## 每影格的 presentation 驅動入口：播放尚未結束就推播放，已請求 SETTLE 就走重試
+## 倒數。獨立成公開函式是為了讓測試以固定 delta 驅動，不必依賴真實影格時間。
+func advance_presentation_frame(delta_ms: float) -> void:
+	if _playback_port == null:
+		return
+	if _settle_requested:
+		_advance_settle_retry(delta_ms)
+		return
+	advance_playback_frame(delta_ms)
+
+
+func advance_playback_frame(delta_ms: float) -> BattleEventWindowResult:
+	if _playback_port == null or _settle_requested:
+		return BattleEventWindowResult.failure(_screen_not_active_error())
+	var result := _playback_port.advance_playback(delta_ms)
+	if not result.ok or result.window == null:
+		if _committed_result_awaiting_settlement(result):
+			_settle_requested = true
+			_apply_settle_result(_request_settle())
+		return result
+	if not result.window.events.is_empty():
+		_render_damage_events(result.window.events)
+	if result.window.exhausted:
+		_settle_requested = true
+		_apply_settle_result(_request_settle())
+	return result
+
+
+## G2 F3：SETTLE 失敗以前完全無出口——`_settle_requested` 已為 true、`_process`
+## 之後永遠 early-return、結果沒有任何 production 讀者，玩家停在一場播完的戰鬥前
+## 零訊息，唯一出路是放棄整場 run。現在失敗會顯示在狀態列並定時重試。
+## exactly-once：本重試只在「上一次 SETTLE 明確失敗且未提交」時發生；成功或
+## post-commit（committed=true）的結果都會讓倒數停止，不會產生第二次結算。
+func _advance_settle_retry(delta_ms: float) -> void:
+	if _settle_result == null or _settle_result.ok or _settle_result.committed:
+		return
+	_settle_retry_countdown_ms -= delta_ms
+	if _settle_retry_countdown_ms > 0.0:
+		return
+	_apply_settle_result(_request_settle())
+
+
+func _apply_settle_result(result: RunPresentationResult) -> void:
+	_settle_result = result
+	_settle_retry_countdown_ms = SETTLE_RETRY_INTERVAL_MS
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.report_composition_result(result)
+
+
+## 仍在等待重試的 SETTLE（成功結算後恆為 false）。
+func settle_retry_pending() -> bool:
+	return (
+		_settle_requested
+		and _settle_result != null
+		and not _settle_result.ok
+		and not _settle_result.committed
+	)
+
+
+## 已提交 result 重載時沒有 transcript authority（design.md §10：只顯示 committed
+## summary，不虛構重播）。少了這條，續跑進 COMBAT 的戰鬥同樣沒有任何東西能結算它。
+func _committed_result_awaiting_settlement(
+	result: BattleEventWindowResult
+) -> bool:
+	return (
+		result != null
+		and result.error != null
+		and result.error.source_code == PLAYBACK_NOT_AVAILABLE
+		and _snapshot != null
+		and _snapshot.view != null
+		and _snapshot.view.resolution_kind == ResolutionState.Kind.BATTLE_RESULT_PENDING
+	)
+
+
+## 播完即結算：SETTLE_BATTLE 之後由既有 run route 決定進 REWARD／MAP／結算。
+func _request_settle() -> RunPresentationResult:
+	if _presenter == null:
+		return RunPresentationResult.failure(_screen_not_active_error())
+	return _presenter.request(RunPresentationIntent.new(
+		RunPresentationIntent.Kind.SETTLE_BATTLE
+	))
+
+
+func settle_result() -> RunPresentationResult:
+	return _settle_result
 
 
 func bind_playback_port(port: LiveScreenPlaybackPort) -> StringName:
@@ -103,16 +225,20 @@ func drain_playback_window(
 		return BattleEventWindowResult.failure(_screen_not_active_error())
 	var result := _playback_port.drain_window(expected_identity, max_count)
 	if result.ok and result.window != null:
-		var parent_screen := get_parent() as ProductionScreen
-		var accessibility := (
-			parent_screen.get_node_or_null(^"AccessibilityRuntime")
-			as ProductionAccessibilityHost
-			if parent_screen != null
-			else null
-		)
-		if accessibility != null:
-			accessibility.render_damage_events(result.window.events)
+		_render_damage_events(result.window.events)
 	return result
+
+
+func _render_damage_events(events: Array) -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	var accessibility := (
+		parent_screen.get_node_or_null(^"AccessibilityRuntime")
+		as ProductionAccessibilityHost
+		if parent_screen != null
+		else null
+	)
+	if accessibility != null:
+		accessibility.render_damage_events(events)
 
 
 func enemy_rows() -> Array[RunCombatIntelModel.EnemyIntelRow]:
@@ -295,9 +421,12 @@ func _build_semantic_controls() -> void:
 	add_child(ally_host)
 	add_child(rarity_host)
 
+	# 敵我 cue 必須各佔一欄；與 AllySemantics 同座標會讓兩組文字疊在一起。
 	var enemy_host := VBoxContainer.new()
 	enemy_host.name = "EnemySemantics"
-	enemy_host.position = Vector2(72.0, 320.0)
+	enemy_host.position = Vector2(1000.0, 320.0)
+	enemy_host.custom_minimum_size = Vector2(260.0, 0.0)
+	enemy_host.size = Vector2(260.0, 0.0)
 	for row: RunCombatIntelModel.EnemyIntelRow in _model.enemy_rows():
 		enemy_host.add_child(_semantic_label(
 			&"enemy",
@@ -379,12 +508,18 @@ func _on_unit_selected(index: int) -> void:
 func _render_inspection(
 	snapshot: CombatUnitInspectionSnapshot
 ) -> void:
-	_set_inspection_text(^"InspectionPanel/SourceValue", String(snapshot.source_id))
+	_set_inspection_text(
+		^"InspectionPanel/SourceValue",
+		_localized_content_text(snapshot.source_id)
+	)
 	_set_inspection_text(
 		^"InspectionPanel/TargetValue",
-		str(snapshot.target_serial)
+		_target_text(snapshot.target_serial)
 	)
-	_set_inspection_text(^"InspectionPanel/StatsValue", str(snapshot.stats))
+	_set_inspection_text(
+		^"InspectionPanel/StatsValue",
+		_stats_text(snapshot.stats)
+	)
 	_set_inspection_text(
 		^"InspectionPanel/EquipmentValue",
 		_join_names(snapshot.equipment_ids)
@@ -415,6 +550,41 @@ func _set_inspection_text(path: NodePath, value: String) -> void:
 	var label := get_node_or_null(path) as Label
 	if label != null:
 		label.text = value if not value.is_empty() else "-"
+
+
+## 目標欄呈現目標單位的在地化名稱，不倒出內部 serial。
+func _target_text(target_serial: int) -> String:
+	if target_serial > 0:
+		for row: RunCombatIntelModel.InspectionIntelRow in _model.inspection_rows():
+			if row.unit_serial == target_serial:
+				return _localized_content_text(row.source_id)
+	return _localized_ui_text(INSPECTION_NONE_KEY)
+
+
+## 數值欄以在地化欄位名＋數值呈現，不倒出 Dictionary 字面值。
+func _stats_text(stats: Dictionary) -> String:
+	var entries: Array[String] = []
+	for stat_key: String in INSPECTION_STAT_ORDER:
+		if not stats.has(stat_key):
+			continue
+		entries.append("%s %d" % [
+			_localized_ui_text(StringName(STAT_TEXT_KEY_PREFIX + stat_key)),
+			int(stats[stat_key]),
+		])
+	return (
+		", ".join(entries)
+		if not entries.is_empty()
+		else _localized_ui_text(INSPECTION_NONE_KEY)
+	)
+
+
+func _localized_ui_text(text_key: StringName) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.localized_ui_text(text_key)
+		if parent_screen != null
+		else String(text_key)
+	)
 
 
 func _join_names(values: Array[StringName]) -> String:

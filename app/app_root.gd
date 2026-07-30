@@ -93,6 +93,9 @@ var _route_generation: int = 0
 var _active_route_kind: StringName
 var _results_action_in_progress: bool = false
 var _recovery_confirmation_presenter: RecoveryConfirmationPresenter
+## `submit_discard()`（回傳型別是 SaveResult，裝不下換場失敗）在 durable 棄置成功、
+## 但 MENU route 沒能 commit 時留下的具名碼；由 `_confirm_menu_recovery` 消費。
+var _route_commit_failure: StringName = &""
 
 
 ## 服務來源：production（main.tscn）走 design.md §4.4 的五個 Autoload；本方法讓呼叫端在
@@ -422,8 +425,7 @@ func open_camp() -> AppActionResult:
 	if not transitioned.ok:
 		_discard_route(prepared)
 		return _action_failure(transitioned.error.code)
-	_commit_route(prepared)
-	return AppActionResult.success(false)
+	return _commit_route_or_fail_closed(prepared)
 
 
 func continue_active_run() -> AppActionResult:
@@ -479,8 +481,7 @@ func continue_active_run() -> AppActionResult:
 		_release_active_run()
 		return _action_failure(transitioned.error.code)
 	_prepared_run_capability = null
-	_commit_route(prepared_route)
-	return AppActionResult.success(false)
+	return _commit_route_or_fail_closed(prepared_route)
 
 
 func return_to_menu() -> AppActionResult:
@@ -507,9 +508,9 @@ func return_to_menu() -> AppActionResult:
 	if not transitioned.ok:
 		_discard_route(prepared)
 		return _action_failure(transitioned.error.code)
-	_commit_route(prepared)
+	var committed := _commit_route_or_fail_closed(prepared)
 	_release_active_run()
-	return AppActionResult.success(false)
+	return committed
 
 
 func start_expedition(request: StartExpeditionRequest) -> AppActionResult:
@@ -674,12 +675,23 @@ func _confirm_menu_recovery() -> AppActionResult:
 		return _action_failure(
 			RecoveryConfirmationPresenter.CONFIRMATION_NOT_OPEN
 		)
+	_route_commit_failure = &""
 	var discarded := _recovery_confirmation_presenter.confirm_confirmation()
 	if discarded == null or not discarded.ok:
+		_route_commit_failure = &""
 		return _action_failure(
 			discarded.error.code
 			if discarded != null and discarded.error != null
 			else &"RECOVERY_DISCARD_FAILED"
+		)
+	var route_failure := _route_commit_failure
+	_route_commit_failure = &""
+	if not route_failure.is_empty():
+		return AppActionResult.committed_presentation_failure(
+			DiagnosticError.new(
+				route_failure,
+				&"error.presentation.recovery_postcommit"
+			)
 		)
 	return AppActionResult.success(true)
 
@@ -708,17 +720,35 @@ func submit_discard(token: RetainedRunRecoveryToken) -> SaveResult:
 	if not discarded.ok:
 		return discarded
 	var loaded := _save_repository.load()
-	if loaded.ok:
-		_unresumable_run_id = ""
-		_compose_camp(loaded.profile)
-		_update_menu_from_load(loaded)
-		var prepared := _prepare_route(
-			AppStateMachine.State.MENU,
-			&"MENU_MAIN",
-			_menu_snapshot
+	if not loaded.ok:
+		# G2 F8：棄置已落檔，但 load 失敗代表畫面沒有任何更新來源——舊寫法既不記碼
+		# 也不換場，`_confirm_menu_recovery` 因此回 success(true)，玩家收到「成功」
+		# 卻看不到任何變化。與 route 失敗同一族，一律 fail-closed 到 fallback。
+		_route_commit_failure = _revoke_and_install_app_route_fallback(
+			loaded.error.code
 		)
-		if bool(prepared.get("ok", false)):
-			_commit_route(prepared)
+		return discarded
+	_unresumable_run_id = ""
+	_compose_camp(loaded.profile)
+	_update_menu_from_load(loaded)
+	var prepared := _prepare_route(
+		AppStateMachine.State.MENU,
+		&"MENU_MAIN",
+		_menu_snapshot
+	)
+	# 棄置本身已經落檔（durable），SaveResult 不能因為換場失敗而變成 false；
+	# 但 route 失敗必須 fail-closed 並記錄下來，由 `_confirm_menu_recovery`
+	# 轉成 committed_presentation_failure 回給呼叫端（G2 M1）。
+	if not bool(prepared.get("ok", false)):
+		_route_commit_failure = _revoke_and_install_app_route_fallback(
+			StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+		)
+		return discarded
+	var commit_error := _commit_route(prepared)
+	if not commit_error.is_empty():
+		_route_commit_failure = _revoke_and_install_app_route_fallback(
+			commit_error
+		)
 	return discarded
 
 
@@ -870,8 +900,7 @@ func _return_results_to_camp_owned() -> AppActionResult:
 	if not transitioned.ok:
 		_discard_route(prepared)
 		return _action_failure(transitioned.error.code)
-	_commit_route(prepared)
-	return AppActionResult.success(false)
+	return _commit_route_or_fail_closed(prepared)
 
 
 func return_results_to_menu() -> AppActionResult:
@@ -903,8 +932,7 @@ func _return_results_to_menu_owned() -> AppActionResult:
 	if not transitioned.ok:
 		_discard_route(prepared)
 		return _action_failure(transitioned.error.code)
-	_commit_route(prepared)
-	return AppActionResult.success(false)
+	return _commit_route_or_fail_closed(prepared)
 
 
 func acknowledge_results() -> StringName:
@@ -1095,7 +1123,7 @@ func _revoke_run_writers() -> void:
 func _invalidate_run_session() -> void:
 	# No facade or dev wrapper may retain a dispatch path after terminal save.
 	_run_lab_session = null
-	_run_presentation_session = null
+	_release_run_presentation_session()
 
 
 # === boot 分流 =============================================================
@@ -1295,6 +1323,17 @@ func _prepare_route(
 		inspection_port,
 		collection_projection
 	)
+	# G2 F10：兩個 screen context 的 `snapshot_type_error` 以前只被寫入、沒有任何
+	# production 讀者，等於「新增 snapshot 型別忘了加 clone 分支」仍舊靜默塌成 null，
+	# 與「本來就不需要 snapshot」無從分辨。這裡是那個讀者：帶著具名 type error 就
+	# fail-closed，不把半截畫面裝上去。
+	var context_error := _screen_context_snapshot_error(staged, live)
+	if not context_error.is_empty():
+		_live_lease_registry.cancel_activation(activation)
+		return {
+			"ok": false,
+			"error": context_error,
+		}
 	var prepared_result := _scene_router.prepare_production(
 		route_kind,
 		staged,
@@ -1315,6 +1354,17 @@ func _prepare_route(
 	}
 
 
+func _screen_context_snapshot_error(
+	staged: StagedScreenContext,
+	live: ProductionLiveScreenContext
+) -> StringName:
+	if staged != null and not staged.snapshot_type_error.is_empty():
+		return staged.snapshot_type_error
+	if live != null and not live.snapshot_type_error.is_empty():
+		return live.snapshot_type_error
+	return &""
+
+
 func _commit_route(prepared: Dictionary) -> StringName:
 	if prepared == null or not bool(prepared.get("ok", false)):
 		return ERROR_ROUTE_ACTIVATION_INVALID
@@ -1322,20 +1372,113 @@ func _commit_route(prepared: Dictionary) -> StringName:
 	var route := prepared.get("prepared") as PreparedProductionRoute
 	var staged_lease := _live_lease_registry.prepared_lease(activation)
 	if staged_lease == null:
+		# G2 F6：activation 在 prepare 與 commit 之間失效時，prepared candidate
+		# 的整棵 Control 樹與未取消的 capability 同樣要收掉——這條分支以前是
+		# 本函式唯一沒有 _discard_route 的早退。
+		_discard_route(prepared)
 		return ERROR_ROUTE_ACTIVATION_INVALID
 	var prepared_error := _scene_router.prepared_error(route)
 	if not prepared_error.is_empty():
+		# 還沒 commit 場景：把準備中的 activation 與 prepared route 一起收掉，
+		# 不留下永遠不會被消費的 pending capability。
+		_discard_route(prepared)
 		return prepared_error
 	var route_error := _scene_router.commit_prepared(route)
 	if not route_error.is_empty():
-		_live_lease_registry.cancel_activation(activation)
+		# 準備好的候選畫面在 commit 失敗時同樣要收掉，否則每次失敗都漏一棵 Control 樹。
+		_discard_route(prepared)
 		return route_error
 	var lease := _live_lease_registry.activate_prepared(activation)
 	if lease == null:
+		# G2 M1：場景已經換過去了，卻拿不到 active lease。維持現狀＝畫面顯示新畫面
+		# 但每個按鈕都被 SCREEN_NOT_ACTIVE 拒絕（看得到、按不動）。
+		# 只能 fail-closed：明確撤銷 active lease 並回報具名失敗，由呼叫端轉成
+		# committed_presentation_failure，讓錯誤呈現面說明「已生效但畫面未更新」。
+		_live_lease_registry.cancel_activation(activation)
+		_live_lease_registry.revoke_active()
 		return ERROR_ROUTE_ACTIVATION_INVALID
 	_route_generation = int(prepared.get("generation", _route_generation))
 	_active_route_kind = StringName(prepared.get("route_kind", &""))
 	return &""
+
+
+## G2 M1：state machine transition 之後才做的 route commit。commit 失敗代表
+## 權威狀態已經前進、畫面卻沒跟上，回報 success 會讓玩家對著一個不接受輸入的畫面。
+## 一律 fail-closed：撤銷 active lease（沒有任何畫面能繼續發命令）並回
+## committed_presentation_failure 帶原始 source_code。
+## G2 F4：fail-closed 不等於「沒有出路」。裸 revoke 會讓玩家對著一個所有按鈕都回
+## SCREEN_NOT_ACTIVE 的舊畫面，連 R3 要求的 menu.exit 都按不動。與 RUN 既有的
+## `_install_run_route_fallback` 對齊，改為撤銷後再裝一個帶重試／離開的 fallback。
+func _commit_route_or_fail_closed(prepared: Dictionary) -> AppActionResult:
+	var commit_error := _commit_route(prepared)
+	if commit_error.is_empty():
+		return AppActionResult.success(false)
+	return AppActionResult.committed_presentation_failure(
+		DiagnosticError.new(
+			_revoke_and_install_app_route_fallback(commit_error),
+			&"error.presentation.route_commit_failed"
+		)
+	)
+
+
+## post-commit 畫面失效時的統一收尾：先撤銷失效 lease（沒有任何舊畫面能繼續發命令），
+## 再裝 APP_ROUTE_FALLBACK。回傳實際要回報的 source_code——fallback 自己也裝不起來時
+## 回報 fallback 的失敗碼（那是更根本的問題），此時才真的只剩裸 revoke 的狀態。
+func _revoke_and_install_app_route_fallback(
+	source_code: StringName
+) -> StringName:
+	_live_lease_registry.revoke_active()
+	var fallback_error := _install_app_route_fallback()
+	return source_code if fallback_error.is_empty() else fallback_error
+
+
+func _install_app_route_fallback() -> StringName:
+	var prepared := _prepare_route(
+		_app_state_machine.state(),
+		&"APP_ROUTE_FALLBACK",
+		_fallback_snapshot_for_state(),
+		_fallback_profile_for_state()
+	)
+	if not bool(prepared.get("ok", false)):
+		return StringName(prepared.get("error", ERROR_ROUTE_PREPARE_INVALID))
+	return _commit_route(prepared)
+
+
+func _fallback_snapshot_for_state() -> RefCounted:
+	match _app_state_machine.state():
+		AppStateMachine.State.MENU:
+			return _menu_snapshot
+		AppStateMachine.State.RUN:
+			return (
+				_run_presentation_session.snapshot()
+				if _run_presentation_session != null
+				else null
+			)
+		AppStateMachine.State.RESULTS:
+			return _terminal_presentation_snapshot
+	return null
+
+
+func _fallback_profile_for_state() -> ProfileState:
+	return (
+		_camp_profile_snapshot
+		if _app_state_machine.state() == AppStateMachine.State.CAMP
+		else null
+	)
+
+
+## APP_ROUTE_FALLBACK 的重試：重算目前 app state 應有的正式 route 並換過去。
+## 與 `run.retry_route` 同型（`_retry_run_route_presentation`），差別只在它涵蓋
+## MENU／CAMP／RESULTS。
+func _retry_app_route_presentation() -> AppActionResult:
+	if _active_route_kind != &"APP_ROUTE_FALLBACK":
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var route_error := _route_for_state()
+	return (
+		AppActionResult.success(false)
+		if route_error.is_empty()
+		else _action_failure(route_error)
+	)
 
 
 func _discard_route(prepared: Dictionary) -> void:
@@ -1597,6 +1740,11 @@ func _action_callbacks(route_kind: StringName) -> Dictionary:
 			actions[&"camp.back"] = Callable(self, "_return_to_camp_route")
 		&"RUN_MAP", &"RUN_PREPARE", &"RUN_COMBAT", &"RUN_REWARD":
 			actions[&"run.menu"] = Callable(self, "return_to_menu")
+		&"APP_ROUTE_FALLBACK":
+			actions[&"app.retry_route"] = Callable(
+				self, "_retry_app_route_presentation"
+			)
+			actions[&"menu.exit"] = Callable(self, "request_exit")
 		&"RUN_ROUTE_FALLBACK":
 			actions[&"run.retry_route"] = Callable(
 				self, "_retry_run_route_presentation"
@@ -1710,13 +1858,21 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 	)
 	if not table_result.ok:
 		return ERROR_RUN_MODIFIER_TABLE_FAILED
+	# G2 H1 前置：指揮官被動效果只從 commander 定義可達，不在 unit/encounter 的遞移閉包內。
+	# 不把它們一起 pin，BattleSetupSourceCompiler 帶進來的 commander_effects 會讓
+	# StartCombatEvent 以 BATTLE_RULES_REFERENCE_MISSING 被拒——正式路徑連 COMBAT 都進不去。
+	var commander_passive_effect_ids := CommanderContentReader.new().passive_effect_ids(
+		_content_registry, digest, run.commander_id
+	)
+	var battle_root_ids := _battle_root_ids(content)
+	battle_root_ids.append_array(commander_passive_effect_ids)
 	# 缺口 1（§6.3 軌 A）：required_ids 必須帶上 challenge unlock 鏈，否則挑戰詞綴只透過
 	# unlock.slice_challenge_N 的 modifier_refs 可達、不在 unit/encounter 的遞移閉包內，
 	# challenge>=1 的戰鬥節點會以 EncounterCompiler.RULE_MISSING 進不去。
 	var battle_result := BattleRuleCatalogBuilder.new().build(
 		_content_registry, digest,
 		RunCompositionSupport.required_battle_ids(
-			_battle_root_ids(content), run.challenge_level
+			battle_root_ids, run.challenge_level
 		)
 	)
 	if not battle_result.ok:
@@ -1750,8 +1906,8 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 		_run_controller,
 		_run_command_factory,
 		battle_result.catalog,
-		CommanderContentReader.new().passive_effect_ids(
-			_content_registry, digest, run.commander_id
+		_battle_commander_passive_effect_ids(
+			battle_result.catalog, commander_passive_effect_ids
 		)
 	)
 	_run_lab_session = RunLabSession.new(_run_presentation_session)
@@ -1770,12 +1926,47 @@ func _battle_root_ids(content: ProjectContentBootstrapResult) -> Array[StringNam
 	return roots
 
 
+## G2 H1 前置：只有「純戰鬥」的指揮官被動能進 BattleSetupSourceCompiler。帶 scalar
+## run_operations 的被動依內容契約一律 always-scope
+## （content_validator._validate_always_only_claim_scope），而 battle setup 只接受
+## once_per_node／on_first_clear，混進去會讓 StartCombatEvent 以 BATTLE_INPUT_INVALID 拒絕
+## 整場戰鬥；那部分本來就由 RunModifierTable 的 always-active 路徑消費。
+## G2 F5：這個判準的前提是「不存在同時帶 battle_operations 與 run_operations 的
+## 指揮官被動」（混合型會連 battle 那半也被靜默丟掉）。前提由
+## tests/unit/content_validation/test_commander_passive_effect_scope_is_single_sided.gd
+## 對真實 pack 釘死——日後著作混合型被動時那條測試會紅，而不是戰鬥中被動悄悄失效。
+func _battle_commander_passive_effect_ids(
+	catalog: BattleRuleCatalog,
+	passive_effect_ids: Array[StringName]
+) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if catalog == null:
+		return result
+	for effect_id: StringName in passive_effect_ids:
+		var rule := catalog.try_effect_rule(effect_id)
+		if (
+			rule != null
+			and not rule.battle_operations.is_empty()
+			and rule.run_operations.is_empty()
+		):
+			result.append(effect_id)
+	return result
+
+
 func _release_active_run() -> void:
 	_run_lab_session = null
-	_run_presentation_session = null
+	_release_run_presentation_session()
 	_run_command_factory = null
 	_run_controller = null
 	_run_session = null
+
+
+## facade 與 CombatCoordinator 互持強引用（皆為 RefCounted），只把 AppRoot 這一邊的
+## 參照設 null 不會釋放任何一方；離開 run 範疇必須先顯式解綁。
+func _release_run_presentation_session() -> void:
+	if _run_presentation_session != null:
+		_run_presentation_session.release()
+	_run_presentation_session = null
 
 
 # === camp 範疇組裝 =========================================================

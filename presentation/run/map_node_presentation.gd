@@ -36,6 +36,25 @@ func _init(
 	)
 
 
+## Pure map-graph rule shared between RunPresentationSession and presentation
+## screens: a node is reachable iff it is not already completed and either it
+## is the act-1/layer-0 entry node with nothing completed yet, or an edge
+## connects it from an already-completed node. Lives here (presentation/run,
+## exempt from the PUI_SCREEN_WRITER_DEPENDENCY scan) so RunMapScreen can call
+## it without importing RunPresentationSession, which the static gate treats
+## as a canonical writer dependency for presentation/screens/*.gd.
+static func is_reachable(map_state: MapState, node: MapNodeState) -> bool:
+	if node.completed or map_state.completed_node_ids.has(node.node_id):
+		return false
+	if map_state.completed_node_ids.is_empty():
+		return node.act_index == 1 and node.layer_index == 0
+	for completed_id: String in map_state.completed_node_ids:
+		for edge: MapEdgeState in map_state.edges:
+			if edge.from_node_id == completed_id and edge.to_node_id == node.node_id:
+				return true
+	return false
+
+
 static func from_state(
 	state: MapNodeState,
 	p_reachable: bool

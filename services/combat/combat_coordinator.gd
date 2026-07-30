@@ -30,6 +30,11 @@ func _init(
 func bind_presentation_session(session: RefCounted) -> void:
 	_presentation_session = session
 
+## 顯式解綁。session 與 coordinator 互持強引用（兩者皆 RefCounted），
+## 離開 run 範疇時沒有這一步就整組 run 物件圖永不釋放。
+func unbind_presentation_session() -> void:
+	_presentation_session = null
+
 func begin_or_resume() -> CombatCoordinatorResult:
 	if _controller == null or _active:
 		return _failure(

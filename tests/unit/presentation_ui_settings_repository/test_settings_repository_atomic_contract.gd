@@ -24,7 +24,7 @@ var _signal_payloads: Array[SettingsSnapshot] = []
 
 
 class FakeSettingsStorage:
-	extends RefCounted
+	extends SettingsStoragePort
 
 	var files: Dictionary = {}
 	var journal: Array[Dictionary] = []
@@ -57,26 +57,24 @@ class FakeSettingsStorage:
 	func inject_fault(operation: StringName, path: StringName, occurrence: int = 1) -> void:
 		_faults[_fault_key(operation, path, occurrence)] = true
 
-	func read_bytes(path: StringName) -> Dictionary:
+	func read_bytes(path: StringName) -> SettingsStorageResult:
 		var occurrence := _record(&"read", path)
 		if _should_fail(&"read", path, occurrence):
 			return _failure()
 		if not files.has(path):
-			return {"ok": true, "exists": false, "bytes": PackedByteArray()}
-		return {
-			"ok": true,
-			"exists": true,
-			"bytes": (files[path] as PackedByteArray).duplicate(),
-		}
+			return SettingsStorageResult.success(false)
+		return SettingsStorageResult.success(
+			true, (files[path] as PackedByteArray).duplicate()
+		)
 
-	func write_bytes(path: StringName, bytes: PackedByteArray) -> Dictionary:
+	func write_bytes(path: StringName, bytes: PackedByteArray) -> SettingsStorageResult:
 		var occurrence := _record(&"write", path)
 		if _should_fail(&"write", path, occurrence):
 			return _failure()
 		files[path] = bytes.duplicate()
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
-	func promote_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func promote_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		var occurrence := _record(&"promote", destination)
 		if _should_fail(&"promote", destination, occurrence):
 			return _failure()
@@ -86,32 +84,32 @@ class FakeSettingsStorage:
 			files[BACKUP_PATH] = (files[destination] as PackedByteArray).duplicate()
 		files[destination] = (files[source] as PackedByteArray).duplicate()
 		files.erase(source)
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
-	func copy_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func copy_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		var occurrence := _record(&"copy", destination)
 		if _should_fail(&"copy", destination, occurrence):
 			return _failure()
 		if not files.has(source):
 			return _failure()
 		files[destination] = (files[source] as PackedByteArray).duplicate()
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
-	func restore_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func restore_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		var occurrence := _record(&"restore", destination)
 		if _should_fail(&"restore", destination, occurrence):
 			return _failure()
 		if not files.has(source):
 			return _failure()
 		files[destination] = (files[source] as PackedByteArray).duplicate()
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
-	func remove_bytes(path: StringName) -> Dictionary:
+	func remove_bytes(path: StringName) -> SettingsStorageResult:
 		var occurrence := _record(&"remove", path)
 		if _should_fail(&"remove", path, occurrence):
 			return _failure()
 		files.erase(path)
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
 	func duplicate_storage() -> FakeSettingsStorage:
 		var clone := FakeSettingsStorage.new()
@@ -137,8 +135,8 @@ class FakeSettingsStorage:
 	func _fault_key(operation: StringName, path: StringName, occurrence: int) -> String:
 		return "%s|%s|%d" % [operation, path, occurrence]
 
-	func _failure() -> Dictionary:
-		return {"ok": false, "error_code": STORAGE_FAULT}
+	func _failure() -> SettingsStorageResult:
+		return SettingsStorageResult.failure(STORAGE_FAULT)
 
 
 func before_each() -> void:

@@ -100,15 +100,42 @@ func _refresh_entries() -> void:
 	entries.clear()
 	compare.clear()
 	var kind := _selected_category()
+	# Glossary entries never resolve to a supported comparison (the view model
+	# always rejects them with CATEGORY_NOT_COMPARABLE), so the compare entry
+	# point is withdrawn instead of staying interactive and always failing.
+	var comparable := kind != CollectionBrowserViewModel.KIND_GLOSSARY
 	var search := get_node_or_null(^"SearchInput") as LineEdit
 	var query := search.text if search != null else ""
-	for entry_id: StringName in _view_model.filter_and_search(kind, query):
+	for entry_id: StringName in _search_matches(kind, query):
 		var label := _entry_text(entry_id)
 		entries.add_item(label)
 		entries.set_item_metadata(entries.item_count - 1, entry_id)
-		compare.add_item(label)
-		compare.set_item_metadata(compare.item_count - 1, entry_id)
-	_set_compare_result(&"collection.compare.empty")
+		if comparable:
+			compare.add_item(label)
+			compare.set_item_metadata(compare.item_count - 1, entry_id)
+	compare.focus_mode = Control.FOCUS_ALL if comparable else Control.FOCUS_NONE
+	_set_compare_result(
+		&"collection.compare.empty"
+		if comparable
+		else CollectionBrowserViewModel.CATEGORY_NOT_COMPARABLE
+	)
+
+
+## Matches against the resolved display name (current locale) rather than the
+## raw entry id, so search is usable for zh_TW/en players. The view model's
+## own filter_and_search() keeps matching raw ids for its own clone-only
+## contract (see CollectionBrowserViewModel); this stays screen-local because
+## localized text belongs to the screen, not the view model.
+func _search_matches(kind: StringName, query: String) -> Array:
+	var normalized_query := query.strip_edges().to_lower()
+	var matches: Array = []
+	for entry_id: StringName in _view_model.entries(kind):
+		if (
+			normalized_query.is_empty()
+			or _entry_text(entry_id).to_lower().contains(normalized_query)
+		):
+			matches.append(entry_id)
+	return matches
 
 
 func _on_category_selected(_index: int) -> void:

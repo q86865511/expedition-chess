@@ -56,6 +56,59 @@ func test_ui_mapper_matches_the_live_canvas_transform_not_reflow_scale() -> void
 	)
 
 
+## R16 審查缺口 1（2026-07-30 補洞）：上面「matches the live canvas transform」測試只驗
+## WindowCoordinateMapper 這個獨立類別,從未實例化 ProductionViewportCoordinator——把
+## coordinator.gd :88-93 的 fit_scale 改回再乘一次 UI 百分比(雙重縮放 bug)全測試仍綠。
+## 本測試直接組裝真 coordinator 需要的五個子節點(型別與 main.tscn 的
+## WorldViewportContainer/WorldViewport/UiLayer/UiRoot/PresentationHost 一致),用
+## 「UiLayer 實際套用的 CanvasLayer.transform」與「pointer_to_ui() 背後
+## WindowCoordinateMapper 的映射」互相 round-trip 回原始視窗座標,確保兩者對同一次
+## synchronize() 用的是同一個 fit_scale——這是唯一能同時涵蓋 coordinator 自己那段
+## 重複運算與 mapper 運算的斷言方式。
+func test_ui_layer_transform_round_trips_pointer_to_ui_without_double_scaling_at_125_and_150_percent() -> void:
+	var coordinator := ProductionViewportCoordinator.new()
+	var world_container := SubViewportContainer.new()
+	var world_viewport := SubViewport.new()
+	var ui_layer := CanvasLayer.new()
+	var ui_root := Control.new()
+	var presentation_host := Control.new()
+	coordinator.add_child(world_container)
+	coordinator.add_child(world_viewport)
+	coordinator.add_child(ui_layer)
+	coordinator.add_child(ui_root)
+	coordinator.add_child(presentation_host)
+	coordinator.world_container_path = coordinator.get_path_to(world_container)
+	coordinator.world_viewport_path = coordinator.get_path_to(world_viewport)
+	coordinator.ui_layer_path = coordinator.get_path_to(ui_layer)
+	coordinator.ui_root_path = coordinator.get_path_to(ui_root)
+	coordinator.presentation_host_path = coordinator.get_path_to(presentation_host)
+	add_child_autofree(coordinator)
+	await wait_process_frames(2)
+
+	var window_size := Vector2i(1920, 1080)
+	for scale_percent: int in [125, 150]:
+		assert_eq(coordinator.apply_ui_scale(scale_percent), &"")
+		# apply_ui_scale() re-syncs against the real (headless-runner) visible rect,
+		# which is out of this test's control; re-run with a fixed window size so the
+		# assertion below is deterministic while still exercising the real
+		# synchronize()/pointer_to_ui() code path at the just-applied UI scale.
+		assert_eq(coordinator.synchronize(window_size), &"")
+		# The window's own bottom-right corner is never at the letterbox origin,
+		# so a stray "* ui_scale_percent / 100.0" factor on either side of the
+		# round trip cannot cancel out by coincidence.
+		var window_point := Vector2(window_size)
+		var ui_point := coordinator.pointer_to_ui(window_point)
+		var round_tripped: Vector2 = ui_layer.transform * ui_point
+		assert_true(
+			round_tripped.is_equal_approx(window_point),
+			(
+				"at %d%% UI scale the live CanvasLayer transform (%s) must invert " +
+				"pointer_to_ui()'s mapping (%s -> %s) exactly, not be scaled again by " +
+				"the UI percent"
+			) % [scale_percent, ui_layer.transform, window_point, ui_point]
+		)
+
+
 func test_combat_accessibility_runtime_does_not_cover_or_intercept_typed_controls() -> void:
 	var screen := ProductionSceneCatalog.new().instantiate(&"RUN_COMBAT")
 	assert_not_null(screen)

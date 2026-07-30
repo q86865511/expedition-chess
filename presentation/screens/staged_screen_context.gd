@@ -6,6 +6,11 @@ var snapshot: RefCounted
 var profile: ProfileState
 var locale: StringName
 var localized_text: Dictionary[StringName, String] = {}
+## Fail-closed diagnostic: set when the constructor received a non-null
+## snapshot of a type _clone_snapshot() does not recognize, so a newly added
+## snapshot type surfaces as a queryable failure instead of silently
+## collapsing to the same null as "no snapshot was needed".
+var snapshot_type_error: StringName = &""
 
 
 func _init(
@@ -36,6 +41,8 @@ func resolve_text(key: StringName) -> String:
 
 
 func _clone_snapshot(source: RefCounted) -> RefCounted:
+	if source == null:
+		return null
 	if source is RunPresentationSnapshot:
 		return (source as RunPresentationSnapshot).deep_clone()
 	if source is ResultsPresentationSnapshot:
@@ -44,4 +51,7 @@ func _clone_snapshot(source: RefCounted) -> RefCounted:
 		return (source as MainMenuSnapshot).deep_clone()
 	if source is SettingsSnapshot:
 		return (source as SettingsSnapshot).deep_clone()
+	snapshot_type_error = StringName(
+		"STAGED_SCREEN_CONTEXT_SNAPSHOT_TYPE_UNKNOWN:%s" % source.get_class()
+	)
 	return null

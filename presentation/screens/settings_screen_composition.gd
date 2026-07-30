@@ -2,6 +2,7 @@ class_name SettingsScreenComposition
 extends Control
 
 const DRAFT_INVALID: StringName = &"SETTINGS_DRAFT_INVALID"
+const DEFAULT_MESSAGE_KEY: StringName = &"error.settings.apply_failed"
 const SETTING_ORDER: Array[StringName] = [
 	&"locale",
 	&"ui_scale_percent",
@@ -23,6 +24,10 @@ const SETTING_ORDER: Array[StringName] = [
 var _draft: SettingsSnapshot
 var _committed: SettingsSnapshot
 var _control_status_code: StringName = &""
+## G2 H3：設定畫面自己的錯誤呈現面。draft 驗證失敗不會經過 action port，
+## 只靠 ProductionScreen 層的狀態列看不到，必須由 composition 自己顯示。
+var _status_view := PresentationStatusView.new()
+var _visible_error_key: StringName = &""
 var _editors: Dictionary[StringName, Control] = {}
 var _labels: Dictionary[StringName, Label] = {}
 var _value_labels: Dictionary[StringName, Label] = {}
@@ -38,8 +43,8 @@ func stage(
 	_set_localized_text(localized_text)
 	_draft = snapshot.deep_clone()
 	_committed = snapshot.deep_clone()
-	_control_status_code = &""
 	_build_editors()
+	_apply_control_status(&"")
 	return &""
 
 
@@ -50,10 +55,10 @@ func settings_draft() -> SettingsSnapshot:
 func replace_settings_draft(candidate: SettingsSnapshot) -> StringName:
 	var validation := _validate_draft(candidate)
 	if not validation.is_empty():
-		_control_status_code = validation
+		_apply_control_status(validation)
 		return validation
 	_draft = candidate.deep_clone()
-	_control_status_code = &""
+	_apply_control_status(&"")
 	_sync_editors()
 	return &""
 
@@ -66,16 +71,44 @@ func mark_committed(snapshot: SettingsSnapshot) -> void:
 	if snapshot != null:
 		_committed = snapshot.deep_clone()
 		_draft = snapshot.deep_clone()
-	_control_status_code = &""
+	_apply_control_status(&"")
 	_sync_editors()
 
 
 func set_control_status_code(code: StringName) -> void:
-	_control_status_code = code
+	_apply_control_status(code)
 
 
 func control_status_code() -> StringName:
 	return _control_status_code
+
+
+## `SettingsScreenPresenter.visible_error_key()` 的同名生產端消費者：
+## 玩家看得到的錯誤訊息鍵（沒有錯誤時為 &""）。
+func visible_error_key() -> StringName:
+	return _visible_error_key
+
+
+func status_message_text() -> String:
+	return _status_view.message_text()
+
+
+func _apply_control_status(code: StringName) -> void:
+	_control_status_code = code
+	if code.is_empty():
+		_visible_error_key = &""
+		_status_view.clear(_text_resolver())
+		return
+	# 設定套用是 pre-commit 語意：驗證/重建失敗時 repository 沒有被寫入。
+	_status_view.show_failure(code, false, DEFAULT_MESSAGE_KEY, _text_resolver())
+	_visible_error_key = StringName(
+		_status_view.report().get("message_key", DEFAULT_MESSAGE_KEY)
+	)
+
+
+func _text_resolver() -> Callable:
+	return func(key: StringName) -> String:
+		return _text(key)
 
 
 func focus_controls() -> Array[Control]:
@@ -96,6 +129,7 @@ func focus_controls() -> Array[Control]:
 
 func relocalize(localized_text: Dictionary) -> void:
 	_set_localized_text(localized_text)
+	_status_view.relocalize(_text_resolver())
 	for setting_id: StringName in _labels:
 		var label := _labels[setting_id]
 		label.text = _text(_label_key(setting_id))
@@ -116,10 +150,14 @@ func relocalize(localized_text: Dictionary) -> void:
 
 func _build_editors() -> void:
 	for child: Node in get_children():
+		# 先讓出節點名稱再排隊釋放：只 queue_free 的話舊節點在本影格仍佔著名字，
+		# 重建出來的 SettingEditors／StatusMessage 會被 Godot 自動改名。
+		child.name = "%sRetired" % child.name
 		child.queue_free()
 	_editors.clear()
 	_labels.clear()
 	_value_labels.clear()
+	_status_view.attach(self)
 	var rows := VBoxContainer.new()
 	rows.name = "SettingEditors"
 	add_child(rows)

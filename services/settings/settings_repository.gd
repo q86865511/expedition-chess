@@ -29,7 +29,7 @@ const _VALID_COLOR_VISION_MODES: Array[StringName] = [
 ]
 const _VALID_DAMAGE_DENSITIES: Array[StringName] = [&"off", &"reduced", &"full"]
 
-var _storage: Variant
+var _storage: SettingsStoragePort
 var _committed: SettingsSnapshot = SettingsSnapshot.new()
 var _future_bytes: PackedByteArray = PackedByteArray()
 var _future_digest: String = ""
@@ -79,15 +79,15 @@ class SettingsRepositoryResult:
 
 
 class FileSettingsStorage:
-	extends RefCounted
+	extends SettingsStoragePort
 
 	const BASE_PATH := "user://"
 
 
-	func read_bytes(path: StringName) -> Dictionary:
+	func read_bytes(path: StringName) -> SettingsStorageResult:
 		var resolved := _resolve(path)
 		if not FileAccess.file_exists(resolved):
-			return {"ok": true, "exists": false, "bytes": PackedByteArray()}
+			return SettingsStorageResult.success(false)
 		var file := FileAccess.open(resolved, FileAccess.READ)
 		if file == null:
 			return _failure()
@@ -96,10 +96,10 @@ class FileSettingsStorage:
 		file.close()
 		if read_error != OK and read_error != ERR_FILE_EOF:
 			return _failure()
-		return {"ok": true, "exists": true, "bytes": bytes}
+		return SettingsStorageResult.success(true, bytes)
 
 
-	func write_bytes(path: StringName, bytes: PackedByteArray) -> Dictionary:
+	func write_bytes(path: StringName, bytes: PackedByteArray) -> SettingsStorageResult:
 		if not _ensure_parent(path):
 			return _failure()
 		var file := FileAccess.open(_resolve(path), FileAccess.WRITE)
@@ -108,10 +108,10 @@ class FileSettingsStorage:
 		file.store_buffer(bytes)
 		var write_error := file.get_error()
 		file.close()
-		return {"ok": true} if write_error == OK else _failure()
+		return SettingsStorageResult.success() if write_error == OK else _failure()
 
 
-	func promote_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func promote_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		var source_path := _resolve(source)
 		var destination_path := _resolve(destination)
 		if not FileAccess.file_exists(source_path) or not _ensure_parent(destination):
@@ -119,7 +119,7 @@ class FileSettingsStorage:
 		var had_destination := FileAccess.file_exists(destination_path)
 		if had_destination:
 			var backup_result := copy_bytes(destination, BACKUP_PATH)
-			if not bool(backup_result.get("ok", false)):
+			if not backup_result.ok:
 				return _failure()
 			var remove_error := DirAccess.remove_absolute(
 				ProjectSettings.globalize_path(destination_path)
@@ -134,31 +134,28 @@ class FileSettingsStorage:
 			if had_destination:
 				restore_bytes(BACKUP_PATH, destination)
 			return _failure()
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
 
-	func copy_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func copy_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		var read_result := read_bytes(source)
-		if (
-			not bool(read_result.get("ok", false))
-			or not bool(read_result.get("exists", false))
-		):
+		if not read_result.ok or not read_result.exists:
 			return _failure()
-		return write_bytes(destination, read_result.get("bytes", PackedByteArray()))
+		return write_bytes(destination, read_result.bytes_value())
 
 
-	func restore_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func restore_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		return copy_bytes(source, destination)
 
 
-	func remove_bytes(path: StringName) -> Dictionary:
+	func remove_bytes(path: StringName) -> SettingsStorageResult:
 		var resolved := _resolve(path)
 		if not FileAccess.file_exists(resolved):
-			return {"ok": true}
+			return SettingsStorageResult.success()
 		var remove_error := DirAccess.remove_absolute(
 			ProjectSettings.globalize_path(resolved)
 		)
-		return {"ok": true} if remove_error == OK else _failure()
+		return SettingsStorageResult.success() if remove_error == OK else _failure()
 
 
 	func _resolve(path: StringName) -> String:
@@ -171,24 +168,24 @@ class FileSettingsStorage:
 		return DirAccess.make_dir_recursive_absolute(absolute_parent) == OK
 
 
-	func _failure() -> Dictionary:
-		return {"ok": false, "error_code": STORAGE_FAULT}
+	func _failure() -> SettingsStorageResult:
+		return SettingsStorageResult.failure(STORAGE_FAULT)
 
 
-func _init(storage: Variant = null) -> void:
+func _init(storage: SettingsStoragePort = null) -> void:
 	_storage = storage if storage != null else FileSettingsStorage.new()
 
 
 func load() -> SettingsRepositoryResult:
-	var read_result: Dictionary = _storage.read_bytes(MAIN_PATH)
+	var read_result: SettingsStorageResult = _storage.read_bytes(MAIN_PATH)
 	if not _storage_ok(read_result):
 		return _failure(STORAGE_FAULT)
-	if not bool(read_result.get("exists", false)):
+	if not read_result.exists:
 		_commit_in_memory(SettingsSnapshot.new(), false)
 		_clear_future_lock()
 		return _success(_committed)
 
-	var source_bytes: PackedByteArray = read_result.get("bytes", PackedByteArray()).duplicate()
+	var source_bytes: PackedByteArray = read_result.bytes_value()
 	_main_exists = true
 	var parser := JSON.new()
 	var parse_error := parser.parse(source_bytes.get_string_from_utf8())
@@ -240,13 +237,13 @@ func reset_incompatible_settings(expected_digest: String) -> SettingsRepositoryR
 	var digest := expected_digest
 	if _future_digest.is_empty() or digest != _future_digest:
 		return _failure(EXPECTED_DIGEST_MISMATCH)
-	var fresh_result: Dictionary = _storage.read_bytes(MAIN_PATH)
+	var fresh_result: SettingsStorageResult = _storage.read_bytes(MAIN_PATH)
 	if (
 		not _storage_ok(fresh_result)
-		or not bool(fresh_result.get("exists", false))
+		or not fresh_result.exists
 	):
 		return _failure(STORAGE_FAULT)
-	var fresh_bytes: PackedByteArray = fresh_result.get("bytes", PackedByteArray()).duplicate()
+	var fresh_bytes: PackedByteArray = fresh_result.bytes_value()
 	if _sha256(fresh_bytes) != digest:
 		return _failure(EXPECTED_DIGEST_MISMATCH)
 	if not _archive_future_bytes(fresh_bytes, digest):
@@ -287,18 +284,18 @@ func set_pixel_scale(value: int) -> bool:
 
 func _atomic_save(candidate: SettingsSnapshot) -> SettingsRepositoryResult:
 	var bytes := JSON.stringify(_encode_schema_one(candidate)).to_utf8_buffer()
-	var write_result: Dictionary = _storage.write_bytes(TMP_PATH, bytes)
+	var write_result: SettingsStorageResult = _storage.write_bytes(TMP_PATH, bytes)
 	if not _storage_ok(write_result):
 		return _failure(STORAGE_FAULT)
-	var tmp_read: Dictionary = _storage.read_bytes(TMP_PATH)
+	var tmp_read: SettingsStorageResult = _storage.read_bytes(TMP_PATH)
 	if not _read_matches(tmp_read, bytes):
 		_storage.remove_bytes(TMP_PATH)
 		return _failure(STORAGE_FAULT)
-	var promote_result: Dictionary = _storage.promote_bytes(TMP_PATH, MAIN_PATH)
+	var promote_result: SettingsStorageResult = _storage.promote_bytes(TMP_PATH, MAIN_PATH)
 	if not _storage_ok(promote_result):
 		_storage.remove_bytes(TMP_PATH)
 		return _failure(STORAGE_FAULT)
-	var final_read: Dictionary = _storage.read_bytes(MAIN_PATH)
+	var final_read: SettingsStorageResult = _storage.read_bytes(MAIN_PATH)
 	if not _read_matches(final_read, bytes):
 		if _main_exists:
 			_storage.restore_bytes(BACKUP_PATH, MAIN_PATH)
@@ -320,10 +317,10 @@ func _load_corrupt(
 	var archive_path := StringName(
 		"settings-archive/corrupt-%s.json" % _sha256(source_bytes)
 	)
-	var copy_result: Dictionary = _storage.copy_bytes(MAIN_PATH, archive_path)
+	var copy_result: SettingsStorageResult = _storage.copy_bytes(MAIN_PATH, archive_path)
 	if not _storage_ok(copy_result):
 		return _failure(STORAGE_FAULT)
-	var archive_read: Dictionary = _storage.read_bytes(archive_path)
+	var archive_read: SettingsStorageResult = _storage.read_bytes(archive_path)
 	if not _read_matches(archive_read, source_bytes):
 		return _failure(STORAGE_FAULT)
 	_commit_in_memory(SettingsSnapshot.new(), true)
@@ -334,16 +331,16 @@ func _load_corrupt(
 func _archive_future_bytes(bytes: PackedByteArray, digest: String) -> bool:
 	var temporary_path := StringName("settings-archive/.future-%s.tmp" % digest)
 	var archive_path := StringName("settings-archive/future-%s.json" % digest)
-	var copy_result: Dictionary = _storage.copy_bytes(MAIN_PATH, temporary_path)
+	var copy_result: SettingsStorageResult = _storage.copy_bytes(MAIN_PATH, temporary_path)
 	if not _storage_ok(copy_result):
 		return false
-	var temporary_read: Dictionary = _storage.read_bytes(temporary_path)
+	var temporary_read: SettingsStorageResult = _storage.read_bytes(temporary_path)
 	if not _read_matches(temporary_read, bytes):
 		return false
-	var promote_result: Dictionary = _storage.promote_bytes(temporary_path, archive_path)
+	var promote_result: SettingsStorageResult = _storage.promote_bytes(temporary_path, archive_path)
 	if not _storage_ok(promote_result):
 		return false
-	var archive_read: Dictionary = _storage.read_bytes(archive_path)
+	var archive_read: SettingsStorageResult = _storage.read_bytes(archive_path)
 	return _read_matches(archive_read, bytes)
 
 
@@ -468,15 +465,15 @@ func _failure(error_code: StringName) -> SettingsRepositoryResult:
 	return SettingsRepositoryResult.new(false, null, error_code)
 
 
-func _storage_ok(result: Dictionary) -> bool:
-	return bool(result.get("ok", false))
+func _storage_ok(result: SettingsStorageResult) -> bool:
+	return result != null and result.ok
 
 
-func _read_matches(result: Dictionary, expected: PackedByteArray) -> bool:
+func _read_matches(result: SettingsStorageResult, expected: PackedByteArray) -> bool:
 	return (
 		_storage_ok(result)
-		and bool(result.get("exists", false))
-		and result.get("bytes", PackedByteArray()) == expected
+		and result.exists
+		and result.bytes_value() == expected
 	)
 
 

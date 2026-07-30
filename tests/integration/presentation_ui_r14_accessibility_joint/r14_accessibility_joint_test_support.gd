@@ -20,31 +20,25 @@ const REQUIRED_RUNTIME_PATHS: Array[NodePath] = [
 
 
 class FakeSettingsStorage:
-	extends RefCounted
+	extends SettingsStoragePort
 
 	var files: Dictionary = {}
 
 
-	func read_bytes(path: StringName) -> Dictionary:
+	func read_bytes(path: StringName) -> SettingsStorageResult:
 		if not files.has(path):
-			return {
-				"ok": true,
-				"exists": false,
-				"bytes": PackedByteArray(),
-			}
-		return {
-			"ok": true,
-			"exists": true,
-			"bytes": (files[path] as PackedByteArray).duplicate(),
-		}
+			return SettingsStorageResult.success(false)
+		return SettingsStorageResult.success(
+			true, (files[path] as PackedByteArray).duplicate()
+		)
 
 
-	func write_bytes(path: StringName, bytes: PackedByteArray) -> Dictionary:
+	func write_bytes(path: StringName, bytes: PackedByteArray) -> SettingsStorageResult:
 		files[path] = bytes.duplicate()
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
 
-	func promote_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func promote_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		if not files.has(source):
 			return _failure()
 		if files.has(destination):
@@ -53,30 +47,27 @@ class FakeSettingsStorage:
 			).duplicate()
 		files[destination] = (files[source] as PackedByteArray).duplicate()
 		files.erase(source)
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
 
-	func copy_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func copy_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		if not files.has(source):
 			return _failure()
 		files[destination] = (files[source] as PackedByteArray).duplicate()
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
 
-	func restore_bytes(source: StringName, destination: StringName) -> Dictionary:
+	func restore_bytes(source: StringName, destination: StringName) -> SettingsStorageResult:
 		return copy_bytes(source, destination)
 
 
-	func remove_bytes(path: StringName) -> Dictionary:
+	func remove_bytes(path: StringName) -> SettingsStorageResult:
 		files.erase(path)
-		return {"ok": true}
+		return SettingsStorageResult.success()
 
 
-	func _failure() -> Dictionary:
-		return {
-			"ok": false,
-			"error_code": SettingsRepository.STORAGE_FAULT,
-		}
+	func _failure() -> SettingsStorageResult:
+		return SettingsStorageResult.failure(SettingsRepository.STORAGE_FAULT)
 
 
 class FakeAudioBusPort:

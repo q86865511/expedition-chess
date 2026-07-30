@@ -314,6 +314,8 @@ func _build_prepare_controls() -> void:
 		&"unit_instance"
 	)
 
+	var snapshot := _model.snapshot_clone() if _model != null else null
+
 	var overflow := ItemList.new()
 	overflow.name = "OverflowSelector"
 	overflow.position = Vector2(72.0, 504.0)
@@ -321,7 +323,7 @@ func _build_prepare_controls() -> void:
 	overflow.focus_mode = Control.FOCUS_ALL
 	overflow.set_meta(&"typed_data_kind", &"item_overflow")
 	for item_id: String in overflow_ids():
-		overflow.add_item(item_id)
+		overflow.add_item(_item_display_name(item_id, snapshot))
 		overflow.set_item_metadata(overflow.item_count - 1, item_id)
 	add_child(overflow)
 
@@ -331,9 +333,11 @@ func _build_prepare_controls() -> void:
 	issues.custom_minimum_size = Vector2(396.0, 120.0)
 	issues.focus_mode = Control.FOCUS_ALL
 	issues.set_meta(&"typed_data_kind", &"deployment_issue")
-	for issue_code: StringName in deployment_issue_codes():
-		issues.add_item(String(issue_code))
-		issues.set_item_metadata(issues.item_count - 1, issue_code)
+	var issue_codes := deployment_issue_codes()
+	var issue_message_keys := deployment_issue_message_keys()
+	for index: int in issue_codes.size():
+		issues.add_item(_localized_ui_text(issue_message_keys[index]))
+		issues.set_item_metadata(issues.item_count - 1, issue_codes[index])
 	add_child(issues)
 	_refresh_draft_selectors()
 
@@ -379,7 +383,7 @@ func _refresh_draft_selectors() -> void:
 			_append_typed_item(
 				board,
 				"%s [%d,%d]" % [
-					placement.unit_instance_id,
+					_unit_display_name(placement.unit_instance_id, snapshot),
 					placement.logical_y,
 					placement.logical_x,
 				],
@@ -388,7 +392,11 @@ func _refresh_draft_selectors() -> void:
 	if bench != null:
 		bench.clear()
 		for unit_id: String in _draft_bench_unit_instance_ids:
-			_append_typed_item(bench, unit_id, unit_id)
+			_append_typed_item(
+				bench,
+				_unit_display_name(unit_id, snapshot),
+				unit_id
+			)
 	if shop != null:
 		shop.clear()
 		if snapshot.economy != null:
@@ -396,7 +404,7 @@ func _refresh_draft_selectors() -> void:
 				_append_typed_item(
 					shop,
 					"%s · %d" % [
-						String(offer.unit_def_id),
+						_localized_content_text(offer.unit_def_id),
 						offer.cost,
 					],
 					offer.offer_id
@@ -407,7 +415,7 @@ func _refresh_draft_selectors() -> void:
 			_append_typed_item(
 				inventory,
 				"%s · %s" % [
-					String(item.def_id),
+					_localized_content_text(item.def_id),
 					item.instance_id,
 				],
 				item.instance_id
@@ -417,7 +425,7 @@ func _refresh_draft_selectors() -> void:
 		for unit: UnitInstance in snapshot.roster.unit_instances:
 			_append_typed_item(
 				units,
-				"%s ★%d" % [String(unit.def_id), unit.star],
+				"%s ★%d" % [_localized_content_text(unit.def_id), unit.star],
 				unit.instance_id
 			)
 
@@ -482,6 +490,46 @@ func _first_open_player_cell() -> Vector2i:
 			if not occupied:
 				return Vector2i(logical_x, logical_y)
 	return Vector2i(-1, -1)
+
+
+func _unit_display_name(
+	unit_instance_id: String,
+	snapshot: RunPresentationSnapshot
+) -> String:
+	if snapshot != null and snapshot.roster != null:
+		for unit: UnitInstance in snapshot.roster.unit_instances:
+			if unit.instance_id == unit_instance_id:
+				return _localized_content_text(unit.def_id)
+	return unit_instance_id
+
+
+func _item_display_name(
+	item_instance_id: String,
+	snapshot: RunPresentationSnapshot
+) -> String:
+	if snapshot != null and snapshot.roster != null:
+		for item: ItemInstanceState in snapshot.roster.item_instances:
+			if item.instance_id == item_instance_id:
+				return _localized_content_text(item.def_id)
+	return item_instance_id
+
+
+func _localized_content_text(content_id: StringName) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.localized_content_text(content_id)
+		if parent_screen != null
+		else String(content_id)
+	)
+
+
+func _localized_ui_text(text_key: StringName) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.localized_ui_text(text_key)
+		if parent_screen != null
+		else String(text_key)
+	)
 
 
 func _selection_failure() -> RunPresentationResult:

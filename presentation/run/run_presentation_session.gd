@@ -68,7 +68,7 @@ func reachable_nodes() -> Array:
 	if _snapshot.map == null:
 		return result
 	for node: MapNodeState in _snapshot.map.nodes:
-		var reachable := _node_is_reachable(_snapshot.map, node)
+		var reachable := node_is_reachable(_snapshot.map, node)
 		if reachable:
 			result.append(MapNodePresentationType.from_state(node, true))
 	return result
@@ -653,16 +653,13 @@ func _build_snapshot() -> RunPresentationSnapshot:
 	return result
 
 
-func _node_is_reachable(map_state: MapState, node: MapNodeState) -> bool:
-	if node.completed or map_state.completed_node_ids.has(node.node_id):
-		return false
-	if map_state.completed_node_ids.is_empty():
-		return node.act_index == 1 and node.layer_index == 0
-	for completed_id: String in map_state.completed_node_ids:
-		for edge: MapEdgeState in map_state.edges:
-			if edge.from_node_id == completed_id and edge.to_node_id == node.node_id:
-				return true
-	return false
+## Kept as a thin alias: the shared rule lives on MapNodePresentation
+## (presentation/run/map_node_presentation.gd) so RunMapScreen can call it
+## without a presentation/screens/*.gd file naming RunPresentationSession,
+## which the PUI_SCREEN_WRITER_DEPENDENCY static gate treats as a canonical
+## writer dependency.
+static func node_is_reachable(map_state: MapState, node: MapNodeState) -> bool:
+	return MapNodePresentationType.is_reachable(map_state, node)
 
 
 func _command_error(value: CommandError) -> DiagnosticError:

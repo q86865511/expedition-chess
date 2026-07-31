@@ -167,6 +167,18 @@ func _upgrade_one_to_current(
 			ContentGenerationMigrationError.TARGET_MISMATCH,
 			&"run.content_snapshot"
 		)
+	# codec 2→3 的 port 會附上套用計畫:先把 raw run 的每個引用面改寫／移除,
+	# 再換 content_snapshot(design.md:304-311)。只換 snapshot 會讓 alias 過的舊 id
+	# 原樣留在 run 裡,等於用一張合法 CGR2 收據夾帶未遷移的引用。
+	if migrated.migration_receipt is ContentGenerationMigrationReceiptV2 \
+		and not _apply_generation_plan(run_data, migrated.plan):
+		return _incompatible(
+			source_schema,
+			original_json_text,
+			profile,
+			ContentGenerationMigrationError.MAPPING_INVALID,
+			&"run"
+		)
 	_apply_target_receipt(data, run_data, migrated.target_receipt)
 	var decoded := _decode_candidate(data)
 	if not decoded.ok or decoded.root == null:
@@ -331,10 +343,10 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 	var challenges: Variant = _name_array(snapshot.get("challenge_unlock_def_ids"))
 	if enabled == null or rewards == null or nodes == null or challenges == null:
 		return null
-	var references_value: Variant = _generation_references(run_data, snapshot)
-	if references_value == null:
+	var sites_value: Variant = _reference_sites(run_data, snapshot)
+	if sites_value == null:
 		return null
-	var references: Array[ContentGenerationMigrationReference] = references_value
+	var sites: Array = sites_value
 	return ContentGenerationMigrationRequest.new(
 		snapshot["content_version"],
 		snapshot["manifest_digest"],
@@ -346,8 +358,40 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 		StringName(snapshot["meta_reward_table_id"]),
 		int(snapshot["catalog_schema_version"]),
 		int(snapshot["content_codec_version"]),
-		references
+		_references_from_sites(sites)
 	)
+
+
+## 單一 content 引用點:除了交給 port 的 typed reference 之外,還記住「它住在哪個
+## 容器的哪個位置」,讓 generation migration 成功後可以就地改寫。收集與改寫共用
+## 同一支 `_reference_sites()`,兩者結構上不可能漂移(codex B4 指出的漏改寫)。
+class _ReferenceSite:
+	## Dictionary(key 為欄位名 String)或 Array(key 為索引 int)。
+	var container: Variant
+	var key: Variant
+	var reference: ContentGenerationMigrationReference
+	## true = 位在可移除元素的集合型欄位(只有 run.discovered_content_ids)。
+	var removable: bool
+
+	func _init(
+		p_container: Variant,
+		p_key: Variant,
+		p_reference: ContentGenerationMigrationReference,
+		p_removable: bool
+	) -> void:
+		container = p_container
+		key = p_key
+		reference = p_reference
+		removable = p_removable
+
+
+func _references_from_sites(
+	sites: Array
+) -> Array[ContentGenerationMigrationReference]:
+	var result: Array[ContentGenerationMigrationReference] = []
+	for site: _ReferenceSite in sites:
+		result.append(site.reference.deep_clone())
+	return result
 
 
 ## design.md:304-311 要求 generation migration 逐一走訪 ContentSnapshot、
@@ -360,122 +404,152 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 ## instance id(bench／inventory／overflow／board placement)不是 content id,
 ## 由 unit_instances／item_instances 的 def_id 代表;item def 的 category 在 save
 ## 上無法區分 equipment 與 item_component,以空 category 交給 port 做唯一比對。
-func _generation_references(
-	run_data: Dictionary,
-	snapshot: Dictionary
-) -> Variant:
-	var references: Array[ContentGenerationMigrationReference] = []
-	_append_reference(
-		references, &"economy_config", snapshot.get("economy_config_id"),
-		&"run.content_snapshot.economy_config_id", true
+##
+## ledger_bound 的引用面(claim receipt 的 effect_id、node choice receipt 的
+## choice_set_id／choice_id)其 id 已進了 runtime key／receipt digest 的 preimage,
+## 改名會讓已簽的 exactly-once 憑證與內容不符,且無法在此重算;因此 port 只允許
+## 這些位置對到 IDENTITY,其餘一律 fail-closed(不是靜默保留舊 id)。
+func _reference_sites(run_data: Dictionary, snapshot: Dictionary) -> Variant:
+	var sites: Array = []
+	_append_site(
+		sites, snapshot, "economy_config_id", &"economy_config",
+		&"run.content_snapshot.economy_config_id", true, false, false
 	)
 	if snapshot.has("combat_config_id"):
-		_append_reference(
-			references, &"combat_config", snapshot.get("combat_config_id"),
-			&"run.content_snapshot.combat_config_id", true
+		_append_site(
+			sites, snapshot, "combat_config_id", &"combat_config",
+			&"run.content_snapshot.combat_config_id", true, false, false
 		)
-	_append_reference(
-		references, &"meta_reward_table", snapshot.get("meta_reward_table_id"),
-		&"run.content_snapshot.meta_reward_table_id", true
+	_append_site(
+		sites, snapshot, "meta_reward_table_id", &"meta_reward_table",
+		&"run.content_snapshot.meta_reward_table_id", true, false, false
 	)
-	if not _append_reference_array(
-		references, &"reward_table", snapshot.get("reward_table_ids"),
-		&"run.content_snapshot.reward_table_ids", true
-	) or not _append_reference_array(
-		references, &"map_node", snapshot.get("map_node_def_ids"),
-		&"run.content_snapshot.map_node_def_ids", true
-	) or not _append_reference_array(
-		references, &"unlock", snapshot.get("challenge_unlock_def_ids"),
-		&"run.content_snapshot.challenge_unlock_def_ids", true
+	if not _append_array_sites(
+		sites, snapshot.get("reward_table_ids"), &"reward_table",
+		&"run.content_snapshot.reward_table_ids", true, false, false
+	) or not _append_array_sites(
+		sites, snapshot.get("map_node_def_ids"), &"map_node",
+		&"run.content_snapshot.map_node_def_ids", true, false, false
+	) or not _append_array_sites(
+		sites, snapshot.get("challenge_unlock_def_ids"), &"unlock",
+		&"run.content_snapshot.challenge_unlock_def_ids", true, false, false
 	):
 		return null
-	_append_reference(
-		references, &"commander", run_data.get("commander_id"),
-		&"run.commander_id", true
+	_append_site(
+		sites, run_data, "commander_id", &"commander", &"run.commander_id",
+		true, false, false
 	)
-	if not _append_reference_array(
-		references, &"", run_data.get("discovered_content_ids"),
-		&"run.discovered_content_ids", false
+	# codex/collection 面:OPTIONAL TOMBSTONE 在這裡是「移除」而不是保留舊 id。
+	if not _append_array_sites(
+		sites, run_data.get("discovered_content_ids"), &"",
+		&"run.discovered_content_ids", false, true, false
 	):
 		return null
-	if not _append_object_field_references(
-		references, run_data.get("map_state"), "nodes", "def_id",
-		&"map_node", &"run.map_state.nodes.def_id"
+	if not _append_record_sites(
+		sites, run_data.get("map_state"), "nodes", "def_id", &"map_node",
+		&"run.map_state.nodes.def_id"
 	):
 		return null
 	var roster_value: Variant = run_data.get("roster_state")
 	if roster_value != null and not roster_value is Dictionary:
 		return null
 	var roster: Dictionary = roster_value if roster_value is Dictionary else {}
-	if not _append_array_field_references(
-		references, roster.get("unit_instances"), "def_id",
-		&"unit", &"run.roster_state.unit_instances.def_id"
-	) or not _append_array_field_references(
-		references, roster.get("item_instances"), "def_id",
-		&"", &"run.roster_state.item_instances.def_id"
-	) or not _append_array_field_references(
-		references, roster.get("active_relic_slots"), "relic_id",
-		&"relic", &"run.roster_state.active_relic_slots.relic_id"
+	if not _append_element_sites(
+		sites, roster.get("unit_instances"), "def_id", &"unit",
+		&"run.roster_state.unit_instances.def_id"
+	) or not _append_element_sites(
+		sites, roster.get("item_instances"), "def_id", &"",
+		&"run.roster_state.item_instances.def_id"
+	) or not _append_element_sites(
+		sites, roster.get("active_relic_slots"), "relic_id", &"relic",
+		&"run.roster_state.active_relic_slots.relic_id"
 	):
 		return null
-	if not _append_object_field_references(
-		references, run_data.get("unit_pool_state"), "entries", "unit_def_id",
+	if not _append_record_sites(
+		sites, run_data.get("unit_pool_state"), "entries", "unit_def_id",
 		&"unit", &"run.unit_pool_state.entries.unit_def_id"
 	):
 		return null
-	if not _append_object_field_references(
-		references, run_data.get("economy_state"), "shop_offers", "unit_def_id",
+	if not _append_record_sites(
+		sites, run_data.get("economy_state"), "shop_offers", "unit_def_id",
 		&"unit", &"run.economy_state.shop_offers.unit_def_id"
 	):
 		return null
-	if not _append_array_field_references(
-		references, run_data.get("reservation_owners"), "unit_def_id",
-		&"unit", &"run.reservation_owners.unit_def_id"
+	if not _append_element_sites(
+		sites, run_data.get("reservation_owners"), "unit_def_id", &"unit",
+		&"run.reservation_owners.unit_def_id"
 	):
 		return null
-	if not _append_claim_receipt_references(
-		references, run_data.get("claim_receipts")
-	) or not _append_node_choice_receipt_references(
-		references, run_data.get("node_choice_receipts")
+	if not _append_nested_sites(
+		sites, run_data.get("claim_receipts"), "key", "effect_id", &"effect",
+		&"run.claim_receipts.key.effect_id"
 	):
 		return null
-	return references
+	if not _append_nested_sites(
+		sites, run_data.get("node_choice_receipts"), "receipt",
+		"choice_set_id", &"node_choice_set",
+		&"run.node_choice_receipts.receipt.choice_set_id"
+	) or not _append_nested_sites(
+		sites, run_data.get("node_choice_receipts"), "receipt", "choice_id",
+		&"", &"run.node_choice_receipts.receipt.choice_id"
+	):
+		return null
+	return sites
 
 
-func _append_reference(
-	references: Array[ContentGenerationMigrationReference],
+func _append_site(
+	sites: Array,
+	container: Variant,
+	key: Variant,
 	category: StringName,
-	value: Variant,
 	field_path: StringName,
-	structural: bool
+	structural: bool,
+	removable: bool,
+	ledger_bound: bool
 ) -> void:
+	var value: Variant = (
+		(container as Dictionary).get(key)
+		if container is Dictionary
+		else (container as Array)[key]
+	)
 	if not value is String or (value as String).is_empty():
 		return
-	references.append(ContentGenerationMigrationReference.new(
-		category, StringName(value), field_path, structural
+	sites.append(_ReferenceSite.new(
+		container,
+		key,
+		ContentGenerationMigrationReference.new(
+			category, StringName(value), field_path, structural, ledger_bound
+		),
+		removable
 	))
 
 
-func _append_reference_array(
-	references: Array[ContentGenerationMigrationReference],
-	category: StringName,
+func _append_array_sites(
+	sites: Array,
 	value: Variant,
+	category: StringName,
 	field_path: StringName,
-	structural: bool
+	structural: bool,
+	removable: bool,
+	ledger_bound: bool
 ) -> bool:
 	if value == null:
 		return true
 	if not value is Array:
 		return false
-	for entry: Variant in (value as Array):
-		if not entry is String:
+	var values: Array = value
+	for index: int in values.size():
+		if not values[index] is String:
 			return false
-		_append_reference(references, category, entry, field_path, structural)
+		_append_site(
+			sites, values, index, category, field_path, structural, removable,
+			ledger_bound
+		)
 	return true
 
 
-func _append_array_field_references(
-	references: Array[ContentGenerationMigrationReference],
+func _append_element_sites(
+	sites: Array,
 	value: Variant,
 	field: String,
 	category: StringName,
@@ -494,12 +568,12 @@ func _append_array_field_references(
 			continue
 		if not content_id is String:
 			return false
-		_append_reference(references, category, content_id, field_path, true)
+		_append_site(sites, data, field, category, field_path, true, false, false)
 	return true
 
 
-func _append_object_field_references(
-	references: Array[ContentGenerationMigrationReference],
+func _append_record_sites(
+	sites: Array,
 	value: Variant,
 	array_field: String,
 	field: String,
@@ -510,15 +584,21 @@ func _append_object_field_references(
 		return true
 	if not value is Dictionary:
 		return false
-	return _append_array_field_references(
-		references, (value as Dictionary).get(array_field), field,
-		category, field_path
+	return _append_element_sites(
+		sites, (value as Dictionary).get(array_field), field, category,
+		field_path
 	)
 
 
-func _append_claim_receipt_references(
-	references: Array[ContentGenerationMigrationReference],
-	value: Variant
+## `claim_receipts[].key.effect_id`、`node_choice_receipts[].receipt.choice_*`
+## 這種「陣列 → 巢狀物件 → 欄位」的引用面;一律標記 ledger_bound。
+func _append_nested_sites(
+	sites: Array,
+	value: Variant,
+	nested_field: String,
+	field: String,
+	category: StringName,
+	field_path: StringName
 ) -> bool:
 	if value == null:
 		return true
@@ -527,40 +607,134 @@ func _append_claim_receipt_references(
 	for entry: Variant in (value as Array):
 		if not entry is Dictionary:
 			return false
-		var key_value: Variant = (entry as Dictionary).get("key")
-		if key_value == null:
+		var nested: Variant = (entry as Dictionary).get(nested_field)
+		if nested == null:
 			continue
-		if not key_value is Dictionary:
+		if not nested is Dictionary:
 			return false
-		_append_reference(
-			references, &"effect", (key_value as Dictionary).get("effect_id"),
-			&"run.claim_receipts.key.effect_id", true
-		)
+		var data: Dictionary = nested
+		var content_id: Variant = data.get(field)
+		if content_id == null:
+			continue
+		if not content_id is String:
+			return false
+		_append_site(sites, data, field, category, field_path, true, false, true)
 	return true
 
 
-func _append_node_choice_receipt_references(
-	references: Array[ContentGenerationMigrationReference],
-	value: Variant
+## generation migration 成功後、重編碼／重驗之前,依 pack 的 mapping 就地改寫
+## raw run 的每一個引用面(design.md:304-311)。ALIAS → 改寫成 target id;
+## OPTIONAL TOMBSTONE → 從可移除的集合型欄位移除;結構性位置的 TOMBSTONE 與
+## ledger-bound 位置的改名在 port 已 fail-closed,這裡再守一次。
+## 回 false 代表無法安全套用,呼叫端轉 incompatible-preserved(不交換原 bytes)。
+func _apply_generation_plan(
+	run_data: Dictionary,
+	plan: ContentGenerationMigrationPlan
 ) -> bool:
-	if value == null:
-		return true
-	if not value is Array:
+	if plan == null:
 		return false
-	for entry: Variant in (value as Array):
-		if not entry is Dictionary:
+	var snapshot_value: Variant = run_data.get("content_snapshot")
+	if not snapshot_value is Dictionary:
+		return false
+	var sites_value: Variant = _reference_sites(run_data, snapshot_value)
+	if sites_value == null:
+		return false
+	var removals: Array = []
+	for site: _ReferenceSite in (sites_value as Array):
+		var mapping := plan.try_resolve(site.reference)
+		if mapping == null:
 			return false
-		var receipt_value: Variant = (entry as Dictionary).get("receipt")
-		if receipt_value == null:
+		if mapping.mapping_kind \
+			== ContentGenerationMigrationEntryV2.MappingKind.TOMBSTONE:
+			if site.reference.structural or not site.removable:
+				return false
+			removals.append(site)
 			continue
-		if not receipt_value is Dictionary:
+		if mapping.target_id == String(site.reference.content_id):
+			continue
+		if site.reference.ledger_bound:
 			return false
-		_append_reference(
-			references, &"node_choice_set",
-			(receipt_value as Dictionary).get("choice_set_id"),
-			&"run.node_choice_receipts.receipt.choice_set_id", true
-		)
+		if site.container is Dictionary:
+			(site.container as Dictionary)[site.key] = mapping.target_id
+		else:
+			(site.container as Array)[site.key] = mapping.target_id
+	if not _remove_sites(removals):
+		return false
+	return _renormalize_after_rewrite(run_data)
+
+
+## 只有 Array 容器可以移除元素;同一個容器內由大到小刪,避免索引位移。
+func _remove_sites(removals: Array) -> bool:
+	var containers: Array = []
+	var indexes_by_container: Array = []
+	for site: _ReferenceSite in removals:
+		if not site.container is Array:
+			return false
+		# Array 的 `==` 是逐元素比較,不能用 find() 認容器;必須比參考同一性。
+		var position := -1
+		for index: int in containers.size():
+			if is_same(containers[index], site.container):
+				position = index
+				break
+		if position < 0:
+			containers.append(site.container)
+			indexes_by_container.append([site.key])
+		else:
+			(indexes_by_container[position] as Array).append(site.key)
+	for position: int in containers.size():
+		var indexes: Array = indexes_by_container[position]
+		indexes.sort()
+		indexes.reverse()
+		var target: Array = containers[position]
+		for index: int in indexes:
+			target.remove_at(index)
 	return true
+
+
+## 改寫可能破壞兩個「依 content id 排序且唯一」的不變量
+## (RunStateValidator 的 `run.discovered_content_ids` 與 `run.unit_pool_state.entries`)。
+## pack 已保證 target 不重複(codec 的 target 唯一性檢查),所以這裡只需重排;
+## 若仍出現重複代表 pack 與 run 不相容,回 false 而非合併。
+func _renormalize_after_rewrite(run_data: Dictionary) -> bool:
+	var discovered: Variant = run_data.get("discovered_content_ids")
+	if discovered is Array:
+		var values: Array = discovered
+		var sorted_values: Array = values.duplicate()
+		sorted_values.sort()
+		for index: int in sorted_values.size():
+			if index > 0 and sorted_values[index] == sorted_values[index - 1]:
+				return false
+		values.clear()
+		values.append_array(sorted_values)
+	var pool_value: Variant = run_data.get("unit_pool_state")
+	if not pool_value is Dictionary:
+		return true
+	var entries_value: Variant = (pool_value as Dictionary).get("entries")
+	if not entries_value is Array:
+		return true
+	var entries: Array = entries_value
+	var sorted_entries: Array = entries.duplicate()
+	sorted_entries.sort_custom(_pool_entry_less)
+	for index: int in sorted_entries.size():
+		if index == 0:
+			continue
+		if _pool_entry_id(sorted_entries[index]) \
+			== _pool_entry_id(sorted_entries[index - 1]):
+			return false
+	entries.clear()
+	entries.append_array(sorted_entries)
+	return true
+
+
+func _pool_entry_id(value: Variant) -> String:
+	if not value is Dictionary:
+		return ""
+	var id_value: Variant = (value as Dictionary).get("unit_def_id")
+	return String(id_value) if id_value is String else ""
+
+
+func _pool_entry_less(left: Variant, right: Variant) -> bool:
+	return _pool_entry_id(left) < _pool_entry_id(right)
 
 
 func _generation_result_matches(

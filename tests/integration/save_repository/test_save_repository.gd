@@ -120,7 +120,7 @@ func test_schema_one_idle_load_uses_generation_port_without_mutating_source_file
 		"7c2ef65221a2ad4a84b923786500b2a974e560b6068e5a83393e783ae1524f65"
 	)
 	var generation_port := FakeContentGenerationMigrationPort.new(
-		ContentGenerationMigrationResult.success(target_receipt, migration_receipt)
+		ContentGenerationMigrationResult.success(target_receipt, migration_receipt, null)
 	)
 	var legacy := _legacy_text(SaveRootFixture.create_valid_root(), 1)
 	var storage := FakeSaveStorage.new()

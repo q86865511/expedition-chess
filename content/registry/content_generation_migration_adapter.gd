@@ -144,7 +144,8 @@ func _migrate_with_pack(
 		)
 	return ContentGenerationMigrationResult.success(
 		published.receipt,
-		validated.receipt
+		validated.receipt,
+		null
 	)
 
 func _target_receipt(

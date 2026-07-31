@@ -159,10 +159,23 @@ func try_reject_pack(
 		source_keys[_namespaced_key(entry.source_category, entry.source_id)] = true
 	# single hop:alias/identity 的 target 不得同時是另一筆 mapping 的 source
 	# (alias chain / cycle / alias target 亦為 source 全部落在此判斷)。
+	# 另外 target 必須唯一:兩個 source 映到同一個 target 會在套用階段把 run 內
+	# 兩個不同引用摺成同一個 id,破壞 pool/codex 等「排序且唯一」的不變量。
+	var target_ids: Dictionary = {}
 	for entry: ContentGenerationMigrationEntryV2 in pack.mappings:
+		if entry.mapping_kind == ContentGenerationMigrationEntryV2.MappingKind.TOMBSTONE:
+			continue
+		if target_ids.has(entry.target_id):
+			return _error(
+				ContentGenerationMigrationError.MAPPING_INVALID,
+				&"migration_pack.mappings.target_id"
+			)
+		target_ids[entry.target_id] = true
 		if entry.mapping_kind != ContentGenerationMigrationEntryV2.MappingKind.ALIAS:
 			continue
-		if source_keys.has(_namespaced_key(entry.source_category, entry.target_id)):
+		if source_keys.has(
+			_namespaced_key(entry.source_category, entry.target_id)
+		):
 			return _error(
 				ContentGenerationMigrationError.MAPPING_INVALID,
 				&"migration_pack.mappings.alias_chain"

@@ -22,5 +22,6 @@ func migrate_generation(request: ContentGenerationMigrationRequest) -> ContentGe
 		result.ok,
 		result.target_receipt,
 		result.migration_receipt,
-		result.error
+		result.error,
+		result.plan
 	)

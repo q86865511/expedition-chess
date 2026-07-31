@@ -116,7 +116,8 @@ func test_schema_one_idle_map_migrates_generation_atomically_and_is_idempotent()
 	var generation_port := FakeContentGenerationMigrationPort.new(
 		ContentGenerationMigrationResult.success(
 			target_receipt,
-			_generation_receipt(target_receipt.manifest_digest)
+			_generation_receipt(target_receipt.manifest_digest),
+			null
 		)
 	)
 	var registry := SaveMigrationRegistry.new(codec, generation_port)
@@ -151,7 +152,8 @@ func test_schema_zero_active_run_uses_ordered_zero_to_one_to_two_steps() -> void
 	var generation_port := FakeContentGenerationMigrationPort.new(
 		ContentGenerationMigrationResult.success(
 			target_receipt,
-			_generation_receipt(target_receipt.manifest_digest)
+			_generation_receipt(target_receipt.manifest_digest),
+			null
 		)
 	)
 	var migrated := SaveMigrationRegistry.new(codec, generation_port).migrate(_legacy_idle_text(0))

@@ -134,6 +134,61 @@ func test_structural_reference_cannot_be_tombstoned() -> void:
 	)
 
 
+## claim receipt 的 effect_id 與 node choice receipt 的 choice_set_id／choice_id
+## 已進了已簽 digest 的 preimage,migration 無法重算;只允許 IDENTITY。
+func test_ledger_bound_reference_cannot_be_aliased() -> void:
+	var request := _request()
+	request.referenced_entries.append(
+		ContentGenerationMigrationReference.new(
+			&"", &"unit.old",
+			&"run.node_choice_receipts.receipt.choice_id", true, true
+		)
+	)
+	var result := _port_for(
+		_pack_for(_mappings(), _localization_digest())
+	).migrate_generation(request)
+	assert_false(result.ok, "ledger-bound 位置不得被改名")
+	if result.ok:
+		return
+	assert_eq(
+		result.error.code,
+		ContentGenerationMigrationError.SELECTION_INCOMPATIBLE
+	)
+
+
+func test_ledger_bound_reference_accepts_identity_mapping() -> void:
+	var request := _request()
+	request.referenced_entries.append(
+		ContentGenerationMigrationReference.new(
+			&"combat_config", &"config.combat_default",
+			&"run.claim_receipts.key.effect_id", true, true
+		)
+	)
+	var result := _port_for(
+		_pack_for(_mappings(), _localization_digest())
+	).migrate_generation(request)
+	assert_true(result.ok, "IDENTITY 的 ledger-bound 引用必須放行")
+
+
+## 兩個 source 映到同一 target 會在套用階段把 run 內兩個引用摺成同一個 id,
+## 破壞 pool／codex 的「排序且唯一」不變量,必須在 pack 層就擋掉。
+func test_duplicate_mapping_target_is_rejected() -> void:
+	var mappings := _mappings()
+	mappings[2] = _entry(
+		"meta_reward_table", "meta.old",
+		ContentGenerationMigrationEntryV2.Requirement.REQUIRED,
+		ContentGenerationMigrationEntryV2.MappingKind.ALIAS,
+		"economy.new", ECONOMY_DIGEST
+	)
+	var result := _port_for(
+		_pack_for(mappings, _localization_digest())
+	).migrate_generation(_request())
+	assert_false(result.ok, "重複 target 的 pack 必須拒絕")
+	if result.ok:
+		return
+	assert_eq(result.error.code, ContentGenerationMigrationError.MAPPING_INVALID)
+
+
 func test_request_without_traversed_references_is_rejected() -> void:
 	var request := _request()
 	request.referenced_entries.clear()

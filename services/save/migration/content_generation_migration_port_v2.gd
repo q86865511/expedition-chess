@@ -143,7 +143,11 @@ func migrate_generation(
 		return _failure(
 			ContentGenerationMigrationError.PACK_INVALID, &"receipt_digest"
 		)
-	return ContentGenerationMigrationResult.success(target, receipt)
+	# 通過驗證的 mapping 表同時是套用計畫:呼叫端據此改寫 run 內的引用面,
+	# 不得只換 content_snapshot 而讓舊 id 留在 run 裡(design.md:304-311)。
+	return ContentGenerationMigrationResult.success(
+		target, receipt, ContentGenerationMigrationPlan.new(pack.mappings)
+	)
 
 
 ## 每一筆 IDENTITY／ALIAS mapping 的 target 都必須是 target generation 真的安裝的
@@ -203,6 +207,15 @@ func _validate_reference_coverage(
 		if mapping == null:
 			return _error(
 				ContentGenerationMigrationError.MAPPING_INVALID,
+				reference.field_path
+			)
+		# ledger-bound 位置(claim receipt effect_id、node choice receipt 的
+		# choice_set_id／choice_id)的 id 已進了已簽 digest 的 preimage,
+		# 無法在 migration 內重算;只有 IDENTITY 才安全,其餘 fail-closed。
+		if reference.ledger_bound and mapping.mapping_kind \
+			!= ContentGenerationMigrationEntryV2.MappingKind.IDENTITY:
+			return _error(
+				ContentGenerationMigrationError.SELECTION_INCOMPATIBLE,
 				reference.field_path
 			)
 		if mapping.mapping_kind \

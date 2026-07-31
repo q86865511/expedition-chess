@@ -827,7 +827,7 @@ func _validate_node_choice_ledger(run: RunState) -> DtoValidationResult:
 		if (
 			seen_serials.has(receipt.transaction_serial)
 			or seen_pending.has(
-				"%s\u0000%s" % [String(receipt.node_id), receipt.pending_digest]
+				"%s%s%s" % [String(receipt.node_id), String.chr(0), receipt.pending_digest]
 			)
 		):
 			return _failure(&"run.node_choice_receipts.unique")
@@ -845,7 +845,7 @@ func _validate_node_choice_ledger(run: RunState) -> DtoValidationResult:
 		previous_serial = receipt.transaction_serial
 		seen_serials[receipt.transaction_serial] = true
 		seen_pending[
-			"%s\u0000%s" % [String(receipt.node_id), receipt.pending_digest]
+			"%s%s%s" % [String(receipt.node_id), String.chr(0), receipt.pending_digest]
 		] = true
 	return DtoValidationResult.success()
 

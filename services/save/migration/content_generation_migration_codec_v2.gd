@@ -118,8 +118,8 @@ func validate_pack(
 		return false
 	var previous := ""
 	for entry: ContentGenerationMigrationEntryV2 in pack.mappings:
-		var current := "%s\u0000%s" % [
-			entry.source_category, entry.source_id
+		var current := "%s%s%s" % [
+			entry.source_category, String.chr(0), entry.source_id
 		]
 		if not previous.is_empty() and current <= previous:
 			return false

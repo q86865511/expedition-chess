@@ -14,7 +14,7 @@ func _init(
 
 func compile(definition: ContentDefinition) -> ContentEntryCompileResult:
 	_compile_error_path = &""
-	if definition == null or definition.schema_version != 1:
+	if definition == null or not _supports_resource_schema(definition):
 		return ContentEntryCompileResult.failure(&"schema_version")
 	var category := definition.category_name()
 	var type_id := ContentCategory.code_for_name(category)
@@ -42,12 +42,16 @@ func compile(definition: ContentDefinition) -> ContentEntryCompileResult:
 		return ContentEntryCompileResult.failure(&"payload.codec", definition.id)
 	return ContentEntryCompileResult.success(entry)
 
+func _supports_resource_schema(definition: ContentDefinition) -> bool:
+	return definition != null and definition.schema_version == 1
+
 func collect_references(definition: ContentDefinition) -> Array[StringName]:
 	var result: Array[StringName] = definition.unlock_refs.duplicate()
 	if definition is UnitDef:
 		result.append_array(definition.trait_refs)
 		if definition.has_ability_ref: result.append(definition.ability_ref)
-		if _content_codec_version == 2: result.append_array(definition.effect_refs)
+		if _content_codec_version >= 2: result.append_array(definition.effect_refs)
+		if _content_codec_version >= 3: result.append(definition.presentation_ref)
 	elif definition is TraitDef:
 		for threshold in definition.thresholds: result.append_array(threshold.effect_refs)
 	elif definition is AbilityDef:
@@ -91,6 +95,16 @@ func collect_references(definition: ContentDefinition) -> Array[StringName]:
 		result.append_array(definition.prerequisite_refs)
 		result.append_array(definition.unlocked_content_refs)
 		result.append_array(definition.modifier_refs)
+	elif definition is UnitPresentationDef and _content_codec_version >= 3:
+		for value: Variant in definition.combat_vfx_refs:
+			result.append(StringName(value))
+		for value: Variant in definition.audio_cue_refs:
+			result.append(StringName(value))
+	elif definition is NodeChoiceSetDef and _content_codec_version >= 3:
+		for choice: NodeChoiceDef in definition.choices:
+			if choice.has_reward_table_ref:
+				result.append(choice.reward_table_ref)
+			_append_run_operation_refs(result, choice.operations)
 	result.sort_custom(_string_name_less)
 	var unique: Array[StringName] = []
 	for value in result:
@@ -123,6 +137,28 @@ func _compile_specifics(definition: ContentDefinition) -> Array[ContentValue]:
 	if definition is MetaRewardTableDef: return [_enum_int_set(definition.node_scores), ContentValue.i32(definition.completion_reward), ContentValue.i32(definition.failure_reward), _challenge_multiplier_set(definition.challenge_multiplier_bps)]
 	if definition is CombatConfigDef and _content_codec_version == 2:
 		return _compile_combat_config(definition)
+	if definition is CombatConfigDef and _content_codec_version >= 3:
+		return _compile_combat_config(definition)
+	if definition is UnitPresentationDef and _content_codec_version >= 3:
+		return [
+			ContentValue.path(definition.portrait_path),
+			ContentValue.path(definition.sprite_frames_path),
+			ContentValue.path(definition.board_icon_path),
+			ContentValue.path(definition.ability_icon_path),
+			_stable_list_from_variants(definition.combat_vfx_refs),
+			_stable_list_from_variants(definition.audio_cue_refs),
+		]
+	if definition is NodeChoiceSetDef and _content_codec_version >= 3:
+		return [
+			ContentValue.enum_value(definition.node_kind),
+			_node_choice_list(definition.choices),
+		]
+	if definition is AudioCueDef and _content_codec_version >= 3:
+		return [
+			ContentValue.enum_value(definition.bus),
+			ContentValue.path(definition.stream_path),
+			ContentValue.boolean(definition.loop),
+		]
 	return []
 
 func _compile_unit(value: UnitDef) -> Array[ContentValue]:
@@ -136,13 +172,15 @@ func _compile_unit(value: UnitDef) -> Array[ContentValue]:
 		ContentValue.enum_value(value.ai_profile), ContentValue.enum_value(value.basic_attack_profile),
 		ContentValue.enum_value(value.availability), ContentValue.enum_value(value.shop_condition)
 	]
-	if _content_codec_version == 2:
+	if _content_codec_version >= 2:
 		result.append(_stable_list(value.effect_refs))
+	if _content_codec_version >= 3:
+		result.append(ContentValue.stable_id(value.presentation_ref))
 	return result
 
 func _compile_effect(value: EffectDef) -> Array[ContentValue]:
-	if _content_codec_version == 2:
-		return [
+	if _content_codec_version >= 2:
+		var result: Array[ContentValue] = [
 			ContentValue.enum_value(value.content_role),
 			ContentValue.enum_value(value.trigger),
 			ContentValue.u32(value.periodic_interval_ticks),
@@ -153,6 +191,9 @@ func _compile_effect(value: EffectDef) -> Array[ContentValue]:
 			ContentValue.u32(value.max_stacks),
 			ContentValue.u32(value.duration_ticks),
 		]
+		if _content_codec_version >= 3:
+			result.append(ContentValue.text(String(value.description_key)))
+		return result
 	return [ContentValue.enum_value(value.content_role), ContentValue.enum_value(value.trigger), _condition_set(value.conditions),
 		_battle_operation_list(value.battle_operations, &"battle_operations"), _run_operation_list(value.run_operations, &"run_operations"),
 		ContentValue.enum_value(value.stacking), ContentValue.u32(value.max_stacks), ContentValue.u32(value.duration_ticks)]
@@ -254,6 +295,12 @@ func _stable_list(values: Array[StringName]) -> ContentValue:
 	for value in values: result.append(ContentValue.stable_id(value))
 	return ContentValue.ordered_list(result)
 
+func _stable_list_from_variants(values: Array) -> ContentValue:
+	var result: Array[ContentValue] = []
+	for value: Variant in values:
+		result.append(ContentValue.stable_id(StringName(value)))
+	return ContentValue.ordered_list(result)
+
 func _stable_set(values: Array[StringName]) -> ContentValue:
 	var result: Array[ContentValue] = []
 	for value in values: result.append(ContentValue.stable_id(value))
@@ -302,7 +349,7 @@ func _enemy_spawn_set(values: Array[EnemySpawnDef]) -> ContentValue:
 func _boss_phase_list(values: Array[BossPhaseDef]) -> ContentValue:
 	var result: Array[ContentValue] = []
 	for value in values:
-		if _content_codec_version == 2:
+		if _content_codec_version >= 2:
 			result.append(_record(0x2007, [
 				ContentValue.u32(value.phase_index),
 				ContentValue.u32(value.hp_threshold_bps),
@@ -370,6 +417,44 @@ func _run_operation_list(values: Array[RunOperationDef], field_path: StringName)
 			return ContentValue.ordered_list(result)
 		result.append(compiled)
 	return ContentValue.ordered_list(result)
+
+func _node_choice_list(values: Array[NodeChoiceDef]) -> ContentValue:
+	var sorted: Array[NodeChoiceDef] = values.duplicate()
+	sorted.sort_custom(func(left: NodeChoiceDef, right: NodeChoiceDef) -> bool:
+		return left.sort_order < right.sort_order
+	)
+	var result: Array[ContentValue] = []
+	for choice: NodeChoiceDef in sorted:
+		result.append(ContentValue.record(
+			0x2010,
+			PackedInt32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+			[
+				ContentValue.stable_id(choice.choice_id),
+				ContentValue.u32(choice.sort_order),
+				ContentValue.text(String(choice.title_key)),
+				ContentValue.text(String(choice.description_key)),
+				ContentValue.text(String(choice.preview_key)),
+				ContentValue.text(String(choice.result_key)),
+				_run_operation_list(choice.operations, &"choices.operations"),
+				ContentValue.optional(
+					ContentValue.stable_id(choice.reward_table_ref)
+					if choice.has_reward_table_ref else null
+				),
+				ContentValue.enum_value(_node_choice_outcome_name(choice.outcome_kind)),
+				ContentValue.boolean(choice.confirmation_required),
+			]
+		))
+	return ContentValue.ordered_list(result)
+
+func _node_choice_outcome_name(value: NodeChoiceDef.OutcomeKind) -> StringName:
+	match value:
+		NodeChoiceDef.OutcomeKind.APPLY_AND_COMPLETE:
+			return &"apply_and_complete"
+		NodeChoiceDef.OutcomeKind.OPEN_DISMANTLE_SERVICE:
+			return &"open_dismantle_service"
+		NodeChoiceDef.OutcomeKind.OPEN_REWARD_STAGE:
+			return &"open_reward_stage"
+	return &"invalid"
 
 func _set_compile_error(field_path: StringName) -> void:
 	if _compile_error_path.is_empty(): _compile_error_path = field_path

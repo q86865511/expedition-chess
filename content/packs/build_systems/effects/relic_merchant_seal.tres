@@ -16,5 +16,7 @@ script = ExtResource("5_fgpud")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_fhxl4")]([SubResource("Resource_lgrbe")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_merchant_seal_description"
 id = &"effect.relic_merchant_seal"
 display_name_key = &"loc.effect_relic_merchant_seal"

@@ -4,10 +4,27 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` T00～T15 與 R12～R16 findings closure 已完成，T13 視覺候選獲使用者明示核可並接受 seed provenance warning。final Gut 945/945（16295 assertions）、10-case production runtime、10k soak、static gate 與 155/155 manifest references 全綠，19 條 owning AC 為 PASS。使用者明示 R16 後直接進下一步、不再次雙審；PR #5 已於 2026-07-30 merge 進 master（9362e7d）；merge 後由 Claude 完成四維度獨立 UI 審查（findings 高 4／中 9 見 `.pipeline/reviews/g2-ui-review-final.md`），使用者裁決全修，修正批次位於 branch `fix/g2-ui-review-findings`（fresh reviewer 覆審 11 條已全數修復，最終 All suite fresh 全綠 Gut 1000/1000），合入 master 後可開始 `content-production`。
+主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` T00～T15、R12～R16 findings closure 與 merge 後 UI 審查修正均已完成，T13 視覺候選獲使用者明示核可並接受 seed provenance warning。PR #5 已於 2026-07-30 merge（9362e7d），PR #6 已於 2026-07-31 merge（5e78ccf）；最新 fresh baseline 為 All exit 0、Gut 1000/1000、Content 39 cases、presentation static gate zero issues。`content-production` 已由最新 master 建立 `codex/g2-content-production` 並進入規格／gated TDD。
 
 ## 已完成
 
+- [2026-07-31] ⏸️ G2 `content-production` 實作中途暫停 — 工作樹停在
+  `codex/g2-content-production`，全數變更未提交，未 stage／commit／push／PR。
+  SDD 雙審已在第三輪達 Blocker/Major 0；codec 3、schema 4／allowlisted
+  migration、三份歷史 fixture、44 組正式單位內容、14 組 node choice、
+  production PNG/atlas/OGG/provenance，以及 RUN choice overlay／tooltip
+  consumers 已進工作樹。最近有效綠燈包含 Content、presentation content
+  bootstrap、Wave 5 choice confirmation、Wave 5B tooltip、build-items 與
+  economy/reward targeted suites。最後新增的 treasure outcome regression
+  揭露 runtime node ID 被誤當 Stable ID；已將 pending／receipt／service
+  validator 改為 64 字元小寫 digest，但依使用者要求立即暫停，**修正尚未
+  重跑驗證**。續接點與命令詳見
+  `.pipeline/content-production/PAUSE-2026-07-31.md`。
+- [2026-07-31] ✅ G2 `content-production` branch baseline —
+  PR #5 `MERGED @ 9362e7d`、PR #6 `MERGED @ 5e78ccf`；由乾淨的
+  `master@5e78ccf` 建立 `codex/g2-content-production`。實作前 fresh baseline：
+  All exit 0、Gut 1000/1000、Content 39/39、presentation static gate
+  `ok=true`／zero issues。
 - [2026-07-30] ✅ G2 UI 審查 findings 全修正（branch `fix/g2-ui-review-findings`，4 commits）—
   使用者裁決全修。H1 正式路徑戰鬥驅動器（_process 播放時鐘＋自動 SETTLE→REWARD，
   含指揮官被動 pin/claim_scope 兩個前置缺陷）、H2 session↔coordinator 解綁、
@@ -24,7 +41,8 @@
   死結、session↔CombatCoordinator RefCounted 互持洩漏、UI 無錯誤呈現面、rarity
   非色彩線索真實資料下永不渲染）、中 9、低 8、非必改 6；R16 八群組 fresh 驗收
   4 CLOSED／3 PARTIAL／1 證據 PARTIAL；初勘 4 項嫌疑判誤報。完整報告：
-  `.pipeline/reviews/g2-ui-review-final.md`（本機）。findings 待使用者裁決後排修。
+  `.pipeline/reviews/g2-ui-review-final.md`（本機）。findings 已由使用者裁決全修，
+  並透過 PR #6 merge 回 master（5e78ccf）。
 - [2026-07-30] ✅ G2 `presentation-ui` R16 findings closure／T15 final —
   R16 architecture 2H/1M 與 behavior 4H/2M 全部採納；移除 split retry、補真
   world hit、雙方 inspection、COMBAT overlay、authoritative PREPARE report、
@@ -69,14 +87,13 @@
 
 ## 進行中
 
-- G2 `presentation-ui`：程式、測試、T15、19 AC 與交接文件已收口；
-  draft PR #5 已建立，等待 merge 授權。
+- G2 `content-production`：規格、codec 3／schema 4、44 單位正式內容、
+  localization、事件選項與正式資產量產進行中。
 
 ## 待辦
 
-- `presentation-ui`：審閱 draft PR #5；merge 另行批准。`content-production`
-  只能從本片合併後的最新 master 建立。
-- 後續三片：完整內容／資產、TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
+- 完成 `content-production` 的五個 gated TDD wave、雙審、18 AC 與 Git／PR gate。
+- 後續兩片：TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
 
 ## 已知問題
 

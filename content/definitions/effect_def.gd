@@ -10,6 +10,7 @@ extends ContentDefinition
 @export var stacking: StringName
 @export var max_stacks: int = 1
 @export var duration_ticks: int = 1
+@export var description_key: StringName
 
 func category_name() -> StringName:
 	return &"effect"

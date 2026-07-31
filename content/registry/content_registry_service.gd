@@ -1,10 +1,10 @@
 class_name ContentRegistryService
 extends Node
 
-const CATALOG_SCHEMA_VERSION := 1
+const CATALOG_SCHEMA_VERSION := 2
 
-var _codec := ContentCanonicalCodecV2.new()
-var _compiler := ContentDefinitionCompilerV2.new()
+var _codec := ContentCanonicalCodecV3.new()
+var _compiler := ContentDefinitionCompilerV3.new()
 var _authoring_by_id: Dictionary = {}
 var _content_version: String
 var _pack_ids: Array[StringName] = []
@@ -334,7 +334,7 @@ func _build_generation(
 	is_latest: bool,
 	selection: CatalogSelection = null
 ) -> CatalogGenerationBuildResult:
-	var compiler := ContentDefinitionCompilerV2.new()
+	var compiler := ContentDefinitionCompilerV3.new()
 	var entries: Array[ContentEntryValue] = []
 	for content_id in active_ids:
 		if not authoring_by_id.has(content_id):
@@ -380,7 +380,7 @@ func _build_generation(
 	if selection != null:
 		receipt = PinnedCatalogBuildReceipt.new(
 			CATALOG_SCHEMA_VERSION,
-			ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2,
+			ContentCanonicalCodecV3.CONTENT_CODEC_VERSION_V3,
 			content_version,
 			selection_digest,
 			active_ids,
@@ -411,7 +411,7 @@ func _publish_migrated_generation(
 	if draft.handle.is_latest or digest != draft.snapshot.manifest_digest \
 		or digest != draft.receipt.manifest_digest \
 		or draft.receipt.content_codec_version != 2 \
-		or draft.receipt.catalog_schema_version != CATALOG_SCHEMA_VERSION:
+		or draft.receipt.catalog_schema_version != 1:
 		return CatalogCompileResult.failure(
 			&"CONTENT_MIGRATED_GENERATION_INVALID", &"draft.manifest_digest"
 		)
@@ -562,7 +562,7 @@ func _state_fingerprint() -> String:
 	var authoring_ids: Array[StringName] = []
 	for key in _authoring_by_id.keys(): authoring_ids.append(key as StringName)
 	authoring_ids.sort_custom(_string_name_less)
-	var compiler := ContentDefinitionCompilerV2.new()
+	var compiler := ContentDefinitionCompilerV3.new()
 	for content_id in authoring_ids:
 		var definition: ContentDefinition = _authoring_by_id[content_id]
 		var compiled := compiler.compile(definition)

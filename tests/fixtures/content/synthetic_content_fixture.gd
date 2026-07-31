@@ -14,6 +14,10 @@ static func build_valid(add_fourth_population_source: bool = false) -> ContentVa
 	for index in 6: definitions.append(_trait(StringName("trait.role_%d" % index), &"role"))
 	for index in 32: definitions.append(_player_unit(index))
 	for index in 12: definitions.append(_monster_unit(index))
+	for index in 32:
+		definitions.append(_presentation(StringName("presentation.player_%02d" % index)))
+	for index in 12:
+		definitions.append(_presentation(StringName("presentation.monster_%02d" % index)))
 	for index in 6: definitions.append(_component(index))
 	for left in 6:
 		for right in range(left, 6): definitions.append(_equipment(left, right))
@@ -134,7 +138,9 @@ static func mutate(case_name: StringName) -> ContentValidationInput:
 
 static func _common(definition: ContentDefinition, content_id: StringName) -> void:
 	definition.id = content_id
-	definition.schema_version = 1
+	definition.schema_version = (
+		2 if definition is UnitDef or definition is EffectDef else 1
+	)
 	definition.display_name_key = StringName("loc.%s" % String(content_id))
 
 static func _effect(content_id: StringName, role: StringName) -> EffectDef:
@@ -145,6 +151,9 @@ static func _effect(content_id: StringName, role: StringName) -> EffectDef:
 	value.stacking = &"replace"
 	value.max_stacks = 1
 	value.duration_ticks = 1
+	value.description_key = StringName(
+		"loc.%s.description" % String(content_id)
+	)
 	return value
 
 ## W4-T07（design §7.2）：challenge 鏈 1..5 的 modifier_refs 必須指向 content_role=
@@ -324,6 +333,20 @@ static func _unit(content_id: StringName, availability: StringName) -> UnitDef:
 	value.basic_attack_profile = &"melee"
 	value.availability = availability
 	value.shop_condition = &"always"
+	value.presentation_ref = StringName(
+		String(content_id).replace("unit.", "presentation.")
+	)
+	return value
+
+
+static func _presentation(content_id: StringName) -> UnitPresentationDef:
+	var value := UnitPresentationDef.new()
+	_common(value, content_id)
+	var token := String(content_id).trim_prefix("presentation.")
+	value.portrait_path = "res://fixture/%s.png" % token
+	value.sprite_frames_path = "res://fixture/%s.tres" % token
+	value.board_icon_path = "res://fixture/%s_board.png" % token
+	value.ability_icon_path = "res://fixture/%s_ability.png" % token
 	return value
 
 static func _scaling(star: int, bps: int) -> StarScalingDef:

@@ -21,5 +21,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_2231e")]([SubResource("Resource_oiigj")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_slice_affix_04_description"
 id = &"effect.slice_affix_04"
 display_name_key = &"loc.effect_slice_affix_04"

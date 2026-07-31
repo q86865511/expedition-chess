@@ -23,9 +23,19 @@ var _values: Dictionary = {
 }
 
 
-func _init() -> void:
-	_register_fixed_keys()
-	_register_generated_keys()
+func _init(p_validated_values: Dictionary = {}) -> void:
+	if p_validated_values.is_empty():
+		_register_fixed_keys()
+		_register_generated_keys()
+	else:
+		_values = {
+			&"zh_TW": (p_validated_values.get(&"zh_TW", {}) as Dictionary).duplicate(true),
+			&"en": (p_validated_values.get(&"en", {}) as Dictionary).duplicate(true),
+		}
+
+
+static func from_validated_values(values: Dictionary) -> LocalizationCatalog:
+	return LocalizationCatalog.new(values)
 
 
 func default_locale() -> StringName:
@@ -136,6 +146,13 @@ func _register_fixed_keys() -> void:
 	_register(&"prepare.move_board", "移至戰場", "Move to Board")
 	_register(&"prepare.move_bench", "移至備戰區", "Move to Bench")
 	_register(&"prepare.start", "開始戰鬥", "Start Combat")
+	_register(&"choice.begin", "確認所選事件", "Confirm Selected Choice")
+	_register(&"choice.confirm", "確認選擇", "Confirm Choice")
+	_register(&"choice.cancel", "取消選擇", "Cancel Choice")
+	_register(&"tooltip.cost", "花費", "Cost")
+	_register(&"tooltip.star", "星級", "Star")
+	_register(&"tooltip.reward_amount", "獎勵數量", "Reward Amount")
+	_register(&"tooltip.collection_order", "圖鑑順序", "Collection Order")
 	_register(&"combat.pause", "暫停", "Pause")
 	_register(&"combat.inspect", "檢視單位", "Inspect Unit")
 	_register(&"combat.speed", "戰鬥速度", "Battle Speed")
@@ -439,9 +456,19 @@ func _register_generated_keys() -> void:
 		)
 	for index: int in range(6):
 		_register_indexed("loc.effect_slice_affix_", index, "菁英詞綴", "Elite Affix")
+		_register(
+			StringName("loc.effect_slice_affix_%02d_description" % index),
+			"戰鬥開始時套用的菁英效果。",
+			"Elite effect applied at battle start."
+		)
 	for index: int in range(5):
 		_register_indexed(
 			"loc.effect_slice_challenge_affix_", index, "挑戰詞綴", "Challenge Affix"
+		)
+		_register(
+			StringName("loc.effect_slice_challenge_affix_%02d_description" % index),
+			"挑戰等級提供的遠征規則效果。",
+			"Expedition rule effect supplied by challenge level."
 		)
 	for index: int in range(3):
 		var suffix := "" if index == 0 else "_%02d" % index
@@ -450,12 +477,72 @@ func _register_generated_keys() -> void:
 			"指揮官被動 %02d" % (index + 1),
 			"Commander Passive %02d" % (index + 1)
 		)
+		_register(
+			StringName("loc.effect_slice_commander_passive%s_description" % suffix),
+			"指揮官的固定被動效果。",
+			"Commander's persistent passive effect."
+		)
 	for index: int in range(12):
 		_register_indexed("loc.effect_slice_event_gen_", index, "事件效果", "Event Effect")
+		_register(
+			StringName("loc.effect_slice_event_gen_%02d_description" % index),
+			"事件節點的既有進入效果。",
+			"Existing event-node entry effect."
+		)
 		_register_indexed("loc.map_node_slice_event_", index, "事件節點", "Event Node")
 		_register_indexed("loc.unit_slice_monster_", index, "怪物", "Monster")
+		_register_formal_unit_content(
+			"slice_monster_%02d" % index, "怪物技能", "Monster Ability"
+		)
 	for index: int in range(32):
 		_register_indexed("loc.unit_slice_player_", index, "遠征棋士", "Expedition Unit")
+		_register_formal_unit_content(
+			"slice_player_%02d" % index, "棋士技能", "Unit Ability"
+		)
+	for index: int in range(12):
+		var event_suffix := "%02d" % index
+		_register(
+			StringName("loc.choice_set_event_" + event_suffix),
+			"事件抉擇 %02d" % (index + 1),
+			"Event Choice %02d" % (index + 1)
+		)
+		_register_event_choice(event_suffix, "safe", "穩健處理", "Safe Approach")
+		_register_event_choice(event_suffix, "risk", "承擔風險", "Take the Risk")
+	_register_choice_set_keys()
+	var formal_audio_names: Array = [
+		["menu", "主選單音樂", "Menu Music"],
+		["camp", "營地音樂", "Camp Music"],
+		["expedition", "遠征音樂", "Expedition Music"],
+		["combat", "戰鬥音樂", "Combat Music"],
+		["results", "結算音樂", "Results Music"],
+		["ui_accept", "介面確認", "UI Accept"],
+		["ui_cancel", "介面取消", "UI Cancel"],
+		["ui_hover", "介面游標停留", "UI Hover"],
+		["ui_error", "介面錯誤", "UI Error"],
+		["shop_buy", "商店購買", "Shop Buy"],
+		["shop_sell", "商店出售", "Shop Sell"],
+		["shop_reroll", "商店重抽", "Shop Reroll"],
+		["forge", "鍛造", "Forge"],
+		["equip", "裝備", "Equip"],
+		["reward", "獎勵", "Reward"],
+		["event", "事件", "Event"],
+		["combat_cast", "技能施放", "Combat Cast"],
+		["combat_hit", "戰鬥命中", "Combat Hit"],
+		["combat_crit", "戰鬥暴擊", "Combat Critical"],
+		["combat_block", "戰鬥格擋", "Combat Block"],
+		["combat_heal", "戰鬥治療", "Combat Heal"],
+		["combat_death", "戰鬥倒下", "Combat Death"],
+		["combat_projectile", "戰鬥投射物", "Combat Projectile"],
+		["combat_explosion", "戰鬥爆炸", "Combat Explosion"],
+		["combat_status", "戰鬥狀態", "Combat Status"],
+		["combat_victory", "戰鬥勝利", "Combat Victory"],
+	]
+	for audio_name: Array in formal_audio_names:
+		_register(
+			StringName("loc.audio_" + String(audio_name[0])),
+			String(audio_name[1]),
+			String(audio_name[2])
+		)
 	for index: int in range(6):
 		_register(
 			StringName("loc.unlock_slice_challenge_%d" % index),
@@ -470,6 +557,11 @@ func _register_generated_keys() -> void:
 			"裝備效果：%s" % _title(element),
 			"Equipment Effect: %s" % _title(element)
 		)
+		_register(
+			StringName("loc.effect_equip_%s_description" % element),
+			"由裝備提供的戰鬥效果。",
+			"Battle effect granted by equipment."
+		)
 	for role: String in ROLES:
 		_register_named_family(role, "role", "職業", "Role")
 	for relic: String in RELICS:
@@ -482,6 +574,11 @@ func _register_generated_keys() -> void:
 			StringName("loc.effect_relic_" + relic),
 			"遺物效果：%s" % _title(relic),
 			"Relic Effect: %s" % _title(relic)
+		)
+		_register(
+			StringName("loc.effect_relic_%s_description" % relic),
+			"由遺物提供的正式效果。",
+			"Formal effect granted by this relic."
 		)
 	for left: int in range(ELEMENTS.size()):
 		for right: int in range(left, ELEMENTS.size()):
@@ -530,6 +627,87 @@ func _register_named_family(
 		"%s效果：%s" % [zh_family, _title(token)],
 		"%s Effect: %s" % [en_family, _title(token)]
 	)
+	_register(
+		StringName("loc.effect_trait_%s_%s_description" % [family, token]),
+		"%s「%s」的正式階段效果。" % [zh_family, _title(token)],
+		"Formal tier effect for %s %s."
+		% [en_family.to_lower(), _title(token)]
+	)
+
+
+func _register_formal_unit_content(
+	token: String,
+	zh_ability: String,
+	en_ability: String
+) -> void:
+	_register(
+		StringName("loc.ability_" + token),
+		"%s：%s" % [zh_ability, _title(token)],
+		"%s: %s" % [en_ability, _title(token)]
+	)
+	_register(
+		StringName("loc.ability_%s_description" % token),
+		"對主要敵人造成依攻擊力計算的傷害。",
+		"Deals attack-scaled damage to the primary enemy."
+	)
+	_register(
+		StringName("loc.effect_%s_primary" % token),
+		"%s的主要技能效果" % _title(token),
+		"%s Primary Ability Effect" % _title(token)
+	)
+	_register(
+		StringName("loc.effect_%s_primary_description" % token),
+		"此數值為功能用暫定基線，尚未進行平衡調校。",
+		"This value is a functional provisional baseline and is not TUNE-balanced."
+	)
+	_register(
+		StringName("loc.presentation_" + token),
+		"%s的正式呈現" % _title(token),
+		"%s Presentation" % _title(token)
+	)
+
+
+func _register_event_choice(
+	suffix: String,
+	choice_token: String,
+	zh_title: String,
+	en_title: String
+) -> void:
+	var prefix := "loc.choice_event_%s_%s_" % [suffix, choice_token]
+	_register(StringName(prefix + "title"), zh_title, en_title)
+	_register(
+		StringName(prefix + "description"),
+		"選擇一個有明確代價與結果的事件方案。",
+		"Choose an event approach with an explicit cost and outcome."
+	)
+	_register(
+		StringName(prefix + "preview"),
+		"確認前可預覽金幣與遠征生命變化。",
+		"Preview gold and expedition HP changes before confirming."
+	)
+	_register(
+		StringName(prefix + "result"),
+		"事件選擇已套用。",
+		"Event choice applied."
+	)
+
+
+func _register_choice_set_keys() -> void:
+	_register(&"loc.choice_set_rest", "休息點服務", "Rest Services")
+	_register(&"loc.choice_set_treasure", "寶藏抉擇", "Treasure Choice")
+	var choices: Array = [
+		["rest_heal_20", "治療 20%", "Heal 20%", "恢復 20% 遠征生命。", "Restore 20% expedition HP."],
+		["rest_dismantle", "拆解服務", "Dismantle Service", "開啟既有拆解服務。", "Open the existing dismantle service."],
+		["treasure_standard", "標準寶箱", "Standard Cache", "進入標準獎勵流程。", "Open the standard reward flow."],
+		["treasure_relic", "遺物寶箱", "Relic Cache", "進入遺物獎勵流程。", "Open the relic reward flow."],
+		["treasure_gold", "金幣寶箱", "Gold Cache", "立即取得固定金幣。", "Gain a fixed amount of gold immediately."],
+	]
+	for value: Array in choices:
+		var prefix := "loc.choice_%s_" % String(value[0])
+		_register(StringName(prefix + "title"), String(value[1]), String(value[2]))
+		_register(StringName(prefix + "description"), String(value[3]), String(value[4]))
+		_register(StringName(prefix + "preview"), String(value[3]), String(value[4]))
+		_register(StringName(prefix + "result"), "選擇已套用。", "Choice applied.")
 
 
 func _register_indexed(

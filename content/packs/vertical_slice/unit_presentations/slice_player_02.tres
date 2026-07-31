@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UnitPresentationDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_presentation_def.gd" id="1_presentation"]
+
+[resource]
+script = ExtResource("1_presentation")
+schema_version = 1
+portrait_path = "res://assets/production/portraits/slice_player_02.png"
+sprite_frames_path = "res://assets/production/units/slice_player_02.tres"
+board_icon_path = "res://assets/production/icons/board/slice_player_02.png"
+ability_icon_path = "res://assets/production/icons/abilities/slice_player_02.png"
+combat_vfx_refs = [&"effect.slice_player_02.primary"]
+audio_cue_refs = [&"audio.combat_cast"]
+id = &"presentation.slice_player_02"
+display_name_key = &"loc.presentation_slice_player_02"

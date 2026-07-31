@@ -433,7 +433,7 @@ func _append_unlock_battle_effects(
 			return false
 		if effect_view.payload == null \
 			or effect_view.payload.record_type != ContentCategory.EFFECT \
-			or effect_view.payload.children.size() != 12:
+			or effect_view.payload.children.size() not in [12, 13]:
 			_payload_failure(&"unlock.modifier_refs")
 			return false
 		if not effect_view.payload.children[7].children.is_empty():
@@ -441,9 +441,15 @@ func _append_unlock_battle_effects(
 	return true
 
 func _payload_is(view: ContentDefinitionView, type_id: int, child_count: int) -> bool:
+	var accepted_counts: Array[int] = [child_count]
+	if (
+		(type_id == ContentCategory.UNIT and child_count == 13)
+		or (type_id == ContentCategory.EFFECT and child_count == 12)
+	):
+		accepted_counts.append(child_count + 1)
 	if view == null or view.payload == null \
 		or view.payload.record_type != type_id \
-		or view.payload.children.size() != child_count:
+		or view.payload.children.size() not in accepted_counts:
 		_error = BattleRuleCatalogError.new(
 			BattleRuleCatalogError.PAYLOAD_INVALID,
 			&"payload",

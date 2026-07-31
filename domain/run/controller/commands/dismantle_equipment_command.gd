@@ -38,6 +38,20 @@ func is_concrete() -> bool:
 func apply_to(draft: RunState) -> CommandApplyResult:
 	if not is_concrete() or draft == null or draft.roster_state == null:
 		return _rejected(&"run.roster_state", &"DISMANTLE_EQUIPMENT_DRAFT_INVALID")
+	var service_pending := (
+		draft.resolution_state as NodeServicePendingResolutionState
+	)
+	if (
+		not draft.resolution_state is IdleResolutionState
+		and (
+			service_pending == null
+			or service_pending.service_kind != &"dismantle"
+		)
+	):
+		return _rejected(
+			&"run.resolution_state",
+			&"DISMANTLE_EQUIPMENT_RESOLUTION_INVALID"
+		)
 	var equipment_item := _find_item(draft, _equipment_item_instance_id)
 	if equipment_item == null or equipment_item.bound_unit_instance_id == null:
 		return _rejected(
@@ -69,7 +83,33 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	else:
 		draft.roster_state.pending_item_overflow.append(_equipment_item_instance_id)
 		draft.roster_state.pending_item_overflow.sort()
+	if service_pending != null:
+		_complete_node_service(draft, service_pending)
 	return CommandApplyResult.success(draft)
+
+func _complete_node_service(
+	draft: RunState,
+	pending: NodeServicePendingResolutionState
+) -> void:
+	for entry: NodeChoiceReceiptLedgerEntry in draft.node_choice_receipts:
+		if (
+			entry != null
+			and entry.receipt != null
+			and entry.receipt.receipt_digest
+				== pending.choice_receipt_digest
+		):
+			entry.result_acknowledged = true
+			break
+	for node: MapNodeState in draft.map_state.nodes:
+		if StringName(node.node_id) != pending.node_id:
+			continue
+		node.completed = true
+		if not draft.map_state.completed_node_ids.has(node.node_id):
+			draft.map_state.completed_node_ids.append(node.node_id)
+			draft.map_state.completed_node_ids.sort()
+		break
+	draft.resolution_state = IdleResolutionState.new()
+	draft.run_phase = RunState.RunPhase.MAP
 
 func _find_unit(draft: RunState, unit_instance_id: String) -> UnitInstance:
 	for unit: UnitInstance in draft.roster_state.unit_instances:

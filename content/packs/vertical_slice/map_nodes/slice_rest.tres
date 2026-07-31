@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("2_v5xa8")
 node_type = &"rest"
-generator_ref = &"effect.slice_affix_03"
+generator_ref = &"choice_set.rest"
 id = &"map_node.slice_rest"
 display_name_key = &"loc.map_node_slice_rest"

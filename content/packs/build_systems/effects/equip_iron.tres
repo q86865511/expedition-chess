@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_dmj1c")]([SubResource("Resource_k11ci")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_equip_iron_description"
 id = &"effect.equip_iron"
 display_name_key = &"loc.effect_equip_iron"

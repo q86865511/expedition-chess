@@ -17,5 +17,7 @@ trigger = &"battle_start"
 run_operations = Array[ExtResource("3_exhrt")]([SubResource("Resource_cp00op")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_slice_commander_passive_description"
 id = &"effect.slice_commander_passive"
 display_name_key = &"loc.effect_slice_commander_passive"

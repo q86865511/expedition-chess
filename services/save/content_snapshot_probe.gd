@@ -10,6 +10,8 @@ var map_node_def_ids: Array[StringName] = []
 var challenge_unlock_def_ids: Array[StringName] = []
 var meta_reward_table_id: StringName
 var manifest_digest: String
+var catalog_schema_version: int = 1
+var content_codec_version: int = 2
 
 func _init(
 	p_content_version: String,
@@ -20,7 +22,9 @@ func _init(
 	p_map_node_def_ids: Array[StringName],
 	p_challenge_unlock_def_ids: Array[StringName],
 	p_meta_reward_table_id: StringName,
-	p_manifest_digest: String
+	p_manifest_digest: String,
+	p_catalog_schema_version: int = 1,
+	p_content_codec_version: int = 2
 ) -> void:
 	content_version = p_content_version
 	enabled_content_ids.assign(p_enabled_content_ids)
@@ -31,6 +35,8 @@ func _init(
 	challenge_unlock_def_ids.assign(p_challenge_unlock_def_ids)
 	meta_reward_table_id = p_meta_reward_table_id
 	manifest_digest = p_manifest_digest
+	catalog_schema_version = p_catalog_schema_version
+	content_codec_version = p_content_codec_version
 
 func to_selection() -> CatalogSelection:
 	return CatalogSelection.new(
@@ -54,5 +60,7 @@ func deep_clone() -> ContentSnapshotProbe:
 		map_node_def_ids,
 		challenge_unlock_def_ids,
 		meta_reward_table_id,
-		manifest_digest
+		manifest_digest,
+		catalog_schema_version,
+		content_codec_version
 	)

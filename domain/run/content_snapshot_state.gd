@@ -12,7 +12,18 @@ var _map_node_def_ids: Array[StringName] = []
 var _challenge_unlock_def_ids: Array[StringName] = []
 var _meta_reward_table_id: StringName
 var _manifest_digest: String
+var _catalog_schema_version: int = 1
+var _content_codec_version: int = 2
 var _validated: bool = false
+
+var catalog_schema_version: int:
+	get:
+		return _catalog_schema_version
+
+var content_codec_version: int:
+	get:
+		return _content_codec_version
+
 
 static func from_pinned_receipt(
 	receipt: PinnedCatalogBuildReceipt
@@ -22,15 +33,12 @@ static func from_pinned_receipt(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			&"content_snapshot.receipt"
 		)
-	if receipt.catalog_schema_version != 1:
+	if not _version_tuple_supported(
+		receipt.catalog_schema_version, receipt.content_codec_version
+	):
 		return _failure(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			&"content_snapshot.receipt.catalog_schema_version"
-		)
-	if receipt.content_codec_version != 2:
-		return _failure(
-			ContentSnapshotBuildError.RECEIPT_INVALID,
-			&"content_snapshot.receipt.content_codec_version"
 		)
 	if not _is_digest(receipt.selection_digest):
 		return _failure(
@@ -46,14 +54,22 @@ static func from_pinned_receipt(
 		receipt.map_node_def_ids,
 		receipt.challenge_unlock_def_ids,
 		receipt.meta_reward_table_id,
-		receipt.manifest_digest
+		receipt.manifest_digest,
+		receipt.catalog_schema_version,
+		receipt.content_codec_version
 	)
 	if not candidate.ok:
 		return _failure(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			candidate.error.field_path
 		)
-	if candidate.snapshot.enabled_content_ids_copy() != receipt.active_entry_ids:
+	var receipt_active_ids: Array[StringName] = []
+	if not _canonicalize_ids(
+		receipt.active_entry_ids,
+		receipt_active_ids,
+		&"content_snapshot.receipt.active_entry_ids"
+	).is_empty() \
+		or candidate.snapshot.enabled_content_ids_copy() != receipt_active_ids:
 		return _failure(
 			ContentSnapshotBuildError.RECEIPT_INVALID,
 			&"content_snapshot.receipt.active_entry_ids"
@@ -91,7 +107,9 @@ static func from_persisted(
 	p_challenge_unlock_def_ids: Array[StringName],
 	p_meta_reward_table_id: StringName,
 	p_manifest_digest: String,
-	receipt: PinnedCatalogBuildReceipt
+	receipt: PinnedCatalogBuildReceipt,
+	p_catalog_schema_version: int = 1,
+	p_content_codec_version: int = 2
 ) -> ContentSnapshotBuildResult:
 	var expected := from_pinned_receipt(receipt)
 	if not expected.ok:
@@ -105,7 +123,9 @@ static func from_persisted(
 		p_map_node_def_ids,
 		p_challenge_unlock_def_ids,
 		p_meta_reward_table_id,
-		p_manifest_digest
+		p_manifest_digest,
+		p_catalog_schema_version,
+		p_content_codec_version
 	)
 	if not candidate.ok:
 		return candidate
@@ -125,7 +145,9 @@ static func _build_candidate(
 	p_map_node_def_ids: Array[StringName],
 	p_challenge_unlock_def_ids: Array[StringName],
 	p_meta_reward_table_id: StringName,
-	p_manifest_digest: String
+	p_manifest_digest: String,
+	p_catalog_schema_version: int,
+	p_content_codec_version: int
 ) -> ContentSnapshotBuildResult:
 	if not _is_ascii_nonempty(p_content_version):
 		return _failure(
@@ -136,6 +158,13 @@ static func _build_candidate(
 		return _failure(
 			ContentSnapshotBuildError.INPUT_INVALID,
 			&"content_snapshot.manifest_digest"
+		)
+	if not _version_tuple_supported(
+		p_catalog_schema_version, p_content_codec_version
+	):
+		return _failure(
+			ContentSnapshotBuildError.INPUT_INVALID,
+			&"content_snapshot.content_codec_version"
 		)
 	var stable_ids := StableIdValidator.new()
 	if not stable_ids.is_valid(p_economy_config_id):
@@ -229,7 +258,9 @@ static func _build_candidate(
 			challenge_ids,
 			p_meta_reward_table_id,
 			p_manifest_digest,
-			_construction_seal
+			_construction_seal,
+			p_catalog_schema_version,
+			p_content_codec_version
 		)
 	)
 
@@ -269,6 +300,16 @@ static func _is_digest(value: String) -> bool:
 			return false
 	return true
 
+static func _version_tuple_supported(
+	catalog_schema_version: int,
+	content_codec_version: int
+) -> bool:
+	return (
+		catalog_schema_version == 1 and content_codec_version in [1, 2]
+	) or (
+		catalog_schema_version == 2 and content_codec_version == 3
+	)
+
 static func _failure(
 	code: StringName,
 	field_path: StringName
@@ -287,7 +328,9 @@ func _init(
 	p_challenge_unlock_def_ids: Array[StringName],
 	p_meta_reward_table_id: StringName,
 	p_manifest_digest: String,
-	p_construction_seal: RefCounted = null
+	p_construction_seal: RefCounted = null,
+	p_catalog_schema_version: int = 1,
+	p_content_codec_version: int = 2
 ) -> void:
 	_content_version = p_content_version
 	_enabled_content_ids.assign(p_enabled_content_ids)
@@ -298,6 +341,8 @@ func _init(
 	_challenge_unlock_def_ids.assign(p_challenge_unlock_def_ids)
 	_meta_reward_table_id = p_meta_reward_table_id
 	_manifest_digest = p_manifest_digest
+	_catalog_schema_version = p_catalog_schema_version
+	_content_codec_version = p_content_codec_version
 	_validated = p_construction_seal == _construction_seal
 
 func is_validated() -> bool:
@@ -330,6 +375,12 @@ func meta_reward_table_id_value() -> StringName:
 func manifest_digest_value() -> String:
 	return _manifest_digest
 
+func catalog_schema_version_value() -> int:
+	return _catalog_schema_version
+
+func content_codec_version_value() -> int:
+	return _content_codec_version
+
 func deep_clone() -> ContentSnapshotState:
 	return ContentSnapshotState.new(
 		_content_version,
@@ -341,7 +392,9 @@ func deep_clone() -> ContentSnapshotState:
 		_challenge_unlock_def_ids,
 		_meta_reward_table_id,
 		_manifest_digest,
-		_construction_seal if _validated else null
+		_construction_seal if _validated else null,
+		_catalog_schema_version,
+		_content_codec_version
 	)
 
 func canonical_equals(other: ContentSnapshotState) -> bool:
@@ -355,4 +408,6 @@ func canonical_equals(other: ContentSnapshotState) -> bool:
 		and _map_node_def_ids == other._map_node_def_ids \
 		and _challenge_unlock_def_ids == other._challenge_unlock_def_ids \
 		and _meta_reward_table_id == other._meta_reward_table_id \
-		and _manifest_digest == other._manifest_digest
+		and _manifest_digest == other._manifest_digest \
+		and _catalog_schema_version == other._catalog_schema_version \
+		and _content_codec_version == other._content_codec_version

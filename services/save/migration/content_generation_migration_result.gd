@@ -3,12 +3,12 @@ extends RefCounted
 
 var ok: bool
 var target_receipt: PinnedCatalogBuildReceipt
-var migration_receipt: ContentGenerationMigrationReceipt
+var migration_receipt: RefCounted
 var error: ContentGenerationMigrationError
 
 static func success(
 	p_target_receipt: PinnedCatalogBuildReceipt,
-	p_migration_receipt: ContentGenerationMigrationReceipt
+	p_migration_receipt: RefCounted
 ) -> ContentGenerationMigrationResult:
 	return ContentGenerationMigrationResult.new(true, p_target_receipt, p_migration_receipt, null)
 
@@ -18,7 +18,7 @@ static func failure(p_error: ContentGenerationMigrationError) -> ContentGenerati
 func _init(
 	p_ok: bool,
 	p_target_receipt: PinnedCatalogBuildReceipt,
-	p_migration_receipt: ContentGenerationMigrationReceipt,
+	p_migration_receipt: RefCounted,
 	p_error: ContentGenerationMigrationError
 ) -> void:
 	ResultInvariant.require(

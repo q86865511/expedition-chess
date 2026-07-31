@@ -75,10 +75,10 @@ func _append_effect_entries(
 		return ChallengeAffixResolveResult.failure(
 			RunRelicTableError.CATEGORY_MISMATCH, &"category", effect_id
 		)
-	# EffectDef payload：12 children；children[7]＝battle_operations、children[8]＝run_operations
+	# EffectDef payload：codec 2 為 12 children、codec 3 為 13；共同欄位位置不變。
 	# （形狀見 battle_rule_catalog_builder._decode_effect 與 run_relic_table_builder）。
 	if view.payload == null or view.payload.record_type != ContentCategory.EFFECT \
-		or view.payload.children.size() != 12:
+		or view.payload.children.size() not in [12, 13]:
 		return ChallengeAffixResolveResult.failure(
 			RunRelicTableError.PAYLOAD_INVALID, &"effect.payload", effect_id
 		)

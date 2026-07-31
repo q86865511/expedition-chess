@@ -145,7 +145,7 @@ func _intent_digest(intent: RunPresentationIntent) -> String:
 	var context := HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)
 	context.update(
-		("%d|%s|%s|%s|%s|%s|%s|%s|%d|%s|%s" % [
+		("%d|%s|%s|%s|%s|%s|%s|%s|%s|%d|%s|%s" % [
 			intent.kind,
 			intent.target_node_id,
 			intent.offer_id,
@@ -153,6 +153,7 @@ func _intent_digest(intent: RunPresentationIntent) -> String:
 			intent.item_instance_id,
 			intent.secondary_item_instance_id,
 			intent.target_unit_instance_id,
+			intent.choice_set_id,
 			intent.choice_id,
 			intent.relic_slot_index,
 			str(intent.accept),

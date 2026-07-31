@@ -12,6 +12,7 @@ extends ContentDefinition
 @export var availability: StringName
 @export var shop_condition: StringName
 @export var effect_refs: Array[StringName] = []
+@export var presentation_ref: StringName
 
 func category_name() -> StringName:
 	return &"unit"

@@ -16,5 +16,7 @@ script = ExtResource("5_mmg5g")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_vkpn2")]([SubResource("Resource_5pgiw")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_interest_token_description"
 id = &"effect.relic_interest_token"
 display_name_key = &"loc.effect_relic_interest_token"

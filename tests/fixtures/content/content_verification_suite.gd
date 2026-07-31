@@ -108,8 +108,8 @@ func _case_golden() -> String:
 	return ""
 
 func _case_payload_roundtrip() -> String:
-	var codec := ContentCanonicalCodecV2.new()
-	var compiler := ContentDefinitionCompilerV2.new()
+	var codec := ContentCanonicalCodecV3.new()
+	var compiler := ContentDefinitionCompilerV3.new()
 	var categories: Dictionary = {}
 	var record_types: Dictionary = {}
 	for definition in SyntheticContentFixture.build_valid().definitions:
@@ -123,7 +123,7 @@ func _case_payload_roundtrip() -> String:
 		if not reencoded.ok or reencoded.canonical_bytes != encoded.canonical_bytes: return "roundtrip failed: %s" % String(definition.id)
 		categories[compiled.entry.category] = true
 		_collect_record_types(compiled.entry.payload, record_types)
-	if categories.size() != 16: return "expected 16 payload categories, got %d" % categories.size()
+	if categories.size() != 17: return "expected 17 payload categories, got %d" % categories.size()
 	var int_pair := ContentValue.record(0x2009, PackedInt32Array([1, 2]), [ContentValue.i32(-1), ContentValue.i32(2)])
 	var stable_pair := ContentValue.record(0x200d, PackedInt32Array([1, 2]), [ContentValue.stable_id(&"unit.test"), ContentValue.i32(1)])
 	if not codec.validate_typed_value(int_pair).ok or not codec.validate_typed_value(stable_pair).ok: return "standalone nested record validation failed"
@@ -483,7 +483,7 @@ func _decode_catalog_fixture(
 	return codec.decode_catalog(encoded_catalog.canonical_bytes)
 
 func _case_unknown_operation_compile() -> String:
-	var compiler := ContentDefinitionCompiler.new()
+	var compiler := ContentDefinitionCompilerV3.new()
 	var fixture := SyntheticContentFixture.build_valid()
 	var effect_battle := _find_definition(fixture, &"effect.general") as EffectDef
 	var unknown_battle := BattleOperationDef.new()

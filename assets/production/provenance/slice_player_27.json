@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "unit_id": "unit.slice_player_27",
+  "status": "adopted",
+  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
+  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
+  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
+  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "local_processing_seed": 1194479737,
+  "processing": {
+    "script": "res://tools/content-production/build-production-assets.py",
+    "pillow": "12.2.0",
+    "numpy": "2.3.5",
+    "canvas": [
+      1280,
+      1280
+    ],
+    "cell": [
+      256,
+      256
+    ],
+    "frame": [
+      64,
+      64
+    ],
+    "atlas": [
+      1024,
+      1024
+    ],
+    "sampling": "nearest",
+    "chroma": "#ff00ff",
+    "star_overlay": "non-color diamond count 1/2/3"
+  },
+  "outputs_sha256": {
+    "source_sheet": "2b9f416671c9f9e62ed6758e3e9286d14ea9e70705a7711b3cfba6bfd0c3b270",
+    "portrait": "d8c1c98fed57786a7fd498f8187c4469615bc5e591a6f905de077e6b75829454",
+    "board_icon": "cbe10255c951926946b5b821c0963c288f40310003cbbcabb007bf73be7fdaa2",
+    "ability_icon": "1f0e24cf6dbca33790e4c439fe5ce9b06fcffe45ef915fb79549d93fe6210f6f",
+    "atlas": "af89a9878123dc9b13bb1ba17465c9a516f1ab80e5476a7461afd6d69365c020",
+    "sprite_frames": "1ef5a69b059465d45896221b0fa12733c39518ae7269535bce5a66c154379139"
+  }
+}

@@ -29,7 +29,14 @@ const _PRIMARY_ACTIONS: Dictionary = {
 	&"FACILITY_UNLOCK_WORKSHOP": [&"camp.back"],
 	&"FACILITY_CHALLENGE_MONUMENT": [&"camp.back"],
 	&"RUN_MAP": [&"map.select", &"map.confirm", &"run.menu"],
-	&"RUN_PREPARE": [&"prepare.unit", &"prepare.start", &"run.menu"],
+	&"RUN_PREPARE": [
+		&"prepare.unit",
+		&"choice.begin",
+		&"choice.confirm",
+		&"choice.cancel",
+		&"prepare.start",
+		&"run.menu",
+	],
 	&"RUN_COMBAT": [
 		&"combat.pause",
 		&"combat.inspect",

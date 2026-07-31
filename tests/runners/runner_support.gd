@@ -3,7 +3,7 @@ extends RefCounted
 
 const APP_VERSION: String = "0.2.0"
 const SCHEMA_VERSION: int = SaveSchemaContract.CURRENT
-const CONTENT_CODEC_VERSION: int = ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2
+const CONTENT_CODEC_VERSION: int = ContentCanonicalCodecV3.CONTENT_CODEC_VERSION_V3
 const RNG_VERSION: int = 1
 const HASH_VERSION: int = 1
 

@@ -145,12 +145,17 @@ func _build_offer_selector() -> void:
 		&"double-frame"
 	)
 	_offer_selector.set_meta(&"accessible_text", &"reward.offer_selector")
-	for offer_id: String in offer_ids():
+	for offer: RewardOfferState in _model.offers():
+		var offer_id := offer.choice_id
 		_offer_selector.add_item(
 			_localized_content_text(StringName(offer_id))
 		)
 		var index := _offer_selector.item_count - 1
 		_offer_selector.set_item_metadata(index, offer_id)
+		_offer_selector.set_item_tooltip(
+			index,
+			_tooltip_text(&"tooltip.reward_amount", offer.amount)
+		)
 	_offer_selector.item_selected.connect(_on_offer_selected)
 	add_child(_offer_selector)
 	if _offer_selector.item_count > 0:
@@ -184,4 +189,19 @@ func _localized_content_text(content_id: StringName) -> String:
 		parent_screen.localized_content_text(content_id)
 		if parent_screen != null
 		else String(content_id)
+	)
+
+
+func _tooltip_text(
+	label_key: StringName,
+	numeric_value: int,
+	depth: int = 1
+) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.content_tooltip_text(
+			label_key, numeric_value, depth
+		)
+		if parent_screen != null
+		else ""
 	)

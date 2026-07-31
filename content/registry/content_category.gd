@@ -17,6 +17,9 @@ const UNLOCK := 0x100d
 const ECONOMY_CONFIG := 0x100e
 const META_REWARD_TABLE := 0x100f
 const COMBAT_CONFIG := 0x1010
+const UNIT_PRESENTATION := 0x1011
+const NODE_CHOICE_SET := 0x1012
+const AUDIO_CUE := 0x1013
 
 static func code_for_name(value: StringName) -> int:
 	match value:
@@ -36,6 +39,9 @@ static func code_for_name(value: StringName) -> int:
 		&"economy_config": return ECONOMY_CONFIG
 		&"meta_reward_table": return META_REWARD_TABLE
 		&"combat_config": return COMBAT_CONFIG
+		&"unit_presentation": return UNIT_PRESENTATION
+		&"node_choice_set": return NODE_CHOICE_SET
+		&"audio_cue": return AUDIO_CUE
 	return 0
 
 static func name_for_code(value: int) -> StringName:
@@ -56,4 +62,7 @@ static func name_for_code(value: int) -> StringName:
 		ECONOMY_CONFIG: return &"economy_config"
 		META_REWARD_TABLE: return &"meta_reward_table"
 		COMBAT_CONFIG: return &"combat_config"
+		UNIT_PRESENTATION: return &"unit_presentation"
+		NODE_CHOICE_SET: return &"node_choice_set"
+		AUDIO_CUE: return &"audio_cue"
 	return &""

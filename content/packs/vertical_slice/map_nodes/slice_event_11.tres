@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("2_nmaxy")
 node_type = &"event"
-generator_ref = &"effect.slice_event_gen_11"
+generator_ref = &"choice_set.event_11"
 id = &"map_node.slice_event_11"
 display_name_key = &"loc.map_node_slice_event_11"

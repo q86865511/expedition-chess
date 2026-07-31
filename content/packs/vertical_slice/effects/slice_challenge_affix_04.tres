@@ -21,5 +21,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_ca04b")]([SubResource("Resource_ca04op")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_slice_challenge_affix_04_description"
 id = &"effect.slice_challenge_affix_04"
 display_name_key = &"loc.effect_slice_challenge_affix_04"

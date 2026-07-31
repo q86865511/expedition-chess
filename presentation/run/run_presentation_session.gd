@@ -148,6 +148,11 @@ func dispatch(intent: RunPresentationIntent) -> RunPresentationResult:
 			return _dispatch_command(_factory.abandon_boss_retry_command())
 		RunPresentationIntent.Kind.SETTLE_TERMINAL_RUN:
 			return _dispatch_command(_factory.settle_terminal_run_command())
+		RunPresentationIntent.Kind.COMMIT_NODE_CHOICE:
+			return _dispatch_command(_factory.commit_node_choice_command(
+				intent.choice_set_id,
+				StringName(intent.choice_id)
+			))
 	return _precommit_failure(_error(
 		INTENT_INVALID, &"error.presentation.run_intent_invalid"
 	))
@@ -638,6 +643,15 @@ func _build_snapshot() -> RunPresentationSnapshot:
 	result.economy = _controller.economy_snapshot()
 	result.roster = _controller.roster_snapshot()
 	result.pending_reward = _controller.pending_reward_snapshot()
+	var pending_choice := _controller.node_choice_pending_snapshot()
+	if pending_choice != null and _factory != null:
+		var choice_set := _factory.try_node_choice_set(
+			pending_choice.choice_set_id
+		)
+		if choice_set != null:
+			result.node_choice_overlay = NodeChoiceOverlaySnapshot.from_rule(
+				choice_set, pending_choice
+			)
 	if (
 		_factory != null
 		and result.roster != null

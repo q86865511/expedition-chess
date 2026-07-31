@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AudioCueDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/audio_cue_def.gd" id="1_audio"]
+
+[resource]
+script = ExtResource("1_audio")
+bus = &"Music"
+stream_path = "res://assets/production/audio/music/combat.ogg"
+loop = true
+id = &"audio.combat"
+display_name_key = &"loc.audio_combat"

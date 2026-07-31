@@ -9,6 +9,8 @@ var reward_table_ids: Array[StringName] = []
 var map_node_def_ids: Array[StringName] = []
 var challenge_unlock_def_ids: Array[StringName] = []
 var meta_reward_table_id: StringName
+var source_catalog_schema_version: int
+var source_content_codec_version: int
 
 func _init(
 	p_source_content_version: String,
@@ -18,7 +20,9 @@ func _init(
 	p_reward_table_ids: Array[StringName],
 	p_map_node_def_ids: Array[StringName],
 	p_challenge_unlock_def_ids: Array[StringName],
-	p_meta_reward_table_id: StringName
+	p_meta_reward_table_id: StringName,
+	p_source_catalog_schema_version: int = 0,
+	p_source_content_codec_version: int = 0
 ) -> void:
 	source_content_version = p_source_content_version
 	source_manifest_digest = p_source_manifest_digest
@@ -28,6 +32,8 @@ func _init(
 	map_node_def_ids = p_map_node_def_ids.duplicate()
 	challenge_unlock_def_ids = p_challenge_unlock_def_ids.duplicate()
 	meta_reward_table_id = p_meta_reward_table_id
+	source_catalog_schema_version = p_source_catalog_schema_version
+	source_content_codec_version = p_source_content_codec_version
 
 func deep_clone() -> ContentGenerationMigrationRequest:
 	return ContentGenerationMigrationRequest.new(
@@ -38,5 +44,7 @@ func deep_clone() -> ContentGenerationMigrationRequest:
 		reward_table_ids,
 		map_node_def_ids,
 		challenge_unlock_def_ids,
-		meta_reward_table_id
+		meta_reward_table_id,
+		source_catalog_schema_version,
+		source_content_codec_version
 	)

@@ -39,6 +39,8 @@ func migrate(raw_json_text: String) -> MigrationResult:
 		return _decode_current(raw_json_text, known)
 	if source_schema == 2:
 		return _upgrade_two_to_three(data, raw_json_text, known)
+	if source_schema == 3:
+		return _upgrade_three_to_four(data, raw_json_text, known)
 	if source_schema == 0:
 		var zero_error := _upgrade_zero_to_one(data)
 		if not zero_error.is_empty():
@@ -98,6 +100,22 @@ func _default_meta_progression_fields(data: Dictionary) -> void:
 		if not run.has("discovered_content_ids"):
 			run["discovered_content_ids"] = []
 
+func _default_content_production_fields(
+	data: Dictionary,
+	default_content_codec_version: int = 2
+) -> void:
+	if not data.get("run") is Dictionary:
+		return
+	var run: Dictionary = data["run"]
+	if not run.has("node_choice_receipts"):
+		run["node_choice_receipts"] = []
+	if run.get("content_snapshot") is Dictionary:
+		var snapshot: Dictionary = run["content_snapshot"]
+		if not snapshot.has("catalog_schema_version"):
+			snapshot["catalog_schema_version"] = 1
+		if not snapshot.has("content_codec_version"):
+			snapshot["content_codec_version"] = default_content_codec_version
+
 
 func _upgrade_one_to_current(
 	data: Dictionary,
@@ -105,6 +123,7 @@ func _upgrade_one_to_current(
 	source_schema: SourceSchemaVersionState
 ) -> MigrationResult:
 	_default_meta_progression_fields(data)
+	_default_content_production_fields(data, 1)
 	var profile := _decode_profile_for_preservation(data)
 	if profile == null:
 		return _failure(source_schema, MigrationError.PARSE_INVALID, &"profile")
@@ -195,6 +214,7 @@ func _upgrade_two_to_three(
 	source_schema: SourceSchemaVersionState
 ) -> MigrationResult:
 	_default_meta_progression_fields(data)
+	_default_content_production_fields(data)
 	var decoded := _decode_candidate(data)
 	if decoded.run_status == LoadResult.RunStatus.INCOMPATIBLE_PRESERVED:
 		return MigrationResult.incompatible_preserved(
@@ -217,6 +237,19 @@ func _upgrade_two_to_three(
 		decoded.incompatible_content_ids,
 		null,
 		decoded.diagnostics
+	)
+
+func _upgrade_three_to_four(
+	data: Dictionary,
+	original_json_text: String,
+	source_schema: SourceSchemaVersionState
+) -> MigrationResult:
+	_default_content_production_fields(data)
+	if data.get("run") == null:
+		data["schema_version"] = SaveJsonCodec.SCHEMA_VERSION
+		return _decode_and_canonicalize(data, source_schema)
+	return _upgrade_one_to_current(
+		data, original_json_text, source_schema
 	)
 
 
@@ -280,7 +313,12 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 	if not snapshot_value is Dictionary:
 		return null
 	var snapshot: Dictionary = snapshot_value
-	if not _exact_keys(snapshot, _SCHEMA_ONE_SNAPSHOT_KEYS):
+	var allowed_keys := _SCHEMA_ONE_SNAPSHOT_KEYS.duplicate()
+	allowed_keys.append("catalog_schema_version")
+	allowed_keys.append("content_codec_version")
+	if int(snapshot.get("content_codec_version", 0)) >= 2:
+		allowed_keys.append("combat_config_id")
+	if not _exact_keys(snapshot, allowed_keys):
 		return null
 	for scalar_key: String in [
 		"content_version", "economy_config_id", "meta_reward_table_id", "manifest_digest"
@@ -301,7 +339,9 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 		rewards,
 		nodes,
 		challenges,
-		StringName(snapshot["meta_reward_table_id"])
+		StringName(snapshot["meta_reward_table_id"]),
+		int(snapshot["catalog_schema_version"]),
+		int(snapshot["content_codec_version"])
 	)
 
 
@@ -312,11 +352,29 @@ func _generation_result_matches(
 	if result == null or not result.ok or result.target_receipt == null \
 		or result.migration_receipt == null:
 		return false
-	var receipt := result.migration_receipt
-	return receipt.source_manifest_digest == request.source_manifest_digest \
-		and receipt.target_manifest_digest == result.target_receipt.manifest_digest \
-		and receipt.from_codec == 1 \
-		and receipt.to_codec == 2 \
+	var receipt: RefCounted = result.migration_receipt
+	if receipt is ContentGenerationMigrationReceiptV2:
+		var receipt_v2 := receipt as ContentGenerationMigrationReceiptV2
+		return request.source_catalog_schema_version == 1 \
+			and request.source_content_codec_version == 2 \
+			and receipt_v2.source_manifest_digest == request.source_manifest_digest \
+			and receipt_v2.target_manifest_digest \
+				== result.target_receipt.manifest_digest \
+			and receipt_v2.source_catalog_schema_version == 1 \
+			and receipt_v2.target_catalog_schema_version == 2 \
+			and receipt_v2.from_codec == 2 \
+			and receipt_v2.to_codec == 3 \
+			and result.target_receipt.catalog_schema_version == 2 \
+			and result.target_receipt.content_codec_version == 3
+	if not receipt is ContentGenerationMigrationReceipt:
+		return false
+	var receipt_v1 := receipt as ContentGenerationMigrationReceipt
+	return request.source_content_codec_version == 1 \
+		and receipt_v1.source_manifest_digest == request.source_manifest_digest \
+		and receipt_v1.target_manifest_digest \
+			== result.target_receipt.manifest_digest \
+		and receipt_v1.from_codec == 1 \
+		and receipt_v1.to_codec == 2 \
 		and result.target_receipt.content_codec_version == 2
 
 
@@ -336,6 +394,10 @@ func _apply_target_receipt(
 	snapshot["challenge_unlock_def_ids"] = _strings(receipt.challenge_unlock_def_ids)
 	snapshot["meta_reward_table_id"] = String(receipt.meta_reward_table_id)
 	snapshot["manifest_digest"] = receipt.manifest_digest
+	snapshot["catalog_schema_version"] = receipt.catalog_schema_version
+	snapshot["content_codec_version"] = receipt.content_codec_version
+	if not run_data.has("node_choice_receipts"):
+		run_data["node_choice_receipts"] = []
 	if _has_property(receipt, &"combat_config_id"):
 		snapshot["combat_config_id"] = String(receipt.get("combat_config_id"))
 

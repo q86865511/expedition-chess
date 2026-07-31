@@ -18,6 +18,8 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_ca02b")]([SubResource("Resource_ca02op")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_slice_challenge_affix_02_description"
 id = &"effect.slice_challenge_affix_02"
 display_name_key = &"loc.effect_slice_challenge_affix_02"
 # TUNE: 遭遇規則類軌 A 詞綴（W4-F6 修正，2026-07-25）——敵人開場向前移動 cells 格，縮短初始

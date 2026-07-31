@@ -151,6 +151,15 @@ func pending_reward_snapshot() -> PendingRewardState:
 	var reward_resolution: RewardPendingResolutionState = resolution as RewardPendingResolutionState
 	return reward_resolution.pending_reward.deep_clone() if reward_resolution != null else null
 
+func node_choice_pending_snapshot() -> NodeChoicePendingState:
+	var resolution: ResolutionState = _session.run_snapshot().resolution_state
+	var pending := resolution as NodeChoicePendingState
+	return (
+		pending.deep_clone() as NodeChoicePendingState
+		if pending != null
+		else null
+	)
+
 func can_transition(event: RunEvent) -> bool:
 	if event == null or not event.is_concrete():
 		return false

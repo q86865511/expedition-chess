@@ -29,13 +29,13 @@ func test_unknown_duplicate_and_noncanonical_fields_are_rejected() -> void:
 	var codec := SaveRootFixture.create_codec()
 	var encoded := codec.encode(SaveRootFixture.create_valid_root())
 	var unknown := encoded.json_text.value.replace(
-		"{\"schema_version\":3,",
-		"{\"schema_version\":3,\"unknown\":0,"
+		"{\"schema_version\":4,",
+		"{\"schema_version\":4,\"unknown\":0,"
 	)
 	assert_false(codec.decode_text(unknown).ok)
 	var duplicate := encoded.json_text.value.replace(
-		"{\"schema_version\":3,",
-		"{\"schema_version\":3,\"schema_version\":3,"
+		"{\"schema_version\":4,",
+		"{\"schema_version\":4,\"schema_version\":4,"
 	)
 	assert_false(codec.decode_text(duplicate).ok)
 	var float_number := encoded.json_text.value.replace("\"meta_currency\":0", "\"meta_currency\":0.0")
@@ -70,16 +70,16 @@ func test_schema_zero_to_one_is_idempotent() -> void:
 	var codec := SaveRootFixture.create_codec()
 	var profile_only := SaveRootFixture.create_valid_root()
 	profile_only.run = null
-	var schema_two := codec.encode(profile_only).json_text.value
-	var schema_zero := schema_two.replace("\"schema_version\":3", "\"schema_version\":0")
+	var schema_four := codec.encode(profile_only).json_text.value
+	var schema_zero := schema_four.replace("\"schema_version\":4", "\"schema_version\":0")
 	schema_zero = schema_zero.replace("\"hash_version\":1,", "")
 	var registry := SaveMigrationRegistry.new(codec)
 	var migrated := registry.migrate(schema_zero)
 	assert_true(migrated.ok)
 	assert_true(migrated.source_schema is KnownSourceSchemaVersion)
 	assert_eq((migrated.source_schema as KnownSourceSchemaVersion).value, 0)
-	assert_eq(migrated.target_schema_version, 3)
-	assert_eq(migrated.canonical_json_text.value, schema_two)
+	assert_eq(migrated.target_schema_version, 4)
+	assert_eq(migrated.canonical_json_text.value, schema_four)
 	var second := registry.migrate(migrated.canonical_json_text.value)
 	assert_true(second.ok)
 	assert_eq(second.canonical_json_text.value, migrated.canonical_json_text.value)
@@ -125,7 +125,7 @@ func test_schema_one_idle_map_migrates_generation_atomically_and_is_idempotent()
 	assert_true(migrated.ok)
 	assert_not_null(migrated.root)
 	assert_not_null(migrated.migration_receipt)
-	assert_eq(migrated.root.schema_version, 3)
+	assert_eq(migrated.root.schema_version, 4)
 	assert_eq(migrated.root.content_version, "fixture.2")
 	assert_eq(
 		migrated.root.run.content_snapshot.combat_config_id_value(),
@@ -158,7 +158,7 @@ func test_schema_zero_active_run_uses_ordered_zero_to_one_to_two_steps() -> void
 	assert_true(migrated.ok)
 	assert_not_null(migrated.root)
 	assert_eq((migrated.source_schema as KnownSourceSchemaVersion).value, 0)
-	assert_eq(migrated.target_schema_version, 3)
+	assert_eq(migrated.target_schema_version, 4)
 	assert_eq(generation_port.requests.size(), 1)
 
 func test_receipt_failure_preserves_profile_and_marks_run_incompatible() -> void:
@@ -394,13 +394,18 @@ func _assert_schema_one_incompatible(
 	if not encoded.ok:
 		return
 	var schema_one := encoded.json_text.value.replace(
-		"\"schema_version\":3",
+		"\"schema_version\":4",
 		"\"schema_version\":1"
 	)
 	schema_one = schema_one.replace(
 		",\"combat_config_id\":\"config.combat_default\"",
 		""
 	)
+	schema_one = schema_one.replace(
+		",\"catalog_schema_version\":1,\"content_codec_version\":2",
+		""
+	)
+	schema_one = schema_one.replace(",\"node_choice_receipts\":[]", "")
 	var migrated := SaveMigrationRegistry.new(codec).migrate(schema_one)
 	assert_true(migrated.ok)
 	assert_null(migrated.root)
@@ -416,10 +421,15 @@ func _legacy_idle_text(schema: int) -> String:
 	var encoded := SaveRootFixture.create_codec().encode(SaveRootFixture.create_valid_root())
 	assert_true(encoded.ok)
 	var text := encoded.json_text.value.replace(
-		"\"schema_version\":3",
+		"\"schema_version\":4",
 		"\"schema_version\":%d" % schema
 	)
 	text = text.replace(",\"combat_config_id\":\"config.combat_default\"", "")
+	text = text.replace(
+		",\"catalog_schema_version\":1,\"content_codec_version\":2",
+		""
+	)
+	text = text.replace(",\"node_choice_receipts\":[]", "")
 	text = text.replace("\"config.combat_default\",", "")
 	if schema == 0:
 		text = text.replace("\"hash_version\":1,", "")

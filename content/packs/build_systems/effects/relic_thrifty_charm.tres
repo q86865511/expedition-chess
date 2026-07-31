@@ -16,5 +16,7 @@ script = ExtResource("5_kqixm")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_aji7k")]([SubResource("Resource_rfin1")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_thrifty_charm_description"
 id = &"effect.relic_thrifty_charm"
 display_name_key = &"loc.effect_relic_thrifty_charm"

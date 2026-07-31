@@ -110,6 +110,23 @@ func start_combat_event(sources: BattleSetupSourceBundle) -> StartCombatEvent:
 func resolve_non_combat_node_command() -> ResolveNonCombatNodeCommand:
 	return ResolveNonCombatNodeCommand.new(_catalog)
 
+func try_node_choice_set(choice_set_id: StringName) -> NodeChoiceSetRule:
+	return (
+		_catalog.try_node_choice_set(choice_set_id)
+		if _catalog != null
+		else null
+	)
+
+func commit_node_choice_command(
+	choice_set_id: StringName,
+	choice_id: StringName
+) -> CommitNodeChoiceCommand:
+	return CommitNodeChoiceCommand.new(
+		try_node_choice_set(choice_set_id),
+		choice_id,
+		_catalog
+	)
+
 func choose_reward_command(choice_id: String) -> ChooseRewardCommand:
 	return ChooseRewardCommand.new(choice_id, _catalog)
 

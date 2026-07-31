@@ -8,7 +8,7 @@ var canonical_json_text: OptionalStringValue
 var root: SaveRoot
 var profile: ProfileState
 var run_status: LoadResult.RunStatus
-var migration_receipt: ContentGenerationMigrationReceipt
+var migration_receipt: RefCounted
 var incompatible_content_ids: Array[StringName] = []
 var diagnostics: Array[LoadDiagnostic] = []
 var error: MigrationError
@@ -18,7 +18,7 @@ static func success(
 	p_canonical_json_text: String,
 	p_root: SaveRoot,
 	p_incompatible_content_ids: Array[StringName] = [],
-	p_migration_receipt: ContentGenerationMigrationReceipt = null,
+	p_migration_receipt: RefCounted = null,
 	p_diagnostics: Array[LoadDiagnostic] = []
 ) -> MigrationResult:
 	return MigrationResult.new(
@@ -82,7 +82,7 @@ func _init(
 	p_root: SaveRoot,
 	p_profile: ProfileState,
 	p_run_status: LoadResult.RunStatus,
-	p_migration_receipt: ContentGenerationMigrationReceipt,
+	p_migration_receipt: RefCounted,
 	p_incompatible_content_ids: Array[StringName],
 	p_diagnostics: Array[LoadDiagnostic],
 	p_error: MigrationError
@@ -123,7 +123,11 @@ func _init(
 	root = p_root.deep_clone() if p_root != null else null
 	profile = p_profile.deep_clone() if p_profile != null else null
 	run_status = p_run_status
-	migration_receipt = p_migration_receipt.deep_clone() if p_migration_receipt != null else null
+	migration_receipt = (
+		p_migration_receipt.call("deep_clone")
+		if p_migration_receipt != null and p_migration_receipt.has_method("deep_clone")
+		else null
+	)
 	incompatible_content_ids.assign(p_incompatible_content_ids)
 	for diagnostic: LoadDiagnostic in p_diagnostics:
 		diagnostics.append(diagnostic.deep_clone())

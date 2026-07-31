@@ -38,7 +38,7 @@ claim_scope = &"once_per_node"
 [resource]
 script = ExtResource("7_4rqlh")
 node_type = &"event"
-generator_ref = &"effect.slice_event_gen_00"
+generator_ref = &"choice_set.event_00"
 enter_operations = Array[ExtResource("1_n6at0")]([SubResource("Resource_s8qk8"), SubResource("Resource_tc7gm"), SubResource("Resource_dqiuq"), SubResource("Resource_xavjn")])
 exit_operations = Array[ExtResource("1_n6at0")]([SubResource("Resource_qennv")])
 id = &"map_node.slice_event_00"

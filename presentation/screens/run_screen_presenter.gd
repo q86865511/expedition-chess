@@ -9,6 +9,7 @@ const _ROUTE_INTENTS: Dictionary = {
 		RunPresentationIntent.Kind.ENTER_NODE,
 	],
 	&"RUN_PREPARE": [
+		RunPresentationIntent.Kind.COMMIT_NODE_CHOICE,
 		RunPresentationIntent.Kind.REFRESH_SHOP,
 		RunPresentationIntent.Kind.BUY_UNIT,
 		RunPresentationIntent.Kind.BUY_XP,
@@ -39,6 +40,7 @@ const _CONFIRMATION_ROUTES: Dictionary = {
 	RunPresentationIntent.Kind.REPLACE_RELIC: &"RUN_REWARD",
 	RunPresentationIntent.Kind.ABANDON_RELIC: &"RUN_REWARD",
 	RunPresentationIntent.Kind.ABANDON_BOSS_RETRY: &"RUN_REWARD",
+	RunPresentationIntent.Kind.COMMIT_NODE_CHOICE: &"RUN_PREPARE",
 }
 
 var _route_kind: StringName

@@ -65,8 +65,46 @@ func build(
 				EconomyCatalogError.PAYLOAD_INVALID, &"reward_table", reward_id
 			)
 		reward_tables.append(reward_table)
+	var node_choice_ids: Array[StringName] = []
+	for node_rule: MapNodeRule in map_nodes:
+		if (
+			node_rule.node_kind in [
+				MapNodeState.NodeKind.EVENT,
+				MapNodeState.NodeKind.REST,
+				MapNodeState.NodeKind.TREASURE,
+			]
+			and not node_rule.generator_id.is_empty()
+			and String(node_rule.generator_id).begins_with("choice_set.")
+			and not node_choice_ids.has(node_rule.generator_id)
+		):
+			node_choice_ids.append(node_rule.generator_id)
+	node_choice_ids.sort()
+	var node_choice_sets: Array[NodeChoiceSetRule] = []
+	for choice_set_id: StringName in node_choice_ids:
+		var resolved_choice_set := registry.resolve(
+			ContentRef.new(manifest_digest, choice_set_id)
+		)
+		if not resolved_choice_set.ok:
+			return EconomyCatalogBuildResult.failure(
+				EconomyCatalogError.RESOLVE_FAILED,
+				resolved_choice_set.error.field_path,
+				choice_set_id
+			)
+		var choice_set := _decode_node_choice_set(resolved_choice_set.value)
+		if choice_set == null:
+			return EconomyCatalogBuildResult.failure(
+				EconomyCatalogError.PAYLOAD_INVALID,
+				&"node_choice_set",
+				choice_set_id
+			)
+		node_choice_sets.append(choice_set)
 	return EconomyCatalogBuildResult.success(EconomyExpeditionCatalog.new(
-		manifest_digest, config, shop_units, map_nodes, reward_tables
+		manifest_digest,
+		config,
+		shop_units,
+		map_nodes,
+		reward_tables,
+		node_choice_sets
 	))
 
 func _decode_config(view: ContentDefinitionView) -> EconomyConfigRule:
@@ -100,7 +138,8 @@ func _decode_config(view: ContentDefinitionView) -> EconomyConfigRule:
 
 func _decode_unit(view: ContentDefinitionView, config: EconomyConfigRule) -> ShopUnitRule:
 	if view == null or view.category != &"unit" or view.payload == null \
-		or view.payload.record_type != ContentCategory.UNIT or view.payload.children.size() != 13:
+		or view.payload.record_type != ContentCategory.UNIT \
+		or view.payload.children.size() not in [13, 14]:
 		return null
 	var c := view.payload.children
 	var availability := StringName(c[10].string_value)
@@ -176,6 +215,91 @@ func _decode_reward_condition(value: ContentValue) -> RewardConditionRule:
 		StringName(value.children[0].string_value),
 		value.children[3].children[0].int_value,
 		stable_id
+	)
+
+func _decode_node_choice_set(
+	view: ContentDefinitionView
+) -> NodeChoiceSetRule:
+	if (
+		view == null
+		or view.category != &"node_choice_set"
+		or view.payload == null
+		or view.payload.record_type != ContentCategory.NODE_CHOICE_SET
+		or view.payload.children.size() != 5
+	):
+		return null
+	var node_kind := StringName(view.payload.children[3].string_value)
+	if node_kind not in [&"event", &"rest", &"treasure"]:
+		return null
+	var choices: Array[NodeChoiceRule] = []
+	for choice_value: ContentValue in view.payload.children[4].children:
+		var choice := _decode_node_choice(choice_value)
+		if choice == null:
+			return null
+		choices.append(choice)
+	if choices.size() < 2:
+		return null
+	return NodeChoiceSetRule.new(
+		view.content_id,
+		StringName(view.payload.children[0].string_value),
+		node_kind,
+		choices
+	)
+
+func _decode_node_choice(value: ContentValue) -> NodeChoiceRule:
+	if value == null or value.record_type != 0x2010 or value.children.size() != 10:
+		return null
+	var operations: Array[NodeChoiceOperationRule] = []
+	for operation_value: ContentValue in value.children[6].children:
+		var operation := _decode_node_choice_operation(operation_value)
+		if operation == null:
+			return null
+		operations.append(operation)
+	var reward_ref := StringName("")
+	var reward_optional := value.children[7]
+	if reward_optional.optional_present:
+		if reward_optional.children.size() != 1:
+			return null
+		reward_ref = StringName(reward_optional.children[0].string_value)
+	var outcome_token := StringName(value.children[8].string_value)
+	var outcome: int = {
+		&"apply_and_complete": NodeChoiceRule.OUTCOME_APPLY_AND_COMPLETE,
+		&"open_dismantle_service": NodeChoiceRule.OUTCOME_OPEN_DISMANTLE_SERVICE,
+		&"open_reward_stage": NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE,
+	}.get(outcome_token, 0)
+	if outcome == 0:
+		return null
+	return NodeChoiceRule.new(
+		StringName(value.children[0].string_value),
+		value.children[1].int_value,
+		StringName(value.children[2].string_value),
+		StringName(value.children[3].string_value),
+		StringName(value.children[4].string_value),
+		StringName(value.children[5].string_value),
+		operations,
+		reward_ref,
+		reward_optional.optional_present,
+		outcome,
+		value.children[9].bool_value
+	)
+
+func _decode_node_choice_operation(
+	value: ContentValue
+) -> NodeChoiceOperationRule:
+	if value == null or value.children.size() < 2:
+		return null
+	var operation_kind: int = {
+		0x3101: NodeChoiceOperationRule.Kind.ADD_GOLD,
+		0x3103: NodeChoiceOperationRule.Kind.HEAL_EXPEDITION_HP,
+		0x310a: NodeChoiceOperationRule.Kind.DRAIN_EXPEDITION_HP,
+	}.get(value.record_type, 0)
+	if operation_kind == 0 or value.children.size() != 3:
+		return null
+	return NodeChoiceOperationRule.new(
+		operation_kind,
+		value.children[1].int_value,
+		value.children[0].int_value,
+		StringName(value.children[2].string_value)
 	)
 
 func _pairs(value: ContentValue) -> Array[EconomyValueRule]:

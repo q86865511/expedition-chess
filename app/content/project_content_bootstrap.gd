@@ -3,8 +3,11 @@ extends RefCounted
 
 const BUILD_SYSTEMS_ROOT: String = "res://content/packs/build_systems"
 const VERTICAL_SLICE_ROOT: String = "res://content/packs/vertical_slice"
-const CONTENT_VERSION: String = "0.1.0-presentation-ui"
+const CONTENT_VERSION: String = "0.2.0-content-production"
 const PACK_IDS: Array[StringName] = [&"pack.build_systems", &"pack.vertical_slice"]
+const LOCALIZATION_CATALOG_PATH: String = "res://localization/catalog.v2.csv"
+const LOCALIZATION_CATALOG_SHA256: String = \
+	"5e4eaeca6dea6766b27848cda288855a332c995da12e100b3f1331b8f92cd401"
 const REQUIRED_ASSET_PATHS: Array[String] = [
 	"res://content/packs/build_systems/traits/faction_arcane.tres",
 	"res://content/packs/vertical_slice/units/slice_player_00.tres",
@@ -18,7 +21,27 @@ var _owns_registry_for_result: bool
 func _init(dependency_port: ContentDependencyPort = null) -> void:
 	_dependency_port = dependency_port
 	if _dependency_port == null:
-		_dependency_port = ProjectContentDependencyPort.new(LocalizationCatalog.new())
+		_dependency_port = ProjectContentDependencyPort.new(
+			_load_localization_catalog_or_fallback()
+		)
+
+
+func _load_localization_catalog_or_fallback() -> LocalizationCatalog:
+	var fallback := LocalizationCatalog.new()
+	if not FileAccess.file_exists(LOCALIZATION_CATALOG_PATH):
+		return fallback
+	var file := FileAccess.open(LOCALIZATION_CATALOG_PATH, FileAccess.READ)
+	if file == null:
+		return fallback
+	var bytes := file.get_buffer(file.get_length())
+	file.close()
+	var request := LocalizationCatalogLoadRequest.new(
+		StringName(LOCALIZATION_CATALOG_PATH),
+		bytes,
+		LOCALIZATION_CATALOG_SHA256
+	)
+	var loaded := LocalizationCatalogLoader.new().load_catalog(request)
+	return loaded.catalog if loaded.ok else fallback
 
 
 func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:

@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_utfc6")]([SubResource("Resource_nlxmv")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_relic_shadow_veil_description"
 id = &"effect.relic_shadow_veil"
 display_name_key = &"loc.effect_relic_shadow_veil"

@@ -37,6 +37,21 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 		var entered := result.draft
 		_mark_encounter_discovery(entered)
 		_mark_shop_discovery(entered)
+		var choice_error := _begin_node_choice_if_required(entered)
+		if choice_error != null:
+			var choice_diagnostics: Array[DiagnosticValue] = [
+				DiagnosticValue.from_string(
+					&"source_code", String(choice_error.code)
+				),
+			]
+			return CommandApplyResult.failure(
+				CommandApplyError.new(
+					CommandApplyError.APPLY_REJECTED,
+					choice_error.field_path,
+					null,
+					choice_diagnostics
+				)
+			)
 		return CommandApplyResult.success(entered)
 	var diagnostics: Array[DiagnosticValue] = [
 		DiagnosticValue.from_string(&"source_code", String(result.error.code)),
@@ -44,6 +59,48 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	return CommandApplyResult.failure(CommandApplyError.new(
 		CommandApplyError.APPLY_REJECTED, result.error.field_path, null, diagnostics
 	))
+
+func _begin_node_choice_if_required(
+	entered: RunState
+) -> ExpeditionActionError:
+	if entered == null or entered.current_node_id == null:
+		return null
+	var current: MapNodeState = null
+	for node: MapNodeState in entered.map_state.nodes:
+		if node.node_id == entered.current_node_id.value:
+			current = node
+			break
+	if current == null or current.node_kind not in [
+		MapNodeState.NodeKind.EVENT,
+		MapNodeState.NodeKind.REST,
+		MapNodeState.NodeKind.TREASURE,
+	]:
+		return null
+	var choice_set := _catalog.node_choice_set_for_map_node(current.def_id)
+	if choice_set == null:
+		return ExpeditionActionError.new(
+			ExpeditionActionError.NODE_INVALID,
+			&"map_node.generator_id"
+		)
+	entered.run_phase = RunState.RunPhase.PREPARE
+	var lifecycle_nonce := (
+		"node-choice|%s|%s|%s" % [
+			entered.run_id,
+			current.node_id,
+			entered.content_snapshot.manifest_digest_value(),
+		]
+	).sha256_text().left(16)
+	var begun := CommitNodeChoiceService.new().begin(
+		entered,
+		StringName(current.node_id),
+		choice_set,
+		lifecycle_nonce
+	)
+	if not begun.ok:
+		return begun.error
+	var pending_run := begun.run_state
+	entered.resolution_state = pending_run.resolution_state.deep_clone()
+	return null
 
 ## T09 / S5-AC-012 (design.md §8): 遭遇敵人 -> every enemy unit in the entered
 ## node's encounter preview is discovered in the same copy-validate-save-swap

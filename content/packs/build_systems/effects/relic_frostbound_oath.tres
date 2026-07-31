@@ -16,5 +16,7 @@ script = ExtResource("5_ytef3")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_uttml")]([SubResource("Resource_rne2x")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_frostbound_oath_description"
 id = &"effect.relic_frostbound_oath"
 display_name_key = &"loc.effect_relic_frostbound_oath"

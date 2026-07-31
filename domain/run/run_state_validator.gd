@@ -175,6 +175,9 @@ func validate_run(
 		return _failure(&"run.discovered_content_ids")
 	if not _receipts_sorted(run):
 		return _failure(&"run.ledgers")
+	var node_choice_ledger_result := _validate_node_choice_ledger(run)
+	if not node_choice_ledger_result.ok:
+		return node_choice_ledger_result
 	var reservation_result := _validate_reservation_ledger(run)
 	if not reservation_result.ok:
 		return reservation_result
@@ -497,6 +500,38 @@ func _validate_resolution(
 			if reward.pending_reward.phase == PendingRewardState.Phase.CHOOSING:
 				if reward.pending_reward.selected_choice_id != null or reward.pending_reward.selected_unit_reservation != null:
 					return _failure(&"run.resolution_state.pending_reward.phase")
+		ResolutionState.Kind.NODE_CHOICE_PENDING:
+			if not resolution is NodeChoicePendingState:
+				return _failure(&"run.resolution_state")
+			var choice_pending := resolution as NodeChoicePendingState
+			if (
+				not choice_pending.is_valid()
+				or run.current_node_id == null
+				or StringName(run.current_node_id.value) != choice_pending.node_id
+				or choice_pending.content_version
+					!= run.content_snapshot.content_version_value()
+				or choice_pending.catalog_schema_version
+					!= run.content_snapshot.catalog_schema_version_value()
+				or choice_pending.content_codec_version
+					!= run.content_snapshot.content_codec_version_value()
+				or choice_pending.manifest_digest
+					!= run.content_snapshot.manifest_digest_value()
+			):
+				return _failure(&"run.resolution_state.node_choice_pending")
+		ResolutionState.Kind.NODE_SERVICE_PENDING:
+			if not resolution is NodeServicePendingResolutionState:
+				return _failure(&"run.resolution_state")
+			var service_pending := resolution as NodeServicePendingResolutionState
+			if (
+				service_pending.service_kind not in [&"dismantle", &"reward"]
+				or not _node_key_digest(String(service_pending.node_id))
+				or not _digest(service_pending.choice_receipt_digest)
+				or not _has_node_choice_receipt(
+					run,
+					service_pending.choice_receipt_digest
+				)
+			):
+				return _failure(&"run.resolution_state.node_service_pending")
 		_:
 			return _failure(&"run.resolution_state.kind")
 	return DtoValidationResult.success()
@@ -622,9 +657,17 @@ func _validate_phase_resolution_pair(run: RunState) -> DtoValidationResult:
 	if run.resolution_state == null:
 		return _failure(&"run.resolution_state")
 	match run.run_phase:
-		RunState.RunPhase.MAP, RunState.RunPhase.PREPARE:
+		RunState.RunPhase.MAP:
 			if run.expedition_hp == 0 \
 				or run.resolution_state.kind != ResolutionState.Kind.IDLE:
+				return _failure(&"run.run_phase")
+		RunState.RunPhase.PREPARE:
+			if run.expedition_hp == 0 \
+				or run.resolution_state.kind not in [
+					ResolutionState.Kind.IDLE,
+					ResolutionState.Kind.NODE_CHOICE_PENDING,
+					ResolutionState.Kind.NODE_SERVICE_PENDING,
+				]:
 				return _failure(&"run.run_phase")
 		RunState.RunPhase.COMBAT:
 			if run.resolution_state.kind not in [
@@ -765,6 +808,58 @@ func _receipts_sorted(run: RunState) -> bool:
 		previous = String(receipt.key.digest)
 	return true
 
+
+func _validate_node_choice_ledger(run: RunState) -> DtoValidationResult:
+	var previous_serial := ""
+	var seen_serials: Dictionary = {}
+	var seen_pending: Dictionary = {}
+	for entry: NodeChoiceReceiptLedgerEntry in run.node_choice_receipts:
+		if entry == null or entry.receipt == null or not entry.receipt.is_valid():
+			return _failure(&"run.node_choice_receipts")
+		var receipt := entry.receipt
+		if String(receipt.run_id) != run.run_id:
+			return _failure(&"run.node_choice_receipts.run_id")
+		if (
+			not previous_serial.is_empty()
+			and receipt.transaction_serial <= previous_serial
+		):
+			return _failure(&"run.node_choice_receipts.order")
+		if (
+			seen_serials.has(receipt.transaction_serial)
+			or seen_pending.has(
+				"%s\u0000%s" % [String(receipt.node_id), receipt.pending_digest]
+			)
+		):
+			return _failure(&"run.node_choice_receipts.unique")
+		var matching_transaction := false
+		for transaction: TransactionReceiptState in run.transaction_receipts:
+			if (
+				transaction != null
+				and transaction.key != null
+				and String(transaction.key.digest) == receipt.transaction_digest
+			):
+				matching_transaction = true
+				break
+		if not matching_transaction:
+			return _failure(&"run.node_choice_receipts.transaction_digest")
+		previous_serial = receipt.transaction_serial
+		seen_serials[receipt.transaction_serial] = true
+		seen_pending[
+			"%s\u0000%s" % [String(receipt.node_id), receipt.pending_digest]
+		] = true
+	return DtoValidationResult.success()
+
+
+func _has_node_choice_receipt(run: RunState, receipt_digest: String) -> bool:
+	for entry: NodeChoiceReceiptLedgerEntry in run.node_choice_receipts:
+		if (
+			entry != null
+			and entry.receipt != null
+			and entry.receipt.receipt_digest == receipt_digest
+		):
+			return true
+	return false
+
 func _map_has_cycle(node_ids: Array[String], edges: Array[MapEdgeState]) -> bool:
 	var visit_states: Array[int] = []
 	visit_states.resize(node_ids.size())
@@ -825,6 +920,10 @@ func _is_utc(value: String) -> bool:
 
 func _digest(value: String) -> bool:
 	return _matches(_digest_regex, value)
+
+# runtime node_id 是 RuntimeKeyCodecV1 的 "node_" + 64 lower-hex key digest
+func _node_key_digest(value: String) -> bool:
+	return value.begins_with("node_") and _digest(value.trim_prefix("node_"))
 
 func _runtime_key(value: RuntimeKeyState) -> bool:
 	if value == null:

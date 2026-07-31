@@ -1,0 +1,830 @@
+key,zh_TW,en
+app.retry_route,重新載入畫面,Reload Screen
+camp.back,返回營地,Back to Camp
+camp.challenge_monument,挑戰紀念碑,Challenge Monument
+camp.collection,圖鑑,Collection
+camp.commander_hall,指揮官大廳,Commander Hall
+camp.expedition_gate,遠征之門,Expedition Gate
+camp.forge,工坊,Workshop
+camp.menu,返回主選單,Main Menu
+camp.settings,設定,Settings
+camp.start,開始遠征,Start Expedition
+choice.begin,確認所選事件,Confirm Selected Choice
+choice.cancel,取消選擇,Cancel Choice
+choice.confirm,確認選擇,Confirm Choice
+collection.category.content,內容,Content
+collection.category.glossary,規則辭典,Glossary
+collection.category.recipe,配方,Recipes
+collection.compare.empty,選擇兩個項目進行比較,Select two entries to compare
+collection.compare.format,%s 與 %s,%s vs %s
+collection.compare.ready,請選擇比較項目,Select an entry to compare
+combat.inspect,檢視單位,Inspect Unit
+combat.inspection.none,無,None
+combat.pause,暫停,Pause
+combat.speed,戰鬥速度,Battle Speed
+combat.stat.armor,護甲,Armor
+combat.stat.attack,攻擊,Attack
+combat.stat.attack_range_cells,攻擊距離（格）,Attack Range (cells)
+combat.stat.attack_speed_milli,攻速（千分比）,Attack Speed (milli)
+combat.stat.health,生命,Health
+combat.stat.magic_resist,魔抗,Magic Resist
+combat.stat.max_mana,法力上限,Max Mana
+combat.stat.move_speed_milli,移速（千分比）,Move Speed (milli)
+combat.stat.star,星級,Star
+combat.stat.start_mana,初始法力,Starting Mana
+error.board.bench_empty_slot,備戰區有空位未填,Bench has an empty slot
+error.board.bench_too_large,備戰區超過上限,Bench exceeds capacity
+error.board.board_cell_overlap,棋盤格重疊,Board cells overlap
+error.board.board_out_of_bounds,棋子超出棋盤範圍,Unit is out of board bounds
+error.board.board_over_capacity,戰場超出人口上限,Board exceeds population capacity
+error.board.board_physical_limit,棋盤超出實體格數上限,Board exceeds physical cell limit
+error.board.board_request_invalid,佈局請求無效,Layout request is invalid
+error.board.board_unit_duplicate,同一單位重複佈署,A unit is deployed more than once
+error.board.board_unit_reference_missing,找不到對應單位,Referenced unit could not be found
+error.board.board_unit_unassigned,有單位未分配位置,A unit has not been assigned a position
+error.board.board_wrong_half,單位佈署在錯誤半場,Unit is deployed on the wrong half
+error.board.population_invalid,人口上限數值無效,Population capacity value is invalid
+error.collection_category_not_comparable,此分類不支援比較,This category cannot be compared
+error.collection_entry_not_found,找不到收藏項目,Collection entry not found
+error.presentation.action_not_available,目前無法執行這個操作,That action is not available right now
+error.presentation.app_action,操作失敗,The action failed
+error.presentation.camp_selection_required,請先選擇指揮官與挑戰等級,Select a commander and challenge level first
+error.presentation.exit_already_pending,離開請求已在處理中,An exit request is already pending
+error.presentation.failure,操作失敗,The action failed
+error.presentation.prepare_bench_full,備戰區已滿,The bench is full
+error.presentation.prepare_board_full,戰場沒有可用位置,No board cell is available
+error.presentation.prepare_selection_required,請先選擇有效項目,Select a valid item first
+error.presentation.prepared_run_stale,遠征存檔已過期，請重新載入,The saved run is stale; reload it
+error.presentation.recovery_postcommit,保留遠征已處理，但畫面未能更新,"The retained run was handled, but the screen could not follow"
+error.presentation.render_failed,畫面繪製失敗,Rendering failed
+error.presentation.results_action_in_progress,結算操作進行中,A results action is already running
+error.presentation.results_fallback,結算畫面已退回備援顯示,Results fell back to the recovery screen
+error.presentation.retained_run_exists,已有保留的遠征，請先處理,A saved run is still retained
+error.presentation.route_bind_failed,畫面繫結失敗,The screen could not be bound
+error.presentation.route_commit_failed,畫面切換失敗,The screen could not be switched
+error.presentation.route_prepare_invalid,無法準備下一個畫面,The next screen could not be prepared
+error.presentation.run_incompatible,保留的遠征與目前版本不相容,The retained run is incompatible with this version
+error.presentation.run_recovery,有一個無法載入的遠征待處理,A run that cannot be loaded is waiting
+error.presentation.run_route_fallback,遠征畫面已退回備援顯示,The run screen fell back to the recovery screen
+error.presentation.run_session_unavailable,目前沒有可用的遠征,No expedition session is available
+error.presentation.run_unavailable,遠征資料無法讀取,The run data could not be read
+error.presentation.save_unavailable,存檔無法讀取,The save file could not be read
+error.presentation.scene_bind_failed,場景繫結失敗,The scene could not be bound
+error.presentation.screen_not_active,畫面尚未啟用，請稍候再試,The screen is not active yet
+error.presentation.start_postcommit,遠征已開始，但畫面未能切換,"The run started, but the screen could not follow"
+error.presentation.terminal_handoff,結算交接失敗,The results handoff failed
+error.save.io_failure,存檔寫入失敗,Saving failed
+error.settings.application_failed,設定套用失敗,The settings could not be applied
+error.settings.application_invalid_result,設定套用回應無效,The settings application returned an invalid result
+error.settings.apply_failed,設定套用失敗,The settings could not be applied
+error.settings.draft_invalid,設定草稿無效,The settings draft is invalid
+error.settings.field_out_of_range,設定數值超出範圍,That setting value is out of range
+error.settings.invalid_enum,設定選項無效,That setting option is invalid
+error.settings.port_invalid,設定通道無效,The settings port is invalid
+error.settings.rebuild_failed,設定重建失敗,The settings could not be rebuilt
+error.settings.runtime_missing,設定執行環境未就緒,The settings runtime is not ready
+error.status.post_commit,已生效但畫面未更新（顯示已回退）：,"Applied, but the screen fell back: "
+error.status.pre_commit,操作未生效（尚未變更，可重試）：,"Action did not apply (nothing changed, retry): "
+loc.ability_slice_monster_00,怪物技能：Slice Monster 00,Monster Ability: Slice Monster 00
+loc.ability_slice_monster_00_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_01,怪物技能：Slice Monster 01,Monster Ability: Slice Monster 01
+loc.ability_slice_monster_01_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_02,怪物技能：Slice Monster 02,Monster Ability: Slice Monster 02
+loc.ability_slice_monster_02_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_03,怪物技能：Slice Monster 03,Monster Ability: Slice Monster 03
+loc.ability_slice_monster_03_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_04,怪物技能：Slice Monster 04,Monster Ability: Slice Monster 04
+loc.ability_slice_monster_04_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_05,怪物技能：Slice Monster 05,Monster Ability: Slice Monster 05
+loc.ability_slice_monster_05_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_06,怪物技能：Slice Monster 06,Monster Ability: Slice Monster 06
+loc.ability_slice_monster_06_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_07,怪物技能：Slice Monster 07,Monster Ability: Slice Monster 07
+loc.ability_slice_monster_07_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_08,怪物技能：Slice Monster 08,Monster Ability: Slice Monster 08
+loc.ability_slice_monster_08_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_09,怪物技能：Slice Monster 09,Monster Ability: Slice Monster 09
+loc.ability_slice_monster_09_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_10,怪物技能：Slice Monster 10,Monster Ability: Slice Monster 10
+loc.ability_slice_monster_10_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_11,怪物技能：Slice Monster 11,Monster Ability: Slice Monster 11
+loc.ability_slice_monster_11_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_00,棋士技能：Slice Player 00,Unit Ability: Slice Player 00
+loc.ability_slice_player_00_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_01,棋士技能：Slice Player 01,Unit Ability: Slice Player 01
+loc.ability_slice_player_01_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_02,棋士技能：Slice Player 02,Unit Ability: Slice Player 02
+loc.ability_slice_player_02_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_03,棋士技能：Slice Player 03,Unit Ability: Slice Player 03
+loc.ability_slice_player_03_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_04,棋士技能：Slice Player 04,Unit Ability: Slice Player 04
+loc.ability_slice_player_04_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_05,棋士技能：Slice Player 05,Unit Ability: Slice Player 05
+loc.ability_slice_player_05_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_06,棋士技能：Slice Player 06,Unit Ability: Slice Player 06
+loc.ability_slice_player_06_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_07,棋士技能：Slice Player 07,Unit Ability: Slice Player 07
+loc.ability_slice_player_07_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_08,棋士技能：Slice Player 08,Unit Ability: Slice Player 08
+loc.ability_slice_player_08_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_09,棋士技能：Slice Player 09,Unit Ability: Slice Player 09
+loc.ability_slice_player_09_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_10,棋士技能：Slice Player 10,Unit Ability: Slice Player 10
+loc.ability_slice_player_10_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_11,棋士技能：Slice Player 11,Unit Ability: Slice Player 11
+loc.ability_slice_player_11_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_12,棋士技能：Slice Player 12,Unit Ability: Slice Player 12
+loc.ability_slice_player_12_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_13,棋士技能：Slice Player 13,Unit Ability: Slice Player 13
+loc.ability_slice_player_13_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_14,棋士技能：Slice Player 14,Unit Ability: Slice Player 14
+loc.ability_slice_player_14_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_15,棋士技能：Slice Player 15,Unit Ability: Slice Player 15
+loc.ability_slice_player_15_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_16,棋士技能：Slice Player 16,Unit Ability: Slice Player 16
+loc.ability_slice_player_16_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_17,棋士技能：Slice Player 17,Unit Ability: Slice Player 17
+loc.ability_slice_player_17_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_18,棋士技能：Slice Player 18,Unit Ability: Slice Player 18
+loc.ability_slice_player_18_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_19,棋士技能：Slice Player 19,Unit Ability: Slice Player 19
+loc.ability_slice_player_19_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_20,棋士技能：Slice Player 20,Unit Ability: Slice Player 20
+loc.ability_slice_player_20_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_21,棋士技能：Slice Player 21,Unit Ability: Slice Player 21
+loc.ability_slice_player_21_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_22,棋士技能：Slice Player 22,Unit Ability: Slice Player 22
+loc.ability_slice_player_22_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_23,棋士技能：Slice Player 23,Unit Ability: Slice Player 23
+loc.ability_slice_player_23_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_24,棋士技能：Slice Player 24,Unit Ability: Slice Player 24
+loc.ability_slice_player_24_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_25,棋士技能：Slice Player 25,Unit Ability: Slice Player 25
+loc.ability_slice_player_25_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_26,棋士技能：Slice Player 26,Unit Ability: Slice Player 26
+loc.ability_slice_player_26_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_27,棋士技能：Slice Player 27,Unit Ability: Slice Player 27
+loc.ability_slice_player_27_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_28,棋士技能：Slice Player 28,Unit Ability: Slice Player 28
+loc.ability_slice_player_28_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_29,棋士技能：Slice Player 29,Unit Ability: Slice Player 29
+loc.ability_slice_player_29_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_30,棋士技能：Slice Player 30,Unit Ability: Slice Player 30
+loc.ability_slice_player_30_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_31,棋士技能：Slice Player 31,Unit Ability: Slice Player 31
+loc.ability_slice_player_31_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.audio_camp,營地音樂,Camp Music
+loc.audio_combat,戰鬥音樂,Combat Music
+loc.audio_combat_block,戰鬥格擋,Combat Block
+loc.audio_combat_cast,技能施放,Combat Cast
+loc.audio_combat_crit,戰鬥暴擊,Combat Critical
+loc.audio_combat_death,戰鬥倒下,Combat Death
+loc.audio_combat_explosion,戰鬥爆炸,Combat Explosion
+loc.audio_combat_heal,戰鬥治療,Combat Heal
+loc.audio_combat_hit,戰鬥命中,Combat Hit
+loc.audio_combat_projectile,戰鬥投射物,Combat Projectile
+loc.audio_combat_status,戰鬥狀態,Combat Status
+loc.audio_combat_victory,戰鬥勝利,Combat Victory
+loc.audio_equip,裝備,Equip
+loc.audio_event,事件,Event
+loc.audio_expedition,遠征音樂,Expedition Music
+loc.audio_forge,鍛造,Forge
+loc.audio_menu,主選單音樂,Menu Music
+loc.audio_results,結算音樂,Results Music
+loc.audio_reward,獎勵,Reward
+loc.audio_shop_buy,商店購買,Shop Buy
+loc.audio_shop_reroll,商店重抽,Shop Reroll
+loc.audio_shop_sell,商店出售,Shop Sell
+loc.audio_ui_accept,介面確認,UI Accept
+loc.audio_ui_cancel,介面取消,UI Cancel
+loc.audio_ui_error,介面錯誤,UI Error
+loc.audio_ui_hover,介面游標停留,UI Hover
+loc.choice_event_00_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_00_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_00_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_00_risk_title,承擔風險,Take the Risk
+loc.choice_event_00_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_00_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_00_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_00_safe_title,穩健處理,Safe Approach
+loc.choice_event_01_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_01_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_01_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_01_risk_title,承擔風險,Take the Risk
+loc.choice_event_01_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_01_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_01_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_01_safe_title,穩健處理,Safe Approach
+loc.choice_event_02_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_02_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_02_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_02_risk_title,承擔風險,Take the Risk
+loc.choice_event_02_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_02_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_02_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_02_safe_title,穩健處理,Safe Approach
+loc.choice_event_03_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_03_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_03_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_03_risk_title,承擔風險,Take the Risk
+loc.choice_event_03_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_03_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_03_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_03_safe_title,穩健處理,Safe Approach
+loc.choice_event_04_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_04_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_04_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_04_risk_title,承擔風險,Take the Risk
+loc.choice_event_04_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_04_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_04_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_04_safe_title,穩健處理,Safe Approach
+loc.choice_event_05_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_05_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_05_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_05_risk_title,承擔風險,Take the Risk
+loc.choice_event_05_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_05_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_05_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_05_safe_title,穩健處理,Safe Approach
+loc.choice_event_06_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_06_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_06_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_06_risk_title,承擔風險,Take the Risk
+loc.choice_event_06_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_06_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_06_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_06_safe_title,穩健處理,Safe Approach
+loc.choice_event_07_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_07_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_07_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_07_risk_title,承擔風險,Take the Risk
+loc.choice_event_07_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_07_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_07_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_07_safe_title,穩健處理,Safe Approach
+loc.choice_event_08_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_08_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_08_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_08_risk_title,承擔風險,Take the Risk
+loc.choice_event_08_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_08_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_08_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_08_safe_title,穩健處理,Safe Approach
+loc.choice_event_09_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_09_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_09_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_09_risk_title,承擔風險,Take the Risk
+loc.choice_event_09_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_09_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_09_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_09_safe_title,穩健處理,Safe Approach
+loc.choice_event_10_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_10_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_10_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_10_risk_title,承擔風險,Take the Risk
+loc.choice_event_10_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_10_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_10_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_10_safe_title,穩健處理,Safe Approach
+loc.choice_event_11_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_11_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_11_risk_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_11_risk_title,承擔風險,Take the Risk
+loc.choice_event_11_safe_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
+loc.choice_event_11_safe_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
+loc.choice_event_11_safe_result,事件選擇已套用。,Event choice applied.
+loc.choice_event_11_safe_title,穩健處理,Safe Approach
+loc.choice_rest_dismantle_description,開啟既有拆解服務。,Open the existing dismantle service.
+loc.choice_rest_dismantle_preview,開啟既有拆解服務。,Open the existing dismantle service.
+loc.choice_rest_dismantle_result,選擇已套用。,Choice applied.
+loc.choice_rest_dismantle_title,拆解服務,Dismantle Service
+loc.choice_rest_heal_20_description,恢復 20% 遠征生命。,Restore 20% expedition HP.
+loc.choice_rest_heal_20_preview,恢復 20% 遠征生命。,Restore 20% expedition HP.
+loc.choice_rest_heal_20_result,選擇已套用。,Choice applied.
+loc.choice_rest_heal_20_title,治療 20%,Heal 20%
+loc.choice_set_event_00,事件抉擇 01,Event Choice 01
+loc.choice_set_event_01,事件抉擇 02,Event Choice 02
+loc.choice_set_event_02,事件抉擇 03,Event Choice 03
+loc.choice_set_event_03,事件抉擇 04,Event Choice 04
+loc.choice_set_event_04,事件抉擇 05,Event Choice 05
+loc.choice_set_event_05,事件抉擇 06,Event Choice 06
+loc.choice_set_event_06,事件抉擇 07,Event Choice 07
+loc.choice_set_event_07,事件抉擇 08,Event Choice 08
+loc.choice_set_event_08,事件抉擇 09,Event Choice 09
+loc.choice_set_event_09,事件抉擇 10,Event Choice 10
+loc.choice_set_event_10,事件抉擇 11,Event Choice 11
+loc.choice_set_event_11,事件抉擇 12,Event Choice 12
+loc.choice_set_rest,休息點服務,Rest Services
+loc.choice_set_treasure,寶藏抉擇,Treasure Choice
+loc.choice_treasure_gold_description,立即取得固定金幣。,Gain a fixed amount of gold immediately.
+loc.choice_treasure_gold_preview,立即取得固定金幣。,Gain a fixed amount of gold immediately.
+loc.choice_treasure_gold_result,選擇已套用。,Choice applied.
+loc.choice_treasure_gold_title,金幣寶箱,Gold Cache
+loc.choice_treasure_relic_description,進入遺物獎勵流程。,Open the relic reward flow.
+loc.choice_treasure_relic_preview,進入遺物獎勵流程。,Open the relic reward flow.
+loc.choice_treasure_relic_result,選擇已套用。,Choice applied.
+loc.choice_treasure_relic_title,遺物寶箱,Relic Cache
+loc.choice_treasure_standard_description,進入標準獎勵流程。,Open the standard reward flow.
+loc.choice_treasure_standard_preview,進入標準獎勵流程。,Open the standard reward flow.
+loc.choice_treasure_standard_result,選擇已套用。,Choice applied.
+loc.choice_treasure_standard_title,標準寶箱,Standard Cache
+loc.commander_slice_c0,指揮官 1,Commander 1
+loc.commander_slice_c1,指揮官 2,Commander 2
+loc.commander_slice_c2,指揮官 3,Commander 3
+loc.config_combat_default,預設戰鬥規則,Default Combat Rules
+loc.consumable_dismantle_kit,拆卸工具,Dismantle Kit
+loc.economy_slice_default,預設遠征經濟,Default Expedition Economy
+loc.effect_equip_arcane,裝備效果：Arcane,Equipment Effect: Arcane
+loc.effect_equip_arcane_description,由裝備提供的戰鬥效果。,Battle effect granted by equipment.
+loc.effect_equip_ember,裝備效果：Ember,Equipment Effect: Ember
+loc.effect_equip_ember_description,由裝備提供的戰鬥效果。,Battle effect granted by equipment.
+loc.effect_equip_frost,裝備效果：Frost,Equipment Effect: Frost
+loc.effect_equip_frost_description,由裝備提供的戰鬥效果。,Battle effect granted by equipment.
+loc.effect_equip_iron,裝備效果：Iron,Equipment Effect: Iron
+loc.effect_equip_iron_description,由裝備提供的戰鬥效果。,Battle effect granted by equipment.
+loc.effect_equip_shadow,裝備效果：Shadow,Equipment Effect: Shadow
+loc.effect_equip_shadow_description,由裝備提供的戰鬥效果。,Battle effect granted by equipment.
+loc.effect_equip_verdant,裝備效果：Verdant,Equipment Effect: Verdant
+loc.effect_equip_verdant_description,由裝備提供的戰鬥效果。,Battle effect granted by equipment.
+loc.effect_relic_arbiter_seal,遺物效果：Arbiter Seal,Relic Effect: Arbiter Seal
+loc.effect_relic_arbiter_seal_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_ember_ward,遺物效果：Ember Ward,Relic Effect: Ember Ward
+loc.effect_relic_ember_ward_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_emberheart_pact,遺物效果：Emberheart Pact,Relic Effect: Emberheart Pact
+loc.effect_relic_emberheart_pact_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_frost_edge,遺物效果：Frost Edge,Relic Effect: Frost Edge
+loc.effect_relic_frost_edge_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_frostbound_oath,遺物效果：Frostbound Oath,Relic Effect: Frostbound Oath
+loc.effect_relic_frostbound_oath_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_golden_ledger,遺物效果：Golden Ledger,Relic Effect: Golden Ledger
+loc.effect_relic_golden_ledger_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_interest_token,遺物效果：Interest Token,Relic Effect: Interest Token
+loc.effect_relic_interest_token_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_iron_will,遺物效果：Iron Will,Relic Effect: Iron Will
+loc.effect_relic_iron_will_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_merchant_seal,遺物效果：Merchant Seal,Relic Effect: Merchant Seal
+loc.effect_relic_merchant_seal_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_pathfinder_boots,遺物效果：Pathfinder Boots,Relic Effect: Pathfinder Boots
+loc.effect_relic_pathfinder_boots_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_scout_lantern,遺物效果：Scout Lantern,Relic Effect: Scout Lantern
+loc.effect_relic_scout_lantern_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_shadow_veil,遺物效果：Shadow Veil,Relic Effect: Shadow Veil
+loc.effect_relic_shadow_veil_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_thrifty_charm,遺物效果：Thrifty Charm,Relic Effect: Thrifty Charm
+loc.effect_relic_thrifty_charm_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_tide_compass,遺物效果：Tide Compass,Relic Effect: Tide Compass
+loc.effect_relic_tide_compass_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_verdant_accord,遺物效果：Verdant Accord,Relic Effect: Verdant Accord
+loc.effect_relic_verdant_accord_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_relic_wanderer_map,遺物效果：Wanderer Map,Relic Effect: Wanderer Map
+loc.effect_relic_wanderer_map_description,由遺物提供的正式效果。,Formal effect granted by this relic.
+loc.effect_slice_affix_00,菁英詞綴 01,Elite Affix 01
+loc.effect_slice_affix_00_description,戰鬥開始時套用的菁英效果。,Elite effect applied at battle start.
+loc.effect_slice_affix_01,菁英詞綴 02,Elite Affix 02
+loc.effect_slice_affix_01_description,戰鬥開始時套用的菁英效果。,Elite effect applied at battle start.
+loc.effect_slice_affix_02,菁英詞綴 03,Elite Affix 03
+loc.effect_slice_affix_02_description,戰鬥開始時套用的菁英效果。,Elite effect applied at battle start.
+loc.effect_slice_affix_03,菁英詞綴 04,Elite Affix 04
+loc.effect_slice_affix_03_description,戰鬥開始時套用的菁英效果。,Elite effect applied at battle start.
+loc.effect_slice_affix_04,菁英詞綴 05,Elite Affix 05
+loc.effect_slice_affix_04_description,戰鬥開始時套用的菁英效果。,Elite effect applied at battle start.
+loc.effect_slice_affix_05,菁英詞綴 06,Elite Affix 06
+loc.effect_slice_affix_05_description,戰鬥開始時套用的菁英效果。,Elite effect applied at battle start.
+loc.effect_slice_challenge_affix_00,挑戰詞綴 01,Challenge Affix 01
+loc.effect_slice_challenge_affix_00_description,挑戰等級提供的遠征規則效果。,Expedition rule effect supplied by challenge level.
+loc.effect_slice_challenge_affix_01,挑戰詞綴 02,Challenge Affix 02
+loc.effect_slice_challenge_affix_01_description,挑戰等級提供的遠征規則效果。,Expedition rule effect supplied by challenge level.
+loc.effect_slice_challenge_affix_02,挑戰詞綴 03,Challenge Affix 03
+loc.effect_slice_challenge_affix_02_description,挑戰等級提供的遠征規則效果。,Expedition rule effect supplied by challenge level.
+loc.effect_slice_challenge_affix_03,挑戰詞綴 04,Challenge Affix 04
+loc.effect_slice_challenge_affix_03_description,挑戰等級提供的遠征規則效果。,Expedition rule effect supplied by challenge level.
+loc.effect_slice_challenge_affix_04,挑戰詞綴 05,Challenge Affix 05
+loc.effect_slice_challenge_affix_04_description,挑戰等級提供的遠征規則效果。,Expedition rule effect supplied by challenge level.
+loc.effect_slice_commander_passive,指揮官被動 01,Commander Passive 01
+loc.effect_slice_commander_passive_01,指揮官被動 02,Commander Passive 02
+loc.effect_slice_commander_passive_01_description,指揮官的固定被動效果。,Commander's persistent passive effect.
+loc.effect_slice_commander_passive_02,指揮官被動 03,Commander Passive 03
+loc.effect_slice_commander_passive_02_description,指揮官的固定被動效果。,Commander's persistent passive effect.
+loc.effect_slice_commander_passive_description,指揮官的固定被動效果。,Commander's persistent passive effect.
+loc.effect_slice_event_gen_00,事件效果 01,Event Effect 01
+loc.effect_slice_event_gen_00_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_01,事件效果 02,Event Effect 02
+loc.effect_slice_event_gen_01_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_02,事件效果 03,Event Effect 03
+loc.effect_slice_event_gen_02_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_03,事件效果 04,Event Effect 04
+loc.effect_slice_event_gen_03_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_04,事件效果 05,Event Effect 05
+loc.effect_slice_event_gen_04_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_05,事件效果 06,Event Effect 06
+loc.effect_slice_event_gen_05_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_06,事件效果 07,Event Effect 07
+loc.effect_slice_event_gen_06_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_07,事件效果 08,Event Effect 08
+loc.effect_slice_event_gen_07_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_08,事件效果 09,Event Effect 09
+loc.effect_slice_event_gen_08_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_09,事件效果 10,Event Effect 10
+loc.effect_slice_event_gen_09_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_10,事件效果 11,Event Effect 11
+loc.effect_slice_event_gen_10_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_event_gen_11,事件效果 12,Event Effect 12
+loc.effect_slice_event_gen_11_description,事件節點的既有進入效果。,Existing event-node entry effect.
+loc.effect_slice_monster_00_primary,Slice Monster 00的主要技能效果,Slice Monster 00 Primary Ability Effect
+loc.effect_slice_monster_00_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_01_primary,Slice Monster 01的主要技能效果,Slice Monster 01 Primary Ability Effect
+loc.effect_slice_monster_01_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_02_primary,Slice Monster 02的主要技能效果,Slice Monster 02 Primary Ability Effect
+loc.effect_slice_monster_02_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_03_primary,Slice Monster 03的主要技能效果,Slice Monster 03 Primary Ability Effect
+loc.effect_slice_monster_03_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_04_primary,Slice Monster 04的主要技能效果,Slice Monster 04 Primary Ability Effect
+loc.effect_slice_monster_04_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_05_primary,Slice Monster 05的主要技能效果,Slice Monster 05 Primary Ability Effect
+loc.effect_slice_monster_05_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_06_primary,Slice Monster 06的主要技能效果,Slice Monster 06 Primary Ability Effect
+loc.effect_slice_monster_06_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_07_primary,Slice Monster 07的主要技能效果,Slice Monster 07 Primary Ability Effect
+loc.effect_slice_monster_07_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_08_primary,Slice Monster 08的主要技能效果,Slice Monster 08 Primary Ability Effect
+loc.effect_slice_monster_08_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_09_primary,Slice Monster 09的主要技能效果,Slice Monster 09 Primary Ability Effect
+loc.effect_slice_monster_09_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_10_primary,Slice Monster 10的主要技能效果,Slice Monster 10 Primary Ability Effect
+loc.effect_slice_monster_10_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_monster_11_primary,Slice Monster 11的主要技能效果,Slice Monster 11 Primary Ability Effect
+loc.effect_slice_monster_11_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_00_primary,Slice Player 00的主要技能效果,Slice Player 00 Primary Ability Effect
+loc.effect_slice_player_00_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_01_primary,Slice Player 01的主要技能效果,Slice Player 01 Primary Ability Effect
+loc.effect_slice_player_01_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_02_primary,Slice Player 02的主要技能效果,Slice Player 02 Primary Ability Effect
+loc.effect_slice_player_02_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_03_primary,Slice Player 03的主要技能效果,Slice Player 03 Primary Ability Effect
+loc.effect_slice_player_03_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_04_primary,Slice Player 04的主要技能效果,Slice Player 04 Primary Ability Effect
+loc.effect_slice_player_04_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_05_primary,Slice Player 05的主要技能效果,Slice Player 05 Primary Ability Effect
+loc.effect_slice_player_05_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_06_primary,Slice Player 06的主要技能效果,Slice Player 06 Primary Ability Effect
+loc.effect_slice_player_06_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_07_primary,Slice Player 07的主要技能效果,Slice Player 07 Primary Ability Effect
+loc.effect_slice_player_07_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_08_primary,Slice Player 08的主要技能效果,Slice Player 08 Primary Ability Effect
+loc.effect_slice_player_08_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_09_primary,Slice Player 09的主要技能效果,Slice Player 09 Primary Ability Effect
+loc.effect_slice_player_09_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_10_primary,Slice Player 10的主要技能效果,Slice Player 10 Primary Ability Effect
+loc.effect_slice_player_10_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_11_primary,Slice Player 11的主要技能效果,Slice Player 11 Primary Ability Effect
+loc.effect_slice_player_11_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_12_primary,Slice Player 12的主要技能效果,Slice Player 12 Primary Ability Effect
+loc.effect_slice_player_12_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_13_primary,Slice Player 13的主要技能效果,Slice Player 13 Primary Ability Effect
+loc.effect_slice_player_13_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_14_primary,Slice Player 14的主要技能效果,Slice Player 14 Primary Ability Effect
+loc.effect_slice_player_14_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_15_primary,Slice Player 15的主要技能效果,Slice Player 15 Primary Ability Effect
+loc.effect_slice_player_15_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_16_primary,Slice Player 16的主要技能效果,Slice Player 16 Primary Ability Effect
+loc.effect_slice_player_16_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_17_primary,Slice Player 17的主要技能效果,Slice Player 17 Primary Ability Effect
+loc.effect_slice_player_17_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_18_primary,Slice Player 18的主要技能效果,Slice Player 18 Primary Ability Effect
+loc.effect_slice_player_18_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_19_primary,Slice Player 19的主要技能效果,Slice Player 19 Primary Ability Effect
+loc.effect_slice_player_19_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_20_primary,Slice Player 20的主要技能效果,Slice Player 20 Primary Ability Effect
+loc.effect_slice_player_20_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_21_primary,Slice Player 21的主要技能效果,Slice Player 21 Primary Ability Effect
+loc.effect_slice_player_21_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_22_primary,Slice Player 22的主要技能效果,Slice Player 22 Primary Ability Effect
+loc.effect_slice_player_22_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_23_primary,Slice Player 23的主要技能效果,Slice Player 23 Primary Ability Effect
+loc.effect_slice_player_23_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_24_primary,Slice Player 24的主要技能效果,Slice Player 24 Primary Ability Effect
+loc.effect_slice_player_24_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_25_primary,Slice Player 25的主要技能效果,Slice Player 25 Primary Ability Effect
+loc.effect_slice_player_25_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_26_primary,Slice Player 26的主要技能效果,Slice Player 26 Primary Ability Effect
+loc.effect_slice_player_26_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_27_primary,Slice Player 27的主要技能效果,Slice Player 27 Primary Ability Effect
+loc.effect_slice_player_27_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_28_primary,Slice Player 28的主要技能效果,Slice Player 28 Primary Ability Effect
+loc.effect_slice_player_28_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_29_primary,Slice Player 29的主要技能效果,Slice Player 29 Primary Ability Effect
+loc.effect_slice_player_29_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_30_primary,Slice Player 30的主要技能效果,Slice Player 30 Primary Ability Effect
+loc.effect_slice_player_30_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_slice_player_31_primary,Slice Player 31的主要技能效果,Slice Player 31 Primary Ability Effect
+loc.effect_slice_player_31_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
+loc.effect_trait_faction_arcane,陣營效果：Arcane,Faction Effect: Arcane
+loc.effect_trait_faction_arcane_description,陣營「Arcane」的正式階段效果。,Formal tier effect for faction Arcane.
+loc.effect_trait_faction_ember,陣營效果：Ember,Faction Effect: Ember
+loc.effect_trait_faction_ember_description,陣營「Ember」的正式階段效果。,Formal tier effect for faction Ember.
+loc.effect_trait_faction_frost,陣營效果：Frost,Faction Effect: Frost
+loc.effect_trait_faction_frost_description,陣營「Frost」的正式階段效果。,Formal tier effect for faction Frost.
+loc.effect_trait_faction_iron,陣營效果：Iron,Faction Effect: Iron
+loc.effect_trait_faction_iron_description,陣營「Iron」的正式階段效果。,Formal tier effect for faction Iron.
+loc.effect_trait_faction_shadow,陣營效果：Shadow,Faction Effect: Shadow
+loc.effect_trait_faction_shadow_description,陣營「Shadow」的正式階段效果。,Formal tier effect for faction Shadow.
+loc.effect_trait_faction_verdant,陣營效果：Verdant,Faction Effect: Verdant
+loc.effect_trait_faction_verdant_description,陣營「Verdant」的正式階段效果。,Formal tier effect for faction Verdant.
+loc.effect_trait_role_marksman,職業效果：Marksman,Role Effect: Marksman
+loc.effect_trait_role_marksman_description,職業「Marksman」的正式階段效果。,Formal tier effect for role Marksman.
+loc.effect_trait_role_mystic,職業效果：Mystic,Role Effect: Mystic
+loc.effect_trait_role_mystic_description,職業「Mystic」的正式階段效果。,Formal tier effect for role Mystic.
+loc.effect_trait_role_sentinel,職業效果：Sentinel,Role Effect: Sentinel
+loc.effect_trait_role_sentinel_description,職業「Sentinel」的正式階段效果。,Formal tier effect for role Sentinel.
+loc.effect_trait_role_trickster,職業效果：Trickster,Role Effect: Trickster
+loc.effect_trait_role_trickster_description,職業「Trickster」的正式階段效果。,Formal tier effect for role Trickster.
+loc.effect_trait_role_vanguard,職業效果：Vanguard,Role Effect: Vanguard
+loc.effect_trait_role_vanguard_description,職業「Vanguard」的正式階段效果。,Formal tier effect for role Vanguard.
+loc.effect_trait_role_warden,職業效果：Warden,Role Effect: Warden
+loc.effect_trait_role_warden_description,職業「Warden」的正式階段效果。,Formal tier effect for role Warden.
+loc.encounter_slice_boss_0,第一幕首領,Act I Boss
+loc.encounter_slice_boss_1,第二幕首領,Act II Boss
+loc.encounter_slice_boss_2,第三幕首領,Act III Boss
+loc.encounter_slice_elite,菁英遭遇,Elite Encounter
+loc.encounter_slice_normal,一般遭遇,Normal Encounter
+loc.equipment_arcane_arcane,裝備：Arcane Arcane,Equipment: Arcane Arcane
+loc.equipment_arcane_ember,裝備：Arcane Ember,Equipment: Arcane Ember
+loc.equipment_arcane_frost,裝備：Arcane Frost,Equipment: Arcane Frost
+loc.equipment_arcane_iron,裝備：Arcane Iron,Equipment: Arcane Iron
+loc.equipment_arcane_shadow,裝備：Arcane Shadow,Equipment: Arcane Shadow
+loc.equipment_arcane_verdant,裝備：Arcane Verdant,Equipment: Arcane Verdant
+loc.equipment_ember_ember,裝備：Ember Ember,Equipment: Ember Ember
+loc.equipment_ember_frost,裝備：Ember Frost,Equipment: Ember Frost
+loc.equipment_ember_iron,裝備：Ember Iron,Equipment: Ember Iron
+loc.equipment_ember_shadow,裝備：Ember Shadow,Equipment: Ember Shadow
+loc.equipment_ember_verdant,裝備：Ember Verdant,Equipment: Ember Verdant
+loc.equipment_frost_frost,裝備：Frost Frost,Equipment: Frost Frost
+loc.equipment_frost_iron,裝備：Frost Iron,Equipment: Frost Iron
+loc.equipment_frost_shadow,裝備：Frost Shadow,Equipment: Frost Shadow
+loc.equipment_frost_verdant,裝備：Frost Verdant,Equipment: Frost Verdant
+loc.equipment_iron_iron,裝備：Iron Iron,Equipment: Iron Iron
+loc.equipment_iron_shadow,裝備：Iron Shadow,Equipment: Iron Shadow
+loc.equipment_iron_verdant,裝備：Iron Verdant,Equipment: Iron Verdant
+loc.equipment_shadow_shadow,裝備：Shadow Shadow,Equipment: Shadow Shadow
+loc.equipment_shadow_verdant,裝備：Shadow Verdant,Equipment: Shadow Verdant
+loc.equipment_verdant_verdant,裝備：Verdant Verdant,Equipment: Verdant Verdant
+loc.item_component_arcane_dust,零件：Arcane Dust,Component: Arcane Dust
+loc.item_component_ember_shard,零件：Ember Shard,Component: Ember Shard
+loc.item_component_frost_core,零件：Frost Core,Component: Frost Core
+loc.item_component_iron_plate,零件：Iron Plate,Component: Iron Plate
+loc.item_component_shadow_thread,零件：Shadow Thread,Component: Shadow Thread
+loc.item_component_verdant_leaf,零件：Verdant Leaf,Component: Verdant Leaf
+loc.map_node_slice_boss,首領節點,Boss Node
+loc.map_node_slice_elite,菁英節點,Elite Node
+loc.map_node_slice_event_00,事件節點 01,Event Node 01
+loc.map_node_slice_event_01,事件節點 02,Event Node 02
+loc.map_node_slice_event_02,事件節點 03,Event Node 03
+loc.map_node_slice_event_03,事件節點 04,Event Node 04
+loc.map_node_slice_event_04,事件節點 05,Event Node 05
+loc.map_node_slice_event_05,事件節點 06,Event Node 06
+loc.map_node_slice_event_06,事件節點 07,Event Node 07
+loc.map_node_slice_event_07,事件節點 08,Event Node 08
+loc.map_node_slice_event_08,事件節點 09,Event Node 09
+loc.map_node_slice_event_09,事件節點 10,Event Node 10
+loc.map_node_slice_event_10,事件節點 11,Event Node 11
+loc.map_node_slice_event_11,事件節點 12,Event Node 12
+loc.map_node_slice_merchant,商人節點,Merchant Node
+loc.map_node_slice_normal,一般戰鬥,Battle Node
+loc.map_node_slice_rest,休息節點,Rest Node
+loc.map_node_slice_treasure,寶藏節點,Treasure Node
+loc.meta_reward_table_slice_default,預設局外獎勵,Default Meta Rewards
+loc.presentation_slice_monster_00,Slice Monster 00的正式呈現,Slice Monster 00 Presentation
+loc.presentation_slice_monster_01,Slice Monster 01的正式呈現,Slice Monster 01 Presentation
+loc.presentation_slice_monster_02,Slice Monster 02的正式呈現,Slice Monster 02 Presentation
+loc.presentation_slice_monster_03,Slice Monster 03的正式呈現,Slice Monster 03 Presentation
+loc.presentation_slice_monster_04,Slice Monster 04的正式呈現,Slice Monster 04 Presentation
+loc.presentation_slice_monster_05,Slice Monster 05的正式呈現,Slice Monster 05 Presentation
+loc.presentation_slice_monster_06,Slice Monster 06的正式呈現,Slice Monster 06 Presentation
+loc.presentation_slice_monster_07,Slice Monster 07的正式呈現,Slice Monster 07 Presentation
+loc.presentation_slice_monster_08,Slice Monster 08的正式呈現,Slice Monster 08 Presentation
+loc.presentation_slice_monster_09,Slice Monster 09的正式呈現,Slice Monster 09 Presentation
+loc.presentation_slice_monster_10,Slice Monster 10的正式呈現,Slice Monster 10 Presentation
+loc.presentation_slice_monster_11,Slice Monster 11的正式呈現,Slice Monster 11 Presentation
+loc.presentation_slice_player_00,Slice Player 00的正式呈現,Slice Player 00 Presentation
+loc.presentation_slice_player_01,Slice Player 01的正式呈現,Slice Player 01 Presentation
+loc.presentation_slice_player_02,Slice Player 02的正式呈現,Slice Player 02 Presentation
+loc.presentation_slice_player_03,Slice Player 03的正式呈現,Slice Player 03 Presentation
+loc.presentation_slice_player_04,Slice Player 04的正式呈現,Slice Player 04 Presentation
+loc.presentation_slice_player_05,Slice Player 05的正式呈現,Slice Player 05 Presentation
+loc.presentation_slice_player_06,Slice Player 06的正式呈現,Slice Player 06 Presentation
+loc.presentation_slice_player_07,Slice Player 07的正式呈現,Slice Player 07 Presentation
+loc.presentation_slice_player_08,Slice Player 08的正式呈現,Slice Player 08 Presentation
+loc.presentation_slice_player_09,Slice Player 09的正式呈現,Slice Player 09 Presentation
+loc.presentation_slice_player_10,Slice Player 10的正式呈現,Slice Player 10 Presentation
+loc.presentation_slice_player_11,Slice Player 11的正式呈現,Slice Player 11 Presentation
+loc.presentation_slice_player_12,Slice Player 12的正式呈現,Slice Player 12 Presentation
+loc.presentation_slice_player_13,Slice Player 13的正式呈現,Slice Player 13 Presentation
+loc.presentation_slice_player_14,Slice Player 14的正式呈現,Slice Player 14 Presentation
+loc.presentation_slice_player_15,Slice Player 15的正式呈現,Slice Player 15 Presentation
+loc.presentation_slice_player_16,Slice Player 16的正式呈現,Slice Player 16 Presentation
+loc.presentation_slice_player_17,Slice Player 17的正式呈現,Slice Player 17 Presentation
+loc.presentation_slice_player_18,Slice Player 18的正式呈現,Slice Player 18 Presentation
+loc.presentation_slice_player_19,Slice Player 19的正式呈現,Slice Player 19 Presentation
+loc.presentation_slice_player_20,Slice Player 20的正式呈現,Slice Player 20 Presentation
+loc.presentation_slice_player_21,Slice Player 21的正式呈現,Slice Player 21 Presentation
+loc.presentation_slice_player_22,Slice Player 22的正式呈現,Slice Player 22 Presentation
+loc.presentation_slice_player_23,Slice Player 23的正式呈現,Slice Player 23 Presentation
+loc.presentation_slice_player_24,Slice Player 24的正式呈現,Slice Player 24 Presentation
+loc.presentation_slice_player_25,Slice Player 25的正式呈現,Slice Player 25 Presentation
+loc.presentation_slice_player_26,Slice Player 26的正式呈現,Slice Player 26 Presentation
+loc.presentation_slice_player_27,Slice Player 27的正式呈現,Slice Player 27 Presentation
+loc.presentation_slice_player_28,Slice Player 28的正式呈現,Slice Player 28 Presentation
+loc.presentation_slice_player_29,Slice Player 29的正式呈現,Slice Player 29 Presentation
+loc.presentation_slice_player_30,Slice Player 30的正式呈現,Slice Player 30 Presentation
+loc.presentation_slice_player_31,Slice Player 31的正式呈現,Slice Player 31 Presentation
+loc.relic_arbiter_seal,遺物：Arbiter Seal,Relic: Arbiter Seal
+loc.relic_ember_ward,遺物：Ember Ward,Relic: Ember Ward
+loc.relic_emberheart_pact,遺物：Emberheart Pact,Relic: Emberheart Pact
+loc.relic_frost_edge,遺物：Frost Edge,Relic: Frost Edge
+loc.relic_frostbound_oath,遺物：Frostbound Oath,Relic: Frostbound Oath
+loc.relic_golden_ledger,遺物：Golden Ledger,Relic: Golden Ledger
+loc.relic_interest_token,遺物：Interest Token,Relic: Interest Token
+loc.relic_iron_will,遺物：Iron Will,Relic: Iron Will
+loc.relic_merchant_seal,遺物：Merchant Seal,Relic: Merchant Seal
+loc.relic_pathfinder_boots,遺物：Pathfinder Boots,Relic: Pathfinder Boots
+loc.relic_scout_lantern,遺物：Scout Lantern,Relic: Scout Lantern
+loc.relic_shadow_veil,遺物：Shadow Veil,Relic: Shadow Veil
+loc.relic_thrifty_charm,遺物：Thrifty Charm,Relic: Thrifty Charm
+loc.relic_tide_compass,遺物：Tide Compass,Relic: Tide Compass
+loc.relic_verdant_accord,遺物：Verdant Accord,Relic: Verdant Accord
+loc.relic_wanderer_map,遺物：Wanderer Map,Relic: Wanderer Map
+loc.reward_table_slice_relic,遺物獎勵,Relic Rewards
+loc.reward_table_slice_standard,標準獎勵,Standard Rewards
+loc.trait_faction_arcane,陣營：Arcane,Faction: Arcane
+loc.trait_faction_arcane_description,啟用陣營「Arcane」的階段效果。,Activates tier effects for faction Arcane.
+loc.trait_faction_ember,陣營：Ember,Faction: Ember
+loc.trait_faction_ember_description,啟用陣營「Ember」的階段效果。,Activates tier effects for faction Ember.
+loc.trait_faction_frost,陣營：Frost,Faction: Frost
+loc.trait_faction_frost_description,啟用陣營「Frost」的階段效果。,Activates tier effects for faction Frost.
+loc.trait_faction_iron,陣營：Iron,Faction: Iron
+loc.trait_faction_iron_description,啟用陣營「Iron」的階段效果。,Activates tier effects for faction Iron.
+loc.trait_faction_shadow,陣營：Shadow,Faction: Shadow
+loc.trait_faction_shadow_description,啟用陣營「Shadow」的階段效果。,Activates tier effects for faction Shadow.
+loc.trait_faction_verdant,陣營：Verdant,Faction: Verdant
+loc.trait_faction_verdant_description,啟用陣營「Verdant」的階段效果。,Activates tier effects for faction Verdant.
+loc.trait_role_marksman,職業：Marksman,Role: Marksman
+loc.trait_role_marksman_description,啟用職業「Marksman」的階段效果。,Activates tier effects for role Marksman.
+loc.trait_role_mystic,職業：Mystic,Role: Mystic
+loc.trait_role_mystic_description,啟用職業「Mystic」的階段效果。,Activates tier effects for role Mystic.
+loc.trait_role_sentinel,職業：Sentinel,Role: Sentinel
+loc.trait_role_sentinel_description,啟用職業「Sentinel」的階段效果。,Activates tier effects for role Sentinel.
+loc.trait_role_trickster,職業：Trickster,Role: Trickster
+loc.trait_role_trickster_description,啟用職業「Trickster」的階段效果。,Activates tier effects for role Trickster.
+loc.trait_role_vanguard,職業：Vanguard,Role: Vanguard
+loc.trait_role_vanguard_description,啟用職業「Vanguard」的階段效果。,Activates tier effects for role Vanguard.
+loc.trait_role_warden,職業：Warden,Role: Warden
+loc.trait_role_warden_description,啟用職業「Warden」的階段效果。,Activates tier effects for role Warden.
+loc.unit_slice_monster_00,怪物 01,Monster 01
+loc.unit_slice_monster_01,怪物 02,Monster 02
+loc.unit_slice_monster_02,怪物 03,Monster 03
+loc.unit_slice_monster_03,怪物 04,Monster 04
+loc.unit_slice_monster_04,怪物 05,Monster 05
+loc.unit_slice_monster_05,怪物 06,Monster 06
+loc.unit_slice_monster_06,怪物 07,Monster 07
+loc.unit_slice_monster_07,怪物 08,Monster 08
+loc.unit_slice_monster_08,怪物 09,Monster 09
+loc.unit_slice_monster_09,怪物 10,Monster 10
+loc.unit_slice_monster_10,怪物 11,Monster 11
+loc.unit_slice_monster_11,怪物 12,Monster 12
+loc.unit_slice_player_00,遠征棋士 01,Expedition Unit 01
+loc.unit_slice_player_01,遠征棋士 02,Expedition Unit 02
+loc.unit_slice_player_02,遠征棋士 03,Expedition Unit 03
+loc.unit_slice_player_03,遠征棋士 04,Expedition Unit 04
+loc.unit_slice_player_04,遠征棋士 05,Expedition Unit 05
+loc.unit_slice_player_05,遠征棋士 06,Expedition Unit 06
+loc.unit_slice_player_06,遠征棋士 07,Expedition Unit 07
+loc.unit_slice_player_07,遠征棋士 08,Expedition Unit 08
+loc.unit_slice_player_08,遠征棋士 09,Expedition Unit 09
+loc.unit_slice_player_09,遠征棋士 10,Expedition Unit 10
+loc.unit_slice_player_10,遠征棋士 11,Expedition Unit 11
+loc.unit_slice_player_11,遠征棋士 12,Expedition Unit 12
+loc.unit_slice_player_12,遠征棋士 13,Expedition Unit 13
+loc.unit_slice_player_13,遠征棋士 14,Expedition Unit 14
+loc.unit_slice_player_14,遠征棋士 15,Expedition Unit 15
+loc.unit_slice_player_15,遠征棋士 16,Expedition Unit 16
+loc.unit_slice_player_16,遠征棋士 17,Expedition Unit 17
+loc.unit_slice_player_17,遠征棋士 18,Expedition Unit 18
+loc.unit_slice_player_18,遠征棋士 19,Expedition Unit 19
+loc.unit_slice_player_19,遠征棋士 20,Expedition Unit 20
+loc.unit_slice_player_20,遠征棋士 21,Expedition Unit 21
+loc.unit_slice_player_21,遠征棋士 22,Expedition Unit 22
+loc.unit_slice_player_22,遠征棋士 23,Expedition Unit 23
+loc.unit_slice_player_23,遠征棋士 24,Expedition Unit 24
+loc.unit_slice_player_24,遠征棋士 25,Expedition Unit 25
+loc.unit_slice_player_25,遠征棋士 26,Expedition Unit 26
+loc.unit_slice_player_26,遠征棋士 27,Expedition Unit 27
+loc.unit_slice_player_27,遠征棋士 28,Expedition Unit 28
+loc.unit_slice_player_28,遠征棋士 29,Expedition Unit 29
+loc.unit_slice_player_29,遠征棋士 30,Expedition Unit 30
+loc.unit_slice_player_30,遠征棋士 31,Expedition Unit 31
+loc.unit_slice_player_31,遠征棋士 32,Expedition Unit 32
+loc.unlock_slice_base_profile,基礎解鎖,Base Unlocks
+loc.unlock_slice_challenge_0,挑戰解鎖 1,Challenge Unlock 1
+loc.unlock_slice_challenge_1,挑戰解鎖 2,Challenge Unlock 2
+loc.unlock_slice_challenge_2,挑戰解鎖 3,Challenge Unlock 3
+loc.unlock_slice_challenge_3,挑戰解鎖 4,Challenge Unlock 4
+loc.unlock_slice_challenge_4,挑戰解鎖 5,Challenge Unlock 5
+loc.unlock_slice_challenge_5,挑戰解鎖 6,Challenge Unlock 6
+map.confirm,確認前進,Confirm Route
+map.node_kind.boss,首領,Boss
+map.node_kind.elite,菁英戰鬥,Elite Battle
+map.node_kind.event,事件,Event
+map.node_kind.merchant,商人,Merchant
+map.node_kind.normal,一般戰鬥,Battle
+map.node_kind.rest,休息,Rest
+map.node_kind.treasure,寶藏,Treasure
+map.select,選擇節點,Select Node
+menu.continue,繼續遠征,Continue
+menu.exit,離開,Exit
+menu.exit.cancel,取消,Cancel
+menu.exit.confirm,確認離開,Confirm Exit
+menu.exit.status,確定要離開遊戲？,Exit the game?
+menu.recovery,處理保留遠征,Recover Saved Run
+menu.recovery.cancel,取消,Cancel
+menu.recovery.confirm,確認棄置,Confirm Discard
+menu.recovery.status,是否棄置無法載入的遠征？,Discard the unloadable run?
+menu.settings,設定,Settings
+menu.start,開始,Start
+prepare.buy,購買所選單位,Buy Selected Unit
+prepare.dismantle,拆解所選裝備,Dismantle Selected Equipment
+prepare.equip,裝備所選物品,Equip Selected Item
+prepare.forge,鍛造所選物品,Forge Selected Items
+prepare.forge.cancel,取消鍛造,Cancel Forge
+prepare.forge.confirm,確認鍛造,Confirm Forge
+prepare.move_bench,移至備戰區,Move to Bench
+prepare.move_board,移至戰場,Move to Board
+prepare.refresh,重新整理商店,Refresh Shop
+prepare.sell,出售所選單位,Sell Selected Unit
+prepare.start,開始戰鬥,Start Combat
+prepare.unit,調整隊伍,Manage Party
+prepare.xp,購買經驗值,Buy XP
+results.camp,返回營地,Return to Camp
+results.menu,返回主選單,Return to Menu
+results.outcome.abandoned,已放棄遠征,Expedition Abandoned
+results.outcome.completed,遠征完成,Expedition Completed
+results.outcome.failed,遠征失敗,Expedition Failed
+results.outcome.unknown,未知結果,Unknown Outcome
+results.retry,重試顯示,Retry Display
+reward.confirm,確認獎勵,Confirm Reward
+reward.select,選擇獎勵,Select Reward
+run.menu,返回主選單,Main Menu
+run.menu.cancel,繼續遠征,Keep Playing
+run.menu.confirm,確認返回,Confirm
+run.menu.status,遠征仍在進行中，確定要返回主選單？,The expedition is still in progress. Return to the main menu?
+run.retry_route,重試畫面,Retry Screen
+screen.app_route_fallback.title,畫面修復,Screen Recovery
+screen.camp_world.title,遠征營地,Expedition Camp
+screen.collection.title,圖鑑,Collection
+screen.facility_challenge_monument.title,挑戰紀念碑,Challenge Monument
+screen.facility_commander_hall.title,指揮官大廳,Commander Hall
+screen.facility_expedition_gate.title,遠征之門,Expedition Gate
+screen.facility_unlock_workshop.title,解鎖工坊,Unlock Workshop
+screen.menu_main.title,遠征主選單,Expedition Menu
+screen.results.title,遠征結算,Results
+screen.results_fallback.title,結算顯示修復,Results Recovery
+screen.run_combat.title,戰鬥,Combat
+screen.run_container.title,遠征,Expedition
+screen.run_map.title,遠征地圖,Expedition Map
+screen.run_prepare.title,備戰,Prepare
+screen.run_reward.title,獎勵,Reward
+screen.run_route_fallback.title,路線顯示修復,Route Recovery
+screen.settings.title,設定,Settings
+settings.apply,套用,Apply
+settings.back,返回,Back
+settings.field.color_vision_mode,色覺模式,Color Vision Mode
+settings.field.damage_number_density,傷害數字密度,Damage Number Density
+settings.field.locale,語言,Language
+settings.field.master_mute,主音量靜音,Mute Master
+settings.field.master_volume,主音量,Master Volume
+settings.field.music_mute,音樂靜音,Mute Music
+settings.field.music_volume,音樂音量,Music Volume
+settings.field.reduced_flash,減少閃光,Reduced Flash
+settings.field.reduced_motion,減少動態效果,Reduced Motion
+settings.field.reduced_particles,減少粒子,Reduced Particles
+settings.field.sfx_mute,音效靜音,Mute SFX
+settings.field.sfx_volume,音效音量,SFX Volume
+settings.field.ui_mute,介面音效靜音,Mute UI
+settings.field.ui_scale_percent,介面縮放,UI Scale
+settings.field.ui_volume,介面音效音量,UI Volume
+settings.value.color_vision_mode.default,預設,Default
+settings.value.color_vision_mode.deuteranopia,綠色辨識輔助,Deuteranopia
+settings.value.color_vision_mode.protanopia,紅色辨識輔助,Protanopia
+settings.value.color_vision_mode.tritanopia,藍色辨識輔助,Tritanopia
+settings.value.damage_number_density.full,完整,Full
+settings.value.damage_number_density.off,關閉,Off
+settings.value.damage_number_density.reduced,減少,Reduced
+settings.value.locale.en,英文,English
+settings.value.locale.zh_TW,繁體中文（台灣）,Traditional Chinese (Taiwan)
+settings.value.ui_scale_percent.100,100%,100%
+settings.value.ui_scale_percent.125,125%,125%
+settings.value.ui_scale_percent.150,150%,150%
+tooltip.collection_order,圖鑑順序,Collection Order
+tooltip.cost,花費,Cost
+tooltip.reward_amount,獎勵數量,Reward Amount
+tooltip.star,星級,Star

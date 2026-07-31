@@ -193,6 +193,29 @@ func localized_ui_text(text_key: StringName) -> String:
 	return _context.resolve_text(text_key)
 
 
+func content_tooltip_text(
+	label_key: StringName,
+	numeric_value: int,
+	depth: int = 1
+) -> String:
+	if _context == null:
+		return ""
+	var formatted := ContentTooltipFormatter.new().format_value(
+		label_key,
+		localized_ui_text(label_key),
+		numeric_value,
+		_context.locale,
+		0,
+		depth
+	)
+	if not formatted.ok or formatted.snapshot == null:
+		return ""
+	return "%s: %d" % [
+		formatted.snapshot.text,
+		formatted.snapshot.numeric_value,
+	]
+
+
 func live_binding_report() -> Dictionary:
 	return {
 		"active": _live_active,
@@ -396,6 +419,12 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		and (_last_control_result as AppActionResult).ok
 	):
 		_show_recovery_confirmation(trigger)
+	elif (
+		action_id == &"choice.begin"
+		and _last_control_result is ConfirmationDraftResult
+		and (_last_control_result as ConfirmationDraftResult).ok
+	):
+		_show_node_choice_confirmation(trigger)
 	elif action_id in [&"menu.recovery.cancel", &"menu.recovery.confirm"]:
 		# G2 F2：不能只在 ok 時關 modal。app 層的 confirmation 在
 		# RecoveryConfirmationPresenter.confirm_confirmation()／cancel_confirmation()
@@ -404,6 +433,10 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		# 停用，玩家只剩 confirm/cancel 兩顆——而它們的 lease 已被撤銷，
 		# 永遠回 SCREEN_NOT_ACTIVE，App 就此鎖死。失敗訊息已經進狀態列，
 		# 關掉 modal 才有出路。
+		_close_confirmation_modal()
+	elif action_id in [&"choice.cancel", &"choice.confirm"]:
+		# draft 已被消費後，不論 runtime 結果都關閉 modal。錯誤由 status
+		# view 呈現，背景控制與焦點則必須恢復，避免留下無效 lease。
 		_close_confirmation_modal()
 
 
@@ -500,6 +533,24 @@ func _invoke_local_control(action_id: StringName) -> Variant:
 				if composition is RunPrepareScreen
 				else null
 			)
+		&"choice.begin":
+			return (
+				(composition as RunPrepareScreen).begin_selected_node_choice()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"choice.confirm":
+			return (
+				(composition as RunPrepareScreen).confirm_node_choice()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"choice.cancel":
+			return (
+				(composition as RunPrepareScreen).cancel_node_choice()
+				if composition is RunPrepareScreen
+				else null
+			)
 		&"combat.pause":
 			return (
 				(composition as RunCombatScreen).toggle_pause()
@@ -593,6 +644,40 @@ func refresh_interaction_state() -> void:
 			forge_confirm.disabled = not has_confirmation
 		if forge_cancel != null:
 			forge_cancel.disabled = not has_confirmation
+		var choice_begin := _action_button(&"choice.begin")
+		var choice_confirm := _action_button(&"choice.confirm")
+		var choice_cancel := _action_button(&"choice.cancel")
+		var has_choice := prepare_screen.has_node_choice_overlay()
+		var has_choice_confirmation := (
+			prepare_screen.has_pending_node_choice_confirmation()
+		)
+		if choice_begin != null:
+			choice_begin.disabled = (
+				not has_choice or has_choice_confirmation
+			)
+		if choice_confirm != null:
+			choice_confirm.disabled = not has_choice_confirmation
+		if choice_cancel != null:
+			choice_cancel.disabled = not has_choice_confirmation
+		if has_choice:
+			for blocked_action: StringName in [
+				&"prepare.unit",
+				&"prepare.refresh",
+				&"prepare.buy",
+				&"prepare.xp",
+				&"prepare.sell",
+				&"prepare.forge",
+				&"prepare.forge.confirm",
+				&"prepare.forge.cancel",
+				&"prepare.equip",
+				&"prepare.dismantle",
+				&"prepare.move_board",
+				&"prepare.move_bench",
+				&"prepare.start",
+			]:
+				var blocked_button := _action_button(blocked_action)
+				if blocked_button != null:
+					blocked_button.disabled = true
 	_apply_keyboard_focus_graph()
 
 
@@ -602,6 +687,20 @@ func _show_recovery_confirmation(trigger: Button) -> void:
 		&"menu.recovery.status",
 		&"menu.recovery.confirm",
 		&"menu.recovery.cancel",
+		&"",
+		trigger
+	)
+
+
+func _show_node_choice_confirmation(trigger: Button) -> void:
+	var composition := get_node_or_null("Composition") as RunPrepareScreen
+	if composition == null:
+		return
+	_show_confirmation_modal(
+		"NodeChoiceConfirmation",
+		composition.selected_node_choice_preview_key(),
+		&"choice.confirm",
+		&"choice.cancel",
 		&"",
 		trigger
 	)
@@ -824,6 +923,7 @@ func _ordered_focus_controls() -> Array[Control]:
 		&"ShopSelector",
 		&"InventorySelector",
 		&"BuildUnitSelector",
+		&"ChoiceSelector",
 		&"CategorySelector",
 		&"SearchInput",
 		&"EntrySelector",
@@ -937,6 +1037,9 @@ func _required_action_ids() -> Array[StringName]:
 				&"prepare.move_board",
 				&"prepare.move_bench",
 				&"prepare.start",
+				&"choice.begin",
+				&"choice.confirm",
+				&"choice.cancel",
 				&"run.menu",
 			]
 		&"RUN_COMBAT":

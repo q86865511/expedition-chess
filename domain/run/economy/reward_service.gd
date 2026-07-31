@@ -20,8 +20,7 @@ func generate_stage(
 		and (source.resolution_state as RewardPendingResolutionState).pending_reward.phase \
 			== PendingRewardState.Phase.READY_TO_ADVANCE
 	var event_node := _current_node(source)
-	var from_event_node := stage == PendingRewardState.StageId.EVENT_GRANT \
-		and source.run_phase == RunState.RunPhase.PREPARE \
+	var from_event_node := source.run_phase == RunState.RunPhase.PREPARE \
 		and source.resolution_state is IdleResolutionState \
 		and event_node != null and event_node.node_kind in [
 			MapNodeState.NodeKind.EVENT, MapNodeState.NodeKind.TREASURE,

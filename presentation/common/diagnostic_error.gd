@@ -3,6 +3,9 @@ extends RefCounted
 
 var source_code: StringName
 var message_key: StringName
+var code: StringName:
+	get:
+		return source_code
 
 
 func _init(

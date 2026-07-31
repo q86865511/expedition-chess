@@ -1,6 +1,6 @@
 # G2 內容完整切片 — 四切片交付 Roadmap
 
-> 建立日期：2026-07-26｜狀態：執行中（presentation-ui 完成；draft PR #5）
+> 建立日期：2026-07-26｜狀態：執行中（presentation-ui 已合併；content-production active）
 > 架構基線：`docs/game-architecture/`、`docs/implementation-slices.md`
 > 基準提交：`5ddf80a30481ee701ba90be48e0fd474bc8c2715`（S5 merged）
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R1 雙審全部 14 項修正建議
@@ -21,6 +21,8 @@
 > Gate override：2026-07-28 使用者指示審查先跳過並繼續本地 implementation；R12 unresolved、R13/Git gate 延後未取消
 > Implementation closure：2026-07-30 R16 findings 全採納、fresh gates 全綠；使用者明示
 > 不啟動 R17／不再次雙審，直接進 T15 文件與 Git handoff。Git 仍需另行確認。
+> Merge closure：PR #5 `MERGED @ 9362e7d`；merge 後 UI findings 修正由
+> PR #6 `MERGED @ 5e78ccf`。第二片由該最新 master 建立。
 
 ## 1. 目的與完成定義
 
@@ -150,8 +152,8 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 
 | Slice | SDD | Implementation | Review | External gate | Git |
 |---|---|---|---|---|---|
-| `presentation-ui` | R12–R16 FINDINGS APPLIED; USER-OVERRIDDEN NO R17 | T00–T15 COMPLETE; 19 AC PASS | R16 historical reviews retained; closure table＋fresh evidence；no re-review by user decision | T13 USER APPROVED; Gut 945/945; runtime 10/10; 10k soak; static gate; manifests 155/155 | draft PR #5 open；merge not approved |
-| `content-production` | NOT STARTED | NOT STARTED | NOT STARTED | pilot approval prerequisite | not created |
+| `presentation-ui` | COMPLETE | T00–T15 COMPLETE; 19 AC PASS | R16 history＋merge-after-review findings closed | T13 USER APPROVED; final repair baseline Gut 1000/1000 | PR #5 MERGED @ 9362e7d；PR #6 MERGED @ 5e78ccf |
+| `content-production` | DRAFTING／SDD REVIEW | BASELINE GREEN | PENDING | T13 approved；All/Gut 1000/1000；Content 39/39；static zero issues | `codex/g2-content-production` active |
 | `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |
 

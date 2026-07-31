@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/ability_def.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+schema_version = 1
+start_mana = 0
+max_mana = 50
+target_rule = &"enemy_primary"
+cast_ticks = 30
+effect_refs = Array[StringName]([&"effect.slice_monster_09.primary"])
+description_key = &"loc.ability_slice_monster_09_description"
+id = &"ability.slice_monster_09"
+display_name_key = &"loc.ability_slice_monster_09"

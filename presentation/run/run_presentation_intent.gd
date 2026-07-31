@@ -26,6 +26,7 @@ enum Kind {
 	ABANDON_RELIC,
 	ABANDON_BOSS_RETRY,
 	SETTLE_TERMINAL_RUN,
+	COMMIT_NODE_CHOICE,
 }
 
 var kind: Kind
@@ -36,6 +37,7 @@ var item_instance_id: String
 var secondary_item_instance_id: String
 var target_unit_instance_id: String
 var choice_id: String
+var choice_set_id: StringName
 var accept: bool
 var abandon: bool
 var relic_slot_index: int = -1
@@ -57,6 +59,7 @@ func deep_clone() -> RunPresentationIntent:
 	clone.secondary_item_instance_id = secondary_item_instance_id
 	clone.target_unit_instance_id = target_unit_instance_id
 	clone.choice_id = choice_id
+	clone.choice_set_id = choice_set_id
 	clone.accept = accept
 	clone.abandon = abandon
 	clone.relic_slot_index = relic_slot_index

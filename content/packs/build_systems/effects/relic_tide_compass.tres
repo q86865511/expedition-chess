@@ -16,5 +16,7 @@ script = ExtResource("5_ywxym")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_yxl2g")]([SubResource("Resource_5eoo7")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_tide_compass_description"
 id = &"effect.relic_tide_compass"
 display_name_key = &"loc.effect_relic_tide_compass"

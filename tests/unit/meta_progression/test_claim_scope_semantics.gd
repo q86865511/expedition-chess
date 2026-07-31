@@ -45,8 +45,9 @@ func _assert_scope_accepted_end_to_end(scope: StringName, tag: String) -> void:
 	operation.claim_scope = scope
 	var effect := EffectDef.new()
 	effect.id = StringName("effect.%s" % tag)
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = StringName("loc.%s" % tag)
+	effect.description_key = StringName("loc.%s.description" % tag)
 	effect.content_role = &"general"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"

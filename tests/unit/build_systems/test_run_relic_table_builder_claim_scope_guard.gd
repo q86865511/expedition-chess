@@ -33,8 +33,9 @@ func test_builder_rejects_economy_relic_whose_only_run_intent_has_a_non_always_c
 	operation.claim_scope = &"once_per_node"
 	var effect := EffectDef.new()
 	effect.id = &"effect.non_always_claim_scope"
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = &"loc.effect_non_always_claim_scope"
+	effect.description_key = &"loc.effect_non_always_claim_scope.description"
 	effect.content_role = &"general"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"
@@ -74,8 +75,9 @@ func test_builder_accepts_economy_relic_whose_run_intent_uses_the_always_claim_s
 	operation.claim_scope = &"always"
 	var effect := EffectDef.new()
 	effect.id = &"effect.always_claim_scope"
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = &"loc.effect_always_claim_scope"
+	effect.description_key = &"loc.effect_always_claim_scope.description"
 	effect.content_role = &"general"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"

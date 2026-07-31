@@ -166,7 +166,9 @@ func test_enter_node_event_relic_table_income_bonus_is_observable() -> void:
 	var base_income := catalog.config().base_income_for_layer(0)
 	# w5 仲裁（2026-07-25）：起始金 9（低於 interest_step_gold=10）確保利息項為 0——原案起始 11
 	# 會多拿 1 利息（income_service.gd 公式含 interest 項），期望值漏算而恆差 1。
-	var draft := _map_draft_with_reachable_node(digest, MapNodeState.NodeKind.TREASURE, 9)
+	# MERCHANT:EVENT/REST/TREASURE 進入後會轉 NodeChoicePending,與本測試要觀察的
+	# income quote 無關;income 對所有 kind 一視同仁,測試意圖不變
+	var draft := _map_draft_with_reachable_node(digest, MapNodeState.NodeKind.MERCHANT, 9)
 
 	var table := _table_with_rule(&"commander.fixture", &"commander", &"economy", &"add_gold", 9)
 	var factory: Object = script.new(catalog, table)

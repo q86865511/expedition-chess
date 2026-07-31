@@ -89,7 +89,7 @@ script = ExtResource("1_ability")
 schema_version = 1
 start_mana = 0
 max_mana = 50
-target_rule = &"enemy_primary"
+target_rule = &"current_target"
 cast_ticks = 30
 effect_refs = Array[StringName]([&"effect.$token.primary"])
 description_key = &"loc.ability_${token}_description"
@@ -110,7 +110,7 @@ script = ExtResource("2_damage")
 base = $damage
 scaling = &"attack"
 damage_type = &"physical"
-target = &"enemy_primary"
+target = &"target"
 
 [resource]
 script = ExtResource("3_effect")

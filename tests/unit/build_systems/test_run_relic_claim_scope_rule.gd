@@ -106,8 +106,9 @@ func _pure_run_effect(effect_id: StringName, scope: StringName) -> EffectDef:
 	operation.claim_scope = scope
 	var effect := EffectDef.new()
 	effect.id = effect_id
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
+	effect.description_key = StringName("loc.%s.description" % String(effect_id))
 	effect.content_role = &"general"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"

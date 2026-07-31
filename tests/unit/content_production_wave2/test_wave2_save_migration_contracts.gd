@@ -57,7 +57,7 @@ func test_node_choice_pending_digest_is_canonical_clone_isolated_and_tamper_sens
 	if script == null:
 		return
 	var pending: Variant = script.new(
-		&"node.n01",
+		StringName("node_" + "a".repeat(64)),
 		&"choice_set.event_01",
 		[&"choice.a", &"choice.b"],
 		"production.1",

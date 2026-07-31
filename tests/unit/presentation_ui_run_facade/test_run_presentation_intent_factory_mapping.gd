@@ -29,6 +29,7 @@ const EXPECTED_INTENTS: Array[StringName] = [
 	&"ABANDON_RELIC",
 	&"ABANDON_BOSS_RETRY",
 	&"SETTLE_TERMINAL_RUN",
+	&"COMMIT_NODE_CHOICE",
 ]
 
 const EXPECTED_FACTORY_METHODS: Array[String] = [
@@ -56,6 +57,7 @@ const EXPECTED_FACTORY_METHODS: Array[String] = [
 	"abandon_relic_command",
 	"abandon_boss_retry_command",
 	"settle_terminal_run_command",
+	"commit_node_choice_command",
 ]
 
 

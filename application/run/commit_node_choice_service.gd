@@ -156,6 +156,13 @@ func commit(
 			draft = generated.run_state
 			_acknowledge_receipt(draft, receipt.receipt_digest)
 		_:
+			# 與 non_combat_node_service/reward advance 同義務:離場前釋放本節點的
+			# shop offers,否則下一次 EnterNodeEvent 被 SHOP_LEAK 擋死
+			var release_error := RewardService.new().try_release_shop_offers(draft)
+			if release_error != null:
+				return ExpeditionActionResult.failure(
+					release_error.code, release_error.field_path
+				)
 			_complete_current_node(draft)
 			draft.resolution_state = IdleResolutionState.new()
 			draft.run_phase = RunState.RunPhase.MAP

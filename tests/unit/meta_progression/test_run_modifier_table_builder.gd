@@ -103,12 +103,14 @@ func test_commander_passive_run_operations_become_always_active_contribution() -
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var fixture := SyntheticContentFixture.build_valid()
-	# effect.operation_matrix 為既有 fixture 內容,帶 add_gold=1/add_xp=1/heal_expedition_hp=1
-	# (皆 claim_scope=always)。add_xp 無 always-active 消費端、builder 會具名拒絕(見
-	# test_commander_passive_with_unconsumed_run_kind_returns_named_failure),此處先剔除,
-	# 以剩餘兩筆驗證「非 battle 遺物已支援的 run intent 解碼機制」同樣套用在 commander 來源上。
-	_strip_add_xp_from_operation_matrix(fixture)
-	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = [&"effect.operation_matrix"]
+	# T10：commander passive 不得混合 battle+run operations(CONTENT_COMMANDER_PASSIVE_MIXED_SCOPE)，
+	# effect.operation_matrix 帶 battle_operations、不可再供 commander 被動引用；改用僅含
+	# run_operations 的獨立效果(add_gold=1/heal_expedition_hp=1，對齊 operation_matrix 原本的
+	# 受支援 run intent 子集，add_xp 無 always-active 消費端故不含)，驗證「非 battle 遺物已支援
+	# 的 run intent 解碼機制」同樣套用在 commander 來源上。
+	var passive_id := &"effect.commander_passive_pure_run"
+	_append_pure_run_commander_passive_effect(fixture, passive_id, false)
+	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = [passive_id]
 	var installed := registry.install_validated(fixture, "fixture.run_modifier.3", [&"pack.core"])
 	assert_true(installed.ok)
 	if not installed.ok:
@@ -135,12 +137,19 @@ func test_commander_always_active_contribution_stacks_with_slot_gated_relic_end_
 	add_child_autofree(registry)
 	var fixture := SyntheticContentFixture.build_valid()
 	_strip_add_xp_from_operation_matrix(fixture)
-	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = [&"effect.operation_matrix"]
+	# T10：commander passive 不得混合 battle+run operations，effect.operation_matrix 帶
+	# battle_operations、不可再供 commander 被動引用；改用僅含 run_operations 的獨立效果
+	# (add_gold=1/heal_expedition_hp=1，對齊 operation_matrix 剔除 add_xp 後的內容)。
+	var commander_passive_id := &"effect.commander_passive_pure_run"
+	_append_pure_run_commander_passive_effect(fixture, commander_passive_id, false)
+	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = [commander_passive_id]
 	var installed := registry.install_validated(fixture, "fixture.run_modifier.4", [&"pack.core"])
 	assert_true(installed.ok)
 	if not installed.ok:
 		return
-	# relic.r4 為 economy 類、effect_refs=[effect.operation_matrix](同一份 add_gold=1 定義)。
+	# relic.r4 為 economy 類、effect_refs=[effect.operation_matrix](add_gold=1)；commander.c0
+	# 被動改引用獨立的 effect.commander_passive_pure_run(add_gold=1)——兩份定義的 add_gold
+	# 數值相同，兩來源分別計入。
 	var relic_ids: Array[StringName] = [&"relic.r4"]
 	var built := RunModifierTableBuilder.new().build(
 		registry, installed.handle.manifest_digest, relic_ids, &"commander.c0", 0
@@ -158,7 +167,7 @@ func test_commander_always_active_contribution_stacks_with_slot_gated_relic_end_
 	if not result.ok:
 		return
 	# baseline(見 test_income_service_relics.gd)= 58；+1 slot-gated relic.r4 的 add_gold
-	# ＋1 commander always-active 的 add_gold(同一 effect.operation_matrix,兩來源分別計入)。
+	# ＋1 commander always-active 的 add_gold(不同效果定義,兩來源分別計入)。
 	assert_eq(
 		result.transaction.economy_state.gold, 60,
 		"58 baseline + 1 slot-gated(relic.r4) + 1 commander always-active,經完整" +
@@ -268,8 +277,13 @@ func test_commander_passive_with_unconsumed_run_kind_returns_named_failure() -> 
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var fixture := SyntheticContentFixture.build_valid()
-	# operation_matrix 原樣含 add_xp(無 always-active 消費端)——期望被具名拒絕。
-	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = [&"effect.operation_matrix"]
+	# T10：commander passive 不得混合 battle+run operations，effect.operation_matrix 帶
+	# battle_operations、不可再供 commander 被動引用；改用僅含 run_operations 的獨立效果，
+	# 保留 add_xp(無 always-active 消費端)——期望被具名拒絕，只留本測試要測的違規，不讓新的
+	# CONTENT_COMMANDER_PASSIVE_MIXED_SCOPE 搶先擋下 install_validated。
+	var passive_id := &"effect.commander_passive_unconsumed_kind"
+	_append_pure_run_commander_passive_effect(fixture, passive_id, true)
+	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = [passive_id]
 	var installed := registry.install_validated(fixture, "fixture.run_modifier.9", [&"pack.core"])
 	assert_true(installed.ok)
 	if not installed.ok:
@@ -284,8 +298,49 @@ func test_commander_passive_with_unconsumed_run_kind_returns_named_failure() -> 
 		return
 	assert_eq(built.error.code, RunRelicTableError.UNSUPPORTED_ALWAYS_ACTIVE_KIND)
 
+## T10：commander passive 新增 CONTENT_COMMANDER_PASSIVE_MIXED_SCOPE 規則(battle_operations
+## 與 run_operations 不得同時非空)，effect.operation_matrix 兩者皆非空,不再能直接供
+## commander.c0 的 passive_effect_refs 引用。建一份僅含 run_operations 的獨立效果,run 內容與
+## effect.operation_matrix 完全一致(add_gold=1/add_xp=1/heal_expedition_hp=1,皆
+## claim_scope=always),供以下三個 commander passive 測試各自選用;
+## include_add_xp=false 時剔除 add_xp(沿用「先剔除無 always-active 消費端的 add_xp,聚焦受
+## 支援 kind」的既定作法),true 時保留(供「unconsumed run kind 具名失敗」測試使用)。
+func _append_pure_run_commander_passive_effect(
+	fixture: ContentValidationInput, effect_id: StringName, include_add_xp: bool
+) -> void:
+	var operations: Array[RunOperationDef] = []
+	var add_gold := AddGoldOperationDef.new()
+	add_gold.operation_index = 0
+	add_gold.amount = 1
+	add_gold.claim_scope = &"always"
+	operations.append(add_gold)
+	if include_add_xp:
+		var add_xp := AddXpOperationDef.new()
+		add_xp.operation_index = operations.size()
+		add_xp.amount = 1
+		add_xp.claim_scope = &"always"
+		operations.append(add_xp)
+	var heal_hp := HealExpeditionHpOperationDef.new()
+	heal_hp.operation_index = operations.size()
+	heal_hp.amount = 1
+	heal_hp.claim_scope = &"always"
+	operations.append(heal_hp)
+	var effect := EffectDef.new()
+	effect.id = effect_id
+	effect.schema_version = 2
+	effect.display_name_key = StringName("loc.%s" % String(effect_id))
+	effect.description_key = StringName("loc.%s.description" % String(effect_id))
+	effect.content_role = &"general"
+	effect.trigger = &"battle_start"
+	effect.stacking = &"replace"
+	effect.max_stacks = 1
+	effect.duration_ticks = 1
+	effect.run_operations = operations
+	fixture.definitions.append(effect)
+
 ## 把 effect.operation_matrix 中無 always-active 消費端的 add_xp 剔除(operation_index 重編為
-## 連續),讓既有「解碼機制沿用」測試聚焦於受支援的 kind。
+## 連續),讓既有「解碼機制沿用」測試聚焦於受支援的 kind。effect.operation_matrix 仍被 relic.r4
+## 引用(RelicDef.effect_refs 不受 CONTENT_COMMANDER_PASSIVE_MIXED_SCOPE 約束),故此函式保留。
 func _strip_add_xp_from_operation_matrix(fixture: ContentValidationInput) -> void:
 	var matrix := _find(fixture, &"effect.operation_matrix") as EffectDef
 	var supported: Array[RunOperationDef] = []
@@ -346,8 +401,9 @@ func _append_add_gold_effect(fixture: ContentValidationInput, effect_id: StringN
 	operation.claim_scope = &"always"
 	var effect := EffectDef.new()
 	effect.id = effect_id
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
+	effect.description_key = StringName("loc.%s.description" % String(effect_id))
 	# T10：CONTENT_CHALLENGE_AFFIX_ROLE 收緊為「必須恰為 challenge_affix」（不再放行預設的
 	# &"general"），這些探針效果全部被 challenge 鏈 modifier_refs 引用，改用合規角色。
 	effect.content_role = &"challenge_affix"

@@ -373,8 +373,9 @@ func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: Stri
 	operation.target = &"self"
 	var effect := EffectDef.new()
 	effect.id = effect_id
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
+	effect.description_key = StringName("loc.%s.description" % String(effect_id))
 	effect.content_role = &"challenge_affix"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"
@@ -389,8 +390,9 @@ func _append_run_only_effect(fixture: ContentValidationInput, effect_id: StringN
 		return
 	var effect := EffectDef.new()
 	effect.id = effect_id
-	effect.schema_version = 1
+	effect.schema_version = 2
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
+	effect.description_key = StringName("loc.%s.description" % String(effect_id))
 	effect.content_role = &"challenge_affix"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"

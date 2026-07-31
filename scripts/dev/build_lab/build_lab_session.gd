@@ -5,11 +5,12 @@ extends RefCounted
 ## 這是第一個把 RunController 接上「真正雙 pack 內容經 ContentRegistry 安裝＋
 ## pinned BattleRuleCatalog」的 composition 場景(HANDOFF §2 消費契約：只持
 ## clone/snapshot、寫操作一律經 RunController.dispatch())。初始 roster 直接
-## 構造在 REWARD/RELIC_RESOLUTION 階段 -- forge/equip/dismantle/
-## resolve_overflow 三個 command 都不檢查 run_phase(只有 ResolveOverflowCommand
-## 檢查 tray 成員、跟 run_state_validator 的 COMBAT/MAP/RESULTS 硬 gate 無關),
-## 讓單一 RunController 能一次示範鍛造／換裝／拆卸／overflow 處置／遺物替換／
-## 羈絆預覽,不需要真的跑一輪地圖/戰鬥去推進 phase。
+## 構造在 REWARD/RELIC_RESOLUTION 階段 -- forge/equip/resolve_overflow 不檢查
+## run_phase(只有 ResolveOverflowCommand 檢查 tray 成員、跟 run_state_validator
+## 的 COMBAT/MAP/RESULTS 硬 gate 無關);content-production 起 dismantle 需
+## Idle resolution,故 dismantle_demo 內先 advance 收掉 reward 流程,示範順序為
+## 鍛造／換裝／遺物替換／overflow 處置／(advance＋)拆卸,不需要真的跑一輪
+## 地圖/戰鬥去推進 phase。
 
 const UNIT_A_ID: String = "u_0000000000000000"
 const UNIT_B_ID: String = "u_0000000000000001"
@@ -36,7 +37,6 @@ const RELIC_OFFER_ID: StringName = &"relic.shadow_veil"
 const RELIC_REPLACE_SLOT_INDEX: int = 0
 
 const _PROFILE_ID: String = "00000000000000000000000000000001"
-const _NODE_ID: String = "node.build_lab_demo"
 
 var _bootstrap: BuildLabBootstrapResult
 var _catalog_lease: CatalogLease
@@ -113,7 +113,15 @@ func equip_demo() -> CommandResult:
 	return _inventory.equip(ITEM_LOOSE_EQUIPMENT_ID, UNIT_A_ID, _bootstrap.battle_catalog)
 
 ## 拆卸示範:消耗 consumable.dismantle_kit,解綁 UNIT_B 身上的 equipment.iron_iron。
+## content-production 起 DismantleEquipmentCommand 要求 Idle(或 dismantle node
+## service)resolution,故先 advance 結束 reward 流程再拆卸——呼叫前需已完成
+## relic 替換(READY_TO_ADVANCE)且 overflow tray 已清空。
 func dismantle_demo() -> CommandResult:
+	var advanced := _controller.dispatch(
+		AdvanceRewardCommand.new(_bootstrap.economy_catalog)
+	)
+	if not advanced.ok:
+		return advanced
 	return _inventory.dismantle(
 		ITEM_EQUIPPED_ID, ITEM_DISMANTLE_CONSUMABLE_ID, _bootstrap.consumable_rules
 	)
@@ -189,10 +197,19 @@ func _build_initial_run() -> RunState:
 		UnitPoolEntryState.new(UNIT_B_DEF, 9, 8, 0, 1),
 	]
 
-	var empty_nodes: Array[MapNodeState] = []
+	# dismantle_demo 內的 advance 需要 current node 真的存在於 map,node_id 必須是
+	# RuntimeKeyCodecV1 的 node key digest(run_state_validator 驗 node_id==key.digest)
+	var node_key_result := key_registry.build_node(StringName(run_id), 0, &"merchant", 0, 0)
+	var node_key: NodeKeyState = node_key_result.key_state as NodeKeyState
+	var node_id := String(node_key.digest)
+	var demo_node := MapNodeState.new(
+		node_id, node_key, &"mapnode.build_lab", 0, 0, 0,
+		MapNodeState.NodeKind.MERCHANT, "a".repeat(64), null, false
+	)
+	var map_nodes: Array[MapNodeState] = [demo_node]
 	var empty_edges: Array[MapEdgeState] = []
 	var empty_strings: Array[String] = []
-	var map := MapState.new(empty_nodes, empty_edges, OptionalStringValue.new(_NODE_ID), empty_strings)
+	var map := MapState.new(map_nodes, empty_edges, OptionalStringValue.new(node_id), empty_strings)
 
 	var empty_offers: Array[ShopOffer] = []
 	var economy := EconomyState.new(20, 1, 0, 0, 0, 0, empty_offers)
@@ -224,7 +241,7 @@ func _build_initial_run() -> RunState:
 	]
 	var reserved: Array[ReservedCopyState] = []
 	var pending := PendingRewardState.new(
-		_NODE_ID, PendingRewardState.StageId.RELIC, PendingRewardState.Phase.RELIC_RESOLUTION,
+		node_id, PendingRewardState.StageId.RELIC, PendingRewardState.Phase.RELIC_RESOLUTION,
 		offers, reserved, OptionalStringValue.new("choice_relic_shadow_veil"), null,
 		transaction_result.key_state as TransactionKeyState
 	)
@@ -233,7 +250,7 @@ func _build_initial_run() -> RunState:
 	var empty_names: Array[StringName] = []
 	var run := RunState.new(
 		run_id, run_key, zero, _bootstrap.content_snapshot, zero, _serial(2),
-		_serial(6), COMMANDER_ID, 0, 0, map, OptionalStringValue.new(_NODE_ID),
+		_serial(6), COMMANDER_ID, 0, 0, map, OptionalStringValue.new(node_id),
 		RunState.RunPhase.REWARD, 100, economy, UnitPoolState.new(pool), roster, 0, 0, 0,
 		rng_states, empty_strings, empty_ints, owners, transactions, claims, resolution,
 		empty_names

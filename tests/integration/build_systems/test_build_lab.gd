@@ -49,10 +49,10 @@ func test_lab_operation_flow_forges_equips_dismantles_and_resolves_overflow() ->
 	equip_button.pressed.emit()
 	assert_true(log.get_parsed_text().contains("把 equipment.frost_frost 裝到 UNIT_A：成功"))
 
-	var dismantle_button := screen.get_node("%DismantleButton") as Button
-	dismantle_button.pressed.emit()
-	assert_true(log.get_parsed_text().contains("消耗 dismantle_kit 拆下 UNIT_B 的裝備：成功"))
-
+	# content-production 起 dismantle 需 Idle resolution,順序固定為:
+	# overflow(READY_TO_ADVANCE 驗證要求 tray 為空,須先清)→ 遺物替換
+	# (RELIC_RESOLUTION→READY_TO_ADVANCE)→ dismantle_demo(內部先 advance
+	# 收掉 reward 流程再拆卸)。
 	var overflow_button := screen.get_node("%OverflowButton") as Button
 	overflow_button.pressed.emit()
 	assert_true(log.get_parsed_text().contains("overflow tray 明確放棄一件零件：成功"))
@@ -71,6 +71,10 @@ func test_lab_operation_flow_forges_equips_dismantles_and_resolves_overflow() ->
 	))
 	# 真正 dispatch 成功後,槽 0 應已替換為 relic.shadow_veil。
 	assert_true(relic_label.get_parsed_text().contains("槽 0：relic.shadow_veil"))
+
+	var dismantle_button := screen.get_node("%DismantleButton") as Button
+	dismantle_button.pressed.emit()
+	assert_true(log.get_parsed_text().contains("消耗 dismantle_kit 拆下 UNIT_B 的裝備：成功"))
 
 	# save/load 走 ContentRegistryReceiptAdapter 正常路徑(每次 dispatch 內部已
 	# save() 落盤,這裡讀回驗證 receipt_port.compile_or_lookup() 的 decode 路徑可用)。

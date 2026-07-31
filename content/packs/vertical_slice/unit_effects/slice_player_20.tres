@@ -9,7 +9,7 @@ script = ExtResource("2_damage")
 base = 88
 scaling = &"attack"
 damage_type = &"physical"
-target = &"enemy_primary"
+target = &"target"
 
 [resource]
 script = ExtResource("3_effect")

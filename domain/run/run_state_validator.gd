@@ -6,7 +6,7 @@ const _MIN_I32: int = -2147483648
 const _MAX_I32: int = 2147483647
 const _DIGEST_PATTERN: String = "^[0-9a-f]{64}$"
 const _PROFILE_PATTERN: String = "^[0-9a-f]{32}$"
-const _STABLE_ID_PATTERN: String = "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+const _STABLE_ID_PATTERN: String = StableIdValidator.PATTERN
 const _UNIT_ID_PATTERN: String = "^u_[0-9a-f]{16}$"
 const _ITEM_ID_PATTERN: String = "^it_[0-9a-f]{16}$"
 

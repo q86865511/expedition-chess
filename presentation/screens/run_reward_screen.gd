@@ -52,10 +52,14 @@ func shop_retained_visible() -> bool:
 
 
 func request(intent: RunPresentationIntent) -> RunPresentationResult:
+	if intent == null or _presenter == null:
+		return _action_not_available()
+	# review N1：ack 不是 reward 動作，其可用性只由 unacknowledged ledger 決定
+	# （design :201）。OPEN_REWARD_STAGE 出口把 phase 切成 REWARD（design :207），
+	# 若也套 `_model.allows` 的 reward phase 白名單，這條出口就永遠 ack 不掉。
 	if (
-		intent == null
-		or _presenter == null
-		or not _model.allows(intent.kind)
+		intent.kind != RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT
+		and not _model.allows(intent.kind)
 	):
 		return _action_not_available()
 	var result := _presenter.request(intent)
@@ -114,6 +118,18 @@ func accept_visible_reward_result() -> AppActionResult:
 			)
 		)
 	return AppActionResult.success(false)
+
+
+func pending_node_choice_result() -> NodeChoiceResultSnapshot:
+	return _oldest_pending_node_choice_result(_model.snapshot_clone())
+
+
+func acknowledge_node_choice_result() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone()
+	var result := pending_node_choice_result()
+	if snapshot == null or result == null:
+		return _action_not_available()
+	return request(_node_choice_ack_intent(snapshot, result))
 
 
 func confirm_selection() -> RunPresentationResult:

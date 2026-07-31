@@ -36,6 +36,13 @@ static func append_transaction_receipt(
 		return String(left.key.digest) < String(right.key.digest)
 	)
 
+## design.md §5（:200）「ledger 生命期到 run terminal 清除」（review L2）。
+## RESULTS 之後不會再有 pending choice，未 ack 的 receipt 只會被每一次存檔全量寫入，
+## 並讓 UI 重播一個已無節點可回的結果。所有把 run_phase 切到 RESULTS 的路徑都要呼叫。
+static func clear_node_choice_receipts(draft: RunState) -> void:
+	if draft != null:
+		draft.node_choice_receipts.clear()
+
 static func sort_owners(owners: Array[ReservationOwnerState]) -> void:
 	owners.sort_custom(func(
 		left: ReservationOwnerState,

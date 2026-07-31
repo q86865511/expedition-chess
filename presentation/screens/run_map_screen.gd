@@ -90,6 +90,24 @@ func accept_visible_node_result() -> AppActionResult:
 	return AppActionResult.success(false)
 
 
+## review N1：APPLY_AND_COMPLETE 出口把 run_phase 切成 MAP（design :206），
+## 未 ack 的 receipt 因此會落在本畫面重播；ack 命令帶的是該 receipt 自己的 digest。
+func pending_node_choice_result() -> NodeChoiceResultSnapshot:
+	return _oldest_pending_node_choice_result(_snapshot)
+
+
+func acknowledge_node_choice_result() -> RunPresentationResult:
+	var result := pending_node_choice_result()
+	if _snapshot == null or result == null:
+		return RunPresentationResult.failure(
+			DiagnosticError.new(
+				RunScreenPresenter.ACTION_NOT_AVAILABLE,
+				&"error.presentation.action_not_available"
+			)
+		)
+	return request(_node_choice_ack_intent(_snapshot, result))
+
+
 func confirm_selection() -> RunPresentationResult:
 	if _selected_node_id.is_empty():
 		_map_generation_requested = true

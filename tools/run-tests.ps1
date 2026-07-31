@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'Spec', 'RunnerContract')]
     [string]$Suite = 'All',
@@ -1312,11 +1312,16 @@ function Get-ContentProductionEvidenceEvaluation {
         if ([string]$definition.Kind -eq 'dependency_req') { $dependencyRows.Add($row) }
         else { $rows.Add($row) }
     }
+    $blockedIds = New-Object System.Collections.Generic.List[string]
+    foreach ($row in ($rows.ToArray() + $dependencyRows.ToArray())) {
+        if (@($row.unmet_blocking_evidence).Count -ne 0) { $blockedIds.Add([string]$row.acceptance_id) }
+    }
     return [pscustomobject]@{
         Verified = ($missingAll.Count -eq 0)
         Rows = $rows.ToArray()
         DependencyRows = $dependencyRows.ToArray()
         Missing = $missingAll.ToArray()
+        BlockedIds = $blockedIds.ToArray()
     }
 }
 
@@ -1324,12 +1329,19 @@ function Write-ContentProductionAcceptanceArtifact {
     param([int]$AllExitCode, [object]$Toolchain)
 
     $evaluation = Get-ContentProductionEvidenceEvaluation
+    # 誠實語意(第二意見 Major 5):
+    # - evidence_verified 只在「required 證據齊」且「本輪 All 真的成功」才為真——
+    #   All 中途失敗時 artifacts 可能是上一輪殘留,不得據以宣稱 verified。
+    # - fully_closed 另計 blocked 列:任何顯式 blocked gate 未解除,切片就不算 closure。
+    $verifiedThisRun = [bool]$evaluation.Verified -and ($AllExitCode -eq 0)
     $payload = [ordered]@{
         schema_version = 1
         scope = 'content-production'
         suite = $Suite
         all_exit_code = $AllExitCode
-        evidence_verified = [bool]$evaluation.Verified
+        evidence_verified = $verifiedThisRun
+        fully_closed = ($verifiedThisRun -and (@($evaluation.BlockedIds).Count -eq 0))
+        blocked_row_ids = $evaluation.BlockedIds
         evidence_failures = $evaluation.Missing
         generated_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
         toolchain = $Toolchain

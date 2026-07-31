@@ -34,7 +34,14 @@ const ROUTE_ACTIONS: Dictionary = {
 	&"COLLECTION": [&"camp.back"],
 	&"FACILITY_UNLOCK_WORKSHOP": [&"camp.back"],
 	&"FACILITY_CHALLENGE_MONUMENT": [&"camp.back"],
-	&"RUN_MAP": [&"map.select", &"map.confirm", &"run.menu"],
+	# T25 review N1：node choice 的 APPLY 出口停在 MAP、REWARD 出口停在 REWARD，
+	# `choice.ack` 因此是這兩個 route 的可達動作。
+	&"RUN_MAP": [
+		&"map.select",
+		&"map.confirm",
+		&"choice.ack",
+		&"run.menu",
+	],
 	&"RUN_PREPARE": [
 		&"prepare.unit",
 		&"choice.begin",
@@ -52,7 +59,12 @@ const ROUTE_ACTIONS: Dictionary = {
 		&"combat.speed",
 		&"run.menu",
 	],
-	&"RUN_REWARD": [&"reward.select", &"reward.confirm", &"run.menu"],
+	&"RUN_REWARD": [
+		&"reward.select",
+		&"reward.confirm",
+		&"choice.ack",
+		&"run.menu",
+	],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
 	# G2 F4：MENU／CAMP／RESULTS 的 post-commit route 失敗共用的復原畫面。
 	&"APP_ROUTE_FALLBACK": [&"app.retry_route", &"menu.exit"],

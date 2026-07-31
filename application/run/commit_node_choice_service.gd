@@ -60,8 +60,12 @@ func begin(
 		draft.content_snapshot.manifest_digest_value(),
 		lifecycle_nonce
 	)
-	if not (draft.resolution_state as NodeChoicePendingState).is_valid():
-		return _failure(ExpeditionActionError.INPUT_INVALID, &"lifecycle_nonce")
+	var pending := draft.resolution_state as NodeChoicePendingState
+	if not pending.is_valid():
+		return _failure(
+			ExpeditionActionError.INPUT_INVALID,
+			_pending_invalid_field_path(pending)
+		)
 	return ExpeditionActionResult.success(draft)
 
 
@@ -293,6 +297,28 @@ func _validate_generation(
 			&"content_snapshot.manifest_digest"
 		)
 	return null
+
+
+## review N4：`NodeChoicePendingState.is_valid()` 有六個失敗來源，一律回
+## `lifecycle_nonce` 會把「run 還釘在 catalog schema 1／codec 2 世代」的診斷指向 RNG，
+## 排查者會往 nonce/rng 方向找。design.md §5（:162-164）把世代欄位寫進 pending 的
+## exact fields，因此先具名判世代，其餘才落回 nonce。
+func _pending_invalid_field_path(
+	pending: NodeChoicePendingState
+) -> StringName:
+	if pending.catalog_schema_version != 2:
+		return &"catalog_schema_version"
+	if pending.content_codec_version != 3:
+		return &"content_codec_version"
+	if pending.manifest_digest.length() != 64:
+		return &"manifest_digest"
+	if pending.choice_ids.size() < 2:
+		return &"choice_set.choices"
+	if not StableIdValidator.new().is_valid(pending.choice_set_id):
+		return &"choice_set_id"
+	if not String(pending.node_id).begins_with("node_"):
+		return &"node_id"
+	return &"lifecycle_nonce"
 
 
 func _has_committed_receipt(

@@ -11,7 +11,8 @@ extends GutTest
 ##   returns an object with ok/error_code/receipt/manifest_digest.
 ## - ProjectContentDependencyPort.new(LocalizationCatalog) implements the existing
 ##   ContentDependencyPort asset_exists/localization_key_exists methods.
-## - LocalizationCatalog.new() exposes default_locale(), supported_locales(),
+## - LocalizationCatalog.restricted_emergency_catalog() (T25 review N3: the public
+##   constructor is now loader-private sealed) exposes default_locale(), supported_locales(),
 ##   keys_for_locale(locale), and resolve(locale, key).  resolve returns an object
 ##   with ok/value/error_code.
 ##
@@ -32,6 +33,18 @@ const KNOWN_CONTENT_ASSET := \
 	"res://content/packs/vertical_slice/units/slice_player_00.tres"
 const MISSING_KEY := &"loc.__t01_deleted_fixture__"
 const MISSING_ASSET := "res://content/packs/vertical_slice/units/__t01_deleted_fixture__.tres"
+
+const LifecycleSupport := preload(
+	"res://tests/unit/presentation_ui_app_lifecycle/lifecycle_test_support.gd"
+)
+## T25 review N3：constructor seal 的守備範圍（封印本身住在 LOCALIZATION_PATH）。
+const SEALED_CONSTRUCTOR_ROOTS: Array[String] = [
+	"res://app/",
+	"res://presentation/",
+	"res://services/",
+	"res://tools/",
+	"res://scripts/",
+]
 
 
 class CountingDependencyPort extends ContentDependencyPort:
@@ -108,7 +121,7 @@ func test_localization_catalog_defaults_to_nonempty_zh_tw_and_en_has_exact_key_s
 	var catalog_script := _load_script(LOCALIZATION_PATH, "LocalizationCatalog")
 	if catalog_script == null:
 		return
-	var catalog: Object = catalog_script.new()
+	var catalog: Object = catalog_script.call(&"restricted_emergency_catalog")
 	var zh_keys := _string_names(catalog.call("keys_for_locale", &"zh_TW"))
 	var en_keys := _string_names(catalog.call("keys_for_locale", &"en"))
 	zh_keys.sort()
@@ -128,7 +141,7 @@ func test_localization_catalog_rejects_other_locale_and_missing_key_by_name() ->
 	var catalog_script := _load_script(LOCALIZATION_PATH, "LocalizationCatalog")
 	if catalog_script == null:
 		return
-	var catalog: Object = catalog_script.new()
+	var catalog: Object = catalog_script.call(&"restricted_emergency_catalog")
 	var unsupported: Variant = catalog.call("resolve", &"ja", KNOWN_CONTENT_KEY)
 	var missing: Variant = catalog.call("resolve", &"zh_TW", MISSING_KEY)
 
@@ -145,7 +158,9 @@ func test_real_dependency_port_checks_resource_and_catalog_instead_of_returning_
 	var catalog_script := _load_script(LOCALIZATION_PATH, "LocalizationCatalog")
 	if dependency_script == null or catalog_script == null:
 		return
-	var dependency: Object = dependency_script.new(catalog_script.new())
+	var dependency: Object = dependency_script.new(
+		catalog_script.call(&"restricted_emergency_catalog")
+	)
 
 	assert_true(dependency.call("asset_exists", KNOWN_CONTENT_ASSET))
 	assert_false(dependency.call("asset_exists", MISSING_ASSET))
@@ -226,6 +241,74 @@ func test_app_root_does_not_bypass_localization_catalog_typed_load() -> void:
 		source.contains("ProjectContentDependencyPort.new(LocalizationCatalog.new())"),
 		"AppRoot must not bypass the production localization catalog typed load"
 	)
+
+
+## T25 review N3：畫面文案的來源必須是 boot 期驗過 SHA 的正式 catalog，而不是
+## GDScript 內建目錄——否則就地修訂 localization/catalog.v2.csv（含同步 SHA 常數）
+## 之後遊戲畫面一個字都不會變，CSV 只是導出的副本。
+func test_app_root_localizes_screens_with_the_loaded_production_catalog() -> void:
+	var harness: Variant = LifecycleSupport.boot(self, FakeSaveStorage.new())
+	assert_eq(harness.boot_error, &"", "production boot must succeed")
+	var content: Variant = harness.root.call(&"_try_content")
+	assert_not_null(content, "production content must install")
+	if content == null:
+		return
+	var installed: Variant = _field(content, &"localization_catalog")
+	assert_not_null(
+		installed,
+		"bootstrap must expose the catalog it loaded from the tracked CSV"
+	)
+	var used: Variant = harness.root.call(&"_production_localization_catalog")
+	assert_eq(
+		used,
+		installed,
+		"AppRoot must build its localized text map from the loaded catalog"
+	)
+
+
+## design.md:147-149 的 loader-private seal（review N3）：production 端不得直接
+## `LocalizationCatalog.new(...)`，只能經 loader 或 restricted 退路 factory。
+func test_production_sources_never_construct_the_localization_catalog_directly() -> void:
+	var offenders: Array[String] = []
+	for path: String in _gd_sources(SEALED_CONSTRUCTOR_ROOTS):
+		if path == LOCALIZATION_PATH:
+			continue
+		if FileAccess.get_file_as_string(path).contains(
+			"LocalizationCatalog.new("
+		):
+			offenders.append(path)
+	assert_true(
+		offenders.is_empty(),
+		(
+			"LocalizationCatalog constructor is loader-private; "
+			+ "use the sealed factories: %s" % ", ".join(offenders)
+		)
+	)
+
+
+func _gd_sources(roots: Array[String]) -> Array[String]:
+	var result: Array[String] = []
+	for root: String in roots:
+		_collect_gd_sources(root, result)
+	result.sort()
+	return result
+
+
+func _collect_gd_sources(path: String, output: Array[String]) -> void:
+	var directory := DirAccess.open(path)
+	if directory == null:
+		return
+	directory.list_dir_begin()
+	var entry := directory.get_next()
+	while entry != "":
+		if not entry.begins_with("."):
+			var full_path := "%s%s" % [path, entry]
+			if directory.current_is_dir():
+				_collect_gd_sources("%s/" % full_path, output)
+			elif entry.ends_with(".gd"):
+				output.append(full_path)
+		entry = directory.get_next()
+	directory.list_dir_end()
 
 
 func _load_script(path: String, expected_name: String) -> GDScript:

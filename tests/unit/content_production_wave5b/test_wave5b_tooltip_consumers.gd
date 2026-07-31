@@ -46,7 +46,7 @@ func test_formal_screens_consume_snapshot_tooltip_port() -> void:
 
 
 func test_tooltip_keys_exist_in_both_locales() -> void:
-	var catalog := LocalizationCatalog.new()
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
 	for key: StringName in [
 		&"tooltip.cost",
 		&"tooltip.star",

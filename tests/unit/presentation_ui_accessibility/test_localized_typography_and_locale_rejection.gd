@@ -36,7 +36,7 @@ func test_zh_tw_and_en_use_readable_cjk_and_latin_fallback_tokens() -> void:
 
 
 func test_locale_wire_set_is_exact_and_unsupported_locale_is_named() -> void:
-	var catalog := LocalizationCatalog.new()
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
 	assert_eq(catalog.supported_locales(), [&"zh_TW", &"en"])
 	var catalog_rejection := catalog.resolve(&"ja", &"loc.unsupported_probe")
 	assert_false(catalog_rejection.ok)

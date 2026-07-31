@@ -336,11 +336,13 @@ func exit_node_service() -> RunPresentationResult:
 
 ## design :201-203：結果播完後才由玩家（或畫面）顯式 ack；未 ack 的 receipt 會在
 ## reload 後再次出現在 snapshot.pending_node_choice_results。
+## OPEN_DISMANTLE_SERVICE 出口留在 PREPARE，另兩種 outcome 的 ack 入口見
+## RunMapScreen／RunRewardScreen（review N1）。
 func pending_node_choice_result() -> NodeChoiceResultSnapshot:
-	var snapshot := _model.snapshot_clone() if _model != null else null
-	if snapshot == null or snapshot.pending_node_choice_results.is_empty():
-		return null
-	return snapshot.pending_node_choice_results[0]
+	var snapshot: RunPresentationSnapshot = (
+		_model.snapshot_clone() if _model != null else null
+	)
+	return _oldest_pending_node_choice_result(snapshot)
 
 
 func acknowledge_node_choice_result() -> RunPresentationResult:
@@ -348,12 +350,7 @@ func acknowledge_node_choice_result() -> RunPresentationResult:
 	var result := pending_node_choice_result()
 	if snapshot == null or result == null:
 		return _selection_failure()
-	var intent := RunPresentationIntent.new(
-		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT
-	)
-	intent.expected_run_id = String(snapshot.run_id)
-	intent.receipt_digest = result.receipt_digest
-	return request(intent)
+	return request(_node_choice_ack_intent(snapshot, result))
 
 
 func equip_selected_item() -> RunPresentationResult:

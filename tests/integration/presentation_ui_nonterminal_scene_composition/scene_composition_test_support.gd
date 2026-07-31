@@ -57,6 +57,9 @@ class SpyRunPresentationSession:
 
 	var dispatch_count: int = 0
 	var dispatched_kinds: Array[int] = []
+	## 送出的 intent 原件：驗「ack 帶的是畫面上顯示的那一筆 receipt_digest」需要欄位，
+	## 只看 kind 看不出 T25 review N1 的錯 receipt 缺陷。
+	var dispatched_intents: Array[RunPresentationIntent] = []
 	var current_snapshot: RunPresentationSnapshot
 	var next_snapshot: RunPresentationSnapshot
 	var reject_code: StringName = &""
@@ -64,6 +67,7 @@ class SpyRunPresentationSession:
 	func dispatch(intent: RunPresentationIntent) -> RunPresentationResult:
 		dispatch_count += 1
 		dispatched_kinds.append(intent.kind)
+		dispatched_intents.append(intent)
 		if not reject_code.is_empty():
 			return RunPresentationResult.failure(
 				DiagnosticError.new(

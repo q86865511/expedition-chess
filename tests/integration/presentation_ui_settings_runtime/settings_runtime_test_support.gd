@@ -197,7 +197,9 @@ static func build_adapters(
 			WindowCoordinateMapper.new(),
 			window_size
 		),
-		localization_script.new(consumer, LocalizationCatalog.new()),
+		localization_script.new(
+			consumer, LocalizationCatalog.restricted_emergency_catalog()
+		),
 		audio_script.new(test.autofree(AudioCoordinator.new(audio_port))),
 	]
 	for adapter: Object in adapters:

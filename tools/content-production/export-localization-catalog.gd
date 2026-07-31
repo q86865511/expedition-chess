@@ -4,7 +4,9 @@ const OUTPUT_PATH := "res://localization/catalog.v2.csv"
 
 
 func _init() -> void:
-	var catalog := LocalizationCatalog.new()
+	# 匯出工具是 CSV 的產生端：來源是 GDScript 內建（restricted）目錄，
+	# 產物 catalog.v2.csv 才是 runtime 的文案來源（review N3）。
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
 	var keys := catalog.keys_for_locale(&"zh_TW")
 	if keys != catalog.keys_for_locale(&"en") or keys.is_empty():
 		push_error("localization key sets are not equal or are empty")

@@ -425,6 +425,8 @@ func advance(
 	draft.run_phase = RunState.RunPhase.RESULTS \
 		if node.node_kind == MapNodeState.NodeKind.BOSS and node.act_index == 3 \
 		else RunState.RunPhase.MAP
+	if draft.run_phase == RunState.RunPhase.RESULTS:
+		EconomyCommandSupport.clear_node_choice_receipts(draft)
 	var commit_error := _commit_operation(draft, &"reward_advance", [node.node_id])
 	if commit_error != null:
 		return ExpeditionActionResult.failure(commit_error.code, commit_error.field_path)

@@ -17,13 +17,26 @@ const RELICS: Array[String] = [
 	"thrifty_charm", "tide_compass", "verdant_accord", "wanderer_map",
 ]
 
+## design.md §4(:147-149):constructor 需要 loader-private seal,production 不得直接 new。
+## GDScript 沒有真正的私有 constructor,這裡用「必填的 seal 參數」把封印做成呼叫端可驗:
+## 漏傳＝參數不足的解析錯誤(舊的 `LocalizationCatalog.new()` 一律編不過),
+## 傳錯＝空 catalog(resolve 全部 LOCALIZATION_KEY_MISSING,fail-closed 而不是靜默
+## 回內建文案)。合法建構點只有兩個:`_from_validated_values`(LocalizationCatalogLoader
+## 驗過的正式 CSV)與 `restricted_emergency_catalog`(design :150-152 的 boot/recovery 退路)。
+const _CONSTRUCTOR_SEAL: StringName = &"localization_catalog.loader_private"
+
 var _values: Dictionary = {
 	&"zh_TW": {},
 	&"en": {},
 }
 
 
-func _init(p_validated_values: Dictionary = {}) -> void:
+func _init(p_seal: StringName, p_validated_values: Dictionary) -> void:
+	if p_seal != _CONSTRUCTOR_SEAL:
+		push_error(
+			"LocalizationCatalog must be built through its sealed factories"
+		)
+		return
 	if p_validated_values.is_empty():
 		_register_fixed_keys()
 		_register_generated_keys()
@@ -36,7 +49,15 @@ func _init(p_validated_values: Dictionary = {}) -> void:
 
 # loader-private factory(design §L10N):production 只能經 LocalizationCatalogLoader
 static func _from_validated_values(values: Dictionary) -> LocalizationCatalog:
-	return LocalizationCatalog.new(values)
+	return LocalizationCatalog.new(_CONSTRUCTOR_SEAL, values)
+
+
+## restricted factory(design :150-152):不接受任意 bytes／path,只從本檔內建的具名
+## key 表建構,供「正式 catalog 尚未載入或載入失敗」的 boot／recovery／工具路徑使用。
+## 正式遊玩畫面的文案來源是 localization/catalog.v2.csv——由 ProjectContentBootstrap
+## 經 typed load result 驗證後注入 AppRoot(review N3),不再由本目錄提供。
+static func restricted_emergency_catalog() -> LocalizationCatalog:
+	return LocalizationCatalog.new(_CONSTRUCTOR_SEAL, {})
 
 
 func default_locale() -> StringName:

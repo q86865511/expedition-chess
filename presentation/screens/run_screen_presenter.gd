@@ -4,9 +4,15 @@ extends RefCounted
 const ACTION_NOT_AVAILABLE: StringName = &"ACTION_NOT_AVAILABLE"
 
 const _ROUTE_INTENTS: Dictionary = {
+	# design :206-209 規定三種 outcome 的落點：APPLY_AND_COMPLETE 完成節點（→MAP）、
+	# OPEN_REWARD_STAGE 原子切為 reward pending（→REWARD）、OPEN_DISMANTLE_SERVICE
+	# 留在 PREPARE。ack（design :201-204）不綁 resolution state，只由 ledger 的
+	# unacknowledged receipt 驅動，因此三個落點都必須可達，否則 3 種 outcome 有 2 種
+	# 永遠 ack 不掉（review N1）。
 	&"RUN_MAP": [
 		RunPresentationIntent.Kind.GENERATE_MAP,
 		RunPresentationIntent.Kind.ENTER_NODE,
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT,
 	],
 	&"RUN_PREPARE": [
 		RunPresentationIntent.Kind.COMMIT_NODE_CHOICE,
@@ -37,6 +43,7 @@ const _ROUTE_INTENTS: Dictionary = {
 		RunPresentationIntent.Kind.ADVANCE_REWARD,
 		RunPresentationIntent.Kind.RESOLVE_UNIT_OVERFLOW,
 		RunPresentationIntent.Kind.RESOLVE_ITEM_OVERFLOW,
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT,
 	],
 }
 

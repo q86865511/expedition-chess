@@ -28,7 +28,14 @@ const _PRIMARY_ACTIONS: Dictionary = {
 	&"COLLECTION": [&"camp.back"],
 	&"FACILITY_UNLOCK_WORKSHOP": [&"camp.back"],
 	&"FACILITY_CHALLENGE_MONUMENT": [&"camp.back"],
-	&"RUN_MAP": [&"map.select", &"map.confirm", &"run.menu"],
+	# `choice.ack` 在 RUN_MAP／RUN_REWARD 同樣可達：node choice 的三種 outcome
+	# 分別停在 PREPARE／MAP／REWARD（design :206-209），ack 必須跟著結果走。
+	&"RUN_MAP": [
+		&"map.select",
+		&"map.confirm",
+		&"choice.ack",
+		&"run.menu",
+	],
 	&"RUN_PREPARE": [
 		&"prepare.unit",
 		&"choice.begin",
@@ -46,7 +53,12 @@ const _PRIMARY_ACTIONS: Dictionary = {
 		&"combat.speed",
 		&"run.menu",
 	],
-	&"RUN_REWARD": [&"reward.select", &"reward.confirm", &"run.menu"],
+	&"RUN_REWARD": [
+		&"reward.select",
+		&"reward.confirm",
+		&"choice.ack",
+		&"run.menu",
+	],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
 	&"APP_ROUTE_FALLBACK": [&"app.retry_route", &"menu.exit"],
 	&"RESULTS_FALLBACK": [

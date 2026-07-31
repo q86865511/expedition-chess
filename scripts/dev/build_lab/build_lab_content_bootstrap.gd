@@ -7,7 +7,9 @@ extends RefCounted
 
 
 func run(registry: ContentRegistryService) -> BuildLabBootstrapResult:
-	var dependency := ProjectContentDependencyPort.new(LocalizationCatalog.new())
+	var dependency := ProjectContentDependencyPort.new(
+		LocalizationCatalog.restricted_emergency_catalog()
+	)
 	var production := ProjectContentBootstrap.new(dependency).run(registry)
 	if not production.ok:
 		return BuildLabBootstrapResult.failure(

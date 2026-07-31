@@ -79,7 +79,7 @@ func test_successful_action_clears_the_status_surface() -> void:
 func test_precommit_and_postcommit_failures_read_differently() -> void:
 	var host := Control.new()
 	add_child_autofree(host)
-	var catalog := LocalizationCatalog.new()
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
 	var resolver := func(key: StringName) -> String:
 		var resolved := catalog.resolve(&"zh_TW", key)
 		return resolved.value if resolved.ok else String(key)

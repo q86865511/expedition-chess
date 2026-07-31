@@ -210,9 +210,12 @@ func _ready() -> void:
 	_retained_run_recovery_service = RetainedRunRecoveryService.new(
 		_save_repository
 	)
-	_content_bootstrap = ProjectContentBootstrap.new(
-		ProjectContentDependencyPort.new(LocalizationCatalog.new())
-	)
+	# H3 修正:不得以硬編 LocalizationCatalog.new() 繞過 production catalog
+	# 的 SHA/CSV 驗證。傳 null 讓 bootstrap 走真正的 typed load
+	# (design.md:143-152);載入失敗會使 run() 回 ok=false,由既有的
+	# _try_content()==null → ERROR_CONTENT_UNAVAILABLE → boot_failed 路徑
+	# （與 INCOMPATIBLE_PRESERVED 等既有 boot failure 相同呈現）處理。
+	_content_bootstrap = ProjectContentBootstrap.new()
 	_scene_router.bind_presentation_host(presentation_host)
 	var catalog_error := _scene_router.bind_production_catalog(
 		ProductionSceneCatalog.new()

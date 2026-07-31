@@ -236,6 +236,13 @@ func begin_selected_node_choice() -> ConfirmationDraftResult:
 	)
 	intent.choice_set_id = snapshot.node_choice_overlay.choice_set_id
 	intent.choice_id = String(_selected_node_choice_id)
+	# design :173-178：payload 在這一刻（overlay 仍是 committed 投影時）抄完整；
+	# confirm 之前 canonical 若被換掉，commit 會回 PENDING_DIGEST_MISMATCH／
+	# NONCE_MISMATCH 而不是靜默套用到新的 pending 上。
+	intent.node_choice_payload = snapshot.node_choice_overlay.commit_payload(
+		snapshot.run_id,
+		_selected_node_choice_id
+	)
 	var result := _presenter.begin_confirmation(intent)
 	_pending_node_choice_confirmation = (
 		result.draft if result != null and result.ok else null
@@ -283,6 +290,70 @@ func selected_node_choice_preview_key() -> StringName:
 func has_node_choice_overlay() -> bool:
 	var snapshot := _model.snapshot_clone() if _model != null else null
 	return snapshot != null and snapshot.node_choice_overlay != null
+
+
+func has_node_service_pending() -> bool:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	return snapshot != null and snapshot.node_service_overlay != null
+
+
+## design :210-212：服務期間不限次數、不要求耗材的拆解。與一般
+## dismantle_selected_equipment 的差別只在「不必再選一個耗材」。
+func dismantle_selected_with_node_service() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.node_service_overlay == null:
+		return _selection_failure()
+	var item_id := _single_selected_metadata(&"InventorySelector")
+	if item_id.is_empty():
+		return _selection_failure()
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.DISMANTLE_WITH_NODE_SERVICE
+	)
+	intent.expected_run_id = String(snapshot.run_id)
+	intent.node_id = snapshot.node_service_overlay.node_id
+	intent.choice_receipt_digest = (
+		snapshot.node_service_overlay.choice_receipt_digest
+	)
+	intent.item_instance_id = item_id
+	return request(intent)
+
+
+## design :213-214：離開 node service 的唯一出口（也是節點完成的唯一時機）。
+func exit_node_service() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.node_service_overlay == null:
+		return _selection_failure()
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.EXIT_NODE_SERVICE
+	)
+	intent.expected_run_id = String(snapshot.run_id)
+	intent.node_id = snapshot.node_service_overlay.node_id
+	intent.choice_receipt_digest = (
+		snapshot.node_service_overlay.choice_receipt_digest
+	)
+	return request(intent)
+
+
+## design :201-203：結果播完後才由玩家（或畫面）顯式 ack；未 ack 的 receipt 會在
+## reload 後再次出現在 snapshot.pending_node_choice_results。
+func pending_node_choice_result() -> NodeChoiceResultSnapshot:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.pending_node_choice_results.is_empty():
+		return null
+	return snapshot.pending_node_choice_results[0]
+
+
+func acknowledge_node_choice_result() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	var result := pending_node_choice_result()
+	if snapshot == null or result == null:
+		return _selection_failure()
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT
+	)
+	intent.expected_run_id = String(snapshot.run_id)
+	intent.receipt_digest = result.receipt_digest
+	return request(intent)
 
 
 func equip_selected_item() -> RunPresentationResult:

@@ -17,6 +17,11 @@ const _ROUTE_INTENTS: Dictionary = {
 		RunPresentationIntent.Kind.COMMIT_BOARD_LAYOUT,
 		RunPresentationIntent.Kind.EQUIP_ITEM,
 		RunPresentationIntent.Kind.DISMANTLE_EQUIPMENT,
+		# node service（design :208-214）整段生命週期都在 RUN_PREPARE 內：
+		# 服務內拆解不限次數，離場命令是唯一出口，ack 則負責關掉結果重播。
+		RunPresentationIntent.Kind.DISMANTLE_WITH_NODE_SERVICE,
+		RunPresentationIntent.Kind.EXIT_NODE_SERVICE,
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT,
 		RunPresentationIntent.Kind.START_OR_RESUME_COMBAT,
 	],
 	&"RUN_COMBAT": [

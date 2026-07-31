@@ -160,6 +160,27 @@ func node_choice_pending_snapshot() -> NodeChoicePendingState:
 		else null
 	)
 
+## design.md §5:208-214 -- node service 期間的唯一 read-only 投影；service 命令
+## （服務內拆解／離場）要靠它拿到 (node_id, choice_receipt_digest)。
+func node_service_pending_snapshot() -> NodeServicePendingResolutionState:
+	var resolution: ResolutionState = _session.run_snapshot().resolution_state
+	var pending := resolution as NodeServicePendingResolutionState
+	return (
+		pending.deep_clone() as NodeServicePendingResolutionState
+		if pending != null
+		else null
+	)
+
+## design.md §5:201 -- 只投影 result_acknowledged=false 的 receipt：已 ack 的結果
+## 不再重播，ledger 本身則完整保留。
+func unacknowledged_node_choice_receipts() -> Array[NodeChoiceCommitReceiptState]:
+	var result: Array[NodeChoiceCommitReceiptState] = []
+	for entry: NodeChoiceReceiptLedgerEntry in _session.run_snapshot().node_choice_receipts:
+		if entry == null or entry.receipt == null or entry.result_acknowledged:
+			continue
+		result.append(entry.receipt.deep_clone())
+	return result
+
 func can_transition(event: RunEvent) -> bool:
 	if event == null or not event.is_concrete():
 		return false

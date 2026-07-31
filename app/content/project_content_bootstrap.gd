@@ -13,26 +13,46 @@ const REQUIRED_ASSET_PATHS: Array[String] = [
 	"res://content/packs/vertical_slice/units/slice_player_00.tres",
 ]
 
+const LOCALIZATION_CATALOG_INVALID: StringName = &"CONTENT_LOCALIZATION_CATALOG_INVALID"
+
 var _dependency_port: ContentDependencyPort
 var _registry_for_result: ContentRegistryService
 var _owns_registry_for_result: bool
+var _localization_catalog_error: StringName = &""
 
 
-func _init(dependency_port: ContentDependencyPort = null) -> void:
+## H3 fail-closed 修正:production catalog 一律先經 typed load result 驗證
+## (design.md:143-152、R5:66-68)。載入失敗不得回傳 fallback catalog 讓 boot 照常成功;
+## 失敗原因記在 `_localization_catalog_error`,由 run() 在任何內容安裝前立即回報失敗,
+## 讓呼叫端(app_root.gd)走既有 boot failure 呈現路徑。`localization_catalog_load_override`
+## 僅供測試注入竄改 SHA 的 LoadResult,避免測試須竄改磁碟上的正式 catalog。
+func _init(
+	dependency_port: ContentDependencyPort = null,
+	localization_catalog_load_override: LocalizationCatalogLoadResult = null
+) -> void:
 	_dependency_port = dependency_port
 	if _dependency_port == null:
-		_dependency_port = ProjectContentDependencyPort.new(
-			_load_localization_catalog_or_fallback()
+		var loaded := (
+			localization_catalog_load_override
+			if localization_catalog_load_override != null
+			else _load_production_localization_catalog()
 		)
+		if loaded.ok:
+			_dependency_port = ProjectContentDependencyPort.new(loaded.catalog)
+		else:
+			_localization_catalog_error = LOCALIZATION_CATALOG_INVALID
 
 
-func _load_localization_catalog_or_fallback() -> LocalizationCatalog:
-	var fallback := LocalizationCatalog.new()
+func _load_production_localization_catalog() -> LocalizationCatalogLoadResult:
 	if not FileAccess.file_exists(LOCALIZATION_CATALOG_PATH):
-		return fallback
+		return LocalizationCatalogLoadResult.failure(
+			LocalizationCatalogLoadError.new(LocalizationCatalogLoadError.IO)
+		)
 	var file := FileAccess.open(LOCALIZATION_CATALOG_PATH, FileAccess.READ)
 	if file == null:
-		return fallback
+		return LocalizationCatalogLoadResult.failure(
+			LocalizationCatalogLoadError.new(LocalizationCatalogLoadError.IO)
+		)
 	var bytes := file.get_buffer(file.get_length())
 	file.close()
 	var request := LocalizationCatalogLoadRequest.new(
@@ -40,8 +60,7 @@ func _load_localization_catalog_or_fallback() -> LocalizationCatalog:
 		bytes,
 		LOCALIZATION_CATALOG_SHA256
 	)
-	var loaded := LocalizationCatalogLoader.new().load_catalog(request)
-	return loaded.catalog if loaded.ok else fallback
+	return LocalizationCatalogLoader.new().load_catalog(request)
 
 
 func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
@@ -51,6 +70,11 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 		)
 	_registry_for_result = registry
 	_owns_registry_for_result = registry.get_parent() == null
+	if not _localization_catalog_error.is_empty():
+		return _failure(
+			_localization_catalog_error,
+			"production localization catalog load failed"
+		)
 	for path: String in REQUIRED_ASSET_PATHS:
 		if not _dependency_port.asset_exists(path):
 			return _failure(&"CONTENT_ASSET_MISSING", path)

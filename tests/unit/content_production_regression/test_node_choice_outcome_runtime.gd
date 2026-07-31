@@ -25,23 +25,29 @@ func test_treasure_choice_opens_exact_pinned_reward_table() -> void:
 		&"treasure",
 		choices
 	)
+	var catalog := EconomyTestFixture.settlement_catalog(
+		run.content_snapshot.manifest_digest_value()
+	)
 	var service := CommitNodeChoiceService.new()
+	# begin 現在自己從 rng stream 抽 lifecycle nonce，並收 catalog 做世代守衛
+	# （design.md §5:161-165、review M2/M4）。
 	var begun := service.begin(
 		run,
 		StringName(run.current_node_id.value),
 		choice_set,
-		"0123456789abcdef"
+		catalog
 	)
 	assert_true(begun.ok)
 	if not begun.ok:
 		return
-	var catalog := EconomyTestFixture.settlement_catalog(
-		run.content_snapshot.manifest_digest_value()
-	)
 	var committed := service.commit(
 		begun.run_state,
+		NodeChoiceCommitPayload.from_pending(
+			begun.run_state.run_id,
+			begun.run_state.resolution_state as NodeChoicePendingState,
+			&"choice.treasure.standard"
+		),
 		choice_set,
-		&"choice.treasure.standard",
 		catalog
 	)
 	assert_true(
@@ -63,7 +69,10 @@ func test_treasure_choice_opens_exact_pinned_reward_table() -> void:
 	assert_eq(pending.stage_id, PendingRewardState.StageId.STANDARD)
 	assert_eq(pending.offers.size(), 3)
 	assert_eq(committed.run_state.node_choice_receipts.size(), 1)
-	assert_true(
+	# design :186／:201-205（review M3）：commit 交易一律留 false，ack 是
+	# AcknowledgeNodeChoiceResultCommand 的另一筆交易；reward 出口不再自動 ack，
+	# 否則 reload 無法重播結果。
+	assert_false(
 		committed.run_state.node_choice_receipts[0].result_acknowledged
 	)
 	assert_eq(run.run_phase, RunState.RunPhase.PREPARE)

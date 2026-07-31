@@ -27,6 +27,9 @@ enum Kind {
 	ABANDON_BOSS_RETRY,
 	SETTLE_TERMINAL_RUN,
 	COMMIT_NODE_CHOICE,
+	ACKNOWLEDGE_NODE_CHOICE_RESULT,
+	DISMANTLE_WITH_NODE_SERVICE,
+	EXIT_NODE_SERVICE,
 }
 
 var kind: Kind
@@ -38,6 +41,14 @@ var secondary_item_instance_id: String
 var target_unit_instance_id: String
 var choice_id: String
 var choice_set_id: StringName
+## design.md §5:173-178：COMMIT_NODE_CHOICE 的 exact payload。intent 只搬運它，
+## 不在 dispatch 時回頭讀 canonical state（見 node_choice_commit_payload.gd 檔頭）。
+var node_choice_payload: NodeChoiceCommitPayload
+## node service（design :208-214）與 ack（design :201-203）各自的 identity 欄位。
+var expected_run_id: String
+var node_id: StringName
+var choice_receipt_digest: String
+var receipt_digest: String
 var accept: bool
 var abandon: bool
 var relic_slot_index: int = -1
@@ -60,6 +71,15 @@ func deep_clone() -> RunPresentationIntent:
 	clone.target_unit_instance_id = target_unit_instance_id
 	clone.choice_id = choice_id
 	clone.choice_set_id = choice_set_id
+	clone.node_choice_payload = (
+		node_choice_payload.deep_clone()
+		if node_choice_payload != null
+		else null
+	)
+	clone.expected_run_id = expected_run_id
+	clone.node_id = node_id
+	clone.choice_receipt_digest = choice_receipt_digest
+	clone.receipt_digest = receipt_digest
 	clone.accept = accept
 	clone.abandon = abandon
 	clone.relic_slot_index = relic_slot_index

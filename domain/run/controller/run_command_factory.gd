@@ -117,14 +117,47 @@ func try_node_choice_set(choice_set_id: StringName) -> NodeChoiceSetRule:
 		else null
 	)
 
+## design.md §5:177「factory 不得以 latest state 覆蓋」：payload 原樣轉呈，
+## factory 只負責把 payload 自己宣告的 choice_set_id 解析成 pinned rule。
 func commit_node_choice_command(
-	choice_set_id: StringName,
-	choice_id: StringName
+	payload: NodeChoiceCommitPayload
 ) -> CommitNodeChoiceCommand:
 	return CommitNodeChoiceCommand.new(
-		try_node_choice_set(choice_set_id),
-		choice_id,
+		payload,
+		try_node_choice_set(
+			payload.choice_set_id if payload != null else &""
+		),
 		_catalog
+	)
+
+func acknowledge_node_choice_result_command(
+	expected_run_id: String,
+	receipt_digest: String
+) -> AcknowledgeNodeChoiceResultCommand:
+	return AcknowledgeNodeChoiceResultCommand.new(
+		expected_run_id, receipt_digest
+	)
+
+func dismantle_with_node_service_command(
+	expected_run_id: String,
+	node_id: StringName,
+	choice_receipt_digest: String,
+	equipment_item_instance_id: String
+) -> DismantleWithNodeServiceCommand:
+	return DismantleWithNodeServiceCommand.new(
+		expected_run_id,
+		node_id,
+		choice_receipt_digest,
+		equipment_item_instance_id
+	)
+
+func exit_node_service_command(
+	expected_run_id: String,
+	node_id: StringName,
+	choice_receipt_digest: String
+) -> ExitNodeServiceCommand:
+	return ExitNodeServiceCommand.new(
+		expected_run_id, node_id, choice_receipt_digest
 	)
 
 func choose_reward_command(choice_id: String) -> ChooseRewardCommand:

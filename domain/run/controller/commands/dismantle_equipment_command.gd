@@ -14,6 +14,12 @@ extends RunCommand
 ## ConsumableDef via the pinned ConsumableRuleTable -- an arbitrary inventory
 ## item (equipment, component, non-dismantle consumable) can never be spent to
 ## unbind equipment.
+##
+## G2 content-production（design.md §5:213）：本命令在 NodeServicePending
+## (dismantle) 期間仍可使用並維持耗材規則，但**不再完成節點**——完成節點與釋放
+## shop offers 是 ExitNodeServiceCommand 的唯一職責，ack 則是
+## AcknowledgeNodeChoiceResultCommand 的另一筆交易。不要求耗材的服務內拆解走
+## DismantleWithNodeServiceCommand。
 
 const INVENTORY_CAPACITY: int = 16
 
@@ -83,33 +89,7 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	else:
 		draft.roster_state.pending_item_overflow.append(_equipment_item_instance_id)
 		draft.roster_state.pending_item_overflow.sort()
-	if service_pending != null:
-		_complete_node_service(draft, service_pending)
 	return CommandApplyResult.success(draft)
-
-func _complete_node_service(
-	draft: RunState,
-	pending: NodeServicePendingResolutionState
-) -> void:
-	for entry: NodeChoiceReceiptLedgerEntry in draft.node_choice_receipts:
-		if (
-			entry != null
-			and entry.receipt != null
-			and entry.receipt.receipt_digest
-				== pending.choice_receipt_digest
-		):
-			entry.result_acknowledged = true
-			break
-	for node: MapNodeState in draft.map_state.nodes:
-		if StringName(node.node_id) != pending.node_id:
-			continue
-		node.completed = true
-		if not draft.map_state.completed_node_ids.has(node.node_id):
-			draft.map_state.completed_node_ids.append(node.node_id)
-			draft.map_state.completed_node_ids.sort()
-		break
-	draft.resolution_state = IdleResolutionState.new()
-	draft.run_phase = RunState.RunPhase.MAP
 
 func _find_unit(draft: RunState, unit_instance_id: String) -> UnitInstance:
 	for unit: UnitInstance in draft.roster_state.unit_instances:

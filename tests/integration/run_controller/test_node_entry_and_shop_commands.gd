@@ -232,7 +232,7 @@ func test_generated_non_combat_and_rest_nodes_have_committed_exits() -> void:
 			var choice_id := _choice_id_with_outcome(choice_set, wanted_outcome)
 			assert_false(choice_id.is_empty())
 			var committed := controller.dispatch(CommitNodeChoiceCommand.new(
-				choice_set, choice_id, catalog
+				_commit_payload(controller, choice_id), choice_set, catalog
 			))
 			assert_true(committed.ok)
 			if not committed.ok: continue
@@ -294,13 +294,14 @@ func test_event_unit_grant_reservation_is_atomic_on_save_failure() -> void:
 		choice_set, NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE
 	)
 	assert_false(grant_choice_id.is_empty())
+	var grant_payload := _commit_payload(controller, grant_choice_id)
 	var before := controller.view_state()
 	storage.reset_journal()
 	storage.inject_fault(StorageFaultKey.new(
 		StorageFaultKey.OPEN_WRITE, StorageFaultKey.TMP, 0
 	))
 	assert_false(controller.dispatch(CommitNodeChoiceCommand.new(
-		choice_set, grant_choice_id, catalog
+		grant_payload, choice_set, catalog
 	)).ok)
 	assert_eq(controller.view_state().run_phase, before.run_phase)
 	storage.clear_faults()
@@ -311,7 +312,7 @@ func test_event_unit_grant_reservation_is_atomic_on_save_failure() -> void:
 	assert_true(after_failure.run.node_choice_receipts.is_empty())
 	_assert_pool_conserved(after_failure.run.unit_pool_state)
 	var resolved := controller.dispatch(CommitNodeChoiceCommand.new(
-		choice_set, grant_choice_id, catalog
+		grant_payload, choice_set, catalog
 	))
 	assert_true(resolved.ok)
 	if not resolved.ok: return
@@ -366,8 +367,9 @@ func test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits() 
 		choice_set, NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE
 	)
 	assert_false(grant_choice_id.is_empty())
+	var grant_payload := _commit_payload(controller, grant_choice_id)
 	var resolved := controller.dispatch(CommitNodeChoiceCommand.new(
-		choice_set, grant_choice_id, catalog
+		grant_payload, choice_set, catalog
 	))
 	assert_true(resolved.ok)
 	if not resolved.ok: return
@@ -448,6 +450,18 @@ func _node_choice_repository(storage: SaveStoragePort) -> SaveRepository:
 		FakePinnedCatalogReceiptPort.new(_node_choice_receipt()),
 		FakeContentIdMigrationPort.new(),
 		RunStateValidator.new()
+	)
+
+## G2 content-production（design.md §5:173-178）：CommitNodeChoiceCommand 現在
+## exact 攜帶 pending 的十欄 payload。production 路徑是「presentation 從 committed
+## snapshot 抄下」，測試沿用同一條路：controller 的 pending 投影 → payload。
+func _commit_payload(
+	controller: RunController, choice_id: StringName
+) -> NodeChoiceCommitPayload:
+	return NodeChoiceCommitPayload.from_pending(
+		controller.view_state().run_id,
+		controller.node_choice_pending_snapshot(),
+		choice_id
 	)
 
 func _choice_id_with_outcome(

@@ -30,6 +30,12 @@ const EXPECTED_INTENTS: Array[StringName] = [
 	&"ABANDON_BOSS_RETRY",
 	&"SETTLE_TERMINAL_RUN",
 	&"COMMIT_NODE_CHOICE",
+	# G2 content-production：design.md §5:201-214 的三個具名 writer——ack、
+	# 服務內拆解、node service 離場。前者關掉結果重播，後兩者是 dismantle 服務
+	# 唯一的「多次執行」與「離場」路徑（少了離場命令 run 會永久卡死）。
+	&"ACKNOWLEDGE_NODE_CHOICE_RESULT",
+	&"DISMANTLE_WITH_NODE_SERVICE",
+	&"EXIT_NODE_SERVICE",
 ]
 
 const EXPECTED_FACTORY_METHODS: Array[String] = [
@@ -58,6 +64,9 @@ const EXPECTED_FACTORY_METHODS: Array[String] = [
 	"abandon_boss_retry_command",
 	"settle_terminal_run_command",
 	"commit_node_choice_command",
+	"acknowledge_node_choice_result_command",
+	"dismantle_with_node_service_command",
+	"exit_node_service_command",
 ]
 
 

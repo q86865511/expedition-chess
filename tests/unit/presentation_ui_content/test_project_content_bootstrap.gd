@@ -24,6 +24,8 @@ const DEPENDENCY_PATH := "res://app/content/project_content_dependency_port.gd"
 const LOCALIZATION_PATH := "res://app/content/localization_catalog.gd"
 const BUILD_LAB_BOOTSTRAP_PATH := \
 	"res://scripts/dev/build_lab/build_lab_content_bootstrap.gd"
+const APP_ROOT_PATH := "res://app/app_root.gd"
+const LOCALIZATION_CATALOG_PATH := "res://localization/catalog.v2.csv"
 
 const KNOWN_CONTENT_KEY := &"loc.unit_slice_player_00"
 const KNOWN_CONTENT_ASSET := \
@@ -172,6 +174,57 @@ func test_build_lab_adapter_consumes_project_bootstrap_without_second_content_gr
 	assert_false(
 		source.contains("install_validated("),
 		"Build Lab must consume the production receipt instead of reinstalling content"
+	)
+
+
+## T25 H3 修正防回歸:production localization catalog 載入失敗(SHA 不符/malformed)
+## 必須 fail-closed 回傳 ok=false,不得回傳 fallback catalog 讓 boot 照常成功
+## (R5:66-68、design.md:150-152)。用竄改 SHA 的 bytes 建 LoadResult 並經測試專用的
+## `localization_catalog_load_override` 建構參數注入,避免需竄改磁碟上的正式 catalog。
+func test_production_bootstrap_fails_closed_when_localization_catalog_load_fails() -> void:
+	var bootstrap_script := _load_script(BOOTSTRAP_PATH, "ProjectContentBootstrap")
+	if bootstrap_script == null:
+		return
+	assert_true(
+		FileAccess.file_exists(LOCALIZATION_CATALOG_PATH),
+		"production localization catalog fixture must exist for this test to be meaningful"
+	)
+	var tampered_bytes := "key,zh_TW,en\nk,a,b\n".to_utf8_buffer()
+	var request := LocalizationCatalogLoadRequest.new(
+		StringName(LOCALIZATION_CATALOG_PATH),
+		tampered_bytes,
+		"0".repeat(64)
+	)
+	var loaded := LocalizationCatalogLoader.new().load_catalog(request)
+	assert_false(loaded.ok, "bytes tampered against the declared SHA must fail loader validation")
+	if loaded.ok:
+		return
+
+	var bootstrap: Object = bootstrap_script.new(null, loaded)
+	var result: Variant = bootstrap.call("run", ContentRegistryService.new())
+
+	assert_false(
+		_field_bool(result, &"ok"),
+		"production catalog load failure must fail-closed instead of falling back"
+	)
+	assert_eq(
+		_field_name(result, &"error_code"),
+		&"CONTENT_LOCALIZATION_CATALOG_INVALID"
+	)
+	assert_null(_field(result, &"receipt"))
+
+
+## T25 H3 修正防回歸:app_root.gd 不得回退成直接
+## ProjectContentDependencyPort.new(LocalizationCatalog.new()) 繞過 typed load
+## (那等於production 一律使用內建 fallback 目錄,SHA/CSV 驗證形同虛設)。
+func test_app_root_does_not_bypass_localization_catalog_typed_load() -> void:
+	assert_true(FileAccess.file_exists(APP_ROOT_PATH))
+	if not FileAccess.file_exists(APP_ROOT_PATH):
+		return
+	var source := FileAccess.get_file_as_string(APP_ROOT_PATH)
+	assert_false(
+		source.contains("ProjectContentDependencyPort.new(LocalizationCatalog.new())"),
+		"AppRoot must not bypass the production localization catalog typed load"
 	)
 
 

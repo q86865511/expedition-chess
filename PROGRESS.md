@@ -4,7 +4,7 @@
 
 ## 目前狀態
 
-G2 `content-production` 實作與 T25 三輪雙審已完成:`codex/g2-content-production` 上 10 個檢查點 commit(d5a6325…886395b),fresh 全綠(Gut 281 scripts/1091 tests、10k ExpeditionSoak exit 0、-Suite All exit 0、acceptance 21 列 verified)。尚餘 blocked-on-codex 項(T18A 資產採納 gate、音訊 R9 格式重生成)與 push/PR gate 待使用者裁決。
+G2 `content-production` 已完成並 merge:PR #7 於 2026-08-01 合併為 `8a2c97b`(11 commits,fresh 全綠:Gut 281 scripts/1091 tests、10k ExpeditionSoak、All exit 0,T25 三輪雙審閉環)。尚餘 blocked-on-codex 項:T18A 資產採納 gate、音訊 R9 格式重生成;完成後 acceptance 的 4 個 blocked 列自動翻綠。下一片依 roadmap 為 TUNE/balance。
 
 ## 已完成
 
@@ -111,7 +111,6 @@ G2 `content-production` 實作與 T25 三輪雙審已完成:`codex/g2-content-pr
   音訊 R9 格式重生成(現況 44.1kHz/8s/q0.8/mono vs 規格 48kHz/20-40s/q0.5/stereo,
   或由使用者裁決修規格)。完成後 acceptance 的 AC-033/038/REQ-PROD-001/
   REQ-SCOPE-002 自動翻綠(判定機械化)。
-- push/PR/merge 由使用者確認後執行。
 - 後續兩片:TUNE＋30k bot soak、效能/migration bridge/90 場真人 release gate。
 
 ## 已知問題

@@ -331,6 +331,10 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 	var challenges: Variant = _name_array(snapshot.get("challenge_unlock_def_ids"))
 	if enabled == null or rewards == null or nodes == null or challenges == null:
 		return null
+	var references_value: Variant = _generation_references(run_data, snapshot)
+	if references_value == null:
+		return null
+	var references: Array[ContentGenerationMigrationReference] = references_value
 	return ContentGenerationMigrationRequest.new(
 		snapshot["content_version"],
 		snapshot["manifest_digest"],
@@ -341,8 +345,222 @@ func _generation_request(run_data: Dictionary) -> ContentGenerationMigrationRequ
 		challenges,
 		StringName(snapshot["meta_reward_table_id"]),
 		int(snapshot["catalog_schema_version"]),
-		int(snapshot["content_codec_version"])
+		int(snapshot["content_codec_version"]),
+		references
 	)
+
+
+## design.md:304-311 要求 generation migration 逐一走訪 ContentSnapshot、
+## board/bench/pool、equipment/inventory/overflow、relics、commander、
+## map/current node/preview、ResolutionState、reservation 與
+## transaction/claim/receipt。這裡把 raw run dictionary 上的每個 content 引用
+## 翻成 typed reference 交給 port;port 依此要求 pack 有 exact mapping。
+## 形狀不符即回 null(呼叫端轉成 GENERATION_MIGRATION_FAILED),不做寬鬆略過。
+##
+## instance id(bench／inventory／overflow／board placement)不是 content id,
+## 由 unit_instances／item_instances 的 def_id 代表;item def 的 category 在 save
+## 上無法區分 equipment 與 item_component,以空 category 交給 port 做唯一比對。
+func _generation_references(
+	run_data: Dictionary,
+	snapshot: Dictionary
+) -> Variant:
+	var references: Array[ContentGenerationMigrationReference] = []
+	_append_reference(
+		references, &"economy_config", snapshot.get("economy_config_id"),
+		&"run.content_snapshot.economy_config_id", true
+	)
+	if snapshot.has("combat_config_id"):
+		_append_reference(
+			references, &"combat_config", snapshot.get("combat_config_id"),
+			&"run.content_snapshot.combat_config_id", true
+		)
+	_append_reference(
+		references, &"meta_reward_table", snapshot.get("meta_reward_table_id"),
+		&"run.content_snapshot.meta_reward_table_id", true
+	)
+	if not _append_reference_array(
+		references, &"reward_table", snapshot.get("reward_table_ids"),
+		&"run.content_snapshot.reward_table_ids", true
+	) or not _append_reference_array(
+		references, &"map_node", snapshot.get("map_node_def_ids"),
+		&"run.content_snapshot.map_node_def_ids", true
+	) or not _append_reference_array(
+		references, &"unlock", snapshot.get("challenge_unlock_def_ids"),
+		&"run.content_snapshot.challenge_unlock_def_ids", true
+	):
+		return null
+	_append_reference(
+		references, &"commander", run_data.get("commander_id"),
+		&"run.commander_id", true
+	)
+	if not _append_reference_array(
+		references, &"", run_data.get("discovered_content_ids"),
+		&"run.discovered_content_ids", false
+	):
+		return null
+	if not _append_object_field_references(
+		references, run_data.get("map_state"), "nodes", "def_id",
+		&"map_node", &"run.map_state.nodes.def_id"
+	):
+		return null
+	var roster_value: Variant = run_data.get("roster_state")
+	if roster_value != null and not roster_value is Dictionary:
+		return null
+	var roster: Dictionary = roster_value if roster_value is Dictionary else {}
+	if not _append_array_field_references(
+		references, roster.get("unit_instances"), "def_id",
+		&"unit", &"run.roster_state.unit_instances.def_id"
+	) or not _append_array_field_references(
+		references, roster.get("item_instances"), "def_id",
+		&"", &"run.roster_state.item_instances.def_id"
+	) or not _append_array_field_references(
+		references, roster.get("active_relic_slots"), "relic_id",
+		&"relic", &"run.roster_state.active_relic_slots.relic_id"
+	):
+		return null
+	if not _append_object_field_references(
+		references, run_data.get("unit_pool_state"), "entries", "unit_def_id",
+		&"unit", &"run.unit_pool_state.entries.unit_def_id"
+	):
+		return null
+	if not _append_object_field_references(
+		references, run_data.get("economy_state"), "shop_offers", "unit_def_id",
+		&"unit", &"run.economy_state.shop_offers.unit_def_id"
+	):
+		return null
+	if not _append_array_field_references(
+		references, run_data.get("reservation_owners"), "unit_def_id",
+		&"unit", &"run.reservation_owners.unit_def_id"
+	):
+		return null
+	if not _append_claim_receipt_references(
+		references, run_data.get("claim_receipts")
+	) or not _append_node_choice_receipt_references(
+		references, run_data.get("node_choice_receipts")
+	):
+		return null
+	return references
+
+
+func _append_reference(
+	references: Array[ContentGenerationMigrationReference],
+	category: StringName,
+	value: Variant,
+	field_path: StringName,
+	structural: bool
+) -> void:
+	if not value is String or (value as String).is_empty():
+		return
+	references.append(ContentGenerationMigrationReference.new(
+		category, StringName(value), field_path, structural
+	))
+
+
+func _append_reference_array(
+	references: Array[ContentGenerationMigrationReference],
+	category: StringName,
+	value: Variant,
+	field_path: StringName,
+	structural: bool
+) -> bool:
+	if value == null:
+		return true
+	if not value is Array:
+		return false
+	for entry: Variant in (value as Array):
+		if not entry is String:
+			return false
+		_append_reference(references, category, entry, field_path, structural)
+	return true
+
+
+func _append_array_field_references(
+	references: Array[ContentGenerationMigrationReference],
+	value: Variant,
+	field: String,
+	category: StringName,
+	field_path: StringName
+) -> bool:
+	if value == null:
+		return true
+	if not value is Array:
+		return false
+	for entry: Variant in (value as Array):
+		if not entry is Dictionary:
+			return false
+		var data: Dictionary = entry
+		var content_id: Variant = data.get(field)
+		if content_id == null:
+			continue
+		if not content_id is String:
+			return false
+		_append_reference(references, category, content_id, field_path, true)
+	return true
+
+
+func _append_object_field_references(
+	references: Array[ContentGenerationMigrationReference],
+	value: Variant,
+	array_field: String,
+	field: String,
+	category: StringName,
+	field_path: StringName
+) -> bool:
+	if value == null:
+		return true
+	if not value is Dictionary:
+		return false
+	return _append_array_field_references(
+		references, (value as Dictionary).get(array_field), field,
+		category, field_path
+	)
+
+
+func _append_claim_receipt_references(
+	references: Array[ContentGenerationMigrationReference],
+	value: Variant
+) -> bool:
+	if value == null:
+		return true
+	if not value is Array:
+		return false
+	for entry: Variant in (value as Array):
+		if not entry is Dictionary:
+			return false
+		var key_value: Variant = (entry as Dictionary).get("key")
+		if key_value == null:
+			continue
+		if not key_value is Dictionary:
+			return false
+		_append_reference(
+			references, &"effect", (key_value as Dictionary).get("effect_id"),
+			&"run.claim_receipts.key.effect_id", true
+		)
+	return true
+
+
+func _append_node_choice_receipt_references(
+	references: Array[ContentGenerationMigrationReference],
+	value: Variant
+) -> bool:
+	if value == null:
+		return true
+	if not value is Array:
+		return false
+	for entry: Variant in (value as Array):
+		if not entry is Dictionary:
+			return false
+		var receipt_value: Variant = (entry as Dictionary).get("receipt")
+		if receipt_value == null:
+			continue
+		if not receipt_value is Dictionary:
+			return false
+		_append_reference(
+			references, &"node_choice_set",
+			(receipt_value as Dictionary).get("choice_set_id"),
+			&"run.node_choice_receipts.receipt.choice_set_id", true
+		)
+	return true
 
 
 func _generation_result_matches(

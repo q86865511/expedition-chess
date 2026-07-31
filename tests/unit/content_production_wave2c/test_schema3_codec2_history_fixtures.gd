@@ -75,13 +75,21 @@ func _registry_for(source: Dictionary) -> SaveMigrationRegistry:
 		target_digest
 	)
 	var migration_codec := ContentGenerationMigrationCodecV2.new()
+	# codec 2→3 的 pack 必須逐筆宣告來源世代的每個 content id(空 mappings 的
+	# pack 已被 port 視為「無約束」而拒絕),並附上 target entry digest 與安裝中
+	# catalog 的 L10N2 digest。
+	var target_entries := _target_entries(active_ids)
+	var localization_digest := migration_codec.localization_digest(
+		_localization_rows()
+	)
 	var pack := ContentGenerationMigrationPackV2.new()
 	pack.source_content_version = str(snapshot.content_version)
 	pack.target_content_version = target.content_version
 	pack.source_manifest_digest = str(snapshot.manifest_digest)
 	pack.expected_target_manifest_digest = target_digest
-	pack.mapping_digest = migration_codec.mapping_digest([])
-	pack.localization_catalog_digest = migration_codec.localization_digest([])
+	pack.mappings = _identity_mappings(target_entries)
+	pack.mapping_digest = migration_codec.mapping_digest(pack.mappings)
+	pack.localization_catalog_digest = localization_digest
 	pack.pack_digest = migration_codec.pack_digest(pack)
 	var allowlist: Array[ContentGenerationMigrationAllowlistEntryV2] = [
 		ContentGenerationMigrationAllowlistEntryV2.new(
@@ -93,13 +101,77 @@ func _registry_for(source: Dictionary) -> SaveMigrationRegistry:
 	var port := ContentGenerationMigrationPortV2.new(
 		[pack],
 		allowlist,
-		{target_digest: target}
+		{target_digest: target},
+		{target_digest: target_entries},
+		{target_digest: localization_digest}
 	)
 	var save_codec := SaveJsonCodec.new(
 		FakePinnedCatalogReceiptPort.new(target),
 		FakeContentIdMigrationPort.new()
 	)
 	return SaveMigrationRegistry.new(save_codec, port)
+
+
+## 三個歷史 fixture 的 enabled_content_ids 完全相同;target receipt 在本測試中
+## 也是同名 identity generation,因此 category 由 id 前綴決定。
+const _CATEGORY_BY_ID: Dictionary = {
+	&"commander.fixture": &"commander",
+	&"config.combat_default": &"combat_config",
+	&"economy.fixture": &"economy_config",
+	&"effect.fixture": &"effect",
+	&"mapnode.fixture": &"map_node",
+	&"meta.fixture": &"meta_reward_table",
+	&"relic.fixture": &"relic",
+	&"unit.fixture": &"unit",
+}
+
+
+func _target_entries(
+	active_ids: Array[StringName]
+) -> Array[ContentGenerationMigrationTargetEntry]:
+	var result: Array[ContentGenerationMigrationTargetEntry] = []
+	for content_id: StringName in active_ids:
+		result.append(ContentGenerationMigrationTargetEntry.new(
+			_CATEGORY_BY_ID.get(content_id, &"unit"),
+			content_id,
+			("entry|" + String(content_id)).sha256_text()
+		))
+	return result
+
+
+func _identity_mappings(
+	target_entries: Array[ContentGenerationMigrationTargetEntry]
+) -> Array[ContentGenerationMigrationEntryV2]:
+	var result: Array[ContentGenerationMigrationEntryV2] = []
+	for entry: ContentGenerationMigrationTargetEntry in target_entries:
+		result.append(ContentGenerationMigrationEntryV2.new(
+			String(entry.category),
+			String(entry.content_id),
+			ContentGenerationMigrationEntryV2.Requirement.REQUIRED,
+			ContentGenerationMigrationEntryV2.MappingKind.IDENTITY,
+			true,
+			String(entry.content_id),
+			entry.entry_digest
+		))
+	result.sort_custom(
+		func(
+			left: ContentGenerationMigrationEntryV2,
+			right: ContentGenerationMigrationEntryV2
+		) -> bool:
+			if left.source_category != right.source_category:
+				return left.source_category < right.source_category
+			return left.source_id < right.source_id
+	)
+	return result
+
+
+func _localization_rows() -> Array[PackedStringArray]:
+	var row := PackedStringArray()
+	row.append("loc.fixture")
+	row.append("歷史")
+	row.append("Legacy")
+	var rows: Array[PackedStringArray] = [row]
+	return rows
 
 
 func _names(values: Array) -> Array[StringName]:

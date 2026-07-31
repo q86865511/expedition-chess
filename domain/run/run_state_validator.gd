@@ -522,16 +522,34 @@ func _validate_resolution(
 			if not resolution is NodeServicePendingResolutionState:
 				return _failure(&"run.resolution_state")
 			var service_pending := resolution as NodeServicePendingResolutionState
+			# design.md §5:208-214 只定義 dismantle 一種 node service，而且
+			# CommitNodeChoiceService 也只在 OUTCOME_OPEN_DISMANTLE_SERVICE 建立它。
+			# 收下任何其他 service_kind 等於接受一個沒有任何命令能處理的 resolution
+			# ——那是可載入的永久 softlock，必須在這裡 fail closed。
 			if (
-				service_pending.service_kind not in [&"dismantle", &"reward"]
+				service_pending.service_kind != &"dismantle"
 				or not _node_key_digest(String(service_pending.node_id))
 				or not _digest(service_pending.choice_receipt_digest)
-				or not _has_node_choice_receipt(
-					run,
-					service_pending.choice_receipt_digest
-				)
+				or run.current_node_id == null
+				or String(service_pending.node_id) != run.current_node_id.value
 			):
 				return _failure(&"run.resolution_state.node_service_pending")
+			# receipt 必須就是「開出這個服務的那一筆」：節點與 outcome 都要對得上，
+			# 否則竄改者可以拿節點 A 的合法 receipt 配節點 B 的 service resolution，
+			# 讓 ExitNodeServiceCommand 完成錯的節點。
+			var service_receipt := _find_node_choice_receipt(
+				run,
+				service_pending.choice_receipt_digest
+			)
+			if (
+				service_receipt == null
+				or service_receipt.node_id != service_pending.node_id
+				or service_receipt.outcome_kind
+					!= NodeChoiceRule.OUTCOME_OPEN_DISMANTLE_SERVICE
+			):
+				return _failure(
+					&"run.resolution_state.node_service_pending.choice_receipt"
+				)
 		_:
 			return _failure(&"run.resolution_state.kind")
 	return DtoValidationResult.success()
@@ -831,17 +849,19 @@ func _validate_node_choice_ledger(run: RunState) -> DtoValidationResult:
 			)
 		):
 			return _failure(&"run.node_choice_receipts.unique")
-		var matching_transaction := false
+		var matching_transaction: TransactionReceiptState = null
 		for transaction: TransactionReceiptState in run.transaction_receipts:
 			if (
 				transaction != null
 				and transaction.key != null
 				and String(transaction.key.digest) == receipt.transaction_digest
 			):
-				matching_transaction = true
+				matching_transaction = transaction
 				break
-		if not matching_transaction:
+		if matching_transaction == null:
 			return _failure(&"run.node_choice_receipts.transaction_digest")
+		if not _binds_node_choice_transaction(receipt, matching_transaction):
+			return _failure(&"run.node_choice_receipts.transaction_binding")
 		previous_serial = receipt.transaction_serial
 		seen_serials[receipt.transaction_serial] = true
 		seen_pending[
@@ -850,15 +870,38 @@ func _validate_node_choice_ledger(run: RunState) -> DtoValidationResult:
 	return DtoValidationResult.success()
 
 
-func _has_node_choice_receipt(run: RunState, receipt_digest: String) -> bool:
+## receipt.transaction_digest 只證明「有這麼一筆 transaction」，不證明那筆就是本次
+## commit_node_choice。逐欄綁定 key 的四個 token 與 payload_digest，才能擋掉把
+## transaction_digest 指向他筆交易（例如某筆 shop transaction）後重算 NCR1 的竄改
+## ——validator 若收下它，CommitNodeChoiceService 會誤判 ALREADY_COMMITTED 而卡死 run。
+func _binds_node_choice_transaction(
+	receipt: NodeChoiceCommitReceiptState,
+	transaction: TransactionReceiptState
+) -> bool:
+	var key := transaction.key
+	if key == null or key.next_transaction_serial == null:
+		return false
+	return (
+		key.run_id == receipt.run_id
+		and key.node_id_or_camp == receipt.node_id
+		and key.command_kind == &"commit_node_choice"
+		and key.next_transaction_serial.to_hex() == receipt.transaction_serial
+		and transaction.payload_digest == receipt.receipt_digest
+	)
+
+
+func _find_node_choice_receipt(
+	run: RunState,
+	receipt_digest: String
+) -> NodeChoiceCommitReceiptState:
 	for entry: NodeChoiceReceiptLedgerEntry in run.node_choice_receipts:
 		if (
 			entry != null
 			and entry.receipt != null
 			and entry.receipt.receipt_digest == receipt_digest
 		):
-			return true
-	return false
+			return entry.receipt
+	return null
 
 func _map_has_cycle(node_ids: Array[String], edges: Array[MapEdgeState]) -> bool:
 	var visit_states: Array[int] = []

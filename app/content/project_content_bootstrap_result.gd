@@ -16,6 +16,9 @@ var forge_table: ForgeRecipeTable
 var relic_table: RunRelicTable
 var consumable_rules: ConsumableRuleTable
 var economy_catalog: EconomyExpeditionCatalog
+## 本次 boot 實際安裝(且經 SHA 驗證)的 localization catalog;
+## codec 2→3 migration pack 的 L10N2 digest 必須由它重算。
+var localization_catalog: LocalizationCatalog
 
 var economy_config_id: StringName = &""
 var unit_ids: Array[StringName] = []

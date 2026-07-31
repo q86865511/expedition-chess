@@ -19,6 +19,9 @@ var _dependency_port: ContentDependencyPort
 var _registry_for_result: ContentRegistryService
 var _owns_registry_for_result: bool
 var _localization_catalog_error: StringName = &""
+## 只在正式 load 路徑上有值(注入 dependency port 的測試路徑為 null);
+## codec 2→3 migration pack 的 L10N2 digest 必須綁在這份實際安裝的 catalog 上。
+var _localization_catalog: LocalizationCatalog
 
 
 ## H3 fail-closed 修正:production catalog 一律先經 typed load result 驗證
@@ -38,6 +41,7 @@ func _init(
 			else _load_production_localization_catalog()
 		)
 		if loaded.ok:
+			_localization_catalog = loaded.catalog
 			_dependency_port = ProjectContentDependencyPort.new(loaded.catalog)
 		else:
 			_localization_catalog_error = LOCALIZATION_CATALOG_INVALID
@@ -110,7 +114,16 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 					String(ability.description_key)
 				)
 
-	var input := ContentValidationInput.new(combined, [], [], _dependency_port, 9)
+	# codec 2→3 的歷史 id 除了 generation migration pack 之外,也必須在 save decode
+	# 的 content id migration port 上解得開(否則 generation 升級成功、decode 仍判
+	# incompatible)。alias／tombstone 與 pack mapping 同出一張宣告表。
+	var input := ContentValidationInput.new(
+		combined,
+		ProductionContentGenerationMigrations.content_aliases(),
+		ProductionContentGenerationMigrations.content_tombstones(),
+		_dependency_port,
+		9
+	)
 	var report := ContentValidator.new().validate(input)
 	if not report.valid:
 		var first := report.issues[0]
@@ -222,6 +235,7 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 	)
 	result.content_version = CONTENT_VERSION
 	result.content_snapshot = snapshot_result.snapshot
+	result.localization_catalog = _localization_catalog
 	result.install_presentation_projection(
 		definition_views,
 		battle_result.catalog,

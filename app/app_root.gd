@@ -197,10 +197,33 @@ func _ready() -> void:
 	if _content_registry == null or _save_repository == null or _scene_router == null:
 		boot_failed.emit(&"APP_REQUIRED_SERVICE_MISSING")
 		return
+	# H3 修正:不得以硬編 LocalizationCatalog.new() 繞過 production catalog
+	# 的 SHA/CSV 驗證。傳 null 讓 bootstrap 走真正的 typed load
+	# (design.md:143-152);載入失敗會使 run() 回 ok=false,由既有的
+	# _try_content()==null → ERROR_CONTENT_UNAVAILABLE → boot_failed 路徑
+	# （與 INCOMPATIBLE_PRESERVED 等既有 boot failure 相同呈現）處理。
+	_content_bootstrap = ProjectContentBootstrap.new()
+	# B3 修正:codec 2→3 的 generation migration port 必須綁在「本次 boot 實際安裝
+	# 的 pinned generation」上,所以內容安裝要先於 save content port 組裝
+	# (先前順序相反,production 因此永遠只拿到 base port → PORT_UNCONFIGURED,
+	# 歷史 schema 3／codec 2 save 一律 incompatible_preserved,升不了級)。
+	# _try_content() 本來就會在同一個 _ready() 內由 _boot_route() 觸發,
+	# 失敗碼與原路徑相同,只是提前發出。
+	var content := _try_content()
+	if content == null:
+		boot_failed.emit(ERROR_CONTENT_UNAVAILABLE)
+		return
 	var receipt_port := ContentRegistryReceiptAdapter.new(_content_registry)
 	var migration_port := ContentRegistryMigrationAdapter.new(_content_registry)
+	var generation_migration_port := (
+		ProductionContentGenerationMigrationPortBuilder.new().build(
+			_content_registry, content.receipt, content.localization_catalog
+		)
+	)
 	var save_configuration: SaveConfigurationResult = (
-		_save_repository._configure_content_ports(receipt_port, migration_port)
+		_save_repository._configure_content_ports(
+			receipt_port, migration_port, generation_migration_port
+		)
 	)
 	if not save_configuration.ok:
 		boot_failed.emit(save_configuration.error.code)
@@ -210,12 +233,6 @@ func _ready() -> void:
 	_retained_run_recovery_service = RetainedRunRecoveryService.new(
 		_save_repository
 	)
-	# H3 修正:不得以硬編 LocalizationCatalog.new() 繞過 production catalog
-	# 的 SHA/CSV 驗證。傳 null 讓 bootstrap 走真正的 typed load
-	# (design.md:143-152);載入失敗會使 run() 回 ok=false,由既有的
-	# _try_content()==null → ERROR_CONTENT_UNAVAILABLE → boot_failed 路徑
-	# （與 INCOMPATIBLE_PRESERVED 等既有 boot failure 相同呈現）處理。
-	_content_bootstrap = ProjectContentBootstrap.new()
 	_scene_router.bind_presentation_host(presentation_host)
 	var catalog_error := _scene_router.bind_production_catalog(
 		ProductionSceneCatalog.new()

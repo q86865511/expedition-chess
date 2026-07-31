@@ -54,6 +54,8 @@
   T13 視覺樣板獲使用者核可。PR #5 已合併為 9362e7d；merge 後 UI 審查修正由
   PR #6 合併為 5e78ccf，fresh All 為 Gut 1000/1000。原 review verdict 與
   closure table 均保留。
-- G2 `content-production`：已由 `master@5e78ccf` 建立
-  `codex/g2-content-production`；負責正式內容／資產、codec 3、save schema 4、
-  18 條 owning AC 與 gated TDD／雙審。
+- G2 `content-production`:實作與 T25 三輪雙審已閉環(2026-08-01,分支
+  `codex/g2-content-production` 10 個檢查點 commit);codec 3、save schema 4、
+  codec 2→3 production migration、44 單位內容、node-choice 交易鏈、
+  T24 acceptance(21+1 列)全數落地,fresh 全綠(Gut 1091、10k soak、All exit 0)。
+  blocked-on-codex:T18A 資產採納 gate 與音訊 R9 格式;停在 push/PR gate。

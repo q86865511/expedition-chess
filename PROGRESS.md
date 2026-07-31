@@ -4,9 +4,24 @@
 
 ## 目前狀態
 
-主體架構規格 v0.2 已標記 `Approved`。S1～S5 五個系統切片均已完成，G1 灰盒閉環成立；G2 依 `specs/g2-roadmap.md` 拆為 presentation、content、balance、release 四片。`presentation-ui` T00～T15、R12～R16 findings closure 與 merge 後 UI 審查修正均已完成，T13 視覺候選獲使用者明示核可並接受 seed provenance warning。PR #5 已於 2026-07-30 merge（9362e7d），PR #6 已於 2026-07-31 merge（5e78ccf）；最新 fresh baseline 為 All exit 0、Gut 1000/1000、Content 39 cases、presentation static gate zero issues。`content-production` 已由最新 master 建立 `codex/g2-content-production` 並進入規格／gated TDD。
+G2 `content-production` 實作與 T25 三輪雙審已完成:`codex/g2-content-production` 上 10 個檢查點 commit(d5a6325…886395b),fresh 全綠(Gut 281 scripts/1091 tests、10k ExpeditionSoak exit 0、-Suite All exit 0、acceptance 21 列 verified)。尚餘 blocked-on-codex 項(T18A 資產採納 gate、音訊 R9 格式重生成)與 push/PR gate 待使用者裁決。
 
 ## 已完成
+
+- [2026-08-01] ✅ G2 `content-production` Claude 接手完成實作與 T25 雙審閉環 —
+  接手 codex 暫停點後依序完成:node runtime digest 修正驗證(`"<kind>_"+64hex`
+  權威格式)、全 Gut 76 紅收綠(validator regex 同步、EffectDef v2 契約同步、
+  choice 交易鏈適配等)、SFX 21 名對齊 R9(改名對映,使用者裁決)、Spec API
+  契約 9+2 條修正、T24 acceptance 證據表(21+1 列,V/P/B 分類+fully_closed
+  誠實語意)、NUL 噪音根因(u0000 字面量)修除。T25 三輪:R1(Claude)3H/6M/5L→
+  H/M 全修(dismantle/exit/ack 命令補全、exact payload 11 拒絕碼、bootstrap
+  fail-closed、nonce 改 RngService);R2(Claude+codex)4 Blocker+N1-N4→全修
+  (validator receipt/transaction 逐欄綁定、production codec2→3 migration port
+  接線+allowlist 硬化、canonical_set 比較器根因、ack 三路可達、catalog seal);
+  R3 closure:Claude APPROVED、codex B1-B3 CLOSED、B4(mapping 套用語意)以
+  886395b 關閉(ALIAS 改寫/TOMBSTONE 移除/ledger-bound fail-closed)。
+  證據:`.pipeline/content-production/reviews/t25-round{1,2,3}-claude-reviewer.md`、
+  `artifacts/test/content-production-acceptance.json`。
 
 - [2026-07-31] ⏸️ G2 `content-production` 實作中途暫停 — 工作樹停在
   `codex/g2-content-production`，全數變更未提交，未 stage／commit／push／PR。
@@ -87,13 +102,17 @@
 
 ## 進行中
 
-- G2 `content-production`：規格、codec 3／schema 4、44 單位正式內容、
-  localization、事件選項與正式資產量產進行中。
+- G2 `content-production`:實作與 T25 雙審已閉環,停在 push/PR gate 待使用者裁決。
 
 ## 待辦
 
-- 完成 `content-production` 的五個 gated TDD wave、雙審、18 AC 與 Git／PR gate。
-- 後續兩片：TUNE＋30k bot soak、效能／migration bridge／90 場真人 release gate。
+- content-production 的 blocked-on-codex 項:T18A 人工採納 gate(inventory
+  status generated→adopted、production-asset-attempts.json ledger)、
+  音訊 R9 格式重生成(現況 44.1kHz/8s/q0.8/mono vs 規格 48kHz/20-40s/q0.5/stereo,
+  或由使用者裁決修規格)。完成後 acceptance 的 AC-033/038/REQ-PROD-001/
+  REQ-SCOPE-002 自動翻綠(判定機械化)。
+- push/PR/merge 由使用者確認後執行。
+- 後續兩片:TUNE＋30k bot soak、效能/migration bridge/90 場真人 release gate。
 
 ## 已知問題
 
@@ -104,6 +123,17 @@
 
 ## 重要決策紀錄
 
+- [2026-08-01] G2 `content-production` T25 議決記錄項(可接受並記錄,非必修):
+  M6 缺 choice set 的 event/rest/treasure 節點硬拒=刻意 fail-closed;
+  L3 StableIdValidator 多段 id 放寬=刻意內容設計;L5 digest 大小寫/HashingContext
+  容錯現況可接受;N5 ability trigger 閘涵蓋全部 effect_ids(日後加被動需調整);
+  N6 exit 的 shop release 硬前置(現無可達失敗路徑);R3-3 跨 category ALIAS
+  的 single-hop 檢查限制(現不可達);emergency catalog 為全量 keys 而非
+  design 要求的 boot/recovery 子集(seal 已擋 production 誤用);map node
+  generated_payload_digest 於 ALIAS 改寫後不重算(validator 僅驗格式,無反推路徑)。
+- [2026-08-01] G2 `content-production` SFX 命名不一致採「改名對映」(使用者裁決):
+  21 個 SFX 檔名對齊 R9 語意名,不重生成音訊;音訊格式(取樣率/長度/品質/聲道)
+  與 R9 規格的差異另列 blocked-on-codex 待裁決。
 - [2026-07-28] G2 `presentation-ui` 使用者 override：R12/R13 規格複審先延後，允許繼續本地 baseline/TDD/implementation；R12 findings 不視為 resolved，R13 與 Git/PR gate 未豁免。
 - [2026-07-28] G2 `presentation-ui` R12 後續 ownership：使用者指定四項 finding 保留待修，交由 Claude 完成；R13 雙審原文與彙整狀態必須先同步 review-log／PROGRESS／HANDOFF／roadmap，未達雙 zero findings 不進 TDD。
 - [2026-07-28] G2 `presentation-ui` R12 雙審未通過：terminal handoff DAG/ownership 循環、Results snapshot commit boundary 矛盾、invalid playback multiplier 與完整 accessibility runtime/static evidence 缺口；4 項均待使用者裁決，TDD 硬停。

@@ -43,20 +43,23 @@
 | S3 `economy-expedition` | ✅ 完成，複檢 PASS | `specs/economy-expedition/`（final-review.md＋implementation-review.md） | 11/11 S3-AC evidence、10,000-seed ExpeditionSoak |
 | S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
 | S5 `meta-progression` | ✅ 實作完成（2026-07-26） | `specs/meta-progression/`（三件套＋implementation-review.md） | T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All exit 0、W5 R4 雙審零未決 |
-| PROD／SCOPE／UX／QA 橫切 15 REQ | 🟡 G2 `presentation-ui` 已 merge；`content-production` active | `specs/g2-roadmap.md`、`specs/content-production/` | PR #5 `MERGED @ 9362e7d`；PR #6 `MERGED @ 5e78ccf`；content baseline Gut 1000/1000、Content 39/39、static gate zero issues |
+| PROD／SCOPE／UX／QA 橫切 15 REQ | 🟡 `content-production` 實作+雙審閉環,停在 PR gate;T18A/音訊格式 blocked-on-codex | `specs/g2-roadmap.md`、`specs/content-production/` | 分支 10 commits;Gut 281/1091、10k soak、All exit 0;acceptance verified=true/fully_closed=false(4 blocked) |
 
-- **content-production 暫停點（2026-07-31）**：分支
-  `codex/g2-content-production` 維持未提交；禁止誤認為 final green。
-  Wave 1～4 主體與 Wave 5 choice/tooltip 已實作，多組 targeted suites
-  exit 0。最新 regression 在 `CommitNodeChoiceService.begin()` 暴露 runtime
-  node digest 被 `StableIdValidator` 拒絕；已修
-  `NodeChoicePendingState`、`NodeChoiceCommitReceiptState`、
-  `RunStateValidator` 改驗 64-hex digest，但尚未重跑。下次第一步依
-  `.pipeline/content-production/PAUSE-2026-07-31.md` 重跑
-  `content_production_regression`，不可跳到 final gate／雙審。仍待：
-  outcome runtime 收綠、presentation/AC 收口、完整 suites＋10k soak、
-  implementation 雙審與文件收尾；不做 TUNE／30k soak，不 stage／commit／
-  push／PR。
+- **content-production 實作與 T25 雙審已閉環(2026-08-01,Claude 接手完成)**:
+  分支 `codex/g2-content-production` 有 10 個檢查點 commit(d5a6325…886395b),
+  fresh 全綠(Gut 281 scripts/1091 tests、10k ExpeditionSoak exit 0、
+  -Suite All exit 0、acceptance 21 列 verified);T25 三輪雙審 closure 見
+  `specs/content-production/review-log.md`。停在 push/PR gate 待使用者。
+- **留給 codex 的美術/資產工作(blocked gate,acceptance 判定機械化)**:
+  (1) T18A 人工採納 gate:對 `assets/production/` 圖像做 originality/
+  silhouette 審查,產出 decision table 回寫 attempt ledger
+  (`assets/production/production-asset-attempts.json`,現缺檔),
+  `assets/production/inventory.json` status 由 generated 改 adopted;
+  (2) 音訊 R9 格式:現況 44.1kHz/8s/q0.8/mono vs 規格 48kHz/20-40s/q0.5/stereo,
+  重生成(`tools/content-production/generate-production-audio.py`,21 個語意名
+  已對齊 R9)或由使用者裁決修規格。完成後
+  `content-production-acceptance.json` 的 AC-033/038/REQ-PROD-001/
+  REQ-SCOPE-002 自動翻綠(blocked 判定讀檔案內容,不需改 runner)。
 - 測試 gate：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`（其餘 suite 見專案 `CLAUDE.md`）。`artifacts/test/` 為本機驗證輸出。
 - 表現層現況：production scene catalog/shell、typed router/lease、settings/audio、
   真 SubViewport/UI layer、playback/accessibility、formal typed controls 與 T13

@@ -59,3 +59,38 @@ Round 2仍無reviewer衝突或範圍擴張。修訂後送最終Round 3；若仍�
 
 兩位reviewer均完成最終read-back；架構reviewer另獨立重算CME2、L10N2、CGM2、
 CGR2 golden SHA-256並一致。SDD gate關閉，可進Wave 1。
+
+---
+
+# T25 Implementation Review(實作雙審)
+
+## Round 1 — 2026-07-31(Claude reviewer)
+
+3 High/6 Major/5 Low:H1 dismantle 出口 shop leak、H2 dismantle/exit 命令缺件、
+H3 bootstrap fail-open、M1 exact payload/11 拒絕碼缺、M2 世代守衛缺、M3 ack 語意、
+M4 nonce 可重現、M5 payload arity 放寬、M6 fail-closed 存疑、L1-L5。
+原文:`.pipeline/content-production/reviews/t25-round1-claude-reviewer.md`。
+
+## Round 2 — 2026-07-31/08-01(Claude + codex 第二意見)
+
+- Claude:R1 的 H/M 全 CLOSED;新發現 N1(ack 可達性)/N2(result 顯示)/
+  N3(catalog 未驅動 UI 文案+seal)/N4(誤導 field_path),L2 升建議修。
+- codex:REQUEST_CHANGES — B1 NCR1↔transaction 未綁定、B2 node service
+  resolution 未綁定+誤收 reward kind、B3 production 未接 codec2→3 migration
+  port、B4 allowlist 隱含 identity/未遍歷引用面;Maj5 acceptance 誠實語意。
+原文:`.pipeline/content-production/reviews/t25-round2-claude-reviewer.md`。
+
+## Round 3 — 2026-08-01(closure)
+
+| Reviewer | Verdict | 摘要 |
+|---|---|---|
+| Claude | APPROVED | B1-B4/N1-N4/L2/Maj5 全 CLOSED;L4 PARTIAL(建議項);R3-1~4 低度建議 |
+| codex | B1/B2/B3 CLOSED;B4 NOT_CLOSED→由 886395b 關閉 | mapping「套用」語意:ALIAS 改寫全引用面、TOMBSTONE 移除、ledger-bound fail-closed;兩個繞過構造轉正向測試 |
+
+議決記錄項(非必修,詳 PROGRESS.md 2026-08-01 決策):M6/L3/L5/N5/N6/R3-3/
+emergency catalog 全量 keys/map payload digest 不重算。
+Blocked(非審查缺陷,屬 T18A/資產 gate):AC-033、AC-038、REQ-PROD-001、
+REQ-SCOPE-002,見 content-production-acceptance.json 的 blocked_row_ids。
+最終證據:全 Gut 281 scripts/1091 tests 全綠、10k ExpeditionSoak exit 0、
+-Suite All exit 0(acceptance verified=true、fully_closed=false)。
+原文:`.pipeline/content-production/reviews/t25-round3-claude-reviewer.md`。

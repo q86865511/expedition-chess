@@ -427,6 +427,9 @@ function Write-ExecutionArtifact {
     if ($Suite -in @('All', 'ExpeditionSoak')) {
         Write-ExpeditionAcceptanceArtifact -Toolchain $Toolchain
     }
+    if ($Suite -eq 'All') {
+        Write-ContentProductionAcceptanceArtifact -AllExitCode $ExitCode -Toolchain $Toolchain
+    }
 }
 
 function Get-FoundationEvidenceEvaluation {
@@ -962,6 +965,412 @@ function Write-ExpeditionAcceptanceArtifact {
     }
 }
 
+function Get-ContentProductionEvidenceEvaluation {
+    $observed = @{}
+
+    $gutPath = Join-Path $artifactRoot 'gut.xml'
+    if (Test-Path -LiteralPath $gutPath -PathType Leaf) {
+        try {
+            [xml]$gutDocument = Get-Content -LiteralPath $gutPath -Raw -Encoding UTF8
+            $gutRoot = $gutDocument.SelectSingleNode('/testsuites')
+            if ($null -ne $gutRoot -and
+                [int]$gutRoot.GetAttribute('failures') -eq 0 -and
+                [int]$gutRoot.GetAttribute('errors') -eq 0 -and
+                [int]$gutRoot.GetAttribute('orphans') -eq 0) {
+                foreach ($testCase in $gutDocument.SelectNodes('//testcase')) {
+                    if ([string]$testCase.GetAttribute('status') -eq 'pass') {
+                        $observed['gut:' + [string]$testCase.GetAttribute('name')] = $true
+                    }
+                }
+            }
+        }
+        catch { }
+    }
+
+    foreach ($artifactName in @(
+        'content-validation.json', 'canonical.json', 'spec-contract.json',
+        'combat-runner.json', 'expedition-runner.json', 'smoke.json'
+    )) {
+        $path = Join-Path $artifactRoot $artifactName
+        $artifact = $null
+        if (Test-Path -LiteralPath $path -PathType Leaf) {
+            try { $artifact = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json }
+            catch { $artifact = $null }
+        }
+        $observed['artifact:' + $artifactName] = (
+            $null -ne $artifact -and [bool]$artifact.passed -and
+            @($artifact.failures).Count -eq 0
+        )
+        if ($null -ne $artifact) {
+            foreach ($scope in @($artifact.completed_scopes)) {
+                $observed['scope:' + $artifactName + ':' + [string]$scope] = [bool]$artifact.passed
+            }
+        }
+    }
+
+    # Manual production-asset gate observations (tasks T18/T18A). These keys are never
+    # asserted by a test; they read the authoring ledgers directly and only become true
+    # once the human generate -> reviewed -> adopted gate has actually been recorded.
+    $imageInventory = $null
+    $imageInventoryPath = Join-Path $repoRoot 'assets\production\inventory.json'
+    if (Test-Path -LiteralPath $imageInventoryPath -PathType Leaf) {
+        try { $imageInventory = Get-Content -LiteralPath $imageInventoryPath -Raw -Encoding UTF8 | ConvertFrom-Json }
+        catch { $imageInventory = $null }
+    }
+    $observed['asset:image_inventory_adopted'] = (
+        $null -ne $imageInventory -and [string]$imageInventory.status -eq 'adopted'
+    )
+
+    $attemptLedger = $null
+    $attemptLedgerPath = Join-Path $repoRoot 'assets\production\production-asset-attempts.json'
+    if (Test-Path -LiteralPath $attemptLedgerPath -PathType Leaf) {
+        try { $attemptLedger = Get-Content -LiteralPath $attemptLedgerPath -Raw -Encoding UTF8 | ConvertFrom-Json }
+        catch { $attemptLedger = $null }
+    }
+    $observed['asset:attempt_ledger_present'] = ($null -ne $attemptLedger)
+    $ledgerReviewed = $false
+    $ledgerOneAdoptedPerUnit = $false
+    if ($null -ne $attemptLedger) {
+        $attempts = @($attemptLedger.attempts)
+        $ledgerReviewed = ($attempts.Count -gt 0)
+        $adoptedPerUnit = @{}
+        foreach ($attempt in $attempts) {
+            $attemptStatus = [string]$attempt.status
+            if ($attemptStatus -notin @('reviewed', 'adopted', 'rejected') -or
+                [string]::IsNullOrWhiteSpace([string]$attempt.reviewer) -or
+                [string]::IsNullOrWhiteSpace([string]$attempt.decision)) {
+                $ledgerReviewed = $false
+            }
+            if ($attemptStatus -eq 'adopted') {
+                $adoptedUnitId = [string]$attempt.unit_id
+                if ($adoptedPerUnit.ContainsKey($adoptedUnitId)) {
+                    $adoptedPerUnit[$adoptedUnitId] = [int]$adoptedPerUnit[$adoptedUnitId] + 1
+                }
+                else { $adoptedPerUnit[$adoptedUnitId] = 1 }
+            }
+        }
+        $ledgerOneAdoptedPerUnit = ($adoptedPerUnit.Count -eq 44)
+        foreach ($adoptedUnitId in $adoptedPerUnit.Keys) {
+            if ([int]$adoptedPerUnit[$adoptedUnitId] -ne 1) { $ledgerOneAdoptedPerUnit = $false }
+        }
+    }
+    $observed['asset:attempt_ledger_reviewed'] = $ledgerReviewed
+    $observed['asset:attempt_ledger_one_adopted_per_unit'] = $ledgerOneAdoptedPerUnit
+
+    $manualOriginalityGate = @(
+        'asset:attempt_ledger_present',
+        'asset:attempt_ledger_reviewed',
+        'asset:attempt_ledger_one_adopted_per_unit'
+    )
+    $assetAdoptionGate = @(
+        'asset:image_inventory_adopted',
+        'asset:attempt_ledger_present',
+        'asset:attempt_ledger_one_adopted_per_unit'
+    )
+    $originalityReason = 'blocked_on_t18a_manual_originality_review_gate'
+    $adoptionReason = 'blocked_on_t18_t18a_asset_adoption_gate'
+
+    # Row set: the 18 owning global AC of specs/content-production/requirements.md R13,
+    # the three cross-cutting REQ owners, and the declared REQ-CONTENT-001 dependency.
+    $definitions = [ordered]@{
+        'AC-015' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_trait_not_active_when_distinct_board_def_id_count_below_threshold',
+            'gut:test_trait_becomes_active_when_distinct_board_def_id_count_reaches_threshold',
+            'gut:test_third_tag_unit_counts_toward_three_traits_simultaneously',
+            'gut:test_compile_is_deterministic_for_same_roster_and_catalog',
+            'gut:test_trait_effect_keeps_firing_periodically_after_a_member_dies_mid_combat'
+        ) }
+        'AC-016' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_forge_recipe_table_builder_produces_21_closed_recipes_with_symmetric_lookup',
+            'gut:test_forge_recipe_table_reverse_lookup_by_component_returns_all_six_recipes',
+            'gut:test_pack_equipment_recipes_are_a_closed_set_of_21_unique_pairs',
+            'scope:content-validation.json:content_validation_valid_fixture',
+            'scope:content-validation.json:content_validation_mutation.recipe_coverage'
+        ) }
+        'AC-018' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_pending_replacement_candidate_returns_offered_relic_during_relic_resolution',
+            'gut:test_choose_slot_success_replaces_relic_in_chosen_slot',
+            'gut:test_item_overflow_and_full_relic_slots_remain_recoverable_subphases',
+            'gut:test_multi_slot_ascending_order_survives_a_save_reload_round_trip',
+            'gut:test_replacing_a_relic_slot_updates_the_derived_effect_set_not_stale',
+            'gut:test_relic_effects_follow_slot_order_and_skip_relics_missing_from_battle_catalog'
+        ) }
+        'AC-021' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_build_locks_commander_id_and_challenge_level_on_run',
+            'gut:test_build_seeds_roster_from_starting_pack_and_excludes_commander',
+            'gut:test_dispatch_locks_each_commander_distinctly_and_excludes_from_board',
+            'gut:test_commit_board_command_injects_the_commander_population_source',
+            'gut:test_three_commanders_with_distinct_mechanisms_is_accepted',
+            'gut:test_three_commanders_all_pairwise_distinct_mechanisms_is_accepted',
+            'gut:test_no_commander_passive_effect_mixes_battle_and_run_operations'
+        ) }
+        'AC-022' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_compiled_unit_stats_unchanged_before_and_after_unlock_purchase',
+            'gut:test_unlock_modifier_refs_pointing_directly_to_unit_def_is_forbidden_growth',
+            'gut:test_unlock_referencing_population_source_effect_is_forbidden_growth',
+            'gut:test_unmodified_baseline_has_no_forbidden_growth_issue'
+        ) }
+        'AC-023' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_in_progress_run_content_snapshot_unaffected_by_later_unlock_purchase',
+            'gut:test_build_pins_content_snapshot_to_current_generation',
+            'gut:test_command_cannot_replace_the_run_pinned_content_snapshot',
+            'scope:content-validation.json:content_registry_generation_pinning'
+        ) }
+        'AC-033' = @{ Kind = 'global_ac'; Reason = $originalityReason; Blocked = $manualOriginalityGate; Required = @() }
+        'AC-034' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'scope:content-validation.json:content_validation_valid_fixture',
+            'scope:content-validation.json:content_validation_population_recompute',
+            'gut:test_population_sources_are_sorted_and_added_without_abstract_cap',
+            'gut:test_population_duplicate_identity_is_rejected',
+            'gut:test_population_checked_addition_reaches_i32_max_without_abstract_cap',
+            'gut:test_twelve_deployed_units_fit_capacity_and_thirteen_do_not',
+            'gut:test_commit_board_command_injects_the_commander_population_source'
+        ) }
+        'AC-038' = @{ Kind = 'global_ac'; Reason = $adoptionReason; Blocked = $assetAdoptionGate; Required = @(
+            'gut:test_production_asset_inventory_passes_formal_contract',
+            'gut:test_formal_unit_presentations_only_reference_adopted_assets',
+            'gut:test_every_unit_has_one_formal_ability_primary_effect_and_presentation',
+            'gut:test_formal_roster_preserves_player_monster_split_and_base_economy',
+            'scope:content-validation.json:content_validation_mutation.asset'
+        ) }
+        'AC-046' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_event_rest_and_treasure_choice_sets_are_substantive',
+            'gut:test_node_choice_commit_runtime_exists_as_named_api',
+            'gut:test_node_choice_pending_digest_is_canonical_clone_isolated_and_tamper_sensitive',
+            'gut:test_choice_runtime_uses_typed_catalog_and_existing_confirmation_port',
+            'gut:test_irreversible_confirmation_cancel_and_exactly_once',
+            'gut:test_failed_confirm_still_closes_the_modal_and_restores_the_background',
+            'gut:test_treasure_choice_opens_exact_pinned_reward_table',
+            'gut:test_generated_non_combat_and_rest_nodes_have_committed_exits',
+            'gut:test_node_entry_save_failure_preserves_income_shop_rng_and_phase',
+            'gut:test_refresh_save_failure_preserves_gold_offers_rng_and_ledger',
+            'gut:test_event_unit_grant_reservation_is_atomic_on_save_failure',
+            'gut:test_settlement_save_failure_preserves_result_hp_claims_rng_and_serial',
+            'gut:test_forge_commit_failure_leaves_canonical_inventory_unchanged',
+            'gut:test_crash_before_save_leaves_reload_at_pre_sale_state',
+            'gut:test_elite_two_stage_reward_reloads_each_stage_and_rolls_back_failed_transition'
+        ) }
+        'AC-047' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'artifact:content-validation.json',
+            'scope:content-validation.json:content_validation_valid_fixture',
+            'scope:content-validation.json:content_validation_mutation.stable_id',
+            'scope:content-validation.json:content_validation_mutation.minimum_counts',
+            'scope:content-validation.json:content_validation_mutation.reference',
+            'scope:content-validation.json:content_validation_mutation.operation',
+            'scope:content-validation.json:content_validation_mutation.run_intent',
+            'scope:content-validation.json:content_validation_mutation.localization',
+            'gut:test_every_locked_invariant_has_a_failing_mutation',
+            'gut:test_validation_issue_order_is_deterministic'
+        ) }
+        'AC-050' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_request_has_only_pinned_encounter_and_difficulty_context',
+            'gut:test_request_source_does_not_admit_build_or_rng_inputs',
+            'gut:test_compile_is_deterministic_and_persists_boss_source_id',
+            'gut:test_wrong_pinned_generation_is_rejected_without_latest_fallback',
+            'scope:expedition-runner.json:three_act_map_generation'
+        ) }
+        'AC-051' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'scope:content-validation.json:content_registry_alias_receipt_migration',
+            'gut:test_alias_probe_compiles_new_pinned_receipt',
+            'gut:test_alias_selection_migrates_to_active_identity',
+            'gut:test_three_historical_schema_three_codec_two_fixtures_migrate_exactly_once',
+            'gut:test_codec_two_source_migrates_only_to_exact_allowlisted_codec_three_receipt'
+        ) }
+        'AC-052' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'scope:content-validation.json:content_registry_required_tombstone_preservation',
+            'gut:test_required_tombstone_never_guesses_safe_replacement',
+            'gut:test_required_tombstone_is_incompatible_and_publishes_nothing',
+            'gut:test_receipt_failure_preserves_profile_and_marks_run_incompatible',
+            'gut:test_unsafe_historical_active_state_is_preserved_byte_for_byte'
+        ) }
+        'AC-057' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_standard_reward_always_contains_a_non_unit_and_reserves_unit_copies',
+            'gut:test_full_bench_unit_reward_can_be_abandoned_without_softlock',
+            'gut:test_unit_reward_sell_equipment_overflow_keeps_exact_reservation',
+            'gut:test_selected_unit_reward_must_own_its_exact_reservation',
+            'gut:test_non_unit_and_ready_reward_phases_reject_leftover_unit_reservations',
+            'gut:test_item_overflow_and_full_relic_slots_remain_recoverable_subphases',
+            'gut:test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits',
+            'scope:expedition-runner.json:reward_persistence_and_final_exit'
+        ) }
+        'AC-060' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_nine_one_star_units_chain_to_one_three_star_and_conserve_copies',
+            'gut:test_equipment_moves_by_consumed_unit_and_slot_with_inventory_overflow',
+            'gut:test_board_presence_then_cell_order_choose_primary_before_instance_id',
+            'gut:test_equip_rejects_unique_group_conflict_and_leaves_state_unchanged',
+            'gut:test_equipment_bindings_inventory_and_overflow_survive_save_reload',
+            'gut:test_duplicate_or_unlocated_item_instances_are_rejected',
+            'gut:test_bound_item_must_be_listed_on_exactly_its_owner_unit'
+        ) }
+        'AC-067' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_all_nine_battle_operations_produce_typed_atomic_operations',
+            'gut:test_all_fourteen_event_payloads_round_trip_canonical_bytes',
+            'gut:test_unknown_type_wrong_payload_and_noncanonical_bytes_are_rejected',
+            'gut:test_unknown_operation_subclasses_fail_compilation',
+            'gut:test_no_commander_passive_effect_mixes_battle_and_run_operations',
+            'gut:test_runtime_dispatches_all_non_cast_triggers_and_persists_battle_end_intent',
+            'gut:test_codec_v3_manifest_tuple_and_extended_payloads_round_trip',
+            'gut:test_same_setup_produces_identical_result_and_summary_hash',
+            'scope:canonical.json:BattleResult/EventCodec-v1',
+            'scope:combat-runner.json:battle_result_event_canonical'
+        ) }
+        'AC-074' = @{ Kind = 'global_ac'; Reason = ''; Blocked = @(); Required = @(
+            'gut:test_run_relic_table_try_rule_returns_typed_non_dictionary_intent',
+            'gut:test_builder_rejects_relic_whose_run_intents_are_all_unsupported_for_its_category',
+            'gut:test_grant_item_operation_must_not_target_an_item_component',
+            'gut:test_reward_candidate_item_kind_must_not_target_an_item_component',
+            'gut:test_win_applies_scalar_claims_once_and_persists_reward_before_choice',
+            'gut:test_boss_loss_retries_without_income_reward_or_shop_release',
+            'gut:test_lethal_normal_and_boss_losses_enter_terminal_results',
+            'scope:content-validation.json:content_validation_mutation.run_intent',
+            'scope:expedition-runner.json:battle_settlement_and_claims'
+        ) }
+        'REQ-PROD-001' = @{ Kind = 'cross_cutting_req'; Reason = $originalityReason; Blocked = $manualOriginalityGate; Required = @() }
+        'REQ-SCOPE-002' = @{
+            Kind = 'cross_cutting_req'
+            Reason = 'blocked_on_t18a_manual_originality_review_and_asset_adoption_gate'
+            Blocked = @(
+                'asset:image_inventory_adopted',
+                'asset:attempt_ledger_present',
+                'asset:attempt_ledger_reviewed',
+                'asset:attempt_ledger_one_adopted_per_unit'
+            )
+            Required = @(
+                'gut:test_production_asset_inventory_passes_formal_contract',
+                'gut:test_formal_unit_presentations_only_reference_adopted_assets',
+                'gut:test_formal_roster_preserves_player_monster_split_and_base_economy',
+                'scope:content-validation.json:content_validation_mutation.asset'
+            )
+        }
+        'REQ-QA-001' = @{ Kind = 'cross_cutting_req'; Reason = ''; Blocked = @(); Required = @(
+            'artifact:content-validation.json',
+            'scope:content-validation.json:content_validation_valid_fixture',
+            'scope:content-validation.json:content_validation_mutation.minimum_counts',
+            'scope:content-validation.json:content_validation_mutation.recipe_coverage',
+            'scope:content-validation.json:content_validation_mutation.run_intent',
+            'scope:content-validation.json:content_validation_mutation.operation',
+            'gut:test_every_locked_invariant_has_a_failing_mutation'
+        ) }
+        'REQ-CONTENT-001' = @{ Kind = 'dependency_req'; Reason = ''; Blocked = @(); Required = @(
+            'artifact:content-validation.json',
+            'scope:content-validation.json:content_validation_valid_fixture',
+            'scope:content-validation.json:content_validation_mutation.unit_count',
+            'scope:content-validation.json:content_validation_mutation.cost_distribution',
+            'scope:content-validation.json:content_validation_mutation.three_tag_count',
+            'scope:content-validation.json:content_validation_mutation.trait_kind_count',
+            'scope:content-validation.json:content_validation_mutation.node_coverage',
+            'gut:test_vertical_slice_players_cover_cost_distribution_and_three_tag_count',
+            'gut:test_pack_directory_has_expected_definition_counts'
+        ) }
+    }
+
+    $rows = New-Object System.Collections.Generic.List[object]
+    $dependencyRows = New-Object System.Collections.Generic.List[object]
+    $missingAll = New-Object System.Collections.Generic.List[string]
+    foreach ($rowId in $definitions.Keys) {
+        $definition = $definitions[$rowId]
+        $required = @($definition.Required)
+        $blocked = @($definition.Blocked)
+        $missing = New-Object System.Collections.Generic.List[string]
+        foreach ($key in $required) {
+            if (-not $observed.ContainsKey($key) -or -not [bool]$observed[$key]) {
+                $missing.Add($key)
+                $missingAll.Add($rowId + ':' + $key)
+            }
+        }
+        $unmetBlocking = New-Object System.Collections.Generic.List[string]
+        foreach ($key in $blocked) {
+            if (-not $observed.ContainsKey($key) -or -not [bool]$observed[$key]) {
+                $unmetBlocking.Add($key)
+            }
+        }
+        if ($blocked.Count -eq 0) {
+            $classification = 'V'
+            $rowStatus = if ($missing.Count -eq 0) { 'pass' } else { 'not_verified' }
+        }
+        elseif ($required.Count -eq 0) {
+            $classification = 'B'
+            $rowStatus = if ($unmetBlocking.Count -eq 0) { 'pass' } else { 'blocked' }
+        }
+        else {
+            $classification = 'P'
+            if ($missing.Count -ne 0) { $rowStatus = 'not_verified' }
+            elseif ($unmetBlocking.Count -eq 0) { $rowStatus = 'pass' }
+            else { $rowStatus = 'pass_with_blocked_clause' }
+        }
+        $row = [ordered]@{
+            acceptance_id = $rowId
+            kind = [string]$definition.Kind
+            classification = $classification
+            status = $rowStatus
+            required_evidence = $required
+            missing_evidence = $missing.ToArray()
+            blocking_evidence = $blocked
+            unmet_blocking_evidence = $unmetBlocking.ToArray()
+            blocking_reason = if ($unmetBlocking.Count -eq 0) { '' } else { [string]$definition.Reason }
+        }
+        if ([string]$definition.Kind -eq 'dependency_req') { $dependencyRows.Add($row) }
+        else { $rows.Add($row) }
+    }
+    return [pscustomobject]@{
+        Verified = ($missingAll.Count -eq 0)
+        Rows = $rows.ToArray()
+        DependencyRows = $dependencyRows.ToArray()
+        Missing = $missingAll.ToArray()
+    }
+}
+
+function Write-ContentProductionAcceptanceArtifact {
+    param([int]$AllExitCode, [object]$Toolchain)
+
+    $evaluation = Get-ContentProductionEvidenceEvaluation
+    $payload = [ordered]@{
+        schema_version = 1
+        scope = 'content-production'
+        suite = $Suite
+        all_exit_code = $AllExitCode
+        evidence_verified = [bool]$evaluation.Verified
+        evidence_failures = $evaluation.Missing
+        generated_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        toolchain = $Toolchain
+        classification_legend = [ordered]@{
+            V = 'verified by required runner/GUT evidence; missing evidence fails the All gate'
+            P = 'required evidence verified, one named clause still blocked by a manual gate'
+            B = 'no automated evidence exists; explicitly blocked on a named manual gate'
+        }
+        declared_blocked_gates = @(
+            'AC-033 / REQ-PROD-001: T18A independent reviewer originality decision table is not recorded',
+            'AC-038 / REQ-SCOPE-002: assets/production/inventory.json status is not adopted and production-asset-attempts.json is absent'
+        )
+        acceptance = $evaluation.Rows
+        dependency_requirements = $evaluation.DependencyRows
+    }
+    $path = Join-Path $artifactRoot 'content-production-acceptance.json'
+    $temporaryPath = $path + '.tmp'
+    [IO.File]::WriteAllText($temporaryPath, ($payload | ConvertTo-Json -Depth 12), (New-Object Text.UTF8Encoding($false)))
+    Move-Item -LiteralPath $temporaryPath -Destination $path -Force
+    $roundTrip = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+    if (@($roundTrip.acceptance).Count -ne 21 -or
+        @($roundTrip.dependency_requirements).Count -ne 1 -or
+        [int]$roundTrip.schema_version -ne 1 -or
+        [string]$roundTrip.scope -ne 'content-production') {
+        throw 'content-production-acceptance.json read-back validation failed.'
+    }
+    foreach ($row in @($roundTrip.acceptance) + @($roundTrip.dependency_requirements)) {
+        if ([string]::IsNullOrWhiteSpace([string]$row.acceptance_id) -or
+            [string]::IsNullOrWhiteSpace([string]$row.status) -or
+            [string]::IsNullOrWhiteSpace([string]$row.classification)) {
+            throw 'content-production-acceptance.json read-back validation failed.'
+        }
+        if ([string]$row.classification -ne 'B' -and @($row.required_evidence).Count -eq 0) {
+            throw 'content-production-acceptance.json read-back validation failed.'
+        }
+        if ([string]$row.status -eq 'blocked' -and [string]::IsNullOrWhiteSpace([string]$row.blocking_reason)) {
+            throw 'content-production-acceptance.json read-back validation failed.'
+        }
+    }
+}
+
 $toolchainEvidence = $null
 try {
     New-Item -ItemType Directory -Force -Path $artifactRoot | Out-Null
@@ -1058,6 +1467,13 @@ try {
                 if (-not $expeditionEvidence.Verified) {
                     $finalExitCode = 2
                     $failureMessage = 'Expedition acceptance evidence is incomplete: ' + ($expeditionEvidence.Missing -join ', ')
+                }
+            }
+            if ($finalExitCode -eq 0) {
+                $contentProductionEvidence = Get-ContentProductionEvidenceEvaluation
+                if (-not $contentProductionEvidence.Verified) {
+                    $finalExitCode = 2
+                    $failureMessage = 'Content-production acceptance evidence is incomplete: ' + ($contentProductionEvidence.Missing -join ', ')
                 }
             }
         }

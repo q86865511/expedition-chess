@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="NodeChoiceSetDef" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_run"]
+[ext_resource type="Script" path="res://content/definitions/heal_expedition_hp_operation_def.gd" id="2_heal"]
+[ext_resource type="Script" path="res://content/definitions/node_choice_def.gd" id="3_choice"]
+[ext_resource type="Script" path="res://content/definitions/node_choice_set_def.gd" id="4_set"]
+
+[sub_resource type="Resource" id="Heal_20"]
+script = ExtResource("2_heal")
+amount = 20
+claim_scope = &"once_per_node"
+
+[sub_resource type="Resource" id="Choice_heal"]
+script = ExtResource("3_choice")
+choice_id = &"choice.rest.heal_20"
+sort_order = 0
+title_key = &"loc.choice_rest_heal_20_title"
+description_key = &"loc.choice_rest_heal_20_description"
+preview_key = &"loc.choice_rest_heal_20_preview"
+result_key = &"loc.choice_rest_heal_20_result"
+operations = Array[ExtResource("1_run")]([SubResource("Heal_20")])
+confirmation_required = true
+
+[sub_resource type="Resource" id="Choice_dismantle"]
+script = ExtResource("3_choice")
+choice_id = &"choice.rest.dismantle"
+sort_order = 1
+title_key = &"loc.choice_rest_dismantle_title"
+description_key = &"loc.choice_rest_dismantle_description"
+preview_key = &"loc.choice_rest_dismantle_preview"
+result_key = &"loc.choice_rest_dismantle_result"
+outcome_kind = 2
+confirmation_required = true
+
+[resource]
+script = ExtResource("4_set")
+node_kind = &"rest"
+choices = Array[ExtResource("3_choice")]([SubResource("Choice_heal"), SubResource("Choice_dismantle")])
+id = &"choice_set.rest"
+display_name_key = &"loc.choice_set_rest"

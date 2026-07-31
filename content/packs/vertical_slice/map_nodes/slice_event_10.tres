@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("2_oewv7")
 node_type = &"event"
-generator_ref = &"effect.slice_event_gen_10"
+generator_ref = &"choice_set.event_10"
 id = &"map_node.slice_event_10"
 display_name_key = &"loc.map_node_slice_event_10"

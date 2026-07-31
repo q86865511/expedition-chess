@@ -122,6 +122,7 @@ func abandon_boss_retry(
 		return ExpeditionActionResult.failure(release_error.code, release_error.field_path)
 	_mark_node_complete(draft, node)
 	draft.run_phase = RunState.RunPhase.RESULTS
+	EconomyCommandSupport.clear_node_choice_receipts(draft)
 	draft.resolution_state = IdleResolutionState.new()
 	var receipt_error := _append_settlement_receipt(
 		draft, &"expedition_abandon", &"abandoned"
@@ -177,6 +178,8 @@ func _settle_loss(
 	_mark_node_complete(draft, node)
 	draft.run_phase = RunState.RunPhase.RESULTS \
 		if draft.expedition_hp == 0 else RunState.RunPhase.MAP
+	if draft.run_phase == RunState.RunPhase.RESULTS:
+		EconomyCommandSupport.clear_node_choice_receipts(draft)
 	return ExpeditionActionResult.success(draft)
 
 ## 規則遺物 (rule, heal_expedition_hp) 的 claim_scope=always 加總（design §6.4、S5-AC-013）。

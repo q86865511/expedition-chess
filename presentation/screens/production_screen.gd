@@ -11,6 +11,8 @@ const SCREEN_COMPOSITION_TYPE_INVALID: StringName = \
 	&"SCREEN_COMPOSITION_TYPE_INVALID"
 
 const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
+## design :201「UI 只由 unacknowledged committed receipt 顯示 result」的顯示端節點名。
+const NODE_CHOICE_RESULT_NODE: String = "NodeChoiceResult"
 
 ## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
 ## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
@@ -121,6 +123,46 @@ func request_intent(intent: RunPresentationIntent) -> RunPresentationResult:
 	)
 
 
+## design :201-205：result 顯示與 ack 由 run-level ledger 驅動，不綁 resolution state
+## 也不綁 phase——三種 outcome 分別落在 RUN_MAP／RUN_REWARD／RUN_PREPARE（design
+## :206-209），所以顯示端與 ack 入口掛在 route 層，由各 composition 提供自己持有的
+## snapshot 投影。不參與 node choice 的畫面沿用以下預設（無結果可播、ack 不可用）。
+func pending_node_choice_result() -> NodeChoiceResultSnapshot:
+	return null
+
+
+func acknowledge_node_choice_result() -> RunPresentationResult:
+	return RunPresentationResult.failure(
+		DiagnosticError.new(
+			SCREEN_NOT_ACTIVE,
+			&"error.presentation.screen_not_active"
+		)
+	)
+
+
+## ledger 依 transaction_serial 升冪；取最舊的一筆＝先播先 ack 的佇列語意。
+## 每一筆 unacknowledged receipt 都會先被顯示、再被同一個 receipt_digest ack 掉，
+## 因此不會有 receipt 被跳過而永久留在 ledger（review N1）。
+static func _oldest_pending_node_choice_result(
+	snapshot: RunPresentationSnapshot
+) -> NodeChoiceResultSnapshot:
+	if snapshot == null or snapshot.pending_node_choice_results.is_empty():
+		return null
+	return snapshot.pending_node_choice_results[0]
+
+
+static func _node_choice_ack_intent(
+	snapshot: RunPresentationSnapshot,
+	result: NodeChoiceResultSnapshot
+) -> RunPresentationIntent:
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT
+	)
+	intent.expected_run_id = String(snapshot.run_id)
+	intent.receipt_digest = result.receipt_digest
+	return intent
+
+
 func last_control_result() -> Variant:
 	return _last_control_result
 
@@ -193,6 +235,29 @@ func localized_ui_text(text_key: StringName) -> String:
 	return _context.resolve_text(text_key)
 
 
+func content_tooltip_text(
+	label_key: StringName,
+	numeric_value: int,
+	depth: int = 1
+) -> String:
+	if _context == null:
+		return ""
+	var formatted := ContentTooltipFormatter.new().format_value(
+		label_key,
+		localized_ui_text(label_key),
+		numeric_value,
+		_context.locale,
+		0,
+		depth
+	)
+	if not formatted.ok or formatted.snapshot == null:
+		return ""
+	return "%s: %d" % [
+		formatted.snapshot.text,
+		formatted.snapshot.numeric_value,
+	]
+
+
 func live_binding_report() -> Dictionary:
 	return {
 		"active": _live_active,
@@ -226,6 +291,13 @@ func _bind_localized_controls() -> void:
 	var action_ids := _required_action_ids()
 	if action_ids.is_empty():
 		return
+	if action_ids.has(&"choice.ack"):
+		# design :201 的顯示端：文字在 refresh_interaction_state 由 unacknowledged
+		# receipt 的 result_key 決定，沒有結果時整個節點隱藏。
+		var result_label := Label.new()
+		result_label.name = NODE_CHOICE_RESULT_NODE
+		result_label.visible = false
+		add_child(result_label)
 	var controls := VBoxContainer.new()
 	controls.name = "Actions"
 	controls.set_anchors_preset(Control.PRESET_CENTER)
@@ -388,7 +460,11 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		else _live_context.action_port.invoke(action_id)
 	)
 	_status_view.show_result(_last_control_result, _text_resolver())
-	if String(action_id).begins_with("prepare."):
+	if (
+		String(action_id).begins_with("prepare.")
+		or String(action_id).begins_with("service.")
+		or action_id == &"choice.ack"
+	):
 		refresh_interaction_state()
 	if (
 		action_id == &"menu.recovery"
@@ -396,6 +472,12 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		and (_last_control_result as AppActionResult).ok
 	):
 		_show_recovery_confirmation(trigger)
+	elif (
+		action_id == &"choice.begin"
+		and _last_control_result is ConfirmationDraftResult
+		and (_last_control_result as ConfirmationDraftResult).ok
+	):
+		_show_node_choice_confirmation(trigger)
 	elif action_id in [&"menu.recovery.cancel", &"menu.recovery.confirm"]:
 		# G2 F2：不能只在 ok 時關 modal。app 層的 confirmation 在
 		# RecoveryConfirmationPresenter.confirm_confirmation()／cancel_confirmation()
@@ -404,6 +486,10 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		# 停用，玩家只剩 confirm/cancel 兩顆——而它們的 lease 已被撤銷，
 		# 永遠回 SCREEN_NOT_ACTIVE，App 就此鎖死。失敗訊息已經進狀態列，
 		# 關掉 modal 才有出路。
+		_close_confirmation_modal()
+	elif action_id in [&"choice.cancel", &"choice.confirm"]:
+		# draft 已被消費後，不論 runtime 結果都關閉 modal。錯誤由 status
+		# view 呈現，背景控制與焦點則必須恢復，避免留下無效 lease。
 		_close_confirmation_modal()
 
 
@@ -500,6 +586,44 @@ func _invoke_local_control(action_id: StringName) -> Variant:
 				if composition is RunPrepareScreen
 				else null
 			)
+		&"choice.begin":
+			return (
+				(composition as RunPrepareScreen).begin_selected_node_choice()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"choice.confirm":
+			return (
+				(composition as RunPrepareScreen).confirm_node_choice()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"choice.cancel":
+			return (
+				(composition as RunPrepareScreen).cancel_node_choice()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"choice.ack":
+			# review N1：ack 不是 prepare 專屬動作——APPLY 出口落在 RUN_MAP、
+			# REWARD 出口落在 RUN_REWARD，三個 composition 都要能送出 ack。
+			return (
+				(composition as ProductionScreen).acknowledge_node_choice_result()
+				if composition is ProductionScreen
+				else null
+			)
+		&"service.dismantle":
+			return (
+				(composition as RunPrepareScreen).dismantle_selected_with_node_service()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"service.exit":
+			return (
+				(composition as RunPrepareScreen).exit_node_service()
+				if composition is RunPrepareScreen
+				else null
+			)
 		&"combat.pause":
 			return (
 				(composition as RunCombatScreen).toggle_pause()
@@ -555,6 +679,7 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 		if status != null:
 			status.text = _context.resolve_text(_modal_status_key)
 	_status_view.relocalize(_text_resolver())
+	_refresh_node_choice_result_view()
 	var settings := get_node_or_null("Composition") as SettingsScreenComposition
 	if settings != null:
 		settings.relocalize(localized_text)
@@ -593,7 +718,76 @@ func refresh_interaction_state() -> void:
 			forge_confirm.disabled = not has_confirmation
 		if forge_cancel != null:
 			forge_cancel.disabled = not has_confirmation
+		var choice_begin := _action_button(&"choice.begin")
+		var choice_confirm := _action_button(&"choice.confirm")
+		var choice_cancel := _action_button(&"choice.cancel")
+		var has_choice := prepare_screen.has_node_choice_overlay()
+		var has_choice_confirmation := (
+			prepare_screen.has_pending_node_choice_confirmation()
+		)
+		if choice_begin != null:
+			choice_begin.disabled = (
+				not has_choice or has_choice_confirmation
+			)
+		if choice_confirm != null:
+			choice_confirm.disabled = not has_choice_confirmation
+		if choice_cancel != null:
+			choice_cancel.disabled = not has_choice_confirmation
+		var has_node_service := prepare_screen.has_node_service_pending()
+		var service_dismantle := _action_button(&"service.dismantle")
+		if service_dismantle != null:
+			service_dismantle.disabled = not has_node_service
+		var service_exit := _action_button(&"service.exit")
+		if service_exit != null:
+			service_exit.disabled = not has_node_service
+		if has_choice:
+			for blocked_action: StringName in [
+				&"prepare.unit",
+				&"prepare.refresh",
+				&"prepare.buy",
+				&"prepare.xp",
+				&"prepare.sell",
+				&"prepare.forge",
+				&"prepare.forge.confirm",
+				&"prepare.forge.cancel",
+				&"prepare.equip",
+				&"prepare.dismantle",
+				&"prepare.move_board",
+				&"prepare.move_bench",
+				&"prepare.start",
+			]:
+				var blocked_button := _action_button(blocked_action)
+				if blocked_button != null:
+					blocked_button.disabled = true
+	_refresh_node_choice_result_view()
 	_apply_keyboard_focus_graph()
+
+
+## review N1／N2：ack 按鈕的可用性與 result 文字都只由 unacknowledged receipt 決定
+## （design :201），與 route／resolution state 無關，故所有掛了 `choice.ack` 的畫面
+## 共用同一段（APPLY→RUN_MAP、REWARD→RUN_REWARD、DISMANTLE→RUN_PREPARE）。
+func _refresh_node_choice_result_view() -> void:
+	var composition := get_node_or_null("Composition") as ProductionScreen
+	var result: NodeChoiceResultSnapshot = (
+		composition.pending_node_choice_result()
+		if composition != null
+		else null
+	)
+	var choice_ack := _action_button(&"choice.ack")
+	# modal 開著時背景按鈕的 disabled 由 _disable_modal_background 接管，
+	# 這裡只更新文字面（與 refresh_interaction_state 的 modal 守衛同義務）。
+	if choice_ack != null and not _modal_open:
+		choice_ack.disabled = result == null
+	var label := get_node_or_null(NODE_CHOICE_RESULT_NODE) as Label
+	if label == null:
+		return
+	label.visible = result != null
+	# 缺文案時 resolve_text 回鍵名本身：漏鍵要看得見，不要靜默空白。
+	label.text = (
+		_context.resolve_text(result.result_key)
+		if result != null and _context != null
+		else ""
+	)
 
 
 func _show_recovery_confirmation(trigger: Button) -> void:
@@ -602,6 +796,20 @@ func _show_recovery_confirmation(trigger: Button) -> void:
 		&"menu.recovery.status",
 		&"menu.recovery.confirm",
 		&"menu.recovery.cancel",
+		&"",
+		trigger
+	)
+
+
+func _show_node_choice_confirmation(trigger: Button) -> void:
+	var composition := get_node_or_null("Composition") as RunPrepareScreen
+	if composition == null:
+		return
+	_show_confirmation_modal(
+		"NodeChoiceConfirmation",
+		composition.selected_node_choice_preview_key(),
+		&"choice.confirm",
+		&"choice.cancel",
 		&"",
 		trigger
 	)
@@ -824,6 +1032,7 @@ func _ordered_focus_controls() -> Array[Control]:
 		&"ShopSelector",
 		&"InventorySelector",
 		&"BuildUnitSelector",
+		&"ChoiceSelector",
 		&"CategorySelector",
 		&"SearchInput",
 		&"EntrySelector",
@@ -921,7 +1130,14 @@ func _required_action_ids() -> Array[StringName]:
 		&"FACILITY_CHALLENGE_MONUMENT":
 			return [&"camp.back"]
 		&"RUN_MAP":
-			return [&"map.select", &"map.confirm", &"run.menu"]
+			# `choice.ack`：APPLY_AND_COMPLETE 出口把 phase 切成 MAP（design :206），
+			# 未 ack 的結果因此要在這裡播完並確認（review N1）。
+			return [
+				&"map.select",
+				&"map.confirm",
+				&"choice.ack",
+				&"run.menu",
+			]
 		&"RUN_PREPARE":
 			return [
 				&"prepare.unit",
@@ -934,9 +1150,15 @@ func _required_action_ids() -> Array[StringName]:
 				&"prepare.forge.cancel",
 				&"prepare.equip",
 				&"prepare.dismantle",
+				&"service.dismantle",
+				&"service.exit",
 				&"prepare.move_board",
 				&"prepare.move_bench",
 				&"prepare.start",
+				&"choice.begin",
+				&"choice.confirm",
+				&"choice.cancel",
+				&"choice.ack",
 				&"run.menu",
 			]
 		&"RUN_COMBAT":
@@ -947,7 +1169,13 @@ func _required_action_ids() -> Array[StringName]:
 				&"run.menu",
 			]
 		&"RUN_REWARD":
-			return [&"reward.select", &"reward.confirm", &"run.menu"]
+			# `choice.ack`：OPEN_REWARD_STAGE 出口把 phase 切成 REWARD（design :207）。
+			return [
+				&"reward.select",
+				&"reward.confirm",
+				&"choice.ack",
+				&"run.menu",
+			]
 		&"RUN_ROUTE_FALLBACK":
 			return [&"run.retry_route", &"run.menu"]
 		&"APP_ROUTE_FALLBACK":

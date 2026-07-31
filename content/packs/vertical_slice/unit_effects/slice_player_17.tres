@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EffectDef" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_battle"]
+[ext_resource type="Script" path="res://content/definitions/damage_operation_def.gd" id="2_damage"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="3_effect"]
+
+[sub_resource type="Resource" id="Damage_primary"]
+script = ExtResource("2_damage")
+base = 82
+scaling = &"attack"
+damage_type = &"physical"
+target = &"target"
+
+[resource]
+script = ExtResource("3_effect")
+content_role = &"ability_primary"
+trigger = &"cast"
+battle_operations = Array[ExtResource("1_battle")]([SubResource("Damage_primary")])
+stacking = &"replace"
+duration_ticks = 1
+schema_version = 2
+description_key = &"loc.effect_slice_player_17_primary_description"
+id = &"effect.slice_player_17.primary"
+display_name_key = &"loc.effect_slice_player_17_primary"

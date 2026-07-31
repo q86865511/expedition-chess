@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_eraet")]([SubResource("Resource_g6w8r")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_trait_faction_ember_description"
 id = &"effect.trait_faction_ember"
 display_name_key = &"loc.effect_trait_faction_ember"

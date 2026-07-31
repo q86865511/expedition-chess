@@ -1,0 +1,946 @@
+{
+  "schema_version": 1,
+  "slice": "content-production",
+  "status": "generated",
+  "unit_count": 44,
+  "frames_per_unit": 240,
+  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
+  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "units": [
+    {
+      "unit_id": "unit.slice_monster_00",
+      "local_processing_seed": 1194479698,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_00.png",
+        "portrait": "assets/production/portraits/slice_monster_00.png",
+        "board_icon": "assets/production/icons/board/slice_monster_00.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_00.png",
+        "atlas": "assets/production/atlases/slice_monster_00.png",
+        "sprite_frames": "assets/production/units/slice_monster_00.tres"
+      },
+      "sha256": {
+        "source_sheet": "885617dfc9c853afffc4b2f2f24d2394e5a09b30d99941830c63509cf8f00938",
+        "portrait": "5b076e3049728af68772a94fa3071e023be37941d96e26b827fe215b5907bb1e",
+        "board_icon": "89dce3f26b42c6547140c90a1765a3949c1362347cf98cd2c830436708f56303",
+        "ability_icon": "d7fcd5f0f8d692523c30bb452aa5b62d667f61cd188ccfabba5e9fc1f92a1765",
+        "atlas": "4aadab32035dcf80e179a16071c474983e8bdb40e9d8b2f877a9035d49f45a27",
+        "sprite_frames": "84e63859397dffe17cc2b87d39f7ba60fc2ba22e66978c95da803aa3bb5cb59d"
+      },
+      "provenance": "assets/production/provenance/slice_monster_00.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_01",
+      "local_processing_seed": 1194479699,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_01.png",
+        "portrait": "assets/production/portraits/slice_monster_01.png",
+        "board_icon": "assets/production/icons/board/slice_monster_01.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_01.png",
+        "atlas": "assets/production/atlases/slice_monster_01.png",
+        "sprite_frames": "assets/production/units/slice_monster_01.tres"
+      },
+      "sha256": {
+        "source_sheet": "714aedfb954448048aa31944e8776f7f646924c017525f36f4fe2d83ce657048",
+        "portrait": "40370377700d2c0533449be0d386d221cacabc15f6106c82f4fe06e89c729612",
+        "board_icon": "77fb36826c61918c28074cbdfde7e61937dde06f56f49680b05e1716319cb1ef",
+        "ability_icon": "95dd8787ea92c8a0e3e595229490fc16d80c9372206423c615f67bd4ce5a7036",
+        "atlas": "60b2e8a166b9f0cf50db1a675c33f7e4a3a89bcb0eacc020afadb2a13a6e5eb4",
+        "sprite_frames": "35f53ee0b74b11db8e00eb86711bb476f14379bb95d734de70458d63cf8e130b"
+      },
+      "provenance": "assets/production/provenance/slice_monster_01.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_02",
+      "local_processing_seed": 1194479700,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_02.png",
+        "portrait": "assets/production/portraits/slice_monster_02.png",
+        "board_icon": "assets/production/icons/board/slice_monster_02.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_02.png",
+        "atlas": "assets/production/atlases/slice_monster_02.png",
+        "sprite_frames": "assets/production/units/slice_monster_02.tres"
+      },
+      "sha256": {
+        "source_sheet": "fc13ecf12bda4c429e92fee0c80cfa86f579ff7d581dae041c48016a8d699111",
+        "portrait": "7c17896a8643aba31fd9a232b6680a012ad60ca5a71c99689b46d7fe1a0d31d8",
+        "board_icon": "e71c070aed0b2a04cf0bc889205fced158846f25da280b8cf39abee105232b4d",
+        "ability_icon": "a9832356e57445d3980fe78ef5a16f66d8cbe193bcc01f62f6642a380f3bb2af",
+        "atlas": "222b6dbc7e92539f52c3b8d62d266fbd4aab1fe0155614bfb57e9e470015e3be",
+        "sprite_frames": "1c223495c4e771c98b723815c951d2dca0191c5e41dc9fb12ea85824831d5dd6"
+      },
+      "provenance": "assets/production/provenance/slice_monster_02.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_03",
+      "local_processing_seed": 1194479701,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_03.png",
+        "portrait": "assets/production/portraits/slice_monster_03.png",
+        "board_icon": "assets/production/icons/board/slice_monster_03.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_03.png",
+        "atlas": "assets/production/atlases/slice_monster_03.png",
+        "sprite_frames": "assets/production/units/slice_monster_03.tres"
+      },
+      "sha256": {
+        "source_sheet": "e2ae78e93d5c1dd1cba2d23e52e8548887a62f870b303bddd5362120cf63fc25",
+        "portrait": "e834c56796db7c677560e64b356194e6bebe8ec981a955efa5c0dc4e9438b9df",
+        "board_icon": "45fc3815a9d4eef1fcba853ae15dfe44314c1d940f17a917f624c2a53d896bf7",
+        "ability_icon": "f058ddc3b0db030dc9567d6562d7ba29bd10c062480b0861060ed53d1a9b852b",
+        "atlas": "66ae6622fa3df38f5240249619b2056dee8afd27671556aaf7a98c201e8bec80",
+        "sprite_frames": "cec8f07304a2f826a5a50d5c87c359dc585d01a355efb8d17d4af5c6eb645c66"
+      },
+      "provenance": "assets/production/provenance/slice_monster_03.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_04",
+      "local_processing_seed": 1194479702,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_04.png",
+        "portrait": "assets/production/portraits/slice_monster_04.png",
+        "board_icon": "assets/production/icons/board/slice_monster_04.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_04.png",
+        "atlas": "assets/production/atlases/slice_monster_04.png",
+        "sprite_frames": "assets/production/units/slice_monster_04.tres"
+      },
+      "sha256": {
+        "source_sheet": "e45e57c93e6e82c1b37ce99623d6c5a5716f73a0d908695c301a23f35bf2fcac",
+        "portrait": "b59a3540f3cf13d6dd7dca7cb45bd79e543070c25999a048ac8aa38b446e420f",
+        "board_icon": "5bf75406c3c3b5a280148b996e789e97e33d431ad5edd2c9b811fd844a1a4cbd",
+        "ability_icon": "df51b1c9afcec1e09d8c7b12b563d265749cc5bd0b7dadb99d5f2ab04b993c31",
+        "atlas": "50d7f14c2972dca2ec72b8531cfc9c79755d72287f9d8a602b88ba8baa0025d5",
+        "sprite_frames": "012bc3d2d0a7c23684aed2b310d7475dcb85e0d44bd2a4ea20abc990712c1155"
+      },
+      "provenance": "assets/production/provenance/slice_monster_04.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_05",
+      "local_processing_seed": 1194479703,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_05.png",
+        "portrait": "assets/production/portraits/slice_monster_05.png",
+        "board_icon": "assets/production/icons/board/slice_monster_05.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_05.png",
+        "atlas": "assets/production/atlases/slice_monster_05.png",
+        "sprite_frames": "assets/production/units/slice_monster_05.tres"
+      },
+      "sha256": {
+        "source_sheet": "b31405264819a133005ad34edfde28c1ccecd6160c4e8b622748d0af9add742d",
+        "portrait": "28600063631ca32b853137dd6cfe50ef20b417beff0c6b4ad8f2e5b32c6d2c75",
+        "board_icon": "d9dd49ac077c02916b41a401c83cea76c36d272013bfaef709a47ad28c31a708",
+        "ability_icon": "1cfb54aec11975b55b2a29f13f5015768f96f16649916742206360b09d85c4a2",
+        "atlas": "f9d15d6b4456989a6ac849f79baedef43dfbd24999994f8feae0d0bba376cbad",
+        "sprite_frames": "b8c841a18ebc81d3ac58320c331a6cc0260d5c3b38f5a86517af7af54eed1ec8"
+      },
+      "provenance": "assets/production/provenance/slice_monster_05.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_06",
+      "local_processing_seed": 1194479704,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_06.png",
+        "portrait": "assets/production/portraits/slice_monster_06.png",
+        "board_icon": "assets/production/icons/board/slice_monster_06.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_06.png",
+        "atlas": "assets/production/atlases/slice_monster_06.png",
+        "sprite_frames": "assets/production/units/slice_monster_06.tres"
+      },
+      "sha256": {
+        "source_sheet": "3146335462060708d64aff719df9c3c36fb51c0c40990354265d72ea08ef51de",
+        "portrait": "5e2d8867863bf15f3009da528a102282ec2cb7f025b7f96dddce309ceb63e594",
+        "board_icon": "12fcf8c529b8615fea95626c66f2738c4f858fe3139fe2c0180271c0b89d9876",
+        "ability_icon": "bd1365861a47f4d41d1f4d3d927724a389076e9c008b0fdcca2c3328a664cc29",
+        "atlas": "bf36bfe8e01aaec1697daecf9d33b595a2d443595240368993b8ba5a551ce237",
+        "sprite_frames": "41570fa78476ef7e0d31e79e4d850d3c530488a4c9e54292682fe1ca74e6aa5d"
+      },
+      "provenance": "assets/production/provenance/slice_monster_06.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_07",
+      "local_processing_seed": 1194479705,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_07.png",
+        "portrait": "assets/production/portraits/slice_monster_07.png",
+        "board_icon": "assets/production/icons/board/slice_monster_07.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_07.png",
+        "atlas": "assets/production/atlases/slice_monster_07.png",
+        "sprite_frames": "assets/production/units/slice_monster_07.tres"
+      },
+      "sha256": {
+        "source_sheet": "8b99639908082bb1b6ca1e9ba41acdcb8304aaaa372635c823cbb6f1d563fa3c",
+        "portrait": "4b214514f3a7ea89f10c2dc69181caf45ded60213f8ef3fac3718357e750f9af",
+        "board_icon": "5f41c984a631ea50eb9b6444e73c218e487315bf884853173f85cf46d73fb293",
+        "ability_icon": "443b2e803775529ecd0c7b8b97cde3c5c93305a14e48b67991721a2e0b3fbd2a",
+        "atlas": "23237c2423fafc1dad8be80ab3888e42849d820b9827e937b56fdf49cbb36c52",
+        "sprite_frames": "30691abb704c444b3da051261d0e61f3df2b919e722682a2c5d658f087b0a1ac"
+      },
+      "provenance": "assets/production/provenance/slice_monster_07.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_08",
+      "local_processing_seed": 1194479706,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_08.png",
+        "portrait": "assets/production/portraits/slice_monster_08.png",
+        "board_icon": "assets/production/icons/board/slice_monster_08.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_08.png",
+        "atlas": "assets/production/atlases/slice_monster_08.png",
+        "sprite_frames": "assets/production/units/slice_monster_08.tres"
+      },
+      "sha256": {
+        "source_sheet": "4f1dea40c8b306bd7064c30dfe4f53bfc159a84de3a25fa1d635511247a1c751",
+        "portrait": "ce4fd66fb160757b184eae7dab3dade0c39511ba4fa98b99240c0ae9dcafe196",
+        "board_icon": "9024e3f61e1a1c02d3cfe7ea1a88236301883ce9f1b955a0284f4161d52b74fa",
+        "ability_icon": "3365f402d6f9f9258b59fe3036267b6f372505de7654c0096c249f354a9b5a59",
+        "atlas": "171c0397c6b6ac0a1e5344df5949784aaaa4bd3b54356754c3e7caf83d2aca6c",
+        "sprite_frames": "fa3ec865a83ab0b30dd7cbb086cc41d19a9584114cbfc2f3cc94c77fb788de25"
+      },
+      "provenance": "assets/production/provenance/slice_monster_08.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_09",
+      "local_processing_seed": 1194479707,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_09.png",
+        "portrait": "assets/production/portraits/slice_monster_09.png",
+        "board_icon": "assets/production/icons/board/slice_monster_09.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_09.png",
+        "atlas": "assets/production/atlases/slice_monster_09.png",
+        "sprite_frames": "assets/production/units/slice_monster_09.tres"
+      },
+      "sha256": {
+        "source_sheet": "d5ace3c45258be04345092117d764b22e85ab3577414a3a703e6e3343cfba6ec",
+        "portrait": "17a145fc5e04c9a0e9505bd94f92f33f0394d5e68e66d9650b58429da2081783",
+        "board_icon": "cbe10255c951926946b5b821c0963c288f40310003cbbcabb007bf73be7fdaa2",
+        "ability_icon": "4d9d8616bdf3bc9daf77ebecbccdc8bf5cd63dfb885c1edb733f34d35d4e739a",
+        "atlas": "73ac3ba531ca6577c6f8a7e0a29898b93d736d64e60369eba9cc6491aeef00ef",
+        "sprite_frames": "ec5cd70e8514bcf38a01069bd67ebc4111695d821b5e45a7fca19b2dc51a3e35"
+      },
+      "provenance": "assets/production/provenance/slice_monster_09.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_10",
+      "local_processing_seed": 1194479708,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_10.png",
+        "portrait": "assets/production/portraits/slice_monster_10.png",
+        "board_icon": "assets/production/icons/board/slice_monster_10.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_10.png",
+        "atlas": "assets/production/atlases/slice_monster_10.png",
+        "sprite_frames": "assets/production/units/slice_monster_10.tres"
+      },
+      "sha256": {
+        "source_sheet": "4e055f77335795c63050a28111f4ee5d838fbbcd0f161b2c8c174d4841187a76",
+        "portrait": "4b05e744c9c284fc69b60f616d4f526533ccdbd9f52911309871328769aeb3f2",
+        "board_icon": "0e42b36e48c2e8a6b00703231f297f63192756f5d185380aaea0d93bb2b3edd0",
+        "ability_icon": "21c4f0b1288195998f21b1f620944768f7442a0a6aaa367330deb02ab746acce",
+        "atlas": "112132c92461b1c9f9e517e81ac4c3dcd24ecaa8ffcb5190011705c977594146",
+        "sprite_frames": "12c84ab127755503d82c6a6c2c63b4ad6290646db1c3645b8154bd73a5659331"
+      },
+      "provenance": "assets/production/provenance/slice_monster_10.json"
+    },
+    {
+      "unit_id": "unit.slice_monster_11",
+      "local_processing_seed": 1194479709,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_monster_11.png",
+        "portrait": "assets/production/portraits/slice_monster_11.png",
+        "board_icon": "assets/production/icons/board/slice_monster_11.png",
+        "ability_icon": "assets/production/icons/abilities/slice_monster_11.png",
+        "atlas": "assets/production/atlases/slice_monster_11.png",
+        "sprite_frames": "assets/production/units/slice_monster_11.tres"
+      },
+      "sha256": {
+        "source_sheet": "b533ed6f4483528477f5f5be89448232e01e2c489041979ebe23dae497b3e1cb",
+        "portrait": "aa5f57caa10df1b1edc223fedaf445fc1147a8fda0167e669587f1ee5f13fe16",
+        "board_icon": "616f82c539a4cd7f32bbba7b2f8e931a64b28fb3613777d33210191f533c58de",
+        "ability_icon": "337fbcd81c1b1a49bb41967d14b096747bbcb2951cdb50de9a42fa7976d8b793",
+        "atlas": "17c219b0064986afccec3d371b224ab283ae400a224d27551d56b3f4357d65ec",
+        "sprite_frames": "5422374bc12a4ed9a5d385474ffa007e53ee2ed41ad80fd7ff6bf99b66626fbd"
+      },
+      "provenance": "assets/production/provenance/slice_monster_11.json"
+    },
+    {
+      "unit_id": "unit.slice_player_00",
+      "local_processing_seed": 1194479710,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_00.png",
+        "portrait": "assets/production/portraits/slice_player_00.png",
+        "board_icon": "assets/production/icons/board/slice_player_00.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_00.png",
+        "atlas": "assets/production/atlases/slice_player_00.png",
+        "sprite_frames": "assets/production/units/slice_player_00.tres"
+      },
+      "sha256": {
+        "source_sheet": "25ea9208ce07e0ff275b289346ce41281931b7c237a08ba1a999ba36dcc1c014",
+        "portrait": "b662bcab00c995da11bb16edf126fb847c0baa811bf8de19ce0ab69330afa21f",
+        "board_icon": "c72bd59023fcd16899378f5d045dcafcc840564bc1c798b93688e1a7bf15567c",
+        "ability_icon": "aa9013dc24d7a154e653fe1b563e12a07312ec215186c900a826ddca50a1ebe0",
+        "atlas": "e54aa62feeb0fb5c6bf5708c7e901fc4571556fc9140ac0a5ecd20484670d8c1",
+        "sprite_frames": "9fab98ca3e0e7dc9915d8edf9f2090823f057454e6b12fce8a7f9b0a3dc33c14"
+      },
+      "provenance": "assets/production/provenance/slice_player_00.json"
+    },
+    {
+      "unit_id": "unit.slice_player_01",
+      "local_processing_seed": 1194479711,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_01.png",
+        "portrait": "assets/production/portraits/slice_player_01.png",
+        "board_icon": "assets/production/icons/board/slice_player_01.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_01.png",
+        "atlas": "assets/production/atlases/slice_player_01.png",
+        "sprite_frames": "assets/production/units/slice_player_01.tres"
+      },
+      "sha256": {
+        "source_sheet": "d879dd7fa1e10359d52ec4f44047e1ea9991d4caee2ba4c1e54da00ea8b2de40",
+        "portrait": "1328ae059e6829db5c279f22e9957685874acada23b074283be5a93c68c82eca",
+        "board_icon": "44e9a8f2333af89eb37ffcf4915d36c1c556c4a5aa251f3c373d3a0f15b16945",
+        "ability_icon": "b98c44d13542e44bd1b5cd7a80958b56f4ec9710afe0be26fed233a32edb8d0f",
+        "atlas": "392badcd019a3e91ff27022bab644b03c080aa1585559e5f1ebe958be98286ef",
+        "sprite_frames": "90571e0fd3627b50c648bdb7d0798102d516b40ce449055563c2aa73aca1a0c7"
+      },
+      "provenance": "assets/production/provenance/slice_player_01.json"
+    },
+    {
+      "unit_id": "unit.slice_player_02",
+      "local_processing_seed": 1194479712,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_02.png",
+        "portrait": "assets/production/portraits/slice_player_02.png",
+        "board_icon": "assets/production/icons/board/slice_player_02.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_02.png",
+        "atlas": "assets/production/atlases/slice_player_02.png",
+        "sprite_frames": "assets/production/units/slice_player_02.tres"
+      },
+      "sha256": {
+        "source_sheet": "24c6c6ce85319b36b65893fcab4b0f67f69160af2ff354976bad0c3f81bebd4b",
+        "portrait": "3638b48bd4ac7598335fe0121a83cd3ac528fecd69cc55512e7c202ceb7c3bee",
+        "board_icon": "5577bfa83f687dc420b3feb6b5d041b8d98ac6c5ee35de5e49ee3640ceeab352",
+        "ability_icon": "0f26c0c90261cf4d53a0e041e0f0d088f1c991695b0479237c0b74511a90f7a6",
+        "atlas": "8b0a0d69f18d7e192874fbdbdc09a247181f28649b0c50a84227f9e0e005f9df",
+        "sprite_frames": "0214a225c3a7f1712ba7268d2177084c7efaaf06cbee0be1d2681011594dfe70"
+      },
+      "provenance": "assets/production/provenance/slice_player_02.json"
+    },
+    {
+      "unit_id": "unit.slice_player_03",
+      "local_processing_seed": 1194479713,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_03.png",
+        "portrait": "assets/production/portraits/slice_player_03.png",
+        "board_icon": "assets/production/icons/board/slice_player_03.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_03.png",
+        "atlas": "assets/production/atlases/slice_player_03.png",
+        "sprite_frames": "assets/production/units/slice_player_03.tres"
+      },
+      "sha256": {
+        "source_sheet": "174dc77e6b358d3111d4bb7c48f27a2b41200ad6d4378671ca2d04706509fc06",
+        "portrait": "7531201774d420d0536bf90ee2e1778710adbe84b452e8feea5bbe616fb40eee",
+        "board_icon": "1b51e4dde6d09a76f4106ca831e802ce97c7da8a6604aab4ced601a4b6378dce",
+        "ability_icon": "2cddb1c05df8744ca3053103a7c13a15827aef7fc20dc9d298f641a20f3c32ec",
+        "atlas": "3a1035e4713cad161724b1b46fc0cbf1f3135fb69331a8dc83596821f9eb5f79",
+        "sprite_frames": "1388accb8180d7e7a46e4d58c897791e3a6eb8e1776d4f18e31b05334420e7d2"
+      },
+      "provenance": "assets/production/provenance/slice_player_03.json"
+    },
+    {
+      "unit_id": "unit.slice_player_04",
+      "local_processing_seed": 1194479714,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_04.png",
+        "portrait": "assets/production/portraits/slice_player_04.png",
+        "board_icon": "assets/production/icons/board/slice_player_04.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_04.png",
+        "atlas": "assets/production/atlases/slice_player_04.png",
+        "sprite_frames": "assets/production/units/slice_player_04.tres"
+      },
+      "sha256": {
+        "source_sheet": "fdf9c99b1d0018e748c1c2324a36debc1cdc901ad27d2a79be912592f8c695bf",
+        "portrait": "8a58bd6fe4bd002316b5dc39f45f6f1e71d2abb5589cb7d0830a9046ba189882",
+        "board_icon": "1f47971f8f18020bfb93eac726d7111f27626cb3180c28cb78dc46f57506f619",
+        "ability_icon": "8c673e0e4f608b2ced7f1294cb2171df2b0f91014ef263f95ce86933974864fb",
+        "atlas": "a9085bafd95d18167a7d420e982393eb20b9836899cc9c422c06879799ea0541",
+        "sprite_frames": "9f1e5e8d5957e3a7f06a72e8428697b4f4dc935ccc03c1fd72fdbc2bd16a87f3"
+      },
+      "provenance": "assets/production/provenance/slice_player_04.json"
+    },
+    {
+      "unit_id": "unit.slice_player_05",
+      "local_processing_seed": 1194479715,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_05.png",
+        "portrait": "assets/production/portraits/slice_player_05.png",
+        "board_icon": "assets/production/icons/board/slice_player_05.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_05.png",
+        "atlas": "assets/production/atlases/slice_player_05.png",
+        "sprite_frames": "assets/production/units/slice_player_05.tres"
+      },
+      "sha256": {
+        "source_sheet": "cc7cd6542ef090784dfc81bcab816b9ebe4ecc057e59bc7b7ea46883d4c80f3c",
+        "portrait": "ec49ea41c38097a0d61226f8ea7556e414a838c3b094c53336c84c0426c4356a",
+        "board_icon": "cfd709a6907d6ed6a5577ec13172691e50bf428e80f46e137bec977788f5ffef",
+        "ability_icon": "7ff74bf399e4f4f2cf5e324c10059ec230b8fa69d27a7110cc31540964cc6b26",
+        "atlas": "fa5b28372f022647f9eb16298e97ee47f23bde6a23042068e1e5e2bce9df926f",
+        "sprite_frames": "102b1acdddd34f00e591dbc324affc63a76757b72852b24d10d411282791226e"
+      },
+      "provenance": "assets/production/provenance/slice_player_05.json"
+    },
+    {
+      "unit_id": "unit.slice_player_06",
+      "local_processing_seed": 1194479716,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_06.png",
+        "portrait": "assets/production/portraits/slice_player_06.png",
+        "board_icon": "assets/production/icons/board/slice_player_06.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_06.png",
+        "atlas": "assets/production/atlases/slice_player_06.png",
+        "sprite_frames": "assets/production/units/slice_player_06.tres"
+      },
+      "sha256": {
+        "source_sheet": "0412727a46ec79b280cb8fff7beb059bb9bf44eddd80be5b93ed4eac208a60b2",
+        "portrait": "aeb56112a565c380362ad782e5dffa01fda9a367cd9095c1afd892fa5b476ac6",
+        "board_icon": "f5b482bbdae6b0823eb27152aef99343807b3243eb1a7db4f802976d8c6394a0",
+        "ability_icon": "5e897a151f42239e3d972f287064f9d7cc1876074230e630698e225ae53f1897",
+        "atlas": "ca1a257112ce30e35eb8fb656b8a1238f820e3a03e73b1162d949a6339dfed9f",
+        "sprite_frames": "3251665bc12bee4be4d5716b3bfd23b264e703c963c2a528dc88bd97ba31a0fc"
+      },
+      "provenance": "assets/production/provenance/slice_player_06.json"
+    },
+    {
+      "unit_id": "unit.slice_player_07",
+      "local_processing_seed": 1194479717,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_07.png",
+        "portrait": "assets/production/portraits/slice_player_07.png",
+        "board_icon": "assets/production/icons/board/slice_player_07.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_07.png",
+        "atlas": "assets/production/atlases/slice_player_07.png",
+        "sprite_frames": "assets/production/units/slice_player_07.tres"
+      },
+      "sha256": {
+        "source_sheet": "74d882ad986a5319b16cebb8fa1095c39487c8300de37ad015e098574a35541a",
+        "portrait": "13998bcb7f4c59d13d9f8cbb6394b4ca40ab6efa0dc2c50150d629a2ffedd653",
+        "board_icon": "24bd6b86c2bb613b2aa235905e79b4a3e299db0c7890283d5948673d480b6b59",
+        "ability_icon": "d2e6c8e8a7a2d8eaf67a6d4fa16a200dc20163b3ea18b9f2b54575b73887b0c9",
+        "atlas": "b0b8280eb0786976f58e545f63a797c9ffbd1c912af77cc92cd605a509047953",
+        "sprite_frames": "364c184283780174bb316163a37e34fe9e8c894568f96cc08b449a14b329ff92"
+      },
+      "provenance": "assets/production/provenance/slice_player_07.json"
+    },
+    {
+      "unit_id": "unit.slice_player_08",
+      "local_processing_seed": 1194479718,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_08.png",
+        "portrait": "assets/production/portraits/slice_player_08.png",
+        "board_icon": "assets/production/icons/board/slice_player_08.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_08.png",
+        "atlas": "assets/production/atlases/slice_player_08.png",
+        "sprite_frames": "assets/production/units/slice_player_08.tres"
+      },
+      "sha256": {
+        "source_sheet": "650cb8e75a946f3153d6f39c046af57319da8d88719ef195659053e8fc8457f3",
+        "portrait": "ea3030df34cace1345cdd0249fc81fbb1d4dbadddce6fe71322b57d4636fb192",
+        "board_icon": "f5c3b4d5032cd50ad8bf78bdcc4506fe55cd138fd204cc0b4609cc8993b4778c",
+        "ability_icon": "01f8fa5cbb18772e7c9eb0d80e591565d3f31c85a4236b1e0cc8b97b9f32b2f3",
+        "atlas": "8d3ed5c35de22feb0431480428791cf3b741b8e4c1a3b52b8ee379c05fd40754",
+        "sprite_frames": "9a515fa9511740f8c7198e3db18de73134977a9193932685220e18fc92a63f50"
+      },
+      "provenance": "assets/production/provenance/slice_player_08.json"
+    },
+    {
+      "unit_id": "unit.slice_player_09",
+      "local_processing_seed": 1194479719,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_09.png",
+        "portrait": "assets/production/portraits/slice_player_09.png",
+        "board_icon": "assets/production/icons/board/slice_player_09.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_09.png",
+        "atlas": "assets/production/atlases/slice_player_09.png",
+        "sprite_frames": "assets/production/units/slice_player_09.tres"
+      },
+      "sha256": {
+        "source_sheet": "cab63cee4b02506d525267d2db755f47ad47c3ca0a66c73765502a4c2f685434",
+        "portrait": "93c3c3fe9e2cc6985aefb9f9b4b01948b3057ff970769fa8b8853bd3e4e326da",
+        "board_icon": "321a13da2e6d13aaa4a8acaaf8b2805586955b5b51b13e9ad4d12677d282e7c7",
+        "ability_icon": "0356fd106ef5df74b8c250966d237273ec3f0d880539e56ad7ff715ea38244ce",
+        "atlas": "42725b8b6c415bba5e9d90f6004e77e6935cc069fe86f271c9a2a36539bf0627",
+        "sprite_frames": "0874953ba4ec377729e58d2df5fff530d9006e9ceedb6b864c1bf99189a78c62"
+      },
+      "provenance": "assets/production/provenance/slice_player_09.json"
+    },
+    {
+      "unit_id": "unit.slice_player_10",
+      "local_processing_seed": 1194479720,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_10.png",
+        "portrait": "assets/production/portraits/slice_player_10.png",
+        "board_icon": "assets/production/icons/board/slice_player_10.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_10.png",
+        "atlas": "assets/production/atlases/slice_player_10.png",
+        "sprite_frames": "assets/production/units/slice_player_10.tres"
+      },
+      "sha256": {
+        "source_sheet": "de7a6b4a1cb0369fc9aabdf56c679509b4f5871750ed3a4b271416dde07b0d96",
+        "portrait": "9afe14c1c6a4533ec34ce96a6f4169d0ac113d3dc4607da453033120f19ea959",
+        "board_icon": "736353d043721eb3cbfc3fe6b7278608df623ee9ad8349d486a8d039ad5b394e",
+        "ability_icon": "5a45c2fcf910a553f2fe7449a12d8fac034ee49ba9eafee456809cc273293576",
+        "atlas": "31f6e89baa67ff422d85bffb8ba55cdfeba6573c1b97891438e442b879280082",
+        "sprite_frames": "1b5584ca5525aba848e005434b53b39ff755fa80230951e86d3c2aa246b3f6b8"
+      },
+      "provenance": "assets/production/provenance/slice_player_10.json"
+    },
+    {
+      "unit_id": "unit.slice_player_11",
+      "local_processing_seed": 1194479721,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_11.png",
+        "portrait": "assets/production/portraits/slice_player_11.png",
+        "board_icon": "assets/production/icons/board/slice_player_11.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_11.png",
+        "atlas": "assets/production/atlases/slice_player_11.png",
+        "sprite_frames": "assets/production/units/slice_player_11.tres"
+      },
+      "sha256": {
+        "source_sheet": "2b0ea2c7c19a9a19ec2f3bfa8fb7a7636dec1c95ebfc3fc8c3a97802010ee8a6",
+        "portrait": "069c0d8c09ce97197b5e8fc9121d039705a38f4860055158e6d5ef81d8769cf0",
+        "board_icon": "6d83c2de1c57d7fe37a6402e0276d4b65b2453a93cf64893f8f9715ee60fc122",
+        "ability_icon": "64f06623defd0626e5a9ebac39f0aa15817bb11e7c84af531218be9da8f55ca0",
+        "atlas": "d19d66247f4dd3ca5334befca346eb7a59416437425011f98730458ccafd609f",
+        "sprite_frames": "5d33b0221744eb347f3bb02eeffbdb75336a0a5bd9f56c78d65c2bd8b95f1f7d"
+      },
+      "provenance": "assets/production/provenance/slice_player_11.json"
+    },
+    {
+      "unit_id": "unit.slice_player_12",
+      "local_processing_seed": 1194479722,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_12.png",
+        "portrait": "assets/production/portraits/slice_player_12.png",
+        "board_icon": "assets/production/icons/board/slice_player_12.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_12.png",
+        "atlas": "assets/production/atlases/slice_player_12.png",
+        "sprite_frames": "assets/production/units/slice_player_12.tres"
+      },
+      "sha256": {
+        "source_sheet": "401bc672c0209aba49e3f76b73e9aad7be896a58af06a93c8f196164e069f772",
+        "portrait": "d1acae47895f27865d4f320c55328a6c0058ade0cbd06c803ebc1b59d79ba71e",
+        "board_icon": "5549b380d4ff795d25383fab80132bfa23f8a58cdec0b3b0403d6502cb0dadd8",
+        "ability_icon": "95fb69757a34cd9ecb08d24fa062523758b1d085bad4b64e45a0351734c89ceb",
+        "atlas": "c4a21da9244d793875b8d1633ca5cc476dcc0d8b88f3661107c3dc943d4d7a01",
+        "sprite_frames": "83a34fd9bac81aadee6b90827d2c3e8f708df44ca8d80de1ff45d69c8b8862eb"
+      },
+      "provenance": "assets/production/provenance/slice_player_12.json"
+    },
+    {
+      "unit_id": "unit.slice_player_13",
+      "local_processing_seed": 1194479723,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_13.png",
+        "portrait": "assets/production/portraits/slice_player_13.png",
+        "board_icon": "assets/production/icons/board/slice_player_13.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_13.png",
+        "atlas": "assets/production/atlases/slice_player_13.png",
+        "sprite_frames": "assets/production/units/slice_player_13.tres"
+      },
+      "sha256": {
+        "source_sheet": "17cc862ac6a677d6b0ce6244ed346eb6c94c377db7c1391efd699c372eb4fbb0",
+        "portrait": "9e0dded98aff7d78bb4574cdb5ac0de2f9ffc65d0484f367e394b71d258cd9c5",
+        "board_icon": "a25abdab6495fc2e24a0a43d6f1ab91dab82942d818e135ef02a71e7e13bcc29",
+        "ability_icon": "c27ddf56af5e0ddad235a919b5a9598d34eeeb20773f9d52be7536741ec66649",
+        "atlas": "b386b69a4e7c052d5819acd650cb62f3cbf7a82f1557f44d6c23874aa33243af",
+        "sprite_frames": "851555272d1b50cde4e2223a33d6ed54e1ee688d1ad028249294ed77f7882455"
+      },
+      "provenance": "assets/production/provenance/slice_player_13.json"
+    },
+    {
+      "unit_id": "unit.slice_player_14",
+      "local_processing_seed": 1194479724,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_14.png",
+        "portrait": "assets/production/portraits/slice_player_14.png",
+        "board_icon": "assets/production/icons/board/slice_player_14.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_14.png",
+        "atlas": "assets/production/atlases/slice_player_14.png",
+        "sprite_frames": "assets/production/units/slice_player_14.tres"
+      },
+      "sha256": {
+        "source_sheet": "be527fc30dca2fcbecefa62981a3b4da362e1856715f69cfa7f23f0c324a6e3f",
+        "portrait": "ca599a29cf189c7868826fa0fbb28e9d391c1d14efc413f187c0ed5e971c3d9b",
+        "board_icon": "5eaacf85fa9afa5aea1ea0910a6096df5a801cd457fa7ccf90a884d53915bd4a",
+        "ability_icon": "079dc6b7f7e498cf5bb024774d2b83ba85ef0222aa866cae0d0b77d6fdcecfc2",
+        "atlas": "855fd144b9a294cc416cd31a3748a28035d34a04230104b97f05f1204fb3c394",
+        "sprite_frames": "616319d30a79cc18440f5471daea23f1b3c6631a4c69211074c72e8f1bc27018"
+      },
+      "provenance": "assets/production/provenance/slice_player_14.json"
+    },
+    {
+      "unit_id": "unit.slice_player_15",
+      "local_processing_seed": 1194479725,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_15.png",
+        "portrait": "assets/production/portraits/slice_player_15.png",
+        "board_icon": "assets/production/icons/board/slice_player_15.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_15.png",
+        "atlas": "assets/production/atlases/slice_player_15.png",
+        "sprite_frames": "assets/production/units/slice_player_15.tres"
+      },
+      "sha256": {
+        "source_sheet": "7a177f8346b23a00fdd779700bbe23b5520a8543ef56db9b0a307ec3ff81b238",
+        "portrait": "c80e11bc29cb5073f38a6de88de3f5e8d30180382979d013d7ec8b518957351d",
+        "board_icon": "85bc5a1f9906e93d51034b71ba17d217136d22a6108f64310f5f849985f4f854",
+        "ability_icon": "bc2f35ad253535a415fe9940e45b500e1716d13425f33d3ce302d3a4bd3b181a",
+        "atlas": "b838e2351447377e25916284beda99a173057838d3aabd490a6f201278cc43a4",
+        "sprite_frames": "7c0a0e4b54717e17ab3269d46b836cec3648218e5894bd88c3400fffa177fa10"
+      },
+      "provenance": "assets/production/provenance/slice_player_15.json"
+    },
+    {
+      "unit_id": "unit.slice_player_16",
+      "local_processing_seed": 1194479726,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_16.png",
+        "portrait": "assets/production/portraits/slice_player_16.png",
+        "board_icon": "assets/production/icons/board/slice_player_16.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_16.png",
+        "atlas": "assets/production/atlases/slice_player_16.png",
+        "sprite_frames": "assets/production/units/slice_player_16.tres"
+      },
+      "sha256": {
+        "source_sheet": "56d01503ce3b412380161f09475afe84b1fe41bb31d4112f32c9a54deae8d7c7",
+        "portrait": "df83fd243f9f95329eb2847fbf496eefcc3058935a16b08c22e1969482df4d0e",
+        "board_icon": "c0895d9ed07a7dd10e5e62b2831e0c08c0e613205d639b7b0bbf4bc9b23b75aa",
+        "ability_icon": "9aef667dda55f413fb232fe5157f3447db4dcd4765212229c8013935d7acca9f",
+        "atlas": "b2a0a314d31d2112332f791cf1948718917fd025fd40f9099279ae1f7374ddc1",
+        "sprite_frames": "a8fb5c603140075513b84cf21ae96ecaff13eef0adf3862177098cb0d98ea4d0"
+      },
+      "provenance": "assets/production/provenance/slice_player_16.json"
+    },
+    {
+      "unit_id": "unit.slice_player_17",
+      "local_processing_seed": 1194479727,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_17.png",
+        "portrait": "assets/production/portraits/slice_player_17.png",
+        "board_icon": "assets/production/icons/board/slice_player_17.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_17.png",
+        "atlas": "assets/production/atlases/slice_player_17.png",
+        "sprite_frames": "assets/production/units/slice_player_17.tres"
+      },
+      "sha256": {
+        "source_sheet": "b1025f9370f67c847a3649fdc60e14880964fe7496454086e416424f3dc44bfd",
+        "portrait": "03feeb8a2edca738b9e7cbd43ca99c3839dfc314d9972f9d8f78647beb752afb",
+        "board_icon": "4c36c6419c68a36a45061ac472baf5f854d2ddc7bea19a8b3bdd8258e8b8ac18",
+        "ability_icon": "9cbf7694e7f80eda8ece2d28313aa4abed28474e8655560e3fc3865c0aee28fe",
+        "atlas": "5dec1a47e0949c227bd5d1b09e1a6f921c5816c6248c7bbb73a9da0430eeec34",
+        "sprite_frames": "c2be266925f30ef26cda26c9f0827019f204fd4698ccf11bae9fce18e3e62432"
+      },
+      "provenance": "assets/production/provenance/slice_player_17.json"
+    },
+    {
+      "unit_id": "unit.slice_player_18",
+      "local_processing_seed": 1194479728,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_18.png",
+        "portrait": "assets/production/portraits/slice_player_18.png",
+        "board_icon": "assets/production/icons/board/slice_player_18.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_18.png",
+        "atlas": "assets/production/atlases/slice_player_18.png",
+        "sprite_frames": "assets/production/units/slice_player_18.tres"
+      },
+      "sha256": {
+        "source_sheet": "c6a9c48e1ec0e63a5602c066a3acded30a982d3fe561709020491e03541cd96c",
+        "portrait": "880ca4ef24bf9700dfcfdb9fffbc08bd9a7a5245528196defd22cba42c96c077",
+        "board_icon": "89dce3f26b42c6547140c90a1765a3949c1362347cf98cd2c830436708f56303",
+        "ability_icon": "eb1118d26ebf5e16b0ea8c074fb51c3725aeb6e59ec7ced811967ae0af2827c0",
+        "atlas": "c563d984625ed4ef188b7df81ae195301840c32a90bfae578ab5a10ef63f8625",
+        "sprite_frames": "492a967c3bdc895f4960ac147fb6d1030b0bc6e48b36363efb79b85df7721c0c"
+      },
+      "provenance": "assets/production/provenance/slice_player_18.json"
+    },
+    {
+      "unit_id": "unit.slice_player_19",
+      "local_processing_seed": 1194479729,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_19.png",
+        "portrait": "assets/production/portraits/slice_player_19.png",
+        "board_icon": "assets/production/icons/board/slice_player_19.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_19.png",
+        "atlas": "assets/production/atlases/slice_player_19.png",
+        "sprite_frames": "assets/production/units/slice_player_19.tres"
+      },
+      "sha256": {
+        "source_sheet": "60f86390038a13ddb45d38c43f8862c005bac26d5fec4175bbcdb4409af4ad11",
+        "portrait": "824003314d61ef9f22f4dcfdb49bfccc5397e25872026ebdbb845fbd3985af8d",
+        "board_icon": "77fb36826c61918c28074cbdfde7e61937dde06f56f49680b05e1716319cb1ef",
+        "ability_icon": "570a9437a864c8478b02ec814537a2599b1f0fa0f86cb052017e67cb939371a8",
+        "atlas": "d4722c812d92b957a95b53f55bdedf4494342020b94f614aa3163fcb1dd078d3",
+        "sprite_frames": "832b7c9bdcef7535243c68a2a890a012866b72caa9a2b62d897656a25b025731"
+      },
+      "provenance": "assets/production/provenance/slice_player_19.json"
+    },
+    {
+      "unit_id": "unit.slice_player_20",
+      "local_processing_seed": 1194479730,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_20.png",
+        "portrait": "assets/production/portraits/slice_player_20.png",
+        "board_icon": "assets/production/icons/board/slice_player_20.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_20.png",
+        "atlas": "assets/production/atlases/slice_player_20.png",
+        "sprite_frames": "assets/production/units/slice_player_20.tres"
+      },
+      "sha256": {
+        "source_sheet": "2268312c471bc30a965787039d8bcdcc4f95b62d4f05f15785b9dee4150419a3",
+        "portrait": "0e601f8bfcb9b91b1d0c2abb81143a5753cfd077dadbf364808e0f3e3989c313",
+        "board_icon": "e71c070aed0b2a04cf0bc889205fced158846f25da280b8cf39abee105232b4d",
+        "ability_icon": "149d5b7309472c8575d5bc2450c03a8c037a9d0a5407def60586750180819b2f",
+        "atlas": "8502f381c86c41a40b4239ddeeb211a2fc94b2e1f294f65a804d8f9bf157ec7f",
+        "sprite_frames": "92355fb1d85d969bcf9923480389c1cd0cb6e555b736f0a1702ee70b1ef1f6f8"
+      },
+      "provenance": "assets/production/provenance/slice_player_20.json"
+    },
+    {
+      "unit_id": "unit.slice_player_21",
+      "local_processing_seed": 1194479731,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_21.png",
+        "portrait": "assets/production/portraits/slice_player_21.png",
+        "board_icon": "assets/production/icons/board/slice_player_21.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_21.png",
+        "atlas": "assets/production/atlases/slice_player_21.png",
+        "sprite_frames": "assets/production/units/slice_player_21.tres"
+      },
+      "sha256": {
+        "source_sheet": "be18363c928eb7b7da5705931c6f4fc8c3a015d864425d992257256b503a15bf",
+        "portrait": "1da193db119d0cd141cd8fc70f1d35e42f33949c14ae1818e02bd5d7412f7175",
+        "board_icon": "45fc3815a9d4eef1fcba853ae15dfe44314c1d940f17a917f624c2a53d896bf7",
+        "ability_icon": "93ff24d4108060e3cdd78784d8c09a96a09e9d3d61a3d9278ae99c113ec01528",
+        "atlas": "bc8b8f0c03506012fef0a44d5145fb129f97d2ab25a0e34c7eaaa091ff5ccd92",
+        "sprite_frames": "0de6a073ef50c24b97e93d6790b78689a8808d952c22c12eabe6d06aeea3de19"
+      },
+      "provenance": "assets/production/provenance/slice_player_21.json"
+    },
+    {
+      "unit_id": "unit.slice_player_22",
+      "local_processing_seed": 1194479732,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_22.png",
+        "portrait": "assets/production/portraits/slice_player_22.png",
+        "board_icon": "assets/production/icons/board/slice_player_22.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_22.png",
+        "atlas": "assets/production/atlases/slice_player_22.png",
+        "sprite_frames": "assets/production/units/slice_player_22.tres"
+      },
+      "sha256": {
+        "source_sheet": "9e88af8575e79c19cd50adf8f522f1c94f8ec405cfaa6885a4e4a837a88240b5",
+        "portrait": "8dd15e116e3fbf2105a6c429fa66e28f7e27205de2d52ea39cc075882f311665",
+        "board_icon": "5bf75406c3c3b5a280148b996e789e97e33d431ad5edd2c9b811fd844a1a4cbd",
+        "ability_icon": "694256fabb3cfe3b7f0bb02fe6990c509a43646150002f79cc09a70f2ce519cf",
+        "atlas": "8db4a3773ebe57cf9464487128205bdf42c0611340af189de88352c3eba72708",
+        "sprite_frames": "e6e95b909360387fe65cf7b6cc6bef110a16eaf65e8cfabe683a2863d76cd3e3"
+      },
+      "provenance": "assets/production/provenance/slice_player_22.json"
+    },
+    {
+      "unit_id": "unit.slice_player_23",
+      "local_processing_seed": 1194479733,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_23.png",
+        "portrait": "assets/production/portraits/slice_player_23.png",
+        "board_icon": "assets/production/icons/board/slice_player_23.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_23.png",
+        "atlas": "assets/production/atlases/slice_player_23.png",
+        "sprite_frames": "assets/production/units/slice_player_23.tres"
+      },
+      "sha256": {
+        "source_sheet": "ff7a744c0f4a5365dcc40dee2a765746e63a201644ff90984dd587583c3b539a",
+        "portrait": "ce73eefca9234768bcaeacbafdab9bd6ddb752fda003d67f16751bd1c31fe7ee",
+        "board_icon": "d9dd49ac077c02916b41a401c83cea76c36d272013bfaef709a47ad28c31a708",
+        "ability_icon": "093cdc2f3d70738e31d41c0cf78194a051e6d624c1d53b688f9ec4282987942e",
+        "atlas": "caee441d9a0bec30b6d72ad4aca83811c06ffc01842a79d97972f272e9d5942c",
+        "sprite_frames": "3199237b35616d1eea22625ecbf4b5a333956dd701b755b05e0714cec9995178"
+      },
+      "provenance": "assets/production/provenance/slice_player_23.json"
+    },
+    {
+      "unit_id": "unit.slice_player_24",
+      "local_processing_seed": 1194479734,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_24.png",
+        "portrait": "assets/production/portraits/slice_player_24.png",
+        "board_icon": "assets/production/icons/board/slice_player_24.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_24.png",
+        "atlas": "assets/production/atlases/slice_player_24.png",
+        "sprite_frames": "assets/production/units/slice_player_24.tres"
+      },
+      "sha256": {
+        "source_sheet": "0b021f6344d843a590154ec7c1955127f16809e5a890d870f8c8a6e64414ee21",
+        "portrait": "d9f7eb9d9ec36a1cb5c7d6620a2b86f782c4af149e15faf9f972fd4e5a34e42b",
+        "board_icon": "12fcf8c529b8615fea95626c66f2738c4f858fe3139fe2c0180271c0b89d9876",
+        "ability_icon": "fb9293f4b86a0f62e0a931f5f09264995447cd72023edcc3f04f3bc26e59ce8a",
+        "atlas": "5879df882185409e36b202f545212fa7529491f3b70eb4f7a8e870171b687dd8",
+        "sprite_frames": "eb6117250cd609bbd4a3cd801effc00d59db5cf96f6c0f7a350250b380b7ab23"
+      },
+      "provenance": "assets/production/provenance/slice_player_24.json"
+    },
+    {
+      "unit_id": "unit.slice_player_25",
+      "local_processing_seed": 1194479735,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_25.png",
+        "portrait": "assets/production/portraits/slice_player_25.png",
+        "board_icon": "assets/production/icons/board/slice_player_25.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_25.png",
+        "atlas": "assets/production/atlases/slice_player_25.png",
+        "sprite_frames": "assets/production/units/slice_player_25.tres"
+      },
+      "sha256": {
+        "source_sheet": "7501ff9fdde7845deff886885b22b355b047d011911ab69933324c5f3e385c81",
+        "portrait": "9b33f843a9af64df181799a8bec8fbaad4225cd9a642b092632339101884be72",
+        "board_icon": "5f41c984a631ea50eb9b6444e73c218e487315bf884853173f85cf46d73fb293",
+        "ability_icon": "9359eb49b876055fb4cd619baf7499069a122581981862604334de9940b615f6",
+        "atlas": "9af64a4fc3b81fcc4427cba2eaea085bfc2b34f2794bd68465417ac73e7917c5",
+        "sprite_frames": "028e0174f7c3c39d4041d7c23ae1c1a21e581e4bc783df63b0a96b7eaf97da5c"
+      },
+      "provenance": "assets/production/provenance/slice_player_25.json"
+    },
+    {
+      "unit_id": "unit.slice_player_26",
+      "local_processing_seed": 1194479736,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_26.png",
+        "portrait": "assets/production/portraits/slice_player_26.png",
+        "board_icon": "assets/production/icons/board/slice_player_26.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_26.png",
+        "atlas": "assets/production/atlases/slice_player_26.png",
+        "sprite_frames": "assets/production/units/slice_player_26.tres"
+      },
+      "sha256": {
+        "source_sheet": "cd1db76bc58f5430a11695735f073c07f4ac62ca9b126c47c13d3addc32f7787",
+        "portrait": "21e4780ae4a5f7d80b17c0545b02f4316026e0682bd42435545c2a68e8367d60",
+        "board_icon": "9024e3f61e1a1c02d3cfe7ea1a88236301883ce9f1b955a0284f4161d52b74fa",
+        "ability_icon": "c3fb602d5535ffa6411dc78b3509dda61bf5f9bd51602877f9ba89cefdc60b41",
+        "atlas": "2fba2e74acdce070be10a67bcdbfe89d010db3b78edaf21a0a03e64f2812fa14",
+        "sprite_frames": "83bf5c541d38fcc290c55c293a83857181e7db2534abf21f714ded9f8d99aaff"
+      },
+      "provenance": "assets/production/provenance/slice_player_26.json"
+    },
+    {
+      "unit_id": "unit.slice_player_27",
+      "local_processing_seed": 1194479737,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_27.png",
+        "portrait": "assets/production/portraits/slice_player_27.png",
+        "board_icon": "assets/production/icons/board/slice_player_27.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_27.png",
+        "atlas": "assets/production/atlases/slice_player_27.png",
+        "sprite_frames": "assets/production/units/slice_player_27.tres"
+      },
+      "sha256": {
+        "source_sheet": "2b9f416671c9f9e62ed6758e3e9286d14ea9e70705a7711b3cfba6bfd0c3b270",
+        "portrait": "d8c1c98fed57786a7fd498f8187c4469615bc5e591a6f905de077e6b75829454",
+        "board_icon": "cbe10255c951926946b5b821c0963c288f40310003cbbcabb007bf73be7fdaa2",
+        "ability_icon": "1f0e24cf6dbca33790e4c439fe5ce9b06fcffe45ef915fb79549d93fe6210f6f",
+        "atlas": "af89a9878123dc9b13bb1ba17465c9a516f1ab80e5476a7461afd6d69365c020",
+        "sprite_frames": "1ef5a69b059465d45896221b0fa12733c39518ae7269535bce5a66c154379139"
+      },
+      "provenance": "assets/production/provenance/slice_player_27.json"
+    },
+    {
+      "unit_id": "unit.slice_player_28",
+      "local_processing_seed": 1194479738,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_28.png",
+        "portrait": "assets/production/portraits/slice_player_28.png",
+        "board_icon": "assets/production/icons/board/slice_player_28.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_28.png",
+        "atlas": "assets/production/atlases/slice_player_28.png",
+        "sprite_frames": "assets/production/units/slice_player_28.tres"
+      },
+      "sha256": {
+        "source_sheet": "e474c9df8f973f8ded50f8db8cd5ba78b7319113f367a98f3f8b179e965406fb",
+        "portrait": "59eb532eb775f69eda66b931254e46d3ec1f779119886808b6356b5daeffe223",
+        "board_icon": "0e42b36e48c2e8a6b00703231f297f63192756f5d185380aaea0d93bb2b3edd0",
+        "ability_icon": "1de069e9210c8c7da0d3aa2ba529537a183b8a24ba2dd8478b7c09bf3259f6ba",
+        "atlas": "ff334651d3bfe955977c38af9ea6c98eb6228161a03193b1db5de98b38b8978e",
+        "sprite_frames": "9385bc80a1e8763912c590ec5ec83c86a14803e34870d8c1290d7f54d7cada0a"
+      },
+      "provenance": "assets/production/provenance/slice_player_28.json"
+    },
+    {
+      "unit_id": "unit.slice_player_29",
+      "local_processing_seed": 1194479739,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_29.png",
+        "portrait": "assets/production/portraits/slice_player_29.png",
+        "board_icon": "assets/production/icons/board/slice_player_29.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_29.png",
+        "atlas": "assets/production/atlases/slice_player_29.png",
+        "sprite_frames": "assets/production/units/slice_player_29.tres"
+      },
+      "sha256": {
+        "source_sheet": "cdf82a2903bd94399bb62bf8d6e30adf3c8df15ee990b6db0ee9adb02b7ade9f",
+        "portrait": "8072095e4cf0b5442dfb16e677a8db08e035a201d5ab065841a7f771d8b4489d",
+        "board_icon": "616f82c539a4cd7f32bbba7b2f8e931a64b28fb3613777d33210191f533c58de",
+        "ability_icon": "a7ad4c5e1a9f9031f355da265d58a3cb436638fcdcffd53cdb35ad808a38bc75",
+        "atlas": "8ff2fa8999e62eaed6057881cd67ff87e24ad261c30b33515280fd1537f058f8",
+        "sprite_frames": "2c90ef9e49fd6df56f32d17ab63ec6cb666b7b6dd7a14eb66b49ffea5b064c4a"
+      },
+      "provenance": "assets/production/provenance/slice_player_29.json"
+    },
+    {
+      "unit_id": "unit.slice_player_30",
+      "local_processing_seed": 1194479740,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_30.png",
+        "portrait": "assets/production/portraits/slice_player_30.png",
+        "board_icon": "assets/production/icons/board/slice_player_30.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_30.png",
+        "atlas": "assets/production/atlases/slice_player_30.png",
+        "sprite_frames": "assets/production/units/slice_player_30.tres"
+      },
+      "sha256": {
+        "source_sheet": "392169460da630652dccfceb9e3319c3228992b60be8244d06151b76fce09e05",
+        "portrait": "17e06a44a0c215bf294c6e04ed8f876bde7ee64c45cfd4ffbd5439c1445d3712",
+        "board_icon": "c72bd59023fcd16899378f5d045dcafcc840564bc1c798b93688e1a7bf15567c",
+        "ability_icon": "81f46efd9c690d3396bece32d43b5440a412022da411c433b07f390b709381d5",
+        "atlas": "93c5083a2bf8598831165aaf776b0617143b7d7554301b74d9d91eb1a28d6f2b",
+        "sprite_frames": "7e3275b7389faa8ed0578adedd19828a895002e98200609b2a485b13fdea6f74"
+      },
+      "provenance": "assets/production/provenance/slice_player_30.json"
+    },
+    {
+      "unit_id": "unit.slice_player_31",
+      "local_processing_seed": 1194479741,
+      "outputs": {
+        "source_sheet": "assets/production/source_sheets/slice_player_31.png",
+        "portrait": "assets/production/portraits/slice_player_31.png",
+        "board_icon": "assets/production/icons/board/slice_player_31.png",
+        "ability_icon": "assets/production/icons/abilities/slice_player_31.png",
+        "atlas": "assets/production/atlases/slice_player_31.png",
+        "sprite_frames": "assets/production/units/slice_player_31.tres"
+      },
+      "sha256": {
+        "source_sheet": "cbb1432329051ac2060b94d08f967e596530ec81e12a3a79f6b2950e2edd49cc",
+        "portrait": "b5c456272abd55230ab0f29b0778834fdd24d1dfeb70f0af871e0b813afa926f",
+        "board_icon": "44e9a8f2333af89eb37ffcf4915d36c1c556c4a5aa251f3c373d3a0f15b16945",
+        "ability_icon": "2912fb45cae3ef2ccad159787d7790c92897ce1937b9442bdf97c510455e67d0",
+        "atlas": "efa5d6570e5a2cc6c5f8d49789449ce086c52b5d9ce72526764dd31a0150a9d5",
+        "sprite_frames": "d68390edd4df739b47975a2a56d1f137c1322bad823c45ea12a5a12e686bee6c"
+      },
+      "provenance": "assets/production/provenance/slice_player_31.json"
+    }
+  ],
+  "shared_atlases": {
+    "trait": "656c36e8f950eb0c329a48dffa87bd1c253a3a86291bf80cd234dab7c77486c3",
+    "ability": "e060f38135c74aec3b13f78812721bfe8fa96449b6b89a7c58e190cbc122d4f2",
+    "status_damage": "c40e50d21478075777596c9d39b8c7169907c8d5b48149d025a2e57c98e60277",
+    "combat_vfx": "3dbeaca8d07f9a86e92654289c07d227f3e1f6ea300991cdc69cd722a6d7850c",
+    "core_ui": "66efcd105955adc4463609c056a797bde06acc276cef7a3d0bc2137e79136272"
+  },
+  "camp": {
+    "path": "assets/production/environment/camp.png",
+    "sha256": "c5aa0dfa18a749866a96865010abf6b6afe68ffa5e368324d156e2812d9d1db8"
+  }
+}

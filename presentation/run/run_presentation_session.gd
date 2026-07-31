@@ -148,6 +148,34 @@ func dispatch(intent: RunPresentationIntent) -> RunPresentationResult:
 			return _dispatch_command(_factory.abandon_boss_retry_command())
 		RunPresentationIntent.Kind.SETTLE_TERMINAL_RUN:
 			return _dispatch_command(_factory.settle_terminal_run_command())
+		RunPresentationIntent.Kind.COMMIT_NODE_CHOICE:
+			# design :177「factory 不得以 latest state 覆蓋」：payload 是 UI 在
+			# overlay 建立當下抄下的那一份，dispatch 只原樣轉呈。
+			return _dispatch_command(_factory.commit_node_choice_command(
+				intent.node_choice_payload
+			))
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT:
+			return _dispatch_command(
+				_factory.acknowledge_node_choice_result_command(
+					intent.expected_run_id,
+					intent.receipt_digest
+				)
+			)
+		RunPresentationIntent.Kind.DISMANTLE_WITH_NODE_SERVICE:
+			return _dispatch_command(
+				_factory.dismantle_with_node_service_command(
+					intent.expected_run_id,
+					intent.node_id,
+					intent.choice_receipt_digest,
+					intent.item_instance_id
+				)
+			)
+		RunPresentationIntent.Kind.EXIT_NODE_SERVICE:
+			return _dispatch_command(_factory.exit_node_service_command(
+				intent.expected_run_id,
+				intent.node_id,
+				intent.choice_receipt_digest
+			))
 	return _precommit_failure(_error(
 		INTENT_INVALID, &"error.presentation.run_intent_invalid"
 	))
@@ -638,6 +666,23 @@ func _build_snapshot() -> RunPresentationSnapshot:
 	result.economy = _controller.economy_snapshot()
 	result.roster = _controller.roster_snapshot()
 	result.pending_reward = _controller.pending_reward_snapshot()
+	var pending_choice := _controller.node_choice_pending_snapshot()
+	if pending_choice != null and _factory != null:
+		var choice_set := _factory.try_node_choice_set(
+			pending_choice.choice_set_id
+		)
+		if choice_set != null:
+			result.node_choice_overlay = NodeChoiceOverlaySnapshot.from_rule(
+				choice_set, pending_choice
+			)
+	result.node_service_overlay = NodeServiceOverlaySnapshot.from_state(
+		_controller.node_service_pending_snapshot()
+	)
+	for receipt: NodeChoiceCommitReceiptState in \
+		_controller.unacknowledged_node_choice_receipts():
+		result.pending_node_choice_results.append(
+			NodeChoiceResultSnapshot.from_receipt(receipt)
+		)
 	if (
 		_factory != null
 		and result.roster != null

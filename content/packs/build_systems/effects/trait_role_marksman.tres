@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_dr1pl")]([SubResource("Resource_iqn5j")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_trait_role_marksman_description"
 id = &"effect.trait_role_marksman"
 display_name_key = &"loc.effect_trait_role_marksman"

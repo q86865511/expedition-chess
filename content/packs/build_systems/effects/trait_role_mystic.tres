@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_iomio")]([SubResource("Resource_y3qsm")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_trait_role_mystic_description"
 id = &"effect.trait_role_mystic"
 display_name_key = &"loc.effect_trait_role_mystic"

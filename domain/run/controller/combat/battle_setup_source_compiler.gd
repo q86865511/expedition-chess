@@ -13,7 +13,7 @@ func compile(
 	commander_passive_effect_ids: Array[StringName] = []
 ) -> BattleSetupSourceBundle:
 	var on_field := _collect_on_field(committed_roster, catalog)
-	var player_units := _compile_player_units(on_field)
+	var player_units := _compile_player_units(on_field, catalog)
 	var active_traits := _compile_traits(on_field, catalog)
 	var equipment_effects := _compile_equipment_effects(on_field, committed_roster, catalog)
 	var relic_effects := _compile_relic_effects(committed_roster, catalog)
@@ -52,18 +52,22 @@ func _collect_on_field(roster: RosterState, catalog: BattleRuleCatalog) -> Array
 	result.sort_custom(_on_field_before)
 	return result
 
-func _compile_player_units(on_field: Array) -> Array[UnitBattleSnapshot]:
+func _compile_player_units(
+	on_field: Array,
+	catalog: BattleRuleCatalog
+) -> Array[UnitBattleSnapshot]:
 	var result: Array[UnitBattleSnapshot] = []
 	for entry: Dictionary in on_field:
 		result.append(_build_player_unit(
-			entry["placement"], entry["instance"], entry["rule"]
+			entry["placement"], entry["instance"], entry["rule"], catalog
 		))
 	return result
 
 func _build_player_unit(
 	placement: BoardPlacementState,
 	instance: UnitInstance,
-	rule: BattleUnitRule
+	rule: BattleUnitRule,
+	catalog: BattleRuleCatalog
 ) -> UnitBattleSnapshot:
 	var unit := UnitBattleSnapshot.new()
 	unit.instance_id = StringName(instance.instance_id)
@@ -80,6 +84,14 @@ func _build_player_unit(
 	if rule.base_stats != null:
 		_apply_stats(unit, rule.base_stats, _find_scaling(rule.star_scalings, instance.star))
 	unit.effect_ids = rule.effect_ids.duplicate()
+	# ability primary effect 依 wave3 契約不得寫進 UnitDef 的 innate effect_refs,
+	# 施法解算的 effect source 在此併入(去重,fixture 內容兩處同值時不變)
+	if unit.ability_id != null:
+		var ability_rule := catalog.try_ability_rule(unit.ability_id.value)
+		if ability_rule != null:
+			for ability_effect_id: StringName in ability_rule.effect_ids:
+				if not unit.effect_ids.has(ability_effect_id):
+					unit.effect_ids.append(ability_effect_id)
 	unit.effect_ids.sort_custom(_string_name_before)
 	for effect_index: int in range(unit.effect_ids.size()):
 		unit.effect_assignments.append(_build_effect(

@@ -17,7 +17,7 @@ const CHALLENGE_MULTIPLIER_MINIMUM_BPS: int = 10000
 
 var _issues: Array[ContentValidationIssue] = []
 var _by_id: Dictionary = {}
-var _compiler := ContentDefinitionCompilerV2.new()
+var _compiler := ContentDefinitionCompilerV3.new()
 var _stable_id_validator := StableIdValidator.new()
 
 func validate(input: ContentValidationInput) -> ContentValidationReport:
@@ -28,6 +28,7 @@ func validate(input: ContentValidationInput) -> ContentValidationReport:
 		return ContentValidationReport.failure(&"CONTENT_VALIDATION_FAILED", &"input")
 	_index_and_validate_ids(input)
 	_validate_dependencies(input)
+	_validate_v3_definitions(input)
 	_validate_units_and_traits(input.definitions)
 	_validate_recipes(input.definitions)
 	_validate_minimum_counts_and_nodes(input.definitions)
@@ -99,6 +100,101 @@ func _validate_dependencies(input: ContentValidationInput) -> void:
 			_validate_localization(input, definition.id, definition.description_key, &"description_key")
 		elif definition is AbilityDef:
 			_validate_localization(input, definition.id, definition.description_key, &"description_key")
+		elif definition is EffectDef:
+			_validate_localization(
+				input, definition.id, definition.description_key, &"description_key"
+			)
+
+
+func _validate_v3_definitions(input: ContentValidationInput) -> void:
+	for definition: ContentDefinition in input.definitions:
+		if definition is UnitPresentationDef:
+			var presentation := definition as UnitPresentationDef
+			if (
+				presentation.portrait_path.is_empty()
+				or not presentation.portrait_path.ends_with(".png")
+				or presentation.sprite_frames_path.is_empty()
+				or not presentation.sprite_frames_path.ends_with(".tres")
+				or presentation.board_icon_path.is_empty()
+				or not presentation.board_icon_path.ends_with(".png")
+				or presentation.ability_icon_path.is_empty()
+				or not presentation.ability_icon_path.ends_with(".png")
+			):
+				_issue(
+					&"CONTENT_PRESENTATION_PATH_INVALID",
+					definition.id,
+					&"presentation_paths"
+				)
+		elif definition is AudioCueDef:
+			var audio := definition as AudioCueDef
+			if audio.bus not in [&"Master", &"Music", &"SFX", &"UI"] \
+				or not audio.stream_path.ends_with(".ogg"):
+				_issue(
+					&"CONTENT_AUDIO_CUE_INVALID",
+					definition.id,
+					&"audio_cue"
+				)
+		elif definition is NodeChoiceSetDef:
+			_validate_node_choice_set(
+				input, definition as NodeChoiceSetDef
+			)
+
+
+func _validate_node_choice_set(
+	input: ContentValidationInput,
+	choice_set: NodeChoiceSetDef
+) -> void:
+	if choice_set.node_kind not in [&"event", &"rest", &"treasure"]:
+		_issue(
+			&"CONTENT_NODE_CHOICE_INVALID",
+			choice_set.id,
+			&"node_kind"
+		)
+		return
+	var minimum := 3 if choice_set.node_kind == &"treasure" else 2
+	if choice_set.choices.size() < minimum:
+		_issue(
+			&"CONTENT_NODE_CHOICE_INVALID", choice_set.id, &"choices"
+		)
+	var ids: Dictionary = {}
+	var previous_order := -1
+	for choice: NodeChoiceDef in choice_set.choices:
+		if (
+			choice == null
+			or not _stable_id_validator.is_valid(choice.choice_id)
+			or ids.has(choice.choice_id)
+			or choice.sort_order <= previous_order
+			or choice.outcome_kind not in [
+				NodeChoiceDef.OutcomeKind.APPLY_AND_COMPLETE,
+				NodeChoiceDef.OutcomeKind.OPEN_DISMANTLE_SERVICE,
+				NodeChoiceDef.OutcomeKind.OPEN_REWARD_STAGE,
+			]
+		):
+			_issue(
+				&"CONTENT_NODE_CHOICE_INVALID",
+				choice_set.id,
+				&"choices"
+			)
+			continue
+		ids[choice.choice_id] = true
+		previous_order = choice.sort_order
+		for pair: Array in [
+			[choice.title_key, &"title_key"],
+			[choice.description_key, &"description_key"],
+			[choice.preview_key, &"preview_key"],
+			[choice.result_key, &"result_key"],
+		]:
+			_validate_localization(
+				input, choice_set.id, pair[0], pair[1]
+			)
+		_validate_run_operations(
+			choice_set.id,
+			choice.operations,
+			&"choices.operations",
+			&"node_choice",
+			false,
+			true
+		)
 
 func _validate_localization(input: ContentValidationInput, source_id: StringName, key: StringName, path: StringName) -> void:
 	if key.is_empty() or input.dependency_port == null or not input.dependency_port.localization_key_exists(key):
@@ -309,6 +405,19 @@ func _validate_always_only_claim_scope(definitions: Array[ContentDefinition]) ->
 			_validate_effect_refs_always_only(
 				definition.id, (definition as CommanderDef).passive_effect_refs, &"passive_effect_refs"
 			)
+			for effect_id: StringName in (
+				definition as CommanderDef
+			).passive_effect_refs:
+				var passive: ContentDefinition = _by_id.get(effect_id)
+				if passive is EffectDef \
+					and not (passive as EffectDef).battle_operations.is_empty() \
+					and not (passive as EffectDef).run_operations.is_empty():
+					_issue(
+						&"CONTENT_COMMANDER_PASSIVE_MIXED_SCOPE",
+						definition.id,
+						&"passive_effect_refs",
+						String(effect_id)
+					)
 
 func _validate_effect_refs_always_only(
 	source_id: StringName, effect_refs: Array[StringName], field_path: StringName

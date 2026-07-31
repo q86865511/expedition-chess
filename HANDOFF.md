@@ -43,14 +43,29 @@
 | S3 `economy-expedition` | ✅ 完成，複檢 PASS | `specs/economy-expedition/`（final-review.md＋implementation-review.md） | 11/11 S3-AC evidence、10,000-seed ExpeditionSoak |
 | S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
 | S5 `meta-progression` | ✅ 實作完成（2026-07-26） | `specs/meta-progression/`（三件套＋implementation-review.md） | T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All exit 0、W5 R4 雙審零未決 |
-| PROD／SCOPE／UX／QA 橫切 15 REQ | ✅ G2 `presentation-ui` T15／R16 closure 完成；draft PR #5 | `specs/g2-roadmap.md`、`specs/presentation-ui/review-log.md` | R12～R16 findings closure；Gut 945/16295、runtime 10/10、10k soak、static gate、manifests 155/155；19 AC PASS；no R17 by user override |
+| PROD／SCOPE／UX／QA 橫切 15 REQ | 🟡 `content-production` 實作+雙審閉環,停在 PR gate;T18A/音訊格式 blocked-on-codex | `specs/g2-roadmap.md`、`specs/content-production/` | 分支 10 commits;Gut 281/1091、10k soak、All exit 0;acceptance verified=true/fully_closed=false(4 blocked) |
 
+- **content-production 實作與 T25 雙審已閉環(2026-08-01,Claude 接手完成)**:
+  分支 `codex/g2-content-production` 有 10 個檢查點 commit(d5a6325…886395b),
+  fresh 全綠(Gut 281 scripts/1091 tests、10k ExpeditionSoak exit 0、
+  -Suite All exit 0、acceptance 21 列 verified);T25 三輪雙審 closure 見
+  `specs/content-production/review-log.md`。停在 push/PR gate 待使用者。
+- **留給 codex 的美術/資產工作(blocked gate,acceptance 判定機械化)**:
+  (1) T18A 人工採納 gate:對 `assets/production/` 圖像做 originality/
+  silhouette 審查,產出 decision table 回寫 attempt ledger
+  (`assets/production/production-asset-attempts.json`,現缺檔),
+  `assets/production/inventory.json` status 由 generated 改 adopted;
+  (2) 音訊 R9 格式:現況 44.1kHz/8s/q0.8/mono vs 規格 48kHz/20-40s/q0.5/stereo,
+  重生成(`tools/content-production/generate-production-audio.py`,21 個語意名
+  已對齊 R9)或由使用者裁決修規格。完成後
+  `content-production-acceptance.json` 的 AC-033/038/REQ-PROD-001/
+  REQ-SCOPE-002 自動翻綠(blocked 判定讀檔案內容,不需改 runner)。
 - 測試 gate：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`（其餘 suite 見專案 `CLAUDE.md`）。`artifacts/test/` 為本機驗證輸出。
 - 表現層現況：production scene catalog/shell、typed router/lease、settings/audio、
   真 SubViewport/UI layer、playback/accessibility、formal typed controls 與 T13
   原創像素 pilot 已建立，pilot 已獲使用者核可。R16 findings closure 與 T15
-  final evidence 已完成；使用者明示不做 R17；draft PR #5 已建立。完整內容／資產
-  量產尚未開始。
+  final evidence 已完成；使用者明示不做 R17；PR #5 與 merge 後修正 PR #6
+  均已合併。完整內容／資產量產已由 `codex/g2-content-production` 啟動。
 - **T11 內容缺口修復記錄**（S4 wave4 收尾，2026-07-23）：Build Lab（T11）首次把 `content/packs/vertical_slice/` 餵進 production `EconomyExpeditionCatalogBuilder`／`ContentRegistryReceiptAdapter` 後，暴露兩個此前從未被真正觸發過的內容缺口，已一併修復：(1) `economy_configs/slice_default.tres` 原缺 `layer_income`／`xp_thresholds`，被 builder 判定不合法而驗證器當時未攔——`content/validation/content_validator.gd:298` 已補上與 builder 一致的必填欄位檢查（新增 `CONTENT_ECONOMY_CONFIG_INCOMPLETE`）；(2) 雙 pack 合併後完全沒有 `meta_reward_table` 分類內容，導致 `ContentRegistryReceiptAdapter` 的 save/load 在 receipt 重建階段必定失敗（`PINNED_CATALOG_REFERENCE_MISSING`）——已新增 `meta_reward_tables/slice_default.tres` 佔位內容＋驗證器 `CONTENT_META_REWARD_TABLE_MISSING` 規則。細節見 `content/packs/vertical_slice/README.md`「T11 wave4 內容缺口修復」與 `scripts/dev/build_lab/build_lab_content_bootstrap.gd:14` 註解。
 
 ## 4. 雙方工作流
@@ -89,5 +104,5 @@
   references match。使用者明示 R16 後不再次雙審，故未開 R17；原 R16
   `NOT APPROVED` 報告維持歷史原文，closure table 在
   `.pipeline/reviews/2026-07-30-presentation-ui-r16-closure.md`。使用者已通過
-  Git 發布 gate，branch 已推送並建立 draft PR #5；merge 仍須另行批准；
-  `content-production` 等本片合併後才開始。
+  Git 發布 gate；PR #5 已合併為 9362e7d，merge 後 UI 審查修正亦由
+  PR #6 合併為 5e78ccf。`content-production` 已從該最新 master 建立。

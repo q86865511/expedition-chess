@@ -145,9 +145,17 @@ func _build_legacy_catalog(
 	var compiler := ContentDefinitionCompiler.new()
 	var entries: Array[ContentEntryValue] = []
 	for definition: ContentDefinition in input.definitions:
-		if definition is CombatConfigDef:
+		# CombatConfigDef／UnitPresentationDef 是 v3-only 類別，codec-v1 compiler
+		# 沒有對應的 payload 規則（_compile_specifics 落到空陣列），legacy catalog 一律跳過。
+		if definition is CombatConfigDef or definition is UnitPresentationDef:
 			continue
-		var compiled := compiler.compile(definition)
+		# Unit/Effect 的來源 resource 已升級為 schema_version=2，v1 compiler 只收 1；
+		# 用副本降版餵給 compiler，不可就地改動原 input（同一份 input 先被 install_validated 用過）。
+		var legacy_definition: ContentDefinition = definition
+		if definition is UnitDef or definition is EffectDef:
+			legacy_definition = definition.duplicate() as ContentDefinition
+			legacy_definition.schema_version = 1
+		var compiled := compiler.compile(legacy_definition)
 		if not compiled.ok:
 			build_error = "legacy entry compile failed: %s" % String(definition.id)
 			return null

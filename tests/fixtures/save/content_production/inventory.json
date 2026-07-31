@@ -1,0 +1,40 @@
+{
+	"fixtures": [
+		{
+			"content_version": "0.1.0-build-lab",
+			"fixture": "tests/fixtures/save/content_production/5ddf80a.schema3.codec2.json",
+			"fixture_sha256": "30bd345671455681d608cde3840ff0af56f70a722c29c5341c41119e268eab8a",
+			"source_catalog_schema_version": 1,
+			"source_commit": "5ddf80a30481ee701ba90be48e0fd474bc8c2715",
+			"source_content_codec_version": 2,
+			"source_label": "S5 historical baseline",
+			"source_manifest_digest": "c80e9386453436ee590f35ee1626acdf2abc464c449a68c6b6c98e9d9f1af381",
+			"source_schema_version": 3
+		},
+		{
+			"content_version": "0.1.0-presentation-ui",
+			"fixture": "tests/fixtures/save/content_production/9362e7d.schema3.codec2.json",
+			"fixture_sha256": "43344d60c3cc715c4db64dad063f58787fdd8e1fc69425fee832ac5e0e4e6d38",
+			"source_catalog_schema_version": 1,
+			"source_commit": "9362e7d2a06047994f85b8adf25f1c4a2f973b5f",
+			"source_content_codec_version": 2,
+			"source_label": "PR #5 presentation merge",
+			"source_manifest_digest": "b24faa4944209ea90ddf6c5b65882fe47de0fcb5c053ab02017b4f45a4314ab1",
+			"source_schema_version": 3
+		},
+		{
+			"content_version": "0.1.0-presentation-ui",
+			"fixture": "tests/fixtures/save/content_production/5e78ccf.schema3.codec2.json",
+			"fixture_sha256": "51c3e5a82b2ae459a118a274be2e2819ae53ffc22bed06f48d34513e83b046cf",
+			"source_catalog_schema_version": 1,
+			"source_commit": "5e78ccf1766daf57fcd322fc861ddeb3fd73a932",
+			"source_content_codec_version": 2,
+			"source_label": "PR #6 review-corrected baseline",
+			"source_manifest_digest": "ce6b1183df48d277549f592b19bf011528940790181e3fc46974dc7c565314e8",
+			"source_schema_version": 3
+		}
+	],
+	"generator": "tools/content-production/export-schema3-codec2-fixtures.gd",
+	"schema_version": 1,
+	"status": "frozen"
+}

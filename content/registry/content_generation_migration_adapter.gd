@@ -1,6 +1,10 @@
 class_name ContentGenerationMigrationAdapter
 extends ContentGenerationMigrationPort
 
+# CGM1 (v1→v2) 產物固定 catalog schema 1;不得沿用已升版的
+# ContentRegistryService.CATALOG_SCHEMA_VERSION
+const _CGM1_TARGET_CATALOG_SCHEMA_VERSION: int = 1
+
 var _registry: ContentRegistryService
 var _packs: Array[ContentGenerationMigrationPackV1] = []
 var _allowlist: Array[ContentGenerationMigrationAllowlistEntry] = []
@@ -140,7 +144,8 @@ func _migrate_with_pack(
 		)
 	return ContentGenerationMigrationResult.success(
 		published.receipt,
-		validated.receipt
+		validated.receipt,
+		null
 	)
 
 func _target_receipt(
@@ -148,7 +153,7 @@ func _target_receipt(
 ) -> PinnedCatalogBuildReceipt:
 	var selection: CatalogSelection = draft.selection
 	return PinnedCatalogBuildReceipt.new(
-		ContentRegistryService.CATALOG_SCHEMA_VERSION,
+		_CGM1_TARGET_CATALOG_SCHEMA_VERSION,
 		ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2,
 		selection.content_version,
 		_registry._selection_digest(selection),
@@ -172,7 +177,7 @@ func _target_receipt_valid(
 		return false
 	var selection: CatalogSelection = draft.selection
 	return receipt.catalog_schema_version \
-		== ContentRegistryService.CATALOG_SCHEMA_VERSION \
+		== _CGM1_TARGET_CATALOG_SCHEMA_VERSION \
 		and receipt.content_codec_version \
 		== ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2 \
 		and receipt.content_version == selection.content_version \

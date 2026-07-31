@@ -1,6 +1,6 @@
 # G2 presentation-ui — 任務清單
 
-> 建立日期：2026-07-26｜狀態：T00～T15 完成（2026-07-30 R16 closure；draft PR #5）
+> 建立日期：2026-07-26｜狀態：T00～T15 已合併（PR #5／PR #6）
 > 對應需求：[requirements.md](requirements.md) R1～R14；設計依據：[design.md](design.md)
 > 本檔為 pipeline 任務來源；核可前不得建立 TDD 紅燈或修改 production code。
 > 勾選只由 pipeline 收尾回寫。

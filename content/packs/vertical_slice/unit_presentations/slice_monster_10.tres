@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UnitPresentationDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/unit_presentation_def.gd" id="1_presentation"]
+
+[resource]
+script = ExtResource("1_presentation")
+schema_version = 1
+portrait_path = "res://assets/production/portraits/slice_monster_10.png"
+sprite_frames_path = "res://assets/production/units/slice_monster_10.tres"
+board_icon_path = "res://assets/production/icons/board/slice_monster_10.png"
+ability_icon_path = "res://assets/production/icons/abilities/slice_monster_10.png"
+combat_vfx_refs = Array[StringName]([&"effect.slice_monster_10.primary"])
+audio_cue_refs = Array[StringName]([&"audio.combat_cast"])
+id = &"presentation.slice_monster_10"
+display_name_key = &"loc.presentation_slice_monster_10"

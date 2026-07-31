@@ -14,6 +14,12 @@ extends RunCommand
 ## ConsumableDef via the pinned ConsumableRuleTable -- an arbitrary inventory
 ## item (equipment, component, non-dismantle consumable) can never be spent to
 ## unbind equipment.
+##
+## G2 content-production（design.md §5:213）：本命令在 NodeServicePending
+## (dismantle) 期間仍可使用並維持耗材規則，但**不再完成節點**——完成節點與釋放
+## shop offers 是 ExitNodeServiceCommand 的唯一職責，ack 則是
+## AcknowledgeNodeChoiceResultCommand 的另一筆交易。不要求耗材的服務內拆解走
+## DismantleWithNodeServiceCommand。
 
 const INVENTORY_CAPACITY: int = 16
 
@@ -38,6 +44,20 @@ func is_concrete() -> bool:
 func apply_to(draft: RunState) -> CommandApplyResult:
 	if not is_concrete() or draft == null or draft.roster_state == null:
 		return _rejected(&"run.roster_state", &"DISMANTLE_EQUIPMENT_DRAFT_INVALID")
+	var service_pending := (
+		draft.resolution_state as NodeServicePendingResolutionState
+	)
+	if (
+		not draft.resolution_state is IdleResolutionState
+		and (
+			service_pending == null
+			or service_pending.service_kind != &"dismantle"
+		)
+	):
+		return _rejected(
+			&"run.resolution_state",
+			&"DISMANTLE_EQUIPMENT_RESOLUTION_INVALID"
+		)
 	var equipment_item := _find_item(draft, _equipment_item_instance_id)
 	if equipment_item == null or equipment_item.bound_unit_instance_id == null:
 		return _rejected(

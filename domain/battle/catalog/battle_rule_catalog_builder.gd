@@ -108,6 +108,21 @@ func build(
 			BattleRuleCatalogError.CONFIG_MISSING,
 			&"config.combat_default"
 		)
+	# L1 修正:ability primary effect 被 battle_setup_source_compiler.gd／
+	# encounter_compiler.gd 併入 unit 的被動 effect source(cast 解算之外的第二條觸發
+	# 路徑),故 ability.effect_ids 解析出的 EffectDef 必須 trigger == cast,否則同一效果
+	# 會同時被動觸發(battle_start 等)與 cast 觸發,且 cast 時 rule.trigger != cast 會讓
+	# _resolve_effect_for_caster 回 EFFECT_RULE_MISSING 中斷整場戰鬥。此處在內容安裝期
+	# fail-closed,防止該內容進入 pinned catalog。
+	for ability: BattleAbilityRule in abilities:
+		for effect_id: StringName in ability.effect_ids:
+			var effect_rule := _find_effect(effects, effect_id)
+			if effect_rule != null and effect_rule.trigger != &"cast":
+				return BattleRuleCatalogBuildResult.failure(
+					BattleRuleCatalogError.ABILITY_EFFECT_TRIGGER_INVALID,
+					&"ability.effect_ids.trigger",
+					ability.ability_id
+				)
 	units.sort_custom(_unit_less)
 	traits.sort_custom(_trait_less)
 	abilities.sort_custom(_ability_less)
@@ -431,19 +446,33 @@ func _append_unlock_battle_effects(
 				BattleRuleCatalogError.CATEGORY_MISMATCH, &"unlock.modifier_refs", effect_id
 			)
 			return false
+		# M5 修正:與 _payload_is 相同的 schema 判準,不再同時放行 12/13。
+		var expected_effect_count := 13 if effect_view.resource_schema_version == 2 else 12
 		if effect_view.payload == null \
 			or effect_view.payload.record_type != ContentCategory.EFFECT \
-			or effect_view.payload.children.size() != 12:
+			or effect_view.payload.children.size() != expected_effect_count:
 			_payload_failure(&"unlock.modifier_refs")
 			return false
 		if not effect_view.payload.children[7].children.is_empty():
 			pending.append(effect_id)
 	return true
 
+## M5 修正:UNIT/EFFECT 的 payload arity 依 view.resource_schema_version 決定唯一
+## exact 值,不再同時放行 n 與 n+1(content_canonical_codec_v3.gd:155-158、199-208:
+## schema 2 才是 codec 3 形狀,UNIT 多 presentation_ref 共 14 children、EFFECT 多一個
+## 字串欄位共 13 children;schema 1 維持 codec 2 的 13/12)。schema 2 catalog 內若有
+## UNIT payload 缺 presentation_ref,children.size() 停在 13、與 expected 14 不符,
+## 回 PAYLOAD_INVALID,不再被靜默接受成 v2 形狀。
 func _payload_is(view: ContentDefinitionView, type_id: int, child_count: int) -> bool:
+	var expected_count := child_count
+	if (
+		(type_id == ContentCategory.UNIT or type_id == ContentCategory.EFFECT)
+		and view != null and view.resource_schema_version == 2
+	):
+		expected_count = child_count + 1
 	if view == null or view.payload == null \
 		or view.payload.record_type != type_id \
-		or view.payload.children.size() != child_count:
+		or view.payload.children.size() != expected_count:
 		_error = BattleRuleCatalogError.new(
 			BattleRuleCatalogError.PAYLOAD_INVALID,
 			&"payload",
@@ -468,6 +497,12 @@ func _current_failure(content_id: StringName) -> BattleRuleCatalogBuildResult:
 		_error.field_path,
 		content_id
 	)
+
+func _find_effect(effects: Array[BattleEffectRule], effect_id: StringName) -> BattleEffectRule:
+	for effect: BattleEffectRule in effects:
+		if effect.effect_id == effect_id:
+			return effect
+	return null
 
 func _append_effect_references(pending: Array[StringName], effect: BattleEffectRule) -> void:
 	for condition: BattleConditionRule in effect.conditions:

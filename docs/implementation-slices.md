@@ -58,8 +58,8 @@
 - S4 `build-systems`：已完成；13/13 S4-AC、10k soak、All 通過。
 - S5 `meta-progression`：已完成實作；T01～T12、14/14 S5-AC、Gut 737/737、10k ExpeditionSoak、All 與 W5 R4 雙審均通過。
 - G2 `presentation-ui`：T00～T15 與 R12～R16 findings closure 已完成，T13
-  視覺樣板獲使用者核可；final Gut 945/945（16295 assertions）、runtime 10/10、
-  10k ExpeditionSoak、static gate 與 155/155 manifest references 全綠，19 條
-  owning AC 為 final PASS。使用者明示 R16 後不再次雙審／不啟動 R17；原 R16
-  `NOT APPROVED` 報告與 closure table 均保留。branch 已發布並建立
-  draft PR #5；merge 前不得開始 `content-production`。
+  視覺樣板獲使用者核可；PR #5 已合併為 9362e7d，merge 後 UI 審查修正由
+  PR #6 合併為 5e78ccf。原 R16 `NOT APPROVED` 報告與 closure table 均保留。
+- G2 `content-production`：已由 `master@5e78ccf` 建立
+  `codex/g2-content-production`；負責正式內容／資產、事件選項、codec 3、
+  save schema 4、3 條橫切 REQ 與 18 條 global AC。

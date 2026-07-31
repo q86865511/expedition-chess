@@ -142,6 +142,10 @@ func _encode_run(run: RunState) -> String:
 	for receipt: ClaimReceiptState in run.claim_receipts:
 		claims.append(_encode_claim_receipt(receipt))
 	fields.append(_field("claim_receipts", _array(claims)))
+	var choice_receipts: Array[String] = []
+	for entry: NodeChoiceReceiptLedgerEntry in run.node_choice_receipts:
+		choice_receipts.append(_encode_node_choice_ledger_entry(entry))
+	fields.append(_field("node_choice_receipts", _array(choice_receipts)))
 	fields.append(_field("resolution_state", _encode_resolution(run.resolution_state)))
 	fields.append(_field("discovered_content_ids", _name_array(run.discovered_content_ids)))
 	return _object(fields)
@@ -149,6 +153,8 @@ func _encode_run(run: RunState) -> String:
 func _encode_content_snapshot(snapshot: ContentSnapshotState) -> String:
 	return _object([
 		_field("content_version", _quote(snapshot.content_version_value())),
+		_field("catalog_schema_version", str(snapshot.catalog_schema_version_value())),
+		_field("content_codec_version", str(snapshot.content_codec_version_value())),
 		_field("enabled_content_ids", _name_array(snapshot.enabled_content_ids_copy())),
 		_field("economy_config_id", _quote(String(snapshot.economy_config_id_value()))),
 		_field("combat_config_id", _quote(String(snapshot.combat_config_id_value()))),
@@ -358,6 +364,31 @@ func _encode_claim_receipt(receipt: ClaimReceiptState) -> String:
 		_field("payload_digest", _quote(receipt.payload_digest)),
 	])
 
+func _encode_node_choice_ledger_entry(
+	entry: NodeChoiceReceiptLedgerEntry
+) -> String:
+	return _object([
+		_field("receipt", _encode_node_choice_receipt(entry.receipt)),
+		_field("result_acknowledged", "true" if entry.result_acknowledged else "false"),
+	])
+
+func _encode_node_choice_receipt(
+	receipt: NodeChoiceCommitReceiptState
+) -> String:
+	return _object([
+		_field("run_id", _quote(String(receipt.run_id))),
+		_field("node_id", _quote(String(receipt.node_id))),
+		_field("choice_set_id", _quote(String(receipt.choice_set_id))),
+		_field("choice_id", _quote(String(receipt.choice_id))),
+		_field("pending_digest", _quote(receipt.pending_digest)),
+		_field("lifecycle_nonce", _quote(receipt.lifecycle_nonce)),
+		_field("transaction_serial", _quote(receipt.transaction_serial)),
+		_field("transaction_digest", _quote(receipt.transaction_digest)),
+		_field("result_key", _quote(String(receipt.result_key))),
+		_field("outcome_kind", str(receipt.outcome_kind)),
+		_field("receipt_digest", _quote(receipt.receipt_digest)),
+	])
+
 func _encode_resolution(resolution: ResolutionState) -> String:
 	if resolution is IdleResolutionState:
 		return _object([_field("kind", _quote("idle"))])
@@ -373,6 +404,31 @@ func _encode_resolution(resolution: ResolutionState) -> String:
 			_field("kind", _quote("battle_result_pending")),
 			_field("battle_setup_hash", _quote(battle.battle_setup_hash)),
 			_field("battle_result", _encode_battle_result(battle.battle_result)),
+		])
+	if resolution is NodeChoicePendingState:
+		var choice: NodeChoicePendingState = resolution
+		return _object([
+			_field("kind", _quote("node_choice_pending")),
+			_field("node_id", _quote(String(choice.node_id))),
+			_field("choice_set_id", _quote(String(choice.choice_set_id))),
+			_field("choice_ids", _name_array(choice.choice_ids)),
+			_field("content_version", _quote(choice.content_version)),
+			_field("catalog_schema_version", str(choice.catalog_schema_version)),
+			_field("content_codec_version", str(choice.content_codec_version)),
+			_field("manifest_digest", _quote(choice.manifest_digest)),
+			_field("lifecycle_nonce", _quote(choice.lifecycle_nonce)),
+			_field("pending_digest", _quote(choice.pending_digest)),
+		])
+	if resolution is NodeServicePendingResolutionState:
+		var service: NodeServicePendingResolutionState = resolution
+		return _object([
+			_field("kind", _quote("node_service_pending")),
+			_field("service_kind", _quote(String(service.service_kind))),
+			_field("node_id", _quote(String(service.node_id))),
+			_field(
+				"choice_receipt_digest",
+				_quote(service.choice_receipt_digest)
+			),
 		])
 	var reward: RewardPendingResolutionState = resolution
 	return _object([
@@ -778,7 +834,8 @@ func _inspect_run_content_snapshot(run_data: Dictionary) -> ContentSnapshotProbe
 	var value: Variant = run_data["content_snapshot"]
 	var data := _read_object(value, &"run.content_snapshot")
 	if data == null or not _exact_keys(data, [
-		"content_version", "enabled_content_ids", "economy_config_id", "reward_table_ids",
+		"content_version", "catalog_schema_version", "content_codec_version",
+		"enabled_content_ids", "economy_config_id", "reward_table_ids",
 		"combat_config_id", "map_node_def_ids", "challenge_unlock_def_ids",
 		"meta_reward_table_id", "manifest_digest"
 	], &"run.content_snapshot"):
@@ -792,13 +849,25 @@ func _inspect_run_content_snapshot(run_data: Dictionary) -> ContentSnapshotProbe
 		_read_name_array(data["map_node_def_ids"], &"run.content_snapshot.map_node_def_ids"),
 		_read_name_array(data["challenge_unlock_def_ids"], &"run.content_snapshot.challenge_unlock_def_ids"),
 		StringName(_read_string(data, "meta_reward_table_id", &"run.content_snapshot.meta_reward_table_id")),
-		_read_string(data, "manifest_digest", &"run.content_snapshot.manifest_digest")
+		_read_string(data, "manifest_digest", &"run.content_snapshot.manifest_digest"),
+		_read_int(
+			data,
+			"catalog_schema_version",
+			&"run.content_snapshot.catalog_schema_version"
+		),
+		_read_int(
+			data,
+			"content_codec_version",
+			&"run.content_snapshot.content_codec_version"
+		)
 	)
 
 func _receipt_matches_probe(receipt: PinnedCatalogBuildReceipt, probe: ContentSnapshotProbe) -> bool:
 	if receipt == null or receipt.content_version != probe.content_version:
 		return false
 	var exact := receipt.manifest_digest == probe.manifest_digest \
+		and receipt.catalog_schema_version == probe.catalog_schema_version \
+		and receipt.content_codec_version == probe.content_codec_version \
 		and receipt.economy_config_id == probe.economy_config_id \
 		and receipt.combat_config_id == probe.combat_config_id \
 		and receipt.meta_reward_table_id == probe.meta_reward_table_id \
@@ -947,7 +1016,8 @@ func _decode_run(data: Dictionary, receipt: PinnedCatalogBuildReceipt) -> RunSta
 		"unit_pool_state", "roster_state", "cleared_normal_count", "cleared_elite_count",
 		"defeated_boss_count", "rng_stream_states", "income_claimed_node_ids",
 		"loss_stipend_claimed_act_ids", "reservation_owners", "transaction_receipts",
-		"claim_receipts", "resolution_state", "discovered_content_ids"
+		"claim_receipts", "node_choice_receipts", "resolution_state",
+		"discovered_content_ids"
 	], &"run"):
 		return null
 	_active_receipt_ids.assign(receipt.active_entry_ids)
@@ -967,6 +1037,9 @@ func _decode_run(data: Dictionary, receipt: PinnedCatalogBuildReceipt) -> RunSta
 	var owners := _decode_reservation_owners(data["reservation_owners"])
 	var transactions := _decode_transaction_receipts(data["transaction_receipts"])
 	var claims := _decode_claim_receipts(data["claim_receipts"])
+	var node_choice_receipts := _decode_node_choice_receipts(
+		data["node_choice_receipts"]
+	)
 	if not _decode_error_path.is_empty() or key == null or seed == null or transaction_serial == null \
 		or unit_serial == null or item_serial == null or map == null or economy == null \
 		or pool == null or roster == null or resolution == null or phase < 0:
@@ -995,7 +1068,8 @@ func _decode_run(data: Dictionary, receipt: PinnedCatalogBuildReceipt) -> RunSta
 		_read_string_array(data["income_claimed_node_ids"], &"run.income_claimed_node_ids"),
 		_read_int_array(data["loss_stipend_claimed_act_ids"], &"run.loss_stipend_claimed_act_ids"),
 		owners, transactions, claims, resolution,
-		_read_name_array(data["discovered_content_ids"], &"run.discovered_content_ids")
+		_read_name_array(data["discovered_content_ids"], &"run.discovered_content_ids"),
+		node_choice_receipts
 	)
 
 func _decode_map(value: Variant) -> MapState:
@@ -1304,6 +1378,78 @@ func _decode_claim_receipts(value: Variant) -> Array[ClaimReceiptState]:
 		))
 	return output
 
+func _decode_node_choice_receipts(
+	value: Variant
+) -> Array[NodeChoiceReceiptLedgerEntry]:
+	var values := _read_array(value, &"run.node_choice_receipts")
+	var output: Array[NodeChoiceReceiptLedgerEntry] = []
+	for index: int in range(values.size()):
+		var path := StringName("run.node_choice_receipts.%d" % index)
+		var data := _read_object(values[index], path)
+		if data == null or not _exact_keys(
+			data, ["receipt", "result_acknowledged"], path
+		):
+			return []
+		if not data["result_acknowledged"] is bool:
+			_set_decode_error(StringName(String(path) + ".result_acknowledged"))
+			return []
+		var receipt := _decode_node_choice_receipt(
+			data["receipt"], StringName(String(path) + ".receipt")
+		)
+		if receipt == null:
+			return []
+		output.append(NodeChoiceReceiptLedgerEntry.new(
+			receipt, bool(data["result_acknowledged"])
+		))
+	return output
+
+func _decode_node_choice_receipt(
+	value: Variant,
+	path: StringName
+) -> NodeChoiceCommitReceiptState:
+	var data := _read_object(value, path)
+	if data == null or not _exact_keys(data, [
+		"run_id", "node_id", "choice_set_id", "choice_id", "pending_digest",
+		"lifecycle_nonce", "transaction_serial", "transaction_digest",
+		"result_key", "outcome_kind", "receipt_digest",
+	], path):
+		return null
+	var receipt := NodeChoiceCommitReceiptState.new()
+	receipt.run_id = StringName(_read_string(
+		data, "run_id", StringName(String(path) + ".run_id")
+	))
+	receipt.node_id = StringName(_read_string(
+		data, "node_id", StringName(String(path) + ".node_id")
+	))
+	receipt.choice_set_id = StringName(_read_string(
+		data, "choice_set_id", StringName(String(path) + ".choice_set_id")
+	))
+	receipt.choice_id = StringName(_read_string(
+		data, "choice_id", StringName(String(path) + ".choice_id")
+	))
+	receipt.pending_digest = _read_string(
+		data, "pending_digest", StringName(String(path) + ".pending_digest")
+	)
+	receipt.lifecycle_nonce = _read_string(
+		data, "lifecycle_nonce", StringName(String(path) + ".lifecycle_nonce")
+	)
+	receipt.transaction_serial = _read_string(
+		data, "transaction_serial", StringName(String(path) + ".transaction_serial")
+	)
+	receipt.transaction_digest = _read_string(
+		data, "transaction_digest", StringName(String(path) + ".transaction_digest")
+	)
+	receipt.result_key = StringName(_read_string(
+		data, "result_key", StringName(String(path) + ".result_key")
+	))
+	receipt.outcome_kind = _read_int(
+		data, "outcome_kind", StringName(String(path) + ".outcome_kind")
+	)
+	receipt.receipt_digest = _read_string(
+		data, "receipt_digest", StringName(String(path) + ".receipt_digest")
+	)
+	return receipt
+
 func _decode_resolution(value: Variant) -> ResolutionState:
 	var data := _read_object(value, &"run.resolution_state")
 	if data == null or not data.has("kind") or not data["kind"] is String:
@@ -1331,6 +1477,69 @@ func _decode_resolution(value: Variant) -> ResolutionState:
 				return null
 			var pending := _decode_pending_reward(data["pending_reward"])
 			return RewardPendingResolutionState.new(pending) if pending != null else null
+		"node_choice_pending":
+			if not _exact_keys(data, [
+				"kind", "node_id", "choice_set_id", "choice_ids",
+				"content_version", "catalog_schema_version",
+				"content_codec_version", "manifest_digest", "lifecycle_nonce",
+				"pending_digest",
+			], &"run.resolution_state"):
+				return null
+			var choice := NodeChoicePendingState.new(
+				StringName(_read_string(
+					data, "node_id", &"run.resolution_state.node_id"
+				)),
+				StringName(_read_string(
+					data, "choice_set_id", &"run.resolution_state.choice_set_id"
+				)),
+				_read_name_array(
+					data["choice_ids"], &"run.resolution_state.choice_ids"
+				),
+				_read_string(
+					data, "content_version",
+					&"run.resolution_state.content_version"
+				),
+				_read_int(
+					data, "catalog_schema_version",
+					&"run.resolution_state.catalog_schema_version"
+				),
+				_read_int(
+					data, "content_codec_version",
+					&"run.resolution_state.content_codec_version"
+				),
+				_read_string(
+					data, "manifest_digest",
+					&"run.resolution_state.manifest_digest"
+				),
+				_read_string(
+					data, "lifecycle_nonce",
+					&"run.resolution_state.lifecycle_nonce"
+				)
+			)
+			var expected_digest := _read_string(
+				data, "pending_digest", &"run.resolution_state.pending_digest"
+			)
+			if choice.pending_digest != expected_digest:
+				_set_decode_error(&"run.resolution_state.pending_digest")
+				return null
+			return choice
+		"node_service_pending":
+			if not _exact_keys(data, [
+				"kind", "service_kind", "node_id", "choice_receipt_digest",
+			], &"run.resolution_state"):
+				return null
+			return NodeServicePendingResolutionState.new(
+				StringName(_read_string(
+					data, "service_kind", &"run.resolution_state.service_kind"
+				)),
+				StringName(_read_string(
+					data, "node_id", &"run.resolution_state.node_id"
+				)),
+				_read_string(
+					data, "choice_receipt_digest",
+					&"run.resolution_state.choice_receipt_digest"
+				)
+			)
 		_:
 			_set_decode_error(&"run.resolution_state.kind")
 			return null

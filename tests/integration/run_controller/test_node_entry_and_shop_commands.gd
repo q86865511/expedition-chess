@@ -185,6 +185,7 @@ func test_generated_non_combat_and_rest_nodes_have_committed_exits() -> void:
 		[MapNodeState.NodeKind.REST],
 	]:
 		var root := _prepared_root()
+		_install_node_choice_snapshot(root.run)
 		var manifest := root.run.content_snapshot.manifest_digest_value()
 		var catalog := EconomyTestFixture.settlement_catalog(manifest)
 		var generated := MapService.new().generate_map(MapGenerationRequest.new(
@@ -202,7 +203,7 @@ func test_generated_non_combat_and_rest_nodes_have_committed_exits() -> void:
 		if target == null: continue
 		_make_target_reachable(root.run, target)
 		var storage := FakeSaveStorage.new()
-		var repository := SaveRootFixture.create_repository(storage)
+		var repository := _node_choice_repository(storage)
 		add_child_autofree(repository)
 		var controller := _controller_for(root, repository)
 		var entered := controller.transition(EnterNodeEvent.new(
@@ -211,28 +212,54 @@ func test_generated_non_combat_and_rest_nodes_have_committed_exits() -> void:
 		))
 		assert_true(entered.ok)
 		if not entered.ok: continue
-		var resolved := controller.dispatch(ResolveNonCombatNodeCommand.new(catalog))
-		assert_true(resolved.ok)
-		if not resolved.ok: continue
-		if target.node_kind in [MapNodeState.NodeKind.EVENT, MapNodeState.NodeKind.TREASURE]:
-			assert_eq(resolved.view_state.run_phase, RunState.RunPhase.REWARD)
-			var reward_root := repository.load()
-			assert_true(reward_root.ok)
-			if not reward_root.ok: continue
-			var pending := (reward_root.run.resolution_state as RewardPendingResolutionState).pending_reward
-			assert_true(controller.dispatch(ChooseRewardCommand.new(
-				pending.offers[0].choice_id, catalog
-			)).ok)
-			assert_true(controller.dispatch(AdvanceRewardCommand.new(catalog)).ok)
-		else:
+		var choice_set := catalog.try_node_choice_set_for_map_node(target.def_id)
+		if choice_set == null:
+			# merchant 沒有 node choice set，出口仍是既有的 non-combat resolve。
+			assert_eq(target.node_kind, MapNodeState.NodeKind.MERCHANT)
+			var resolved := controller.dispatch(ResolveNonCombatNodeCommand.new(catalog))
+			assert_true(resolved.ok)
+			if not resolved.ok: continue
 			assert_eq(resolved.view_state.run_phase, RunState.RunPhase.MAP)
+		else:
+			# event／rest／treasure 進入即產生 pending choice，出口改由 commit 承載。
+			assert_not_null(controller.node_choice_pending_snapshot())
+			var opens_reward := target.node_kind in [
+				MapNodeState.NodeKind.EVENT, MapNodeState.NodeKind.TREASURE,
+			]
+			var wanted_outcome := NodeChoiceRule.OUTCOME_APPLY_AND_COMPLETE
+			if opens_reward:
+				wanted_outcome = NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE
+			var choice_id := _choice_id_with_outcome(choice_set, wanted_outcome)
+			assert_false(choice_id.is_empty())
+			var committed := controller.dispatch(CommitNodeChoiceCommand.new(
+				_commit_payload(controller, choice_id), choice_set, catalog
+			))
+			assert_true(committed.ok)
+			if not committed.ok: continue
+			if opens_reward:
+				assert_eq(committed.view_state.run_phase, RunState.RunPhase.REWARD)
+				var reward_root := repository.load()
+				assert_true(reward_root.ok)
+				if not reward_root.ok: continue
+				var pending := (reward_root.run.resolution_state as RewardPendingResolutionState).pending_reward
+				assert_true(controller.dispatch(ChooseRewardCommand.new(
+					pending.offers[0].choice_id, catalog
+				)).ok)
+				assert_true(controller.dispatch(AdvanceRewardCommand.new(catalog)).ok)
+			else:
+				assert_eq(committed.view_state.run_phase, RunState.RunPhase.MAP)
 		var completed := repository.load()
 		assert_true(completed.ok)
 		if completed.ok:
 			assert_true(_node_by_id(completed.run, target.node_id).completed)
 
+## G2 content-production：unit grant 現在掛在 event choice 的 OPEN_REWARD_STAGE
+## 出口（commit_node_choice_service.gd:141-157），因此原本對
+## ResolveNonCombatNodeCommand 的原子性驗證改成對 CommitNodeChoiceCommand——
+## 存檔失敗那一次不得留下保留副本、choice receipt 或相位變化。
 func test_event_unit_grant_reservation_is_atomic_on_save_failure() -> void:
 	var root := _prepared_root()
+	_install_node_choice_snapshot(root.run)
 	var manifest := root.run.content_snapshot.manifest_digest_value()
 	var catalog := EconomyTestFixture.event_unit_reward_catalog(manifest)
 	var event_target: MapNodeState = null
@@ -253,22 +280,40 @@ func test_event_unit_grant_reservation_is_atomic_on_save_failure() -> void:
 	if event_target == null: return
 	_make_target_reachable(root.run, event_target)
 	var storage := FakeSaveStorage.new()
-	var repository := SaveRootFixture.create_repository(storage)
+	var repository := _node_choice_repository(storage)
 	add_child_autofree(repository)
 	var controller := _controller_for(root, repository)
 	assert_true(controller.transition(EnterNodeEvent.new(
 		event_target.node_id, catalog,
 		EconomyTestFixture.expedition_battle_catalog(manifest)
 	)).ok)
+	var choice_set := catalog.try_node_choice_set_for_map_node(event_target.def_id)
+	assert_not_null(choice_set)
+	if choice_set == null: return
+	var grant_choice_id := _choice_id_with_outcome(
+		choice_set, NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE
+	)
+	assert_false(grant_choice_id.is_empty())
+	var grant_payload := _commit_payload(controller, grant_choice_id)
 	var before := controller.view_state()
 	storage.reset_journal()
 	storage.inject_fault(StorageFaultKey.new(
 		StorageFaultKey.OPEN_WRITE, StorageFaultKey.TMP, 0
 	))
-	assert_false(controller.dispatch(ResolveNonCombatNodeCommand.new(catalog)).ok)
+	assert_false(controller.dispatch(CommitNodeChoiceCommand.new(
+		grant_payload, choice_set, catalog
+	)).ok)
 	assert_eq(controller.view_state().run_phase, before.run_phase)
 	storage.clear_faults()
-	var resolved := controller.dispatch(ResolveNonCombatNodeCommand.new(catalog))
+	var after_failure := repository.load()
+	assert_true(after_failure.ok)
+	if not after_failure.ok: return
+	assert_true(after_failure.run.resolution_state is NodeChoicePendingState)
+	assert_true(after_failure.run.node_choice_receipts.is_empty())
+	_assert_pool_conserved(after_failure.run.unit_pool_state)
+	var resolved := controller.dispatch(CommitNodeChoiceCommand.new(
+		grant_payload, choice_set, catalog
+	))
 	assert_true(resolved.ok)
 	if not resolved.ok: return
 	var loaded := repository.load()
@@ -279,10 +324,12 @@ func test_event_unit_grant_reservation_is_atomic_on_save_failure() -> void:
 	assert_eq(pending.offers.size(), 1)
 	assert_eq(pending.offers[0].reward_kind, RewardOfferState.RewardKind.UNIT)
 	assert_eq(pending.reserved_copies.size(), 1)
+	assert_eq(loaded.run.node_choice_receipts.size(), 1)
 	_assert_pool_conserved(loaded.run.unit_pool_state)
 
 func test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits() -> void:
 	var root := _prepared_root()
+	_install_node_choice_snapshot(root.run)
 	var manifest := root.run.content_snapshot.manifest_digest_value()
 	var catalog := EconomyTestFixture.event_unit_reward_catalog(manifest)
 	var event_target: MapNodeState = null
@@ -306,14 +353,24 @@ func test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits() 
 	root.run.unit_pool_state.entries[0].held_copies = 1
 	_make_target_reachable(root.run, event_target)
 	var storage := FakeSaveStorage.new()
-	var repository := SaveRootFixture.create_repository(storage)
+	var repository := _node_choice_repository(storage)
 	add_child_autofree(repository)
 	var controller := _controller_for(root, repository)
 	assert_true(controller.transition(EnterNodeEvent.new(
 		event_target.node_id, catalog,
 		EconomyTestFixture.expedition_battle_catalog(manifest)
 	)).ok)
-	var resolved := controller.dispatch(ResolveNonCombatNodeCommand.new(catalog))
+	var choice_set := catalog.try_node_choice_set_for_map_node(event_target.def_id)
+	assert_not_null(choice_set)
+	if choice_set == null: return
+	var grant_choice_id := _choice_id_with_outcome(
+		choice_set, NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE
+	)
+	assert_false(grant_choice_id.is_empty())
+	var grant_payload := _commit_payload(controller, grant_choice_id)
+	var resolved := controller.dispatch(CommitNodeChoiceCommand.new(
+		grant_payload, choice_set, catalog
+	))
 	assert_true(resolved.ok)
 	if not resolved.ok: return
 	var loaded := repository.load()
@@ -367,6 +424,53 @@ func _prepared_root() -> SaveRoot:
 	root.run.next_transaction_serial = U64Bits.zero()
 	root.run.next_unit_serial = U64Bits.from_u32(0, 2).value
 	return root
+
+## NodeChoicePendingState 只在 catalog schema 2／content codec 3 下合法
+## （node_choice_pending_state.gd:45），而 SaveRootFixture 的基準 receipt 仍是 (1,2)。
+## 需要 node choice 的案例改釘同內容的 codec3 receipt：manifest digest 不變，
+## EconomyTestFixture 的 catalog 與既有斷言因此完全相容。
+func _node_choice_receipt() -> PinnedCatalogBuildReceipt:
+	var base := SaveRootFixture.create_receipt()
+	return PinnedCatalogBuildReceipt.new(
+		2, 3, base.content_version, base.selection_digest, base.active_entry_ids,
+		base.economy_config_id, base.combat_config_id, base.reward_table_ids,
+		base.map_node_def_ids, base.challenge_unlock_def_ids,
+		base.meta_reward_table_id, base.manifest_digest
+	)
+
+func _install_node_choice_snapshot(run: RunState) -> void:
+	var built := ContentSnapshotState.from_pinned_receipt(_node_choice_receipt())
+	assert_true(built.ok)
+	if built.ok:
+		run.content_snapshot = built.snapshot
+
+func _node_choice_repository(storage: SaveStoragePort) -> SaveRepository:
+	return SaveRepository.new(
+		storage,
+		FakePinnedCatalogReceiptPort.new(_node_choice_receipt()),
+		FakeContentIdMigrationPort.new(),
+		RunStateValidator.new()
+	)
+
+## G2 content-production（design.md §5:173-178）：CommitNodeChoiceCommand 現在
+## exact 攜帶 pending 的十欄 payload。production 路徑是「presentation 從 committed
+## snapshot 抄下」，測試沿用同一條路：controller 的 pending 投影 → payload。
+func _commit_payload(
+	controller: RunController, choice_id: StringName
+) -> NodeChoiceCommitPayload:
+	return NodeChoiceCommitPayload.from_pending(
+		controller.view_state().run_id,
+		controller.node_choice_pending_snapshot(),
+		choice_id
+	)
+
+func _choice_id_with_outcome(
+	choice_set: NodeChoiceSetRule, outcome_kind: int
+) -> StringName:
+	for choice: NodeChoiceRule in choice_set.choices:
+		if choice.outcome_kind == outcome_kind:
+			return choice.choice_id
+	return &""
 
 func _battle_sources(manifest: String) -> BattleSetupSourceBundle:
 	var player := UnitBattleSnapshot.new()

@@ -180,8 +180,9 @@ func test_builder_rejects_relic_whose_run_intents_are_all_unsupported_for_its_ca
 	dead_operation.claim_scope = &"always"
 	var dead_effect := EffectDef.new()
 	dead_effect.id = &"effect.dead_economy_intent"
-	dead_effect.schema_version = 1
+	dead_effect.schema_version = 2
 	dead_effect.display_name_key = &"loc.effect_dead_economy_intent"
+	dead_effect.description_key = &"loc.effect_dead_economy_intent.description"
 	dead_effect.content_role = &"general"
 	dead_effect.trigger = &"battle_start"
 	dead_effect.stacking = &"replace"

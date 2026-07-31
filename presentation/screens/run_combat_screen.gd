@@ -359,9 +359,14 @@ func _build_typed_combat_controls() -> void:
 	if not inspections.is_empty():
 		for row: RunCombatIntelModel.InspectionIntelRow in inspections:
 			_unit_selector.add_item(_localized_content_text(row.source_id))
+			var item_index := _unit_selector.item_count - 1
 			_unit_selector.set_item_metadata(
-				_unit_selector.item_count - 1,
+				item_index,
 				row.unit_serial
+			)
+			_unit_selector.set_item_tooltip(
+				item_index,
+				_tooltip_text(&"tooltip.star", row.star)
 			)
 	else:
 		var rows := _model.enemy_rows()
@@ -617,4 +622,19 @@ func _localized_content_text(content_id: StringName) -> String:
 		parent_screen.localized_content_text(content_id)
 		if parent_screen != null
 		else String(content_id)
+	)
+
+
+func _tooltip_text(
+	label_key: StringName,
+	numeric_value: int,
+	depth: int = 1
+) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.content_tooltip_text(
+			label_key, numeric_value, depth
+		)
+		if parent_screen != null
+		else ""
 	)

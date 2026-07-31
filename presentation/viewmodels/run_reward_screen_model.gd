@@ -56,6 +56,15 @@ func offer_ids() -> Array[String]:
 	return result
 
 
+func offers() -> Array[RewardOfferState]:
+	var result: Array[RewardOfferState] = []
+	if _snapshot == null or _snapshot.pending_reward == null:
+		return result
+	for offer: RewardOfferState in _snapshot.pending_reward.offers:
+		result.append(offer.deep_clone())
+	return result
+
+
 func available_action_kinds() -> Array[int]:
 	var result: Array[int] = []
 	match phase_id():

@@ -119,7 +119,7 @@ func _legacy_prepare_text() -> String:
 	var encoded := SaveRootFixture.create_codec().encode(root)
 	assert_true(encoded.ok)
 	var text := encoded.json_text.value.replace(
-		"\"schema_version\":3", "\"schema_version\":1"
+		"\"schema_version\":%d" % SaveSchemaContract.CURRENT, "\"schema_version\":1"
 	)
 	text = text.replace(",\"combat_config_id\":\"config.combat_default\"", "")
 	text = text.replace("\"config.combat_default\",", "")

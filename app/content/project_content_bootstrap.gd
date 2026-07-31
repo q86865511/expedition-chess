@@ -3,22 +3,68 @@ extends RefCounted
 
 const BUILD_SYSTEMS_ROOT: String = "res://content/packs/build_systems"
 const VERTICAL_SLICE_ROOT: String = "res://content/packs/vertical_slice"
-const CONTENT_VERSION: String = "0.1.0-presentation-ui"
+const CONTENT_VERSION: String = "0.2.0-content-production"
 const PACK_IDS: Array[StringName] = [&"pack.build_systems", &"pack.vertical_slice"]
+const LOCALIZATION_CATALOG_PATH: String = "res://localization/catalog.v2.csv"
+const LOCALIZATION_CATALOG_SHA256: String = \
+	"cdd0e1b6642821b81f48e3983b2917e127aab5cc617e61405d5bd6ad48edf841"
 const REQUIRED_ASSET_PATHS: Array[String] = [
 	"res://content/packs/build_systems/traits/faction_arcane.tres",
 	"res://content/packs/vertical_slice/units/slice_player_00.tres",
 ]
 
+const LOCALIZATION_CATALOG_INVALID: StringName = &"CONTENT_LOCALIZATION_CATALOG_INVALID"
+
 var _dependency_port: ContentDependencyPort
 var _registry_for_result: ContentRegistryService
 var _owns_registry_for_result: bool
+var _localization_catalog_error: StringName = &""
+## 只在正式 load 路徑上有值(注入 dependency port 的測試路徑為 null);
+## codec 2→3 migration pack 的 L10N2 digest 必須綁在這份實際安裝的 catalog 上。
+var _localization_catalog: LocalizationCatalog
 
 
-func _init(dependency_port: ContentDependencyPort = null) -> void:
+## H3 fail-closed 修正:production catalog 一律先經 typed load result 驗證
+## (design.md:143-152、R5:66-68)。載入失敗不得回傳 fallback catalog 讓 boot 照常成功;
+## 失敗原因記在 `_localization_catalog_error`,由 run() 在任何內容安裝前立即回報失敗,
+## 讓呼叫端(app_root.gd)走既有 boot failure 呈現路徑。`localization_catalog_load_override`
+## 僅供測試注入竄改 SHA 的 LoadResult,避免測試須竄改磁碟上的正式 catalog。
+func _init(
+	dependency_port: ContentDependencyPort = null,
+	localization_catalog_load_override: LocalizationCatalogLoadResult = null
+) -> void:
 	_dependency_port = dependency_port
 	if _dependency_port == null:
-		_dependency_port = ProjectContentDependencyPort.new(LocalizationCatalog.new())
+		var loaded := (
+			localization_catalog_load_override
+			if localization_catalog_load_override != null
+			else _load_production_localization_catalog()
+		)
+		if loaded.ok:
+			_localization_catalog = loaded.catalog
+			_dependency_port = ProjectContentDependencyPort.new(loaded.catalog)
+		else:
+			_localization_catalog_error = LOCALIZATION_CATALOG_INVALID
+
+
+func _load_production_localization_catalog() -> LocalizationCatalogLoadResult:
+	if not FileAccess.file_exists(LOCALIZATION_CATALOG_PATH):
+		return LocalizationCatalogLoadResult.failure(
+			LocalizationCatalogLoadError.new(LocalizationCatalogLoadError.IO)
+		)
+	var file := FileAccess.open(LOCALIZATION_CATALOG_PATH, FileAccess.READ)
+	if file == null:
+		return LocalizationCatalogLoadResult.failure(
+			LocalizationCatalogLoadError.new(LocalizationCatalogLoadError.IO)
+		)
+	var bytes := file.get_buffer(file.get_length())
+	file.close()
+	var request := LocalizationCatalogLoadRequest.new(
+		StringName(LOCALIZATION_CATALOG_PATH),
+		bytes,
+		LOCALIZATION_CATALOG_SHA256
+	)
+	return LocalizationCatalogLoader.new().load_catalog(request)
 
 
 func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
@@ -28,6 +74,11 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 		)
 	_registry_for_result = registry
 	_owns_registry_for_result = registry.get_parent() == null
+	if not _localization_catalog_error.is_empty():
+		return _failure(
+			_localization_catalog_error,
+			"production localization catalog load failed"
+		)
 	for path: String in REQUIRED_ASSET_PATHS:
 		if not _dependency_port.asset_exists(path):
 			return _failure(&"CONTENT_ASSET_MISSING", path)
@@ -63,7 +114,16 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 					String(ability.description_key)
 				)
 
-	var input := ContentValidationInput.new(combined, [], [], _dependency_port, 9)
+	# codec 2→3 的歷史 id 除了 generation migration pack 之外,也必須在 save decode
+	# 的 content id migration port 上解得開(否則 generation 升級成功、decode 仍判
+	# incompatible)。alias／tombstone 與 pack mapping 同出一張宣告表。
+	var input := ContentValidationInput.new(
+		combined,
+		ProductionContentGenerationMigrations.content_aliases(),
+		ProductionContentGenerationMigrations.content_tombstones(),
+		_dependency_port,
+		9
+	)
 	var report := ContentValidator.new().validate(input)
 	if not report.valid:
 		var first := report.issues[0]
@@ -175,6 +235,7 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 	)
 	result.content_version = CONTENT_VERSION
 	result.content_snapshot = snapshot_result.snapshot
+	result.localization_catalog = _localization_catalog
 	result.install_presentation_projection(
 		definition_views,
 		battle_result.catalog,

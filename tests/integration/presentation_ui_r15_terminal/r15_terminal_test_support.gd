@@ -146,7 +146,7 @@ static func results_context(
 	snapshot: ResultsPresentationSnapshot
 ) -> StagedScreenContext:
 	var localized: Dictionary = {}
-	var catalog := LocalizationCatalog.new()
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
 	for key: StringName in catalog.keys_for_locale(&"zh_TW"):
 		var resolved := catalog.resolve(&"zh_TW", key)
 		if resolved.ok:

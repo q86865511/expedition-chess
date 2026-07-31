@@ -16,5 +16,7 @@ script = ExtResource("5_mcyyc")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_x2wvv")]([SubResource("Resource_djykq")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_verdant_accord_description"
 id = &"effect.relic_verdant_accord"
 display_name_key = &"loc.effect_relic_verdant_accord"

@@ -6,7 +6,7 @@ const _MIN_I32: int = -2147483648
 const _MAX_I32: int = 2147483647
 const _DIGEST_PATTERN: String = "^[0-9a-f]{64}$"
 const _PROFILE_PATTERN: String = "^[0-9a-f]{32}$"
-const _STABLE_ID_PATTERN: String = "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+const _STABLE_ID_PATTERN: String = StableIdValidator.PATTERN
 const _UNIT_ID_PATTERN: String = "^u_[0-9a-f]{16}$"
 const _ITEM_ID_PATTERN: String = "^it_[0-9a-f]{16}$"
 
@@ -175,6 +175,9 @@ func validate_run(
 		return _failure(&"run.discovered_content_ids")
 	if not _receipts_sorted(run):
 		return _failure(&"run.ledgers")
+	var node_choice_ledger_result := _validate_node_choice_ledger(run)
+	if not node_choice_ledger_result.ok:
+		return node_choice_ledger_result
 	var reservation_result := _validate_reservation_ledger(run)
 	if not reservation_result.ok:
 		return reservation_result
@@ -497,6 +500,56 @@ func _validate_resolution(
 			if reward.pending_reward.phase == PendingRewardState.Phase.CHOOSING:
 				if reward.pending_reward.selected_choice_id != null or reward.pending_reward.selected_unit_reservation != null:
 					return _failure(&"run.resolution_state.pending_reward.phase")
+		ResolutionState.Kind.NODE_CHOICE_PENDING:
+			if not resolution is NodeChoicePendingState:
+				return _failure(&"run.resolution_state")
+			var choice_pending := resolution as NodeChoicePendingState
+			if (
+				not choice_pending.is_valid()
+				or run.current_node_id == null
+				or StringName(run.current_node_id.value) != choice_pending.node_id
+				or choice_pending.content_version
+					!= run.content_snapshot.content_version_value()
+				or choice_pending.catalog_schema_version
+					!= run.content_snapshot.catalog_schema_version_value()
+				or choice_pending.content_codec_version
+					!= run.content_snapshot.content_codec_version_value()
+				or choice_pending.manifest_digest
+					!= run.content_snapshot.manifest_digest_value()
+			):
+				return _failure(&"run.resolution_state.node_choice_pending")
+		ResolutionState.Kind.NODE_SERVICE_PENDING:
+			if not resolution is NodeServicePendingResolutionState:
+				return _failure(&"run.resolution_state")
+			var service_pending := resolution as NodeServicePendingResolutionState
+			# design.md §5:208-214 只定義 dismantle 一種 node service，而且
+			# CommitNodeChoiceService 也只在 OUTCOME_OPEN_DISMANTLE_SERVICE 建立它。
+			# 收下任何其他 service_kind 等於接受一個沒有任何命令能處理的 resolution
+			# ——那是可載入的永久 softlock，必須在這裡 fail closed。
+			if (
+				service_pending.service_kind != &"dismantle"
+				or not _node_key_digest(String(service_pending.node_id))
+				or not _digest(service_pending.choice_receipt_digest)
+				or run.current_node_id == null
+				or String(service_pending.node_id) != run.current_node_id.value
+			):
+				return _failure(&"run.resolution_state.node_service_pending")
+			# receipt 必須就是「開出這個服務的那一筆」：節點與 outcome 都要對得上，
+			# 否則竄改者可以拿節點 A 的合法 receipt 配節點 B 的 service resolution，
+			# 讓 ExitNodeServiceCommand 完成錯的節點。
+			var service_receipt := _find_node_choice_receipt(
+				run,
+				service_pending.choice_receipt_digest
+			)
+			if (
+				service_receipt == null
+				or service_receipt.node_id != service_pending.node_id
+				or service_receipt.outcome_kind
+					!= NodeChoiceRule.OUTCOME_OPEN_DISMANTLE_SERVICE
+			):
+				return _failure(
+					&"run.resolution_state.node_service_pending.choice_receipt"
+				)
 		_:
 			return _failure(&"run.resolution_state.kind")
 	return DtoValidationResult.success()
@@ -622,9 +675,17 @@ func _validate_phase_resolution_pair(run: RunState) -> DtoValidationResult:
 	if run.resolution_state == null:
 		return _failure(&"run.resolution_state")
 	match run.run_phase:
-		RunState.RunPhase.MAP, RunState.RunPhase.PREPARE:
+		RunState.RunPhase.MAP:
 			if run.expedition_hp == 0 \
 				or run.resolution_state.kind != ResolutionState.Kind.IDLE:
+				return _failure(&"run.run_phase")
+		RunState.RunPhase.PREPARE:
+			if run.expedition_hp == 0 \
+				or run.resolution_state.kind not in [
+					ResolutionState.Kind.IDLE,
+					ResolutionState.Kind.NODE_CHOICE_PENDING,
+					ResolutionState.Kind.NODE_SERVICE_PENDING,
+				]:
 				return _failure(&"run.run_phase")
 		RunState.RunPhase.COMBAT:
 			if run.resolution_state.kind not in [
@@ -765,6 +826,83 @@ func _receipts_sorted(run: RunState) -> bool:
 		previous = String(receipt.key.digest)
 	return true
 
+
+func _validate_node_choice_ledger(run: RunState) -> DtoValidationResult:
+	var previous_serial := ""
+	var seen_serials: Dictionary = {}
+	var seen_pending: Dictionary = {}
+	for entry: NodeChoiceReceiptLedgerEntry in run.node_choice_receipts:
+		if entry == null or entry.receipt == null or not entry.receipt.is_valid():
+			return _failure(&"run.node_choice_receipts")
+		var receipt := entry.receipt
+		if String(receipt.run_id) != run.run_id:
+			return _failure(&"run.node_choice_receipts.run_id")
+		if (
+			not previous_serial.is_empty()
+			and receipt.transaction_serial <= previous_serial
+		):
+			return _failure(&"run.node_choice_receipts.order")
+		if (
+			seen_serials.has(receipt.transaction_serial)
+			or seen_pending.has(
+				"%s%s%s" % [String(receipt.node_id), String.chr(0), receipt.pending_digest]
+			)
+		):
+			return _failure(&"run.node_choice_receipts.unique")
+		var matching_transaction: TransactionReceiptState = null
+		for transaction: TransactionReceiptState in run.transaction_receipts:
+			if (
+				transaction != null
+				and transaction.key != null
+				and String(transaction.key.digest) == receipt.transaction_digest
+			):
+				matching_transaction = transaction
+				break
+		if matching_transaction == null:
+			return _failure(&"run.node_choice_receipts.transaction_digest")
+		if not _binds_node_choice_transaction(receipt, matching_transaction):
+			return _failure(&"run.node_choice_receipts.transaction_binding")
+		previous_serial = receipt.transaction_serial
+		seen_serials[receipt.transaction_serial] = true
+		seen_pending[
+			"%s%s%s" % [String(receipt.node_id), String.chr(0), receipt.pending_digest]
+		] = true
+	return DtoValidationResult.success()
+
+
+## receipt.transaction_digest 只證明「有這麼一筆 transaction」，不證明那筆就是本次
+## commit_node_choice。逐欄綁定 key 的四個 token 與 payload_digest，才能擋掉把
+## transaction_digest 指向他筆交易（例如某筆 shop transaction）後重算 NCR1 的竄改
+## ——validator 若收下它，CommitNodeChoiceService 會誤判 ALREADY_COMMITTED 而卡死 run。
+func _binds_node_choice_transaction(
+	receipt: NodeChoiceCommitReceiptState,
+	transaction: TransactionReceiptState
+) -> bool:
+	var key := transaction.key
+	if key == null or key.next_transaction_serial == null:
+		return false
+	return (
+		key.run_id == receipt.run_id
+		and key.node_id_or_camp == receipt.node_id
+		and key.command_kind == &"commit_node_choice"
+		and key.next_transaction_serial.to_hex() == receipt.transaction_serial
+		and transaction.payload_digest == receipt.receipt_digest
+	)
+
+
+func _find_node_choice_receipt(
+	run: RunState,
+	receipt_digest: String
+) -> NodeChoiceCommitReceiptState:
+	for entry: NodeChoiceReceiptLedgerEntry in run.node_choice_receipts:
+		if (
+			entry != null
+			and entry.receipt != null
+			and entry.receipt.receipt_digest == receipt_digest
+		):
+			return entry.receipt
+	return null
+
 func _map_has_cycle(node_ids: Array[String], edges: Array[MapEdgeState]) -> bool:
 	var visit_states: Array[int] = []
 	visit_states.resize(node_ids.size())
@@ -825,6 +963,10 @@ func _is_utc(value: String) -> bool:
 
 func _digest(value: String) -> bool:
 	return _matches(_digest_regex, value)
+
+# runtime node_id 是 RuntimeKeyCodecV1 的 "node_" + 64 lower-hex key digest
+func _node_key_digest(value: String) -> bool:
+	return value.begins_with("node_") and _digest(value.trim_prefix("node_"))
 
 func _runtime_key(value: RuntimeKeyState) -> bool:
 	if value == null:

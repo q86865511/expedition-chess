@@ -16,5 +16,7 @@ script = ExtResource("5_nsir0")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_0pelm")]([SubResource("Resource_u5035")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_scout_lantern_description"
 id = &"effect.relic_scout_lantern"
 display_name_key = &"loc.effect_relic_scout_lantern"

@@ -1,7 +1,7 @@
 class_name StableIdValidator
 extends RefCounted
 
-const PATTERN: String = "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+const PATTERN: String = "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
 
 var _regex: RegEx
 

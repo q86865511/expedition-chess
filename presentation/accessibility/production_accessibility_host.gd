@@ -12,6 +12,7 @@ const CAPABILITIES: Array[StringName] = [
 
 var _renderer := AccessibilityRuntimeRenderer.new()
 var _typography := LocalizedTypographyPolicy.new()
+var _catalog: LocalizationCatalog
 var _localization := ProductionAccessibilityLocalization.new()
 var _locale: StringName = &"zh_TW"
 var _last_effect_report: Dictionary = {}
@@ -281,12 +282,21 @@ func _update_state_labels(snapshot: SettingsSnapshot) -> void:
 		)
 
 
+## review N3：文案來源是 boot 期驗過的正式 catalog（由 PresentationSettingsRuntimeConsumer
+## 在套用設定時注入）。未注入時退回 restricted 目錄，讓獨立組裝的 host 仍能顯示文字。
+func bind_localization_catalog(catalog: LocalizationCatalog) -> void:
+	if catalog != null:
+		_catalog = catalog
+
+
 func _localized_density(snapshot: SettingsSnapshot) -> String:
 	var key := StringName(
 		"settings.value.damage_number_density.%s"
 		% String(snapshot.damage_number_density)
 	)
-	var resolved := LocalizationCatalog.new().resolve(snapshot.locale, key)
+	if _catalog == null:
+		_catalog = LocalizationCatalog.restricted_emergency_catalog()
+	var resolved := _catalog.resolve(snapshot.locale, key)
 	return resolved.value if resolved.ok else String(snapshot.damage_number_density)
 
 

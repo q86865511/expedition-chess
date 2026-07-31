@@ -88,6 +88,8 @@ var _settings_application: SettingsApplicationPort
 var _settings_repository_override: Object
 var _settings_audio_override: AudioCoordinator
 var _settings_repository_runtime: Object
+## review N3：正式 localization catalog 的補注入對象（boot 期先建、內容載好後綁）。
+var _settings_runtime_consumer: PresentationSettingsRuntimeConsumer
 var _live_lease_registry := LiveScreenLeaseRegistry.new()
 var _route_generation: int = 0
 var _active_route_kind: StringName
@@ -179,13 +181,14 @@ func _ready() -> void:
 			else get_node_or_null("/root/AudioService") as AudioCoordinator
 		)
 		_ensure_production_audio_buses()
+		_settings_runtime_consumer = PresentationSettingsRuntimeConsumer.new(
+			presentation_host,
+			_production_viewport_runtime()
+		)
 		var settings_error := _configure_settings_runtime(
 			settings_repository,
 			audio_coordinator,
-			PresentationSettingsRuntimeConsumer.new(
-				presentation_host,
-				_production_viewport_runtime()
-			)
+			_settings_runtime_consumer
 		)
 		if not settings_error.is_empty():
 			boot_failed.emit(settings_error)
@@ -197,10 +200,39 @@ func _ready() -> void:
 	if _content_registry == null or _save_repository == null or _scene_router == null:
 		boot_failed.emit(&"APP_REQUIRED_SERVICE_MISSING")
 		return
+	# H3 修正:不得以硬編的內建 catalog 建構繞過 production catalog
+	# 的 SHA/CSV 驗證。傳 null 讓 bootstrap 走真正的 typed load
+	# (design.md:143-152);載入失敗會使 run() 回 ok=false,由既有的
+	# _try_content()==null → ERROR_CONTENT_UNAVAILABLE → boot_failed 路徑
+	# （與 INCOMPATIBLE_PRESERVED 等既有 boot failure 相同呈現）處理。
+	_content_bootstrap = ProjectContentBootstrap.new()
+	# B3 修正:codec 2→3 的 generation migration port 必須綁在「本次 boot 實際安裝
+	# 的 pinned generation」上,所以內容安裝要先於 save content port 組裝
+	# (先前順序相反,production 因此永遠只拿到 base port → PORT_UNCONFIGURED,
+	# 歷史 schema 3／codec 2 save 一律 incompatible_preserved,升不了級)。
+	# _try_content() 本來就會在同一個 _ready() 內由 _boot_route() 觸發,
+	# 失敗碼與原路徑相同,只是提前發出。
+	var content := _try_content()
+	if content == null:
+		boot_failed.emit(ERROR_CONTENT_UNAVAILABLE)
+		return
+	# review N3：正式 catalog 一載好就補注入 settings runtime，讓 accessibility host
+	# 的文案與畫面其他文字同源（boot 順序上 settings runtime 早於內容載入）。
+	if _settings_runtime_consumer != null:
+		_settings_runtime_consumer.bind_localization_catalog(
+			content.localization_catalog
+		)
 	var receipt_port := ContentRegistryReceiptAdapter.new(_content_registry)
 	var migration_port := ContentRegistryMigrationAdapter.new(_content_registry)
+	var generation_migration_port := (
+		ProductionContentGenerationMigrationPortBuilder.new().build(
+			_content_registry, content.receipt, content.localization_catalog
+		)
+	)
 	var save_configuration: SaveConfigurationResult = (
-		_save_repository._configure_content_ports(receipt_port, migration_port)
+		_save_repository._configure_content_ports(
+			receipt_port, migration_port, generation_migration_port
+		)
 	)
 	if not save_configuration.ok:
 		boot_failed.emit(save_configuration.error.code)
@@ -209,9 +241,6 @@ func _ready() -> void:
 	_run_preparation_service = RunPreparationService.new(_save_repository)
 	_retained_run_recovery_service = RetainedRunRecoveryService.new(
 		_save_repository
-	)
-	_content_bootstrap = ProjectContentBootstrap.new(
-		ProjectContentDependencyPort.new(LocalizationCatalog.new())
 	)
 	_scene_router.bind_presentation_host(presentation_host)
 	var catalog_error := _scene_router.bind_production_catalog(
@@ -312,9 +341,12 @@ func _configure_settings_runtime(
 			window_size,
 			window_size_provider
 		),
+		# settings runtime 必須早於內容載入(locale/縮放要在第一個畫面之前生效),
+		# 此時正式 catalog 還沒載入;adapter 只讀 SUPPORTED_LOCALES(常數,兩份目錄
+		# 相同),故用 restricted 退路目錄,不影響畫面文案來源(review N3)。
 		LocalizationSettingsAdapter.new(
 			runtime_consumer,
-			LocalizationCatalog.new()
+			LocalizationCatalog.restricted_emergency_catalog()
 		),
 		AudioSettingsAdapter.new(audio_coordinator)
 	)
@@ -1642,14 +1674,27 @@ func _run_route_for_snapshot(snapshot: RunPresentationSnapshot) -> StringName:
 	return &""
 
 
+## review N3：畫面文案的唯一來源是 boot 期驗過 SHA 的正式 catalog
+## （`localization/catalog.v2.csv` → ProjectContentBootstrap → 這裡），不再由
+## GDScript 內建目錄提供，否則改 CSV 不會改變任何畫面文字。內容尚未載入／boot
+## 失敗時才退回 restricted 目錄，讓 boot failure 與 fallback 畫面仍有字可顯示。
 func _localized_text_map(locale: StringName) -> Dictionary:
 	var result: Dictionary = {}
-	var catalog := LocalizationCatalog.new()
+	var catalog := _production_localization_catalog()
 	for key: StringName in catalog.keys_for_locale(locale):
 		var resolved := catalog.resolve(locale, key)
 		if resolved.ok:
 			result[key] = resolved.value
 	return result
+
+
+func _production_localization_catalog() -> LocalizationCatalog:
+	if (
+		_content != null
+		and _content.localization_catalog != null
+	):
+		return _content.localization_catalog
+	return LocalizationCatalog.restricted_emergency_catalog()
 
 
 func _current_locale() -> StringName:

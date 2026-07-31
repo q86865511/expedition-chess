@@ -29,6 +29,7 @@ var loss_stipend_claimed_act_ids: Array[int] = []
 var reservation_owners: Array[ReservationOwnerState] = []
 var transaction_receipts: Array[TransactionReceiptState] = []
 var claim_receipts: Array[ClaimReceiptState] = []
+var node_choice_receipts: Array[NodeChoiceReceiptLedgerEntry] = []
 var resolution_state: ResolutionState
 var discovered_content_ids: Array[StringName] = []
 
@@ -60,7 +61,8 @@ func _init(
 	p_transaction_receipts: Array[TransactionReceiptState],
 	p_claim_receipts: Array[ClaimReceiptState],
 	p_resolution_state: ResolutionState,
-	p_discovered_content_ids: Array[StringName]
+	p_discovered_content_ids: Array[StringName],
+	p_node_choice_receipts: Array[NodeChoiceReceiptLedgerEntry] = []
 ) -> void:
 	run_id = p_run_id
 	run_key = p_run_key.deep_clone()
@@ -92,6 +94,8 @@ func _init(
 		transaction_receipts.append(receipt.deep_clone())
 	for receipt: ClaimReceiptState in p_claim_receipts:
 		claim_receipts.append(receipt.deep_clone())
+	for entry: NodeChoiceReceiptLedgerEntry in p_node_choice_receipts:
+		node_choice_receipts.append(entry.deep_clone())
 	resolution_state = p_resolution_state.deep_clone()
 	discovered_content_ids.assign(p_discovered_content_ids)
 
@@ -104,5 +108,5 @@ func deep_clone() -> RunState:
 		cleared_normal_count, cleared_elite_count, defeated_boss_count,
 		rng_stream_states, income_claimed_node_ids, loss_stipend_claimed_act_ids,
 		reservation_owners, transaction_receipts, claim_receipts, resolution_state,
-		discovered_content_ids
+		discovered_content_ids, node_choice_receipts
 	)

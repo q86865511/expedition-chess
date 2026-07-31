@@ -15,6 +15,7 @@ var _viewport_runtime: Object
 var _runtime_by_kind: Dictionary = {}
 var _last_theme_snapshot: SettingsSnapshot
 var _last_viewport_snapshot: SettingsSnapshot
+var _localization_catalog: LocalizationCatalog
 
 
 func _init(
@@ -27,6 +28,18 @@ func _init(
 		_on_host_child_entered
 	):
 		_host.child_entered_tree.connect(_on_host_child_entered)
+
+
+## boot 順序上 settings runtime 早於內容載入，正式 catalog 只能在 boot 成功後補注入
+## （review N3）。已安裝的 accessibility host 立即重綁，之後才安裝的 host 由
+## `_apply_accessibility` 在下一次套用時綁上。
+func bind_localization_catalog(catalog: LocalizationCatalog) -> void:
+	if catalog == null:
+		return
+	_localization_catalog = catalog
+	var runtime := _accessibility_host()
+	if runtime != null and runtime.has_method(&"bind_localization_catalog"):
+		runtime.call(&"bind_localization_catalog", catalog)
 
 
 func preflight(kind: StringName, plan: SettingsSnapshot) -> StringName:
@@ -123,6 +136,13 @@ func _apply_accessibility(snapshot: SettingsSnapshot) -> StringName:
 		return &""
 	if not runtime.has_method(&"apply_committed_settings"):
 		return &"SETTINGS_ACCESSIBILITY_BINDING_INVALID"
+	# review N3：accessibility host 的文案也走正式 catalog。host 是場景節點（在
+	# run_combat.tscn 內），由這條既有的設定套用鏈注入，不另開全域存取點。
+	if (
+		_localization_catalog != null
+		and runtime.has_method(&"bind_localization_catalog")
+	):
+		runtime.call(&"bind_localization_catalog", _localization_catalog)
 	if runtime is Control and (runtime as Control).size == Vector2.ZERO:
 		var parent := runtime.get_parent() as Control
 		if parent != null and parent.size.x > 0.0 and parent.size.y > 0.0:

@@ -10,6 +10,10 @@ var map: MapState
 var economy: EconomyState
 var roster: RosterState
 var pending_reward: PendingRewardState
+var node_choice_overlay: NodeChoiceOverlaySnapshot
+var node_service_overlay: NodeServiceOverlaySnapshot
+## design :201「UI 只由 unacknowledged committed receipt 顯示 result」。
+var pending_node_choice_results: Array[NodeChoiceResultSnapshot] = []
 var board_validation_report: BoardValidationReport
 var combat_inspections: Array[CombatUnitInspectionSnapshot] = []
 
@@ -25,6 +29,20 @@ func deep_clone() -> RunPresentationSnapshot:
 	clone.economy = economy.deep_clone() if economy != null else null
 	clone.roster = roster.deep_clone() if roster != null else null
 	clone.pending_reward = pending_reward.deep_clone() if pending_reward != null else null
+	clone.node_choice_overlay = (
+		node_choice_overlay.deep_clone()
+		if node_choice_overlay != null
+		else null
+	)
+	clone.node_service_overlay = (
+		node_service_overlay.deep_clone()
+		if node_service_overlay != null
+		else null
+	)
+	for result: NodeChoiceResultSnapshot in pending_node_choice_results:
+		clone.pending_node_choice_results.append(
+			result.deep_clone() if result != null else null
+		)
 	clone.board_validation_report = (
 		board_validation_report.deep_clone()
 		if board_validation_report != null

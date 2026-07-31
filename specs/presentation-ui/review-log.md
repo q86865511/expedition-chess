@@ -390,5 +390,5 @@ Smoke、Content、Canonical、Combat、Expedition、All 皆 exit 0；ExpeditionS
 static gate zero issues；42 manifests／155 references 全相符。
 
 依使用者 override，本輪不產生 R17／R18 reviewer 報告，也不把主迴圈 closure 冒充
-fresh zero-finding review。下一步是 T15 文件／Git handoff；使用者確認前仍不得 stage、
-commit、push、PR 或 merge，且 `content-production` 必須等本片合併後才可開始。
+fresh zero-finding review。後續 PR #5 已合併為 9362e7d；merge 後 UI 審查修正由
+PR #6 合併為 5e78ccf，`content-production` 已從該最新 master 建立。

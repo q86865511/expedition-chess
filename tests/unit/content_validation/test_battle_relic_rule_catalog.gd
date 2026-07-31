@@ -112,13 +112,16 @@ func _fixture_with_battle_relic(relic_id: StringName, effect_ids: Array[StringNa
 func _minimal_effect(content_id: StringName) -> EffectDef:
 	var value := EffectDef.new()
 	value.id = content_id
-	value.schema_version = 1
+	value.schema_version = 2
 	value.display_name_key = StringName("loc.%s" % String(content_id))
 	value.content_role = &"general"
 	value.trigger = &"battle_start"
 	value.stacking = &"replace"
 	value.max_stacks = 1
 	value.duration_ticks = 1
+	value.description_key = StringName(
+		"loc.%s.description" % String(content_id)
+	)
 	var damage := DamageOperationDef.new()
 	damage.operation_index = 0
 	damage.base = 0

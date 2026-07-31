@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="NodeChoiceSetDef" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="1_run"]
+[ext_resource type="Script" path="res://content/definitions/add_gold_operation_def.gd" id="2_gold"]
+[ext_resource type="Script" path="res://content/definitions/drain_expedition_hp_operation_def.gd" id="3_drain"]
+[ext_resource type="Script" path="res://content/definitions/node_choice_def.gd" id="4_choice"]
+[ext_resource type="Script" path="res://content/definitions/node_choice_set_def.gd" id="5_set"]
+
+[sub_resource type="Resource" id="Safe_gold"]
+script = ExtResource("2_gold")
+amount = 28
+claim_scope = &"once_per_node"
+
+[sub_resource type="Resource" id="Risk_gold"]
+script = ExtResource("2_gold")
+amount = 56
+claim_scope = &"once_per_node"
+
+[sub_resource type="Resource" id="Risk_hp"]
+script = ExtResource("3_drain")
+amount = 6
+claim_scope = &"once_per_node"
+operation_index = 1
+
+[sub_resource type="Resource" id="Choice_safe"]
+script = ExtResource("4_choice")
+choice_id = &"choice.event_10.safe"
+sort_order = 0
+title_key = &"loc.choice_event_10_safe_title"
+description_key = &"loc.choice_event_10_safe_description"
+preview_key = &"loc.choice_event_10_safe_preview"
+result_key = &"loc.choice_event_10_safe_result"
+operations = Array[ExtResource("1_run")]([SubResource("Safe_gold")])
+confirmation_required = true
+
+[sub_resource type="Resource" id="Choice_risk"]
+script = ExtResource("4_choice")
+choice_id = &"choice.event_10.risk"
+sort_order = 1
+title_key = &"loc.choice_event_10_risk_title"
+description_key = &"loc.choice_event_10_risk_description"
+preview_key = &"loc.choice_event_10_risk_preview"
+result_key = &"loc.choice_event_10_risk_result"
+operations = Array[ExtResource("1_run")]([SubResource("Risk_gold"), SubResource("Risk_hp")])
+confirmation_required = true
+
+[resource]
+script = ExtResource("5_set")
+node_kind = &"event"
+choices = Array[ExtResource("4_choice")]([SubResource("Choice_safe"), SubResource("Choice_risk")])
+id = &"choice_set.event_10"
+display_name_key = &"loc.choice_set_event_10"

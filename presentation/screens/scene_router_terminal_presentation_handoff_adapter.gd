@@ -231,8 +231,11 @@ func _results_staged_context(
 		) as StagedScreenContext
 		if provided != null and provided.route_kind == route_kind:
 			return provided
+	# 正常路徑的 staged context 由 AppRoot 提供（其文案來源已是正式 catalog，
+	# review N3）；只有 provider 失效／route 不符的降級路徑會走到這裡，
+	# 用 restricted 退路目錄保證結算畫面仍有字可顯示。
 	var localized: Dictionary = {}
-	var catalog := LocalizationCatalog.new()
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
 	for key: StringName in catalog.keys_for_locale(&"zh_TW"):
 		var resolved := catalog.resolve(&"zh_TW", key)
 		if resolved.ok:

@@ -51,8 +51,11 @@
 - S4 `build-systems`：已完成（2026-07-24）；規格與複檢紀錄位於 `specs/build-systems/`（三件套＋implementation-review.md）。
 - S5 `meta-progression`：已完成實作（2026-07-26）；T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All 與 W5 R4 雙審通過；證據位於 `specs/meta-progression/implementation-review.md`。
 - G2 `presentation-ui`：T00～T15、R12～R16 findings closure 與 final evidence 已完成；
-  T13 視覺樣板獲使用者核可。Gut 945/945、runtime 10/10、10k
-  ExpeditionSoak、static gate、155/155 manifest references 全綠，19-row owning AC
-  為 PASS。使用者明示 R16 後不再次雙審／不啟動 R17；原 review verdict 與 closure
-  table 均保留。branch 已發布並建立 draft PR #5；merge 仍未授權，
-  合併前亦不得開始 `content-production`。
+  T13 視覺樣板獲使用者核可。PR #5 已合併為 9362e7d；merge 後 UI 審查修正由
+  PR #6 合併為 5e78ccf，fresh All 為 Gut 1000/1000。原 review verdict 與
+  closure table 均保留。
+- G2 `content-production`:實作與 T25 三輪雙審已閉環(2026-08-01,分支
+  `codex/g2-content-production` 10 個檢查點 commit);codec 3、save schema 4、
+  codec 2→3 production migration、44 單位內容、node-choice 交易鏈、
+  T24 acceptance(21+1 列)全數落地,fresh 全綠(Gut 1091、10k soak、All exit 0)。
+  blocked-on-codex:T18A 資產採納 gate 與音訊 R9 格式;停在 push/PR gate。

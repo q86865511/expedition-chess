@@ -27,5 +27,7 @@ trigger = &"hit"
 conditions = Array[ExtResource("3_jqev8")]([SubResource("Resource_koeoy")])
 battle_operations = Array[ExtResource("1_72srm")]([SubResource("Resource_joh7b")])
 stacking = &"independent"
+schema_version = 2
+description_key = &"loc.effect_relic_frost_edge_description"
 id = &"effect.relic_frost_edge"
 display_name_key = &"loc.effect_relic_frost_edge"

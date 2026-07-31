@@ -10,5 +10,7 @@ script = ExtResource("4_vb0iw")
 trigger = &"battle_start"
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_slice_event_gen_08_description"
 id = &"effect.slice_event_gen_08"
 display_name_key = &"loc.effect_slice_event_gen_08"

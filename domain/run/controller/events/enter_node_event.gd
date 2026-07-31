@@ -37,6 +37,25 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 		var entered := result.draft
 		_mark_encounter_discovery(entered)
 		_mark_shop_discovery(entered)
+		var begun := _begin_node_choice_if_required(entered)
+		if begun != null:
+			if not begun.ok:
+				var choice_diagnostics: Array[DiagnosticValue] = [
+					DiagnosticValue.from_string(
+						&"source_code", String(begun.error.code)
+					),
+				]
+				return CommandApplyResult.failure(
+					CommandApplyError.new(
+						CommandApplyError.APPLY_REJECTED,
+						begun.error.field_path,
+						null,
+						choice_diagnostics
+					)
+				)
+			# begin() 會消耗 lifecycle nonce 的 entropy 並把推進後的 rng snapshot
+			# 寫回 draft，故整份 draft 都要接手，不能只搬 resolution_state。
+			entered = begun.run_state
 		return CommandApplyResult.success(entered)
 	var diagnostics: Array[DiagnosticValue] = [
 		DiagnosticValue.from_string(&"source_code", String(result.error.code)),
@@ -44,6 +63,40 @@ func apply_to(draft: RunState) -> CommandApplyResult:
 	return CommandApplyResult.failure(CommandApplyError.new(
 		CommandApplyError.APPLY_REJECTED, result.error.field_path, null, diagnostics
 	))
+
+## null＝這個節點不需要 node choice（非 event/rest/treasure）；否則回 begin() 的
+## 完整結果，成功時由呼叫端接手整份 draft。
+func _begin_node_choice_if_required(
+	entered: RunState
+) -> ExpeditionActionResult:
+	if entered == null or entered.current_node_id == null:
+		return null
+	var current: MapNodeState = null
+	for node: MapNodeState in entered.map_state.nodes:
+		if node.node_id == entered.current_node_id.value:
+			current = node
+			break
+	if current == null or current.node_kind not in [
+		MapNodeState.NodeKind.EVENT,
+		MapNodeState.NodeKind.REST,
+		MapNodeState.NodeKind.TREASURE,
+	]:
+		return null
+	var choice_set := _catalog.try_node_choice_set_for_map_node(current.def_id)
+	if choice_set == null:
+		return ExpeditionActionResult.failure(
+			ExpeditionActionError.NODE_INVALID,
+			&"map_node.generator_id"
+		)
+	entered.run_phase = RunState.RunPhase.PREPARE
+	# lifecycle_nonce 由 begin() 從 run 的具名 rng stream 抽取（design.md :161-165、
+	# review M4）——不再是 (run, node, manifest) 的純函數，cancel→re-begin 必然換值。
+	return CommitNodeChoiceService.new().begin(
+		entered,
+		StringName(current.node_id),
+		choice_set,
+		_catalog
+	)
 
 ## T09 / S5-AC-012 (design.md §8): 遭遇敵人 -> every enemy unit in the entered
 ## node's encounter preview is discovered in the same copy-validate-save-swap

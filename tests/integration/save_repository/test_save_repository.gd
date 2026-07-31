@@ -120,7 +120,7 @@ func test_schema_one_idle_load_uses_generation_port_without_mutating_source_file
 		"7c2ef65221a2ad4a84b923786500b2a974e560b6068e5a83393e783ae1524f65"
 	)
 	var generation_port := FakeContentGenerationMigrationPort.new(
-		ContentGenerationMigrationResult.success(target_receipt, migration_receipt)
+		ContentGenerationMigrationResult.success(target_receipt, migration_receipt, null)
 	)
 	var legacy := _legacy_text(SaveRootFixture.create_valid_root(), 1)
 	var storage := FakeSaveStorage.new()
@@ -470,11 +470,16 @@ func _legacy_text(root: SaveRoot, schema: int) -> String:
 	var encoded := SaveRootFixture.create_codec().encode(root)
 	assert_true(encoded.ok)
 	var text := encoded.json_text.value.replace(
-		"\"schema_version\":3",
+		"\"schema_version\":%d" % SaveSchemaContract.CURRENT,
 		"\"schema_version\":%d" % schema
 	)
 	text = text.replace(",\"combat_config_id\":\"config.combat_default\"", "")
 	text = text.replace("\"config.combat_default\",", "")
+	if schema <= 1:
+		# 真正的 v1 舊檔 snapshot 沒有這兩個欄位(codec 2 起才寫入);留著會被
+		# _exact_keys 判成自相矛盾 payload 而走 incompatible 而非 v1 遷移路徑
+		text = text.replace("\"catalog_schema_version\":1,", "")
+		text = text.replace("\"content_codec_version\":2,", "")
 	if schema == 0:
 		text = text.replace("\"hash_version\":1,", "")
 	return text

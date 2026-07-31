@@ -13,6 +13,8 @@ var _presenter: RunScreenPresenter
 var _draft_board: BoardState
 var _draft_bench_unit_instance_ids: Array[String] = []
 var _pending_forge_confirmation: ConfirmationDraft
+var _pending_node_choice_confirmation: ConfirmationDraft
+var _selected_node_choice_id: StringName
 
 
 func compose(
@@ -48,13 +50,30 @@ func displayed_capacity() -> int:
 
 
 func start_enabled() -> bool:
-	return _model != null and _model.start_enabled()
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	return (
+		_model != null
+		and _model.start_enabled()
+		and (snapshot == null or snapshot.node_choice_overlay == null)
+	)
 
 
 func request(intent: RunPresentationIntent) -> RunPresentationResult:
 	if (
 		_presenter == null
 		or intent == null
+	):
+		return RunPresentationResult.failure(
+			DiagnosticError.new(
+				ACTION_NOT_AVAILABLE,
+				&"error.presentation.action_not_available"
+			)
+		)
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if (
+		snapshot != null
+		and snapshot.node_choice_overlay != null
+		and intent.kind != RunPresentationIntent.Kind.COMMIT_NODE_CHOICE
 	):
 		return RunPresentationResult.failure(
 			DiagnosticError.new(
@@ -184,6 +203,156 @@ func has_pending_forge_confirmation() -> bool:
 	return _pending_forge_confirmation != null
 
 
+func select_first_node_choice() -> StringName:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.node_choice_overlay == null:
+		_selected_node_choice_id = &""
+		return &""
+	var selector := get_node_or_null(^"ChoiceSelector") as ItemList
+	if selector == null or selector.item_count == 0:
+		_selected_node_choice_id = &""
+		return &""
+	selector.select(0)
+	_selected_node_choice_id = StringName(selector.get_item_metadata(0))
+	return _selected_node_choice_id
+
+
+func begin_selected_node_choice() -> ConfirmationDraftResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if (
+		_presenter == null
+		or snapshot == null
+		or snapshot.node_choice_overlay == null
+		or _selected_node_choice_id.is_empty()
+	):
+		return ConfirmationDraftResult.failure(_selection_error())
+	var option := snapshot.node_choice_overlay.try_option(
+		_selected_node_choice_id
+	)
+	if option == null or not option.confirmation_required:
+		return ConfirmationDraftResult.failure(_selection_error())
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.COMMIT_NODE_CHOICE
+	)
+	intent.choice_set_id = snapshot.node_choice_overlay.choice_set_id
+	intent.choice_id = String(_selected_node_choice_id)
+	# design :173-178：payload 在這一刻（overlay 仍是 committed 投影時）抄完整；
+	# confirm 之前 canonical 若被換掉，commit 會回 PENDING_DIGEST_MISMATCH／
+	# NONCE_MISMATCH 而不是靜默套用到新的 pending 上。
+	intent.node_choice_payload = snapshot.node_choice_overlay.commit_payload(
+		snapshot.run_id,
+		_selected_node_choice_id
+	)
+	var result := _presenter.begin_confirmation(intent)
+	_pending_node_choice_confirmation = (
+		result.draft if result != null and result.ok else null
+	)
+	return result
+
+
+func confirm_node_choice() -> RunPresentationResult:
+	if _presenter == null or _pending_node_choice_confirmation == null:
+		return _selection_failure()
+	var draft := _pending_node_choice_confirmation
+	_pending_node_choice_confirmation = null
+	var result := _presenter.confirm_confirmation(draft)
+	if (result.ok or result.committed) and result.snapshot != null:
+		_model.replace_snapshot(result.snapshot)
+	return result
+
+
+func cancel_node_choice() -> ConfirmationCancelResult:
+	if _presenter == null or _pending_node_choice_confirmation == null:
+		return ConfirmationCancelResult.failure(_selection_error())
+	var draft := _pending_node_choice_confirmation
+	_pending_node_choice_confirmation = null
+	return _presenter.cancel_confirmation(draft)
+
+
+func has_pending_node_choice_confirmation() -> bool:
+	return _pending_node_choice_confirmation != null
+
+
+func selected_node_choice_preview_key() -> StringName:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.node_choice_overlay == null:
+		return &"error.presentation.action_not_available"
+	var option := snapshot.node_choice_overlay.try_option(
+		_selected_node_choice_id
+	)
+	return (
+		option.preview_key
+		if option != null
+		else &"error.presentation.action_not_available"
+	)
+
+
+func has_node_choice_overlay() -> bool:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	return snapshot != null and snapshot.node_choice_overlay != null
+
+
+func has_node_service_pending() -> bool:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	return snapshot != null and snapshot.node_service_overlay != null
+
+
+## design :210-212：服務期間不限次數、不要求耗材的拆解。與一般
+## dismantle_selected_equipment 的差別只在「不必再選一個耗材」。
+func dismantle_selected_with_node_service() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.node_service_overlay == null:
+		return _selection_failure()
+	var item_id := _single_selected_metadata(&"InventorySelector")
+	if item_id.is_empty():
+		return _selection_failure()
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.DISMANTLE_WITH_NODE_SERVICE
+	)
+	intent.expected_run_id = String(snapshot.run_id)
+	intent.node_id = snapshot.node_service_overlay.node_id
+	intent.choice_receipt_digest = (
+		snapshot.node_service_overlay.choice_receipt_digest
+	)
+	intent.item_instance_id = item_id
+	return request(intent)
+
+
+## design :213-214：離開 node service 的唯一出口（也是節點完成的唯一時機）。
+func exit_node_service() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	if snapshot == null or snapshot.node_service_overlay == null:
+		return _selection_failure()
+	var intent := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.EXIT_NODE_SERVICE
+	)
+	intent.expected_run_id = String(snapshot.run_id)
+	intent.node_id = snapshot.node_service_overlay.node_id
+	intent.choice_receipt_digest = (
+		snapshot.node_service_overlay.choice_receipt_digest
+	)
+	return request(intent)
+
+
+## design :201-203：結果播完後才由玩家（或畫面）顯式 ack；未 ack 的 receipt 會在
+## reload 後再次出現在 snapshot.pending_node_choice_results。
+## OPEN_DISMANTLE_SERVICE 出口留在 PREPARE，另兩種 outcome 的 ack 入口見
+## RunMapScreen／RunRewardScreen（review N1）。
+func pending_node_choice_result() -> NodeChoiceResultSnapshot:
+	var snapshot: RunPresentationSnapshot = (
+		_model.snapshot_clone() if _model != null else null
+	)
+	return _oldest_pending_node_choice_result(snapshot)
+
+
+func acknowledge_node_choice_result() -> RunPresentationResult:
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	var result := pending_node_choice_result()
+	if snapshot == null or result == null:
+		return _selection_failure()
+	return request(_node_choice_ack_intent(snapshot, result))
+
+
 func equip_selected_item() -> RunPresentationResult:
 	var unit_id := _single_selected_metadata(&"BuildUnitSelector")
 	var item_id := _single_selected_metadata(&"InventorySelector")
@@ -269,6 +438,7 @@ func _build_prepare_controls() -> void:
 		^"ShopSelector",
 		^"InventorySelector",
 		^"BuildUnitSelector",
+		^"ChoiceSelector",
 	]:
 		var existing := get_node_or_null(path)
 		if existing != null:
@@ -339,7 +509,57 @@ func _build_prepare_controls() -> void:
 		issues.add_item(_localized_ui_text(issue_message_keys[index]))
 		issues.set_item_metadata(issues.item_count - 1, issue_codes[index])
 	add_child(issues)
+	_build_node_choice_overlay(snapshot)
 	_refresh_draft_selectors()
+
+
+func _build_node_choice_overlay(snapshot: RunPresentationSnapshot) -> void:
+	_selected_node_choice_id = &""
+	_pending_node_choice_confirmation = null
+	if snapshot == null or snapshot.node_choice_overlay == null:
+		return
+	var selector := ItemList.new()
+	selector.name = "ChoiceSelector"
+	selector.position = Vector2(904.0, 152.0)
+	selector.custom_minimum_size = Vector2(360.0, 336.0)
+	selector.focus_mode = Control.FOCUS_ALL
+	selector.select_mode = ItemList.SELECT_SINGLE
+	selector.set_meta(&"typed_data_kind", &"node_choice")
+	selector.set_meta(
+		&"accessible_text",
+		String(snapshot.node_choice_overlay.display_name_key)
+	)
+	for option: NodeChoiceOptionSnapshot in snapshot.node_choice_overlay.options:
+		selector.add_item(
+			"%s\n%s" % [
+				_localized_ui_text(option.title_key),
+				_localized_ui_text(option.preview_key),
+			]
+		)
+		selector.set_item_metadata(
+			selector.item_count - 1,
+			String(option.choice_id)
+		)
+	selector.item_selected.connect(_on_node_choice_selected)
+	add_child(selector)
+	select_first_node_choice()
+
+
+func _on_node_choice_selected(index: int) -> void:
+	var selector := get_node_or_null(^"ChoiceSelector") as ItemList
+	if selector == null or index < 0 or index >= selector.item_count:
+		_selected_node_choice_id = &""
+	else:
+		_selected_node_choice_id = StringName(
+			selector.get_item_metadata(index)
+		)
+	_update_parent_action_state()
+
+
+func _update_parent_action_state() -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.refresh_interaction_state()
 
 
 func _add_selector(
@@ -407,7 +627,8 @@ func _refresh_draft_selectors() -> void:
 						_localized_content_text(offer.unit_def_id),
 						offer.cost,
 					],
-					offer.offer_id
+					offer.offer_id,
+					_tooltip_text(&"tooltip.cost", offer.cost)
 				)
 	if inventory != null:
 		inventory.clear()
@@ -426,23 +647,30 @@ func _refresh_draft_selectors() -> void:
 			_append_typed_item(
 				units,
 				"%s ★%d" % [_localized_content_text(unit.def_id), unit.star],
-				unit.instance_id
+				unit.instance_id,
+				_tooltip_text(&"tooltip.star", unit.star)
 			)
 
 
 func _append_typed_item(
 	selector: ItemList,
 	label: String,
-	identity: String
+	identity: String,
+	tooltip: String = ""
 ) -> void:
 	selector.add_item(label)
-	selector.set_item_metadata(selector.item_count - 1, identity)
+	var index := selector.item_count - 1
+	selector.set_item_metadata(index, identity)
+	if not tooltip.is_empty():
+		selector.set_item_tooltip(index, tooltip)
 
 
 func _reset_consumer_draft(snapshot: RunPresentationSnapshot) -> void:
 	_draft_board = null
 	_draft_bench_unit_instance_ids.clear()
 	_pending_forge_confirmation = null
+	_pending_node_choice_confirmation = null
+	_selected_node_choice_id = &""
 	if snapshot == null or snapshot.roster == null:
 		return
 	_draft_board = snapshot.roster.board.deep_clone()
@@ -529,6 +757,21 @@ func _localized_ui_text(text_key: StringName) -> String:
 		parent_screen.localized_ui_text(text_key)
 		if parent_screen != null
 		else String(text_key)
+	)
+
+
+func _tooltip_text(
+	label_key: StringName,
+	numeric_value: int,
+	depth: int = 1
+) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.content_tooltip_text(
+			label_key, numeric_value, depth
+		)
+		if parent_screen != null
+		else ""
 	)
 
 

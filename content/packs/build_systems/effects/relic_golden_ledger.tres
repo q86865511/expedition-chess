@@ -16,5 +16,7 @@ script = ExtResource("5_8vyfs")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_ekc07")]([SubResource("Resource_svsyd")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_golden_ledger_description"
 id = &"effect.relic_golden_ledger"
 display_name_key = &"loc.effect_relic_golden_ledger"

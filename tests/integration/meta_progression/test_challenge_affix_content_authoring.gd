@@ -32,10 +32,12 @@ extends GutTest
 ##    件事，不重複展開理由。
 ## 3. 不得變動的既有內容（本檔逐項迴歸斷言，任一項改變都視為違反 design 的「不得動」約束）：
 ##      effect.slice_affix_00..04 的 content_role 仍是 &"elite_affix"；
-##      map_node.slice_treasure.generator_ref 仍是 &"effect.slice_affix_04"；
+##      map_node.slice_treasure.generator_ref 仍是 &"choice_set.treasure"；
 ##      map_node.slice_merchant.generator_ref 仍是 &"effect.slice_affix_02"；
-##      map_node.slice_rest.generator_ref     仍是 &"effect.slice_affix_03"。
-##    （此三個 generator_ref 現值於 T07 派工前實測核對，見本檔 header 對應常數。）
+##      map_node.slice_rest.generator_ref     仍是 &"choice_set.rest"。
+##    （treasure／rest 的 generator_ref 已由本分支改指向 NodeChoiceSetDef，不再直接指向
+##    elite_affix 效果；merchant 未變動，仍直接指向 effect.slice_affix_02。此三個
+##    generator_ref 現值於本次同步前實測核對，見本檔 header 對應常數。）
 
 const VERTICAL_SLICE_ROOT := "res://content/packs/vertical_slice"
 const BUILD_SYSTEMS_ROOT := "res://content/packs/build_systems"
@@ -50,9 +52,9 @@ const EXPECTED_CHALLENGE_AFFIX_IDS := [
 
 # 派工前實測值（不得被 T07 變動——見 design.md §7.1「不動菁英詞綴與其被 treasure/rest/
 # merchant generator 複用之處」）。
-const UNCHANGED_TREASURE_GENERATOR := &"effect.slice_affix_04"
+const UNCHANGED_TREASURE_GENERATOR := &"choice_set.treasure"
 const UNCHANGED_MERCHANT_GENERATOR := &"effect.slice_affix_02"
-const UNCHANGED_REST_GENERATOR := &"effect.slice_affix_03"
+const UNCHANGED_REST_GENERATOR := &"choice_set.rest"
 
 
 func test_challenge_unlocks_1_to_5_are_repointed_to_new_challenge_affix_effects() -> void:

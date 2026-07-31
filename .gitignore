@@ -26,3 +26,6 @@ artifacts/test/*
 
 # pipeline 狀態(本機)
 .pipeline/
+
+# Claude session 本機資料(舊 review worktrees 等)
+.claude/

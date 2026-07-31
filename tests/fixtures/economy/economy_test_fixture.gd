@@ -3,6 +3,14 @@ extends RefCounted
 
 const MANIFEST: String = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
+# G2 content-production（specs/content-production/design.md §5）：event／rest／treasure
+# 進入節點時必須解得出 node choice set，否則 EnterNodeEvent fail-closed
+# （enter_node_event.gd:79-84）。fixture 的 map node 規則因此比照正式內容
+# （content/packs/vertical_slice/map_nodes/*.tres）把 generator 指向 choice_set.*。
+const EVENT_CHOICE_SET_ID: StringName = &"choice_set.event"
+const REST_CHOICE_SET_ID: StringName = &"choice_set.rest"
+const TREASURE_CHOICE_SET_ID: StringName = &"choice_set.treasure"
+
 static func catalog(manifest_digest: String = MANIFEST) -> EconomyExpeditionCatalog:
 	var config := EconomyConfigRule.new()
 	config.config_id = &"economy.test"
@@ -37,9 +45,12 @@ static func catalog(manifest_digest: String = MANIFEST) -> EconomyExpeditionCata
 		nodes.append(MapNodeRule.new(
 			StringName("map_node.%s" % String(tokens[kind])),
 			kind,
-			_encounter_id_for_kind(kind)
+			_generator_id_for_kind(kind)
 		))
-	return EconomyExpeditionCatalog.new(manifest_digest, config, units, nodes)
+	var no_tables: Array[RewardTableRule] = []
+	return EconomyExpeditionCatalog.new(
+		manifest_digest, config, units, nodes, no_tables, node_choice_sets()
+	)
 
 static func empty_roster() -> RosterState:
 	var placements: Array[BoardPlacementState] = []
@@ -68,9 +79,12 @@ static func save_fixture_catalog(manifest_digest: String) -> EconomyExpeditionCa
 		nodes.append(MapNodeRule.new(
 			StringName("mapnode.fixture_%d" % kind),
 			kind,
-			_encounter_id_for_kind(kind)
+			_generator_id_for_kind(kind)
 		))
-	return EconomyExpeditionCatalog.new(manifest_digest, source.config(), units, nodes)
+	var no_tables: Array[RewardTableRule] = []
+	return EconomyExpeditionCatalog.new(
+		manifest_digest, source.config(), units, nodes, no_tables, node_choice_sets()
+	)
 
 static func settlement_catalog(manifest_digest: String) -> EconomyExpeditionCatalog:
 	var source := catalog(manifest_digest)
@@ -79,7 +93,7 @@ static func settlement_catalog(manifest_digest: String) -> EconomyExpeditionCata
 	for kind: int in range(7):
 		nodes.append(MapNodeRule.new(
 			StringName("mapnode.fixture_%d" % kind), kind,
-			_encounter_id_for_kind(kind)
+			_generator_id_for_kind(kind)
 		))
 	var standard_candidates: Array[RewardCandidateRule] = [
 		RewardCandidateRule.new(&"gold", null, 1, 3),
@@ -94,7 +108,8 @@ static func settlement_catalog(manifest_digest: String) -> EconomyExpeditionCata
 		RewardTableRule.new(&"reward.relic", relic_candidates, 3),
 	]
 	return EconomyExpeditionCatalog.new(
-		manifest_digest, source.config(), units, nodes, tables
+		manifest_digest, source.config(), units, nodes, tables,
+		node_choice_sets(&"reward.standard", &"reward.standard")
 	)
 
 static func mixed_reward_catalog(manifest_digest: String) -> EconomyExpeditionCatalog:
@@ -104,7 +119,7 @@ static func mixed_reward_catalog(manifest_digest: String) -> EconomyExpeditionCa
 	for kind: int in range(7):
 		nodes.append(MapNodeRule.new(
 			StringName("mapnode.fixture_%d" % kind), kind,
-			_encounter_id_for_kind(kind)
+			_generator_id_for_kind(kind)
 		))
 	var standard_candidates: Array[RewardCandidateRule] = [
 		RewardCandidateRule.new(
@@ -122,7 +137,8 @@ static func mixed_reward_catalog(manifest_digest: String) -> EconomyExpeditionCa
 		RewardTableRule.new(&"reward.relic", relic_candidates, 3),
 	]
 	return EconomyExpeditionCatalog.new(
-		manifest_digest, source.config(), units, nodes, tables
+		manifest_digest, source.config(), units, nodes, tables,
+		node_choice_sets(&"reward.standard", &"reward.standard")
 	)
 
 static func event_unit_reward_catalog(manifest_digest: String) -> EconomyExpeditionCatalog:
@@ -140,8 +156,11 @@ static func event_unit_reward_catalog(manifest_digest: String) -> EconomyExpedit
 	var nodes: Array[MapNodeRule] = []
 	for kind: int in range(7):
 		nodes.append_array(source.map_nodes_for(kind))
+	# event 節點的 grant 選項指向本 catalog 專屬的 unit-only 表，commit 後才會落在
+	# EVENT_GRANT stage（reward_service.gd 的單一 offer／保留副本路徑）。
 	return EconomyExpeditionCatalog.new(
-		manifest_digest, source.config(), source.shop_units(), nodes, tables
+		manifest_digest, source.config(), source.shop_units(), nodes, tables,
+		node_choice_sets(&"reward.event_unit", &"reward.standard")
 	)
 
 static func shop_rng() -> RngSnapshot:
@@ -192,7 +211,10 @@ static func expedition_battle_catalog(
 		encounters, equipment, configs
 	)
 
-static func _encounter_id_for_kind(kind: int) -> StringName:
+## 戰鬥節點的 generator 是 encounter id（NodeEntryService 用它 compile preview），
+## event／rest／treasure 的 generator 是 choice set id（EnterNodeEvent 用它開
+## NodeChoicePendingState）。merchant 兩者皆無，維持空字串。
+static func _generator_id_for_kind(kind: int) -> StringName:
 	match kind:
 		MapNodeState.NodeKind.NORMAL:
 			return &"encounter.normal"
@@ -200,7 +222,107 @@ static func _encounter_id_for_kind(kind: int) -> StringName:
 			return &"encounter.elite"
 		MapNodeState.NodeKind.BOSS:
 			return &"encounter.boss"
+		MapNodeState.NodeKind.EVENT:
+			return EVENT_CHOICE_SET_ID
+		MapNodeState.NodeKind.REST:
+			return REST_CHOICE_SET_ID
+		MapNodeState.NodeKind.TREASURE:
+			return TREASURE_CHOICE_SET_ID
 	return &""
+
+## 比照 content/packs/vertical_slice/node_choices/*.tres 的形狀組出測試用 choice set。
+## reward table ref 給空字串（base catalog 沒有 reward table）時只產生
+## APPLY_AND_COMPLETE 選項，commit 才不會落到不存在的 table；每個 set 至少兩個選項，
+## 符合 CommitNodeChoiceService.begin 的下限。
+static func node_choice_sets(
+	event_reward_table_ref: StringName = &"",
+	treasure_reward_table_ref: StringName = &""
+) -> Array[NodeChoiceSetRule]:
+	var no_operations: Array[NodeChoiceOperationRule] = []
+	var event_safe: Array[NodeChoiceOperationRule] = [_gold_operation(1, 0)]
+	var event_risk: Array[NodeChoiceOperationRule] = [
+		_gold_operation(3, 0), _drain_operation(5, 1)
+	]
+	var event_choices: Array[NodeChoiceRule] = [
+		_choice(&"choice.event.safe", 0, event_safe, &""),
+		_choice(&"choice.event.risk", 1, event_risk, &""),
+	]
+	if not event_reward_table_ref.is_empty():
+		event_choices.append(_choice(
+			&"choice.event.grant", 2, no_operations, event_reward_table_ref
+		))
+	var rest_long: Array[NodeChoiceOperationRule] = [_heal_operation(20, 0)]
+	var rest_short: Array[NodeChoiceOperationRule] = [_heal_operation(5, 0)]
+	var rest_choices: Array[NodeChoiceRule] = [
+		_choice(&"choice.rest.heal_20", 0, rest_long, &""),
+		_choice(&"choice.rest.heal_5", 1, rest_short, &""),
+	]
+	var treasure_cache: Array[NodeChoiceOperationRule] = [_gold_operation(3, 0)]
+	var treasure_coin: Array[NodeChoiceOperationRule] = [_gold_operation(1, 0)]
+	var treasure_choices: Array[NodeChoiceRule] = [
+		_choice(&"choice.treasure.gold", 0, treasure_cache, &""),
+		_choice(&"choice.treasure.coin", 1, treasure_coin, &""),
+	]
+	if not treasure_reward_table_ref.is_empty():
+		treasure_choices.append(_choice(
+			&"choice.treasure.standard", 2, no_operations,
+			treasure_reward_table_ref
+		))
+	var result: Array[NodeChoiceSetRule] = [
+		NodeChoiceSetRule.new(
+			EVENT_CHOICE_SET_ID, &"loc.choice_set_event", &"event", event_choices
+		),
+		NodeChoiceSetRule.new(
+			REST_CHOICE_SET_ID, &"loc.choice_set_rest", &"rest", rest_choices
+		),
+		NodeChoiceSetRule.new(
+			TREASURE_CHOICE_SET_ID, &"loc.choice_set_treasure", &"treasure",
+			treasure_choices
+		),
+	]
+	return result
+
+static func _choice(
+	choice_id: StringName,
+	sort_order: int,
+	operations: Array[NodeChoiceOperationRule],
+	reward_table_ref: StringName
+) -> NodeChoiceRule:
+	var token := String(choice_id).replace(".", "_")
+	var opens_reward := not reward_table_ref.is_empty()
+	var outcome_kind := NodeChoiceRule.OUTCOME_APPLY_AND_COMPLETE
+	if opens_reward:
+		outcome_kind = NodeChoiceRule.OUTCOME_OPEN_REWARD_STAGE
+	return NodeChoiceRule.new(
+		choice_id,
+		sort_order,
+		StringName("loc.%s_title" % token),
+		StringName("loc.%s_description" % token),
+		StringName("loc.%s_preview" % token),
+		StringName("loc.%s_result" % token),
+		operations,
+		reward_table_ref,
+		opens_reward,
+		outcome_kind,
+		true
+	)
+
+static func _gold_operation(amount: int, index: int) -> NodeChoiceOperationRule:
+	return NodeChoiceOperationRule.new(
+		NodeChoiceOperationRule.Kind.ADD_GOLD, amount, index, &"once_per_node"
+	)
+
+static func _heal_operation(amount: int, index: int) -> NodeChoiceOperationRule:
+	return NodeChoiceOperationRule.new(
+		NodeChoiceOperationRule.Kind.HEAL_EXPEDITION_HP, amount, index,
+		&"once_per_node"
+	)
+
+static func _drain_operation(amount: int, index: int) -> NodeChoiceOperationRule:
+	return NodeChoiceOperationRule.new(
+		NodeChoiceOperationRule.Kind.DRAIN_EXPEDITION_HP, amount, index,
+		&"once_per_node"
+	)
 
 static func _battle_unit(unit_id: StringName) -> BattleUnitRule:
 	var unit := BattleUnitRule.new()

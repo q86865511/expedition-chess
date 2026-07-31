@@ -1,10 +1,10 @@
 class_name ContentRegistryService
 extends Node
 
-const CATALOG_SCHEMA_VERSION := 1
+const CATALOG_SCHEMA_VERSION := 2
 
-var _codec := ContentCanonicalCodecV2.new()
-var _compiler := ContentDefinitionCompilerV2.new()
+var _codec := ContentCanonicalCodecV3.new()
+var _compiler := ContentDefinitionCompilerV3.new()
 var _authoring_by_id: Dictionary = {}
 var _content_version: String
 var _pack_ids: Array[StringName] = []
@@ -53,7 +53,7 @@ func _install_authoring_unchecked(
 	for definition in definitions:
 		candidate_authoring[definition.id] = definition.duplicate(true)
 	var candidate_pack_ids := pack_ids.duplicate()
-	candidate_pack_ids.sort_custom(_string_name_less)
+	candidate_pack_ids.sort_custom(_canonical_id_less)
 	var candidate_aliases := _flatten_aliases(aliases)
 	candidate_aliases.sort_custom(_alias_less)
 	var candidate_tombstones: Array[ContentTombstoneValue] = []
@@ -191,6 +191,19 @@ func _remove_unleased_generation(manifest_digest: String) -> bool:
 		return false
 	_receipts_by_digest.erase(manifest_digest)
 	return _catalogs_by_digest.erase(manifest_digest)
+
+## 已安裝 generation 的 manifest entry index(category / content_id / entry digest)。
+## codec 2→3 migration pack 需要逐筆比對 target entry,不得只信 pack 自報的 digest。
+func _entry_indexes_for_digest(manifest_digest: String) -> Array[ContentEntryIndexValue]:
+	var result: Array[ContentEntryIndexValue] = []
+	if not _catalogs_by_digest.has(manifest_digest):
+		return result
+	var snapshot: ContentCatalogSnapshot = _catalogs_by_digest[manifest_digest]
+	if snapshot.manifest == null:
+		return result
+	for index: ContentEntryIndexValue in snapshot.manifest.entry_indexes:
+		result.append(index.deep_clone())
+	return result
 
 func _receipt_for_digest(manifest_digest: String) -> PinnedCatalogBuildReceipt:
 	if not _receipts_by_digest.has(manifest_digest): return null
@@ -334,7 +347,7 @@ func _build_generation(
 	is_latest: bool,
 	selection: CatalogSelection = null
 ) -> CatalogGenerationBuildResult:
-	var compiler := ContentDefinitionCompilerV2.new()
+	var compiler := ContentDefinitionCompilerV3.new()
 	var entries: Array[ContentEntryValue] = []
 	for content_id in active_ids:
 		if not authoring_by_id.has(content_id):
@@ -380,7 +393,7 @@ func _build_generation(
 	if selection != null:
 		receipt = PinnedCatalogBuildReceipt.new(
 			CATALOG_SCHEMA_VERSION,
-			ContentCanonicalCodecV2.CONTENT_CODEC_VERSION_V2,
+			ContentCanonicalCodecV3.CONTENT_CODEC_VERSION_V3,
 			content_version,
 			selection_digest,
 			active_ids,
@@ -411,7 +424,7 @@ func _publish_migrated_generation(
 	if draft.handle.is_latest or digest != draft.snapshot.manifest_digest \
 		or digest != draft.receipt.manifest_digest \
 		or draft.receipt.content_codec_version != 2 \
-		or draft.receipt.catalog_schema_version != CATALOG_SCHEMA_VERSION:
+		or draft.receipt.catalog_schema_version != 1:
 		return CatalogCompileResult.failure(
 			&"CONTENT_MIGRATED_GENERATION_INVALID", &"draft.manifest_digest"
 		)
@@ -562,7 +575,7 @@ func _state_fingerprint() -> String:
 	var authoring_ids: Array[StringName] = []
 	for key in _authoring_by_id.keys(): authoring_ids.append(key as StringName)
 	authoring_ids.sort_custom(_string_name_less)
-	var compiler := ContentDefinitionCompilerV2.new()
+	var compiler := ContentDefinitionCompilerV3.new()
 	for content_id in authoring_ids:
 		var definition: ContentDefinition = _authoring_by_id[content_id]
 		var compiled := compiler.compile(definition)
@@ -659,11 +672,28 @@ func _entry_less(left: ContentEntryValue, right: ContentEntryValue) -> bool:
 	var right_code := ContentCategory.code_for_name(right.category)
 	return String(left.content_id) < String(right.content_id) if left_code == right_code else left_code < right_code
 
+## manifest 的 alias／tombstone／pack_id 都寫進 codec 的 `canonical_set`,而
+## `_is_canonical_set()` 要求「編碼後 bytes 嚴格遞增」。字串在 canonical 編碼裡是
+## length-prefixed(tag + u32-be length + UTF-8),所以正確的順序是「先比 byte 長度、
+## 再比 bytes」,不是字串字典序——兩者只在所有 id 等長時才一致。先前這裡用字典序,
+## 正式 catalog 因為 alias／tombstone 皆為空而從未觸發;一旦宣告長度不同的 id
+## (例:`meta.fixture` 12 bytes vs `commander.fixture` 17 bytes),manifest 編碼就會以
+## `codec.value` 失敗。此處改用 canonical 順序,對既有(能通過編碼的)資料等價。
+func _canonical_id_less(left: StringName, right: StringName) -> bool:
+	var left_bytes := String(left).to_utf8_buffer()
+	var right_bytes := String(right).to_utf8_buffer()
+	if left_bytes.size() != right_bytes.size():
+		return left_bytes.size() < right_bytes.size()
+	for index in left_bytes.size():
+		if left_bytes[index] != right_bytes[index]:
+			return left_bytes[index] < right_bytes[index]
+	return false
+
 func _alias_less(left: ContentAliasValue, right: ContentAliasValue) -> bool:
-	return String(left.source_id) < String(right.source_id)
+	return _canonical_id_less(left.source_id, right.source_id)
 
 func _tombstone_less(left: ContentTombstoneValue, right: ContentTombstoneValue) -> bool:
-	return String(left.original_id) < String(right.original_id)
+	return _canonical_id_less(left.original_id, right.original_id)
 
 func _string_name_less(left: StringName, right: StringName) -> bool:
 	return String(left) < String(right)

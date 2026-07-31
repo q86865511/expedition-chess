@@ -16,5 +16,7 @@ script = ExtResource("5_ge3nn")
 trigger = &"battle_start"
 run_operations = Array[ExtResource("3_ep4bp")]([SubResource("Resource_jo344")])
 stacking = &"replace"
+schema_version = 2
+description_key = &"loc.effect_relic_pathfinder_boots_description"
 id = &"effect.relic_pathfinder_boots"
 display_name_key = &"loc.effect_relic_pathfinder_boots"

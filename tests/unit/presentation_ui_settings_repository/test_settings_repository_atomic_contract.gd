@@ -215,7 +215,10 @@ func test_schema_one_defaults_wire_values_and_exact_validation_rejections() -> v
 	for pair: Array in _bus_pairs(defaults):
 		assert_eq(pair[0], 10000)
 		assert_false(pair[1])
-	assert_eq(SaveSchemaContract.CURRENT, 3, "T02 must not change gameplay save schema")
+	assert_eq(
+		SaveSchemaContract.CURRENT, 4,
+		"T02 must not change gameplay save schema; G2 content-production requires SaveSchemaContract.CURRENT=4"
+	)
 
 	var repository: Variant = _new_repository(FakeSettingsStorage.new())
 	if repository == null:

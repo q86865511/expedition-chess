@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_iee1q")]([SubResource("Resource_acecu")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_trait_faction_verdant_description"
 id = &"effect.trait_faction_verdant"
 display_name_key = &"loc.effect_trait_faction_verdant"

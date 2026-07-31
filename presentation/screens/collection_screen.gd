@@ -106,13 +106,25 @@ func _refresh_entries() -> void:
 	var comparable := kind != CollectionBrowserViewModel.KIND_GLOSSARY
 	var search := get_node_or_null(^"SearchInput") as LineEdit
 	var query := search.text if search != null else ""
-	for entry_id: StringName in _search_matches(kind, query):
+	var matches := _search_matches(kind, query)
+	for entry_index: int in matches.size():
+		var entry_id := StringName(matches[entry_index])
 		var label := _entry_text(entry_id)
 		entries.add_item(label)
-		entries.set_item_metadata(entries.item_count - 1, entry_id)
+		var visible_index := entries.item_count - 1
+		entries.set_item_metadata(visible_index, entry_id)
+		entries.set_item_tooltip(
+			visible_index,
+			_tooltip_text(&"tooltip.collection_order", entry_index + 1)
+		)
 		if comparable:
 			compare.add_item(label)
-			compare.set_item_metadata(compare.item_count - 1, entry_id)
+			var compare_index := compare.item_count - 1
+			compare.set_item_metadata(compare_index, entry_id)
+			compare.set_item_tooltip(
+				compare_index,
+				_tooltip_text(&"tooltip.collection_order", entry_index + 1)
+			)
 	compare.focus_mode = Control.FOCUS_ALL if comparable else Control.FOCUS_NONE
 	_set_compare_result(
 		&"collection.compare.empty"
@@ -227,6 +239,21 @@ func _set_localized_text(values: Dictionary) -> void:
 
 func _text(key: StringName) -> String:
 	return _localized_text.get(key, String(key))
+
+
+func _tooltip_text(
+	label_key: StringName,
+	numeric_value: int,
+	depth: int = 1
+) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.content_tooltip_text(
+			label_key, numeric_value, depth
+		)
+		if parent_screen != null
+		else ""
+	)
 
 
 func _name_less(left: StringName, right: StringName) -> bool:

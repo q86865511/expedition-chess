@@ -26,8 +26,8 @@ func test_schema_two_migrates_to_three_with_defaulted_new_fields() -> void:
 	assert_not_null(migrated.root)
 	if migrated.root == null:
 		return
-	assert_eq(migrated.root.schema_version, 3)
-	assert_eq(migrated.target_schema_version, 3)
+	assert_eq(migrated.root.schema_version, 4)
+	assert_eq(migrated.target_schema_version, 4)
 	assert_null(migrated.root.profile.last_selection)
 	assert_true(migrated.root.profile.commander_challenge_records.is_empty())
 	assert_not_null(migrated.root.run)
@@ -60,7 +60,7 @@ func test_schema_two_profile_only_migrates_with_null_run_and_defaulted_profile_f
 	assert_true(migrated.ok)
 	if not migrated.ok or migrated.root == null:
 		return
-	assert_eq(migrated.root.schema_version, 3)
+	assert_eq(migrated.root.schema_version, 4)
 	assert_null(migrated.root.run)
 	assert_null(migrated.root.profile.last_selection)
 	assert_true(migrated.root.profile.commander_challenge_records.is_empty())

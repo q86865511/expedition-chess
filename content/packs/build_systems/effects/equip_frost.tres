@@ -20,5 +20,7 @@ trigger = &"battle_start"
 battle_operations = Array[ExtResource("1_u7cko")]([SubResource("Resource_beggd")])
 stacking = &"replace"
 duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_equip_frost_description"
 id = &"effect.equip_frost"
 display_name_key = &"loc.effect_equip_frost"

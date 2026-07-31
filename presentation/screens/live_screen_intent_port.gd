@@ -141,11 +141,14 @@ func _validate_draft(draft: ConfirmationDraft) -> DiagnosticError:
 	return null
 
 
+## design.md §5:177-178：confirmation payload digest 必須涵蓋 commit command 的
+## 「相同 sequence 與 choice_id」——只 hash choice_set_id/choice_id 的話，draft 開出去
+## 之後 payload 的 pending_digest／nonce／世代欄被換掉仍會通過 confirm 檢查。
 func _intent_digest(intent: RunPresentationIntent) -> String:
 	var context := HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)
 	context.update(
-		("%d|%s|%s|%s|%s|%s|%s|%s|%d|%s|%s" % [
+		("%d|%s|%s|%s|%s|%s|%s|%s|%s|%d|%s|%s|%s|%s|%s|%s|%s" % [
 			intent.kind,
 			intent.target_node_id,
 			intent.offer_id,
@@ -153,10 +156,20 @@ func _intent_digest(intent: RunPresentationIntent) -> String:
 			intent.item_instance_id,
 			intent.secondary_item_instance_id,
 			intent.target_unit_instance_id,
+			intent.choice_set_id,
 			intent.choice_id,
 			intent.relic_slot_index,
 			str(intent.accept),
 			str(intent.abandon),
+			(
+				intent.node_choice_payload.digest_sequence()
+				if intent.node_choice_payload != null
+				else ""
+			),
+			intent.expected_run_id,
+			String(intent.node_id),
+			intent.choice_receipt_digest,
+			intent.receipt_digest,
 		]).to_utf8_buffer()
 	)
 	return context.finish().hex_encode()

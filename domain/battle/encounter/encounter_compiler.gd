@@ -99,7 +99,7 @@ func compile(
 				reference_error.source_id
 			)
 		var unit := _build_unit_snapshot(
-			encoded_id.entity_id, spawn, unit_rule, scaling
+			encoded_id.entity_id, spawn, unit_rule, scaling, catalog
 		)
 		preview.enemy_units.append(unit)
 		spawn_keys.append(spawn.spawn_key)
@@ -201,7 +201,8 @@ func _build_unit_snapshot(
 	instance_id: StringName,
 	spawn: BattleEnemySpawnRule,
 	unit_rule: BattleUnitRule,
-	scaling: BattleStarScalingRule
+	scaling: BattleStarScalingRule,
+	catalog: BattleRuleCatalog
 ) -> UnitBattleSnapshot:
 	var unit := UnitBattleSnapshot.new()
 	unit.instance_id = instance_id
@@ -236,6 +237,14 @@ func _build_unit_snapshot(
 		if unit_rule.ability_id != null else null
 	unit.effect_ids = unit_rule.effect_ids.duplicate()
 	unit.effect_ids.append_array(spawn.effect_ids)
+	# ability primary effect 依 wave3 契約不得寫進 UnitDef 的 innate effect_refs,
+	# 施法解算的 effect source 在此併入(去重,fixture 內容兩處同值時不變)
+	if unit.ability_id != null:
+		var ability_rule := catalog.try_ability_rule(unit.ability_id.value)
+		if ability_rule != null:
+			for ability_effect_id: StringName in ability_rule.effect_ids:
+				if not unit.effect_ids.has(ability_effect_id):
+					unit.effect_ids.append(ability_effect_id)
 	unit.effect_ids.sort_custom(_string_name_before)
 	for effect_index: int in range(unit.effect_ids.size()):
 		var assignment := BattleEffectSourceAssignmentSnapshot.new()

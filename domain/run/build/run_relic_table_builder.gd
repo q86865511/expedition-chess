@@ -65,7 +65,7 @@ func _append_effect_run_operations(
 	if view.category != &"effect":
 		return RunRelicTableError.PAYLOAD_INVALID
 	if view.payload == null or view.payload.record_type != ContentCategory.EFFECT \
-		or view.payload.children.size() != 12:
+		or view.payload.children.size() not in [12, 13]:
 		return RunRelicTableError.PAYLOAD_INVALID
 	for value: ContentValue in view.payload.children[8].children:
 		if value == null or value.children.size() != 3:

@@ -4,17 +4,19 @@ extends RefCounted
 static func current_node_id(draft: RunState) -> StringName:
 	return StringName(draft.current_node_id.value) if draft != null and draft.current_node_id != null else &""
 
-static func try_shop_rng(draft: RunState) -> RngSnapshot:
+static func try_named_rng(
+	draft: RunState, stream_name: NamedRngState.StreamName
+) -> RngSnapshot:
 	for state: NamedRngState in draft.rng_stream_states:
-		if state.stream_name == NamedRngState.StreamName.SHOP:
+		if state.stream_name == stream_name:
 			return state.snapshot.deep_clone()
 	return null
 
+static func try_shop_rng(draft: RunState) -> RngSnapshot:
+	return try_named_rng(draft, NamedRngState.StreamName.SHOP)
+
 static func try_reward_rng(draft: RunState) -> RngSnapshot:
-	for state: NamedRngState in draft.rng_stream_states:
-		if state.stream_name == NamedRngState.StreamName.REWARD:
-			return state.snapshot.deep_clone()
-	return null
+	return try_named_rng(draft, NamedRngState.StreamName.REWARD)
 
 static func set_shop_rng(draft: RunState, snapshot: RngSnapshot) -> void:
 	set_named_rng(draft, NamedRngState.StreamName.SHOP, snapshot)
@@ -33,6 +35,13 @@ static func append_transaction_receipt(
 	) -> bool:
 		return String(left.key.digest) < String(right.key.digest)
 	)
+
+## design.md §5（:200）「ledger 生命期到 run terminal 清除」（review L2）。
+## RESULTS 之後不會再有 pending choice，未 ack 的 receipt 只會被每一次存檔全量寫入，
+## 並讓 UI 重播一個已無節點可回的結果。所有把 run_phase 切到 RESULTS 的路徑都要呼叫。
+static func clear_node_choice_receipts(draft: RunState) -> void:
+	if draft != null:
+		draft.node_choice_receipts.clear()
 
 static func sort_owners(owners: Array[ReservationOwnerState]) -> void:
 	owners.sort_custom(func(

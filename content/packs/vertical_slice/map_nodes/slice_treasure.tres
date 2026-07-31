@@ -6,6 +6,6 @@
 [resource]
 script = ExtResource("2_uwd8c")
 node_type = &"treasure"
-generator_ref = &"effect.slice_affix_04"
+generator_ref = &"choice_set.treasure"
 id = &"map_node.slice_treasure"
 display_name_key = &"loc.map_node_slice_treasure"

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_audio")
 bus = &"SFX"
-stream_path = "res://assets/production/audio/sfx/combat_projectile.ogg"
+stream_path = "res://assets/production/audio/sfx/combat_melee_hit.ogg"
 loop = false
-id = &"audio.combat_projectile"
-display_name_key = &"loc.audio_combat_projectile"
+id = &"audio.combat_melee_hit"
+display_name_key = &"loc.audio_combat_melee_hit"

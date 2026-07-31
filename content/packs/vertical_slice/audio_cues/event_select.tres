@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_audio")
 bus = &"SFX"
-stream_path = "res://assets/production/audio/sfx/ui_hover.ogg"
+stream_path = "res://assets/production/audio/sfx/event_select.ogg"
 loop = false
-id = &"audio.ui_hover"
-display_name_key = &"loc.audio_ui_hover"
+id = &"audio.event_select"
+display_name_key = &"loc.audio_event_select"

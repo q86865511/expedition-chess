@@ -102,13 +102,14 @@ func test_cgm2_normative_golden_vectors_are_exact() -> void:
 		+ "0100000008756e69742e6e6577000102030405060708090a0b0c0d0e0f101112"
 		+ "131415161718191a1b1c1d1e1f"
 	)
-	var entries: Array = [entry]
+	var entries: Array[ContentGenerationMigrationEntryV2] = [entry]
 	assert_eq(
 		codec.call("mapping_digest", entries),
 		"8ef8d3ebd6de4cb7b14caf68c3afbcf44c008440431e091c6d4593523b576a2b"
 	)
+	var no_rows: Array[PackedStringArray] = []
 	assert_eq(
-		codec.call("localization_digest", []),
+		codec.call("localization_digest", no_rows),
 		"b97c9b707aadfc40186db9d5d9b6c30f98aff38f9e61b00ef414759428838d50"
 	)
 

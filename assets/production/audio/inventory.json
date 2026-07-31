@@ -109,8 +109,8 @@
   ],
   "sfx": [
     {
-      "cue_id": "audio.ui_accept",
-      "path": "assets/production/audio/sfx/ui_accept.ogg",
+      "cue_id": "audio.ui_confirm",
+      "path": "assets/production/audio/sfx/ui_confirm.ogg",
       "sha256": "291b4a16c7ae57d2d75be0fe048bb7cdf5b25e939c55c6eb237af9e619da84c2",
       "bus": "SFX",
       "loop": false,
@@ -139,8 +139,8 @@
       "local_processing_seed": 1194475962
     },
     {
-      "cue_id": "audio.ui_hover",
-      "path": "assets/production/audio/sfx/ui_hover.ogg",
+      "cue_id": "audio.ui_focus",
+      "path": "assets/production/audio/sfx/ui_focus.ogg",
       "sha256": "34f573c461d43698180a05713bda599606efef67e137dc59d009f8ed084e4363",
       "bus": "SFX",
       "loop": false,
@@ -199,8 +199,8 @@
       "local_processing_seed": 1194475966
     },
     {
-      "cue_id": "audio.shop_reroll",
-      "path": "assets/production/audio/sfx/shop_reroll.ogg",
+      "cue_id": "audio.shop_refresh",
+      "path": "assets/production/audio/sfx/shop_refresh.ogg",
       "sha256": "7efb087379944159a6dad59baeb0c221f475c7bac4db1034b3b5a09189774ceb",
       "bus": "SFX",
       "loop": false,
@@ -244,8 +244,8 @@
       "local_processing_seed": 1194475969
     },
     {
-      "cue_id": "audio.reward",
-      "path": "assets/production/audio/sfx/reward.ogg",
+      "cue_id": "audio.reward_select",
+      "path": "assets/production/audio/sfx/reward_select.ogg",
       "sha256": "16eae902870461878a5e7e973ab9362515bf3658184f4a5cd25552298b958e1a",
       "bus": "SFX",
       "loop": false,
@@ -259,8 +259,8 @@
       "local_processing_seed": 1194475970
     },
     {
-      "cue_id": "audio.event",
-      "path": "assets/production/audio/sfx/event.ogg",
+      "cue_id": "audio.event_select",
+      "path": "assets/production/audio/sfx/event_select.ogg",
       "sha256": "8d7b17fdfb37330c8ac01710879a20486a82e32a7313d03e7e5ca729d4d97329",
       "bus": "SFX",
       "loop": false,
@@ -289,8 +289,8 @@
       "local_processing_seed": 1194475972
     },
     {
-      "cue_id": "audio.combat_hit",
-      "path": "assets/production/audio/sfx/combat_hit.ogg",
+      "cue_id": "audio.combat_melee_hit",
+      "path": "assets/production/audio/sfx/combat_melee_hit.ogg",
       "sha256": "fddc1f1bec5a508d2c9b4b29b698d0eddf9b19f396857a4191845e77c64fe6e3",
       "bus": "SFX",
       "loop": false,
@@ -304,8 +304,8 @@
       "local_processing_seed": 1194475973
     },
     {
-      "cue_id": "audio.combat_crit",
-      "path": "assets/production/audio/sfx/combat_crit.ogg",
+      "cue_id": "audio.combat_defeat",
+      "path": "assets/production/audio/sfx/combat_defeat.ogg",
       "sha256": "8d8fdd0dca6bdb0f2651731ea9013002e0b5ee33db9f1c1fa1e80445419b7e47",
       "bus": "SFX",
       "loop": false,
@@ -319,8 +319,8 @@
       "local_processing_seed": 1194475974
     },
     {
-      "cue_id": "audio.combat_block",
-      "path": "assets/production/audio/sfx/combat_block.ogg",
+      "cue_id": "audio.combat_shield",
+      "path": "assets/production/audio/sfx/combat_shield.ogg",
       "sha256": "d4834498c476736094c9470d08740a3e3ab5793445a94871e20893649561bbc1",
       "bus": "SFX",
       "loop": false,
@@ -364,8 +364,8 @@
       "local_processing_seed": 1194475977
     },
     {
-      "cue_id": "audio.combat_projectile",
-      "path": "assets/production/audio/sfx/combat_projectile.ogg",
+      "cue_id": "audio.combat_ranged_attack",
+      "path": "assets/production/audio/sfx/combat_ranged_attack.ogg",
       "sha256": "4956e3eeb7eb6e91548a902af57ee43bbc905f693c54ce3b89147fbabce4968f",
       "bus": "SFX",
       "loop": false,
@@ -379,8 +379,8 @@
       "local_processing_seed": 1194475978
     },
     {
-      "cue_id": "audio.combat_explosion",
-      "path": "assets/production/audio/sfx/combat_explosion.ogg",
+      "cue_id": "audio.combat_magic_hit",
+      "path": "assets/production/audio/sfx/combat_magic_hit.ogg",
       "sha256": "ca6ca14d669ac7d340ddf30ca7b98e824fbb3f97301bdd009385865f9304bc5f",
       "bus": "SFX",
       "loop": false,
@@ -394,8 +394,8 @@
       "local_processing_seed": 1194475979
     },
     {
-      "cue_id": "audio.combat_status",
-      "path": "assets/production/audio/sfx/combat_status.ogg",
+      "cue_id": "audio.combat_boss_warning",
+      "path": "assets/production/audio/sfx/combat_boss_warning.ogg",
       "sha256": "cb801679c863f8049822629f32e3466346636bb95dbae8a7124c89cae8f518ab",
       "bus": "SFX",
       "loop": false,

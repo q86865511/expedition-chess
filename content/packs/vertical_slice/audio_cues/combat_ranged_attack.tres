@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_audio")
 bus = &"SFX"
-stream_path = "res://assets/production/audio/sfx/shop_reroll.ogg"
+stream_path = "res://assets/production/audio/sfx/combat_ranged_attack.ogg"
 loop = false
-id = &"audio.shop_reroll"
-display_name_key = &"loc.audio_shop_reroll"
+id = &"audio.combat_ranged_attack"
+display_name_key = &"loc.audio_combat_ranged_attack"

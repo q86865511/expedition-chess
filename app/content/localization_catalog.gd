@@ -34,7 +34,8 @@ func _init(p_validated_values: Dictionary = {}) -> void:
 		}
 
 
-static func from_validated_values(values: Dictionary) -> LocalizationCatalog:
+# loader-private factory(design §L10N):production 只能經 LocalizationCatalogLoader
+static func _from_validated_values(values: Dictionary) -> LocalizationCatalog:
 	return LocalizationCatalog.new(values)
 
 
@@ -515,26 +516,26 @@ func _register_generated_keys() -> void:
 		["expedition", "遠征音樂", "Expedition Music"],
 		["combat", "戰鬥音樂", "Combat Music"],
 		["results", "結算音樂", "Results Music"],
-		["ui_accept", "介面確認", "UI Accept"],
+		["ui_confirm", "介面確認", "UI Confirm"],
 		["ui_cancel", "介面取消", "UI Cancel"],
-		["ui_hover", "介面游標停留", "UI Hover"],
+		["ui_focus", "介面聚焦", "UI Focus"],
 		["ui_error", "介面錯誤", "UI Error"],
 		["shop_buy", "商店購買", "Shop Buy"],
 		["shop_sell", "商店出售", "Shop Sell"],
-		["shop_reroll", "商店重抽", "Shop Reroll"],
+		["shop_refresh", "商店刷新", "Shop Refresh"],
 		["forge", "鍛造", "Forge"],
 		["equip", "裝備", "Equip"],
-		["reward", "獎勵", "Reward"],
-		["event", "事件", "Event"],
+		["reward_select", "獎勵選擇", "Reward Select"],
+		["event_select", "事件選擇", "Event Select"],
 		["combat_cast", "技能施放", "Combat Cast"],
-		["combat_hit", "戰鬥命中", "Combat Hit"],
-		["combat_crit", "戰鬥暴擊", "Combat Critical"],
-		["combat_block", "戰鬥格擋", "Combat Block"],
+		["combat_melee_hit", "近戰命中", "Melee Hit"],
+		["combat_defeat", "戰敗", "Combat Defeat"],
+		["combat_shield", "護盾格擋", "Shield Block"],
 		["combat_heal", "戰鬥治療", "Combat Heal"],
 		["combat_death", "戰鬥倒下", "Combat Death"],
-		["combat_projectile", "戰鬥投射物", "Combat Projectile"],
-		["combat_explosion", "戰鬥爆炸", "Combat Explosion"],
-		["combat_status", "戰鬥狀態", "Combat Status"],
+		["combat_ranged_attack", "遠程攻擊", "Ranged Attack"],
+		["combat_magic_hit", "法術命中", "Magic Hit"],
+		["combat_boss_warning", "Boss 警示", "Boss Warning"],
 		["combat_victory", "戰鬥勝利", "Combat Victory"],
 	]
 	for audio_name: Array in formal_audio_names:

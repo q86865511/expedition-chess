@@ -212,7 +212,7 @@ func test_generated_non_combat_and_rest_nodes_have_committed_exits() -> void:
 		))
 		assert_true(entered.ok)
 		if not entered.ok: continue
-		var choice_set := catalog.node_choice_set_for_map_node(target.def_id)
+		var choice_set := catalog.try_node_choice_set_for_map_node(target.def_id)
 		if choice_set == null:
 			# merchant 沒有 node choice set，出口仍是既有的 non-combat resolve。
 			assert_eq(target.node_kind, MapNodeState.NodeKind.MERCHANT)
@@ -287,7 +287,7 @@ func test_event_unit_grant_reservation_is_atomic_on_save_failure() -> void:
 		event_target.node_id, catalog,
 		EconomyTestFixture.expedition_battle_catalog(manifest)
 	)).ok)
-	var choice_set := catalog.node_choice_set_for_map_node(event_target.def_id)
+	var choice_set := catalog.try_node_choice_set_for_map_node(event_target.def_id)
 	assert_not_null(choice_set)
 	if choice_set == null: return
 	var grant_choice_id := _choice_id_with_outcome(
@@ -359,7 +359,7 @@ func test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits() 
 		event_target.node_id, catalog,
 		EconomyTestFixture.expedition_battle_catalog(manifest)
 	)).ok)
-	var choice_set := catalog.node_choice_set_for_map_node(event_target.def_id)
+	var choice_set := catalog.try_node_choice_set_for_map_node(event_target.def_id)
 	assert_not_null(choice_set)
 	if choice_set == null: return
 	var grant_choice_id := _choice_id_with_outcome(

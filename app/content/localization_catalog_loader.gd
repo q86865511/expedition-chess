@@ -49,7 +49,7 @@ func load_catalog(
 		(values[&"zh_TW"] as Dictionary)[key] = fields[1]
 		(values[&"en"] as Dictionary)[key] = fields[2]
 	return LocalizationCatalogLoadResult.success(
-		LocalizationCatalog.from_validated_values(values)
+		LocalizationCatalog._from_validated_values(values)
 	)
 
 func _parse_csv_line(line: String) -> PackedStringArray:

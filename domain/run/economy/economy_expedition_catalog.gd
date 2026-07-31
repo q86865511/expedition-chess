@@ -60,7 +60,7 @@ func try_node_choice_set(choice_set_id: StringName) -> NodeChoiceSetRule:
 			return rule.deep_clone()
 	return null
 
-func node_choice_set_for_map_node(definition_id: StringName) -> NodeChoiceSetRule:
+func try_node_choice_set_for_map_node(definition_id: StringName) -> NodeChoiceSetRule:
 	var map_rule := try_map_node(definition_id)
 	if map_rule == null or map_rule.generator_id.is_empty():
 		return null

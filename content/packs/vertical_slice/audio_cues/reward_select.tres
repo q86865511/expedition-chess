@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_audio")
 bus = &"SFX"
-stream_path = "res://assets/production/audio/sfx/reward.ogg"
+stream_path = "res://assets/production/audio/sfx/reward_select.ogg"
 loop = false
-id = &"audio.reward"
-display_name_key = &"loc.audio_reward"
+id = &"audio.reward_select"
+display_name_key = &"loc.audio_reward_select"

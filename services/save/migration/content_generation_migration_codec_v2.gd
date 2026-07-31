@@ -20,10 +20,10 @@ func encode_entry(entry: ContentGenerationMigrationEntryV2) -> PackedByteArray:
 		bytes.append_array(digest)
 	return bytes
 
-func mapping_digest(entries: Array) -> String:
+func mapping_digest(entries: Array[ContentGenerationMigrationEntryV2]) -> String:
 	var encoded_entries: Array[PackedByteArray] = []
-	for value: Variant in entries:
-		if not value is ContentGenerationMigrationEntryV2:
+	for value: ContentGenerationMigrationEntryV2 in entries:
+		if value == null:
 			return ""
 		var encoded := encode_entry(value)
 		if encoded.is_empty():
@@ -38,24 +38,23 @@ func mapping_digest(entries: Array) -> String:
 		bytes.append_array(encoded)
 	return _sha256(bytes)
 
-func localization_digest(rows: Array) -> String:
-	var canonical_rows: Array[Dictionary] = []
-	for value: Variant in rows:
-		if not value is Dictionary:
+# row = [key, zh_TW, en] 三欄;L10N2 preimage(framed key/zh/en)不變
+func localization_digest(rows: Array[PackedStringArray]) -> String:
+	var canonical_rows: Array[PackedStringArray] = []
+	for row: PackedStringArray in rows:
+		if row.size() != 3 or row[0].is_empty():
 			return ""
-		var row: Dictionary = value
-		if not row.has("key") or not row.has("zh_TW") or not row.has("en"):
-			return ""
-		canonical_rows.append(row.duplicate(true))
-	canonical_rows.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
-		return String(left["key"]) < String(right["key"])
+		canonical_rows.append(row.duplicate())
+	canonical_rows.sort_custom(
+		func(left: PackedStringArray, right: PackedStringArray) -> bool:
+			return left[0] < right[0]
 	)
 	var bytes := "L10N2".to_ascii_buffer()
 	_append_u32(bytes, canonical_rows.size())
-	for row: Dictionary in canonical_rows:
-		_append_text(bytes, String(row["key"]))
-		_append_text(bytes, String(row["zh_TW"]))
-		_append_text(bytes, String(row["en"]))
+	for row: PackedStringArray in canonical_rows:
+		_append_text(bytes, row[0])
+		_append_text(bytes, row[1])
+		_append_text(bytes, row[2])
 	return _sha256(bytes)
 
 func pack_digest(pack: ContentGenerationMigrationPackV2) -> String:

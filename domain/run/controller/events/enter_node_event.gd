@@ -76,7 +76,7 @@ func _begin_node_choice_if_required(
 		MapNodeState.NodeKind.TREASURE,
 	]:
 		return null
-	var choice_set := _catalog.node_choice_set_for_map_node(current.def_id)
+	var choice_set := _catalog.try_node_choice_set_for_map_node(current.def_id)
 	if choice_set == null:
 		return ExpeditionActionError.new(
 			ExpeditionActionError.NODE_INVALID,

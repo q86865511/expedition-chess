@@ -175,30 +175,30 @@ loc.ability_slice_player_31,棋士技能：Slice Player 31,Unit Ability: Slice P
 loc.ability_slice_player_31_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
 loc.audio_camp,營地音樂,Camp Music
 loc.audio_combat,戰鬥音樂,Combat Music
-loc.audio_combat_block,戰鬥格擋,Combat Block
+loc.audio_combat_boss_warning,Boss 警示,Boss Warning
 loc.audio_combat_cast,技能施放,Combat Cast
-loc.audio_combat_crit,戰鬥暴擊,Combat Critical
 loc.audio_combat_death,戰鬥倒下,Combat Death
-loc.audio_combat_explosion,戰鬥爆炸,Combat Explosion
+loc.audio_combat_defeat,戰敗,Combat Defeat
 loc.audio_combat_heal,戰鬥治療,Combat Heal
-loc.audio_combat_hit,戰鬥命中,Combat Hit
-loc.audio_combat_projectile,戰鬥投射物,Combat Projectile
-loc.audio_combat_status,戰鬥狀態,Combat Status
+loc.audio_combat_magic_hit,法術命中,Magic Hit
+loc.audio_combat_melee_hit,近戰命中,Melee Hit
+loc.audio_combat_ranged_attack,遠程攻擊,Ranged Attack
+loc.audio_combat_shield,護盾格擋,Shield Block
 loc.audio_combat_victory,戰鬥勝利,Combat Victory
 loc.audio_equip,裝備,Equip
-loc.audio_event,事件,Event
+loc.audio_event_select,事件選擇,Event Select
 loc.audio_expedition,遠征音樂,Expedition Music
 loc.audio_forge,鍛造,Forge
 loc.audio_menu,主選單音樂,Menu Music
 loc.audio_results,結算音樂,Results Music
-loc.audio_reward,獎勵,Reward
+loc.audio_reward_select,獎勵選擇,Reward Select
 loc.audio_shop_buy,商店購買,Shop Buy
-loc.audio_shop_reroll,商店重抽,Shop Reroll
+loc.audio_shop_refresh,商店刷新,Shop Refresh
 loc.audio_shop_sell,商店出售,Shop Sell
-loc.audio_ui_accept,介面確認,UI Accept
 loc.audio_ui_cancel,介面取消,UI Cancel
+loc.audio_ui_confirm,介面確認,UI Confirm
 loc.audio_ui_error,介面錯誤,UI Error
-loc.audio_ui_hover,介面游標停留,UI Hover
+loc.audio_ui_focus,介面聚焦,UI Focus
 loc.choice_event_00_risk_description,選擇一個有明確代價與結果的事件方案。,Choose an event approach with an explicit cost and outcome.
 loc.choice_event_00_risk_preview,確認前可預覽金幣與遠征生命變化。,Preview gold and expedition HP changes before confirming.
 loc.choice_event_00_risk_result,事件選擇已套用。,Event choice applied.

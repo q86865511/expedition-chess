@@ -125,8 +125,8 @@ func test_new_definition_categories_compile_with_exact_v3_shapes() -> void:
 	presentation.sprite_frames_path = "res://assets/production/units/unit_a.tres"
 	presentation.board_icon_path = "res://assets/production/icons/unit_a.png"
 	presentation.ability_icon_path = "res://assets/production/icons/ability_unit_a.png"
-	presentation.combat_vfx_refs = [&"effect.unit_a.primary"]
-	presentation.audio_cue_refs = [&"audio.combat_cast"]
+	presentation.combat_vfx_refs = Array[StringName]([&"effect.unit_a.primary"])
+	presentation.audio_cue_refs = Array[StringName]([&"audio.combat_cast"])
 	var compiled_presentation: Variant = compiler.call("compile", presentation)
 	assert_true(compiled_presentation.ok)
 	if compiled_presentation.ok:

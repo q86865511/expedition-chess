@@ -133,3 +133,83 @@ func test_route_preconditions_never_collapse_to_generic_action_not_available() -
 		ApplicationRoot.ERROR_ACTION_NOT_AVAILABLE,
 		"route controls require an exact domain/precondition error"
 	)
+
+
+func test_service_dismantle_and_exit_dispatch_node_service_intents() -> void:
+	var session := Support.CompositionSupport.SpyRunPresentationSession.new()
+	var snapshot := Support.CompositionSupport.prepare_snapshot()
+	var overlay := NodeServiceOverlaySnapshot.new()
+	overlay.service_kind = &"dismantle"
+	overlay.node_id = &"node.service.r14"
+	overlay.choice_receipt_digest = "receipt.digest.r14"
+	snapshot.node_service_overlay = overlay
+	session.current_snapshot = snapshot
+	var prepare := Support.live_run_screen(
+		self,
+		&"RUN_PREPARE",
+		session.current_snapshot,
+		session
+	)
+	if prepare == null:
+		return
+
+	var composition := Support.composition(prepare)
+	var inventory := composition.get_node_or_null(^"InventorySelector") as ItemList
+	assert_not_null(inventory)
+	if inventory == null:
+		return
+	inventory.select(0)
+
+	assert_true(Support.press(self, prepare, &"service.dismantle"))
+	assert_true(
+		session.dispatched_kinds.has(
+			RunPresentationIntent.Kind.DISMANTLE_WITH_NODE_SERVICE
+		),
+		"service.dismantle must dispatch DISMANTLE_WITH_NODE_SERVICE"
+	)
+
+	assert_true(Support.press(self, prepare, &"service.exit"))
+	var last_kind: int = (
+		-1
+		if session.dispatched_kinds.is_empty()
+		else int(session.dispatched_kinds.back())
+	)
+	assert_eq(
+		last_kind,
+		RunPresentationIntent.Kind.EXIT_NODE_SERVICE,
+		"service.exit must dispatch EXIT_NODE_SERVICE"
+	)
+
+
+func test_choice_ack_dispatches_acknowledge_node_choice_result_intent() -> void:
+	var session := Support.CompositionSupport.SpyRunPresentationSession.new()
+	var snapshot := Support.CompositionSupport.prepare_snapshot()
+	var pending_result := NodeChoiceResultSnapshot.new()
+	pending_result.node_id = &"node.choice.r14"
+	pending_result.choice_set_id = &"choice_set.r14"
+	pending_result.choice_id = &"choice.r14.option"
+	pending_result.result_key = &"result.r14"
+	pending_result.outcome_kind = 0
+	pending_result.receipt_digest = "receipt.digest.ack.r14"
+	snapshot.pending_node_choice_results.append(pending_result)
+	session.current_snapshot = snapshot
+	var prepare := Support.live_run_screen(
+		self,
+		&"RUN_PREPARE",
+		session.current_snapshot,
+		session
+	)
+	if prepare == null:
+		return
+
+	assert_true(Support.press(self, prepare, &"choice.ack"))
+	var last_kind: int = (
+		-1
+		if session.dispatched_kinds.is_empty()
+		else int(session.dispatched_kinds.back())
+	)
+	assert_eq(
+		last_kind,
+		RunPresentationIntent.Kind.ACKNOWLEDGE_NODE_CHOICE_RESULT,
+		"choice.ack must dispatch ACKNOWLEDGE_NODE_CHOICE_RESULT"
+	)

@@ -9,6 +9,7 @@ camp.forge,工坊,Workshop
 camp.menu,返回主選單,Main Menu
 camp.settings,設定,Settings
 camp.start,開始遠征,Start Expedition
+choice.ack,確認事件結果,Acknowledge Choice Result
 choice.begin,確認所選事件,Confirm Selected Choice
 choice.cancel,取消選擇,Cancel Choice
 choice.confirm,確認選擇,Confirm Choice
@@ -795,6 +796,8 @@ screen.run_prepare.title,備戰,Prepare
 screen.run_reward.title,獎勵,Reward
 screen.run_route_fallback.title,路線顯示修復,Route Recovery
 screen.settings.title,設定,Settings
+service.dismantle,拆解所選裝備（節點服務）,Dismantle Selected Equipment (Node Service)
+service.exit,離開節點服務,Exit Node Service
 settings.apply,套用,Apply
 settings.back,返回,Back
 settings.field.color_vision_mode,色覺模式,Color Vision Mode

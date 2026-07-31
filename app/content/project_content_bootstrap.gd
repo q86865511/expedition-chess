@@ -7,7 +7,7 @@ const CONTENT_VERSION: String = "0.2.0-content-production"
 const PACK_IDS: Array[StringName] = [&"pack.build_systems", &"pack.vertical_slice"]
 const LOCALIZATION_CATALOG_PATH: String = "res://localization/catalog.v2.csv"
 const LOCALIZATION_CATALOG_SHA256: String = \
-	"1b098dbce1a2687a82bfc208169c3d8ab239c7e3888e6db1ecfd37c0b5b4e4f8"
+	"cdd0e1b6642821b81f48e3983b2917e127aab5cc617e61405d5bd6ad48edf841"
 const REQUIRED_ASSET_PATHS: Array[String] = [
 	"res://content/packs/build_systems/traits/faction_arcane.tres",
 	"res://content/packs/vertical_slice/units/slice_player_00.tres",

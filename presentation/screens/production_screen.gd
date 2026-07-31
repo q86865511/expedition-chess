@@ -411,7 +411,11 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		else _live_context.action_port.invoke(action_id)
 	)
 	_status_view.show_result(_last_control_result, _text_resolver())
-	if String(action_id).begins_with("prepare."):
+	if (
+		String(action_id).begins_with("prepare.")
+		or String(action_id).begins_with("service.")
+		or action_id == &"choice.ack"
+	):
 		refresh_interaction_state()
 	if (
 		action_id == &"menu.recovery"
@@ -551,6 +555,24 @@ func _invoke_local_control(action_id: StringName) -> Variant:
 				if composition is RunPrepareScreen
 				else null
 			)
+		&"choice.ack":
+			return (
+				(composition as RunPrepareScreen).acknowledge_node_choice_result()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"service.dismantle":
+			return (
+				(composition as RunPrepareScreen).dismantle_selected_with_node_service()
+				if composition is RunPrepareScreen
+				else null
+			)
+		&"service.exit":
+			return (
+				(composition as RunPrepareScreen).exit_node_service()
+				if composition is RunPrepareScreen
+				else null
+			)
 		&"combat.pause":
 			return (
 				(composition as RunCombatScreen).toggle_pause()
@@ -659,6 +681,18 @@ func refresh_interaction_state() -> void:
 			choice_confirm.disabled = not has_choice_confirmation
 		if choice_cancel != null:
 			choice_cancel.disabled = not has_choice_confirmation
+		var choice_ack := _action_button(&"choice.ack")
+		if choice_ack != null:
+			choice_ack.disabled = (
+				prepare_screen.pending_node_choice_result() == null
+			)
+		var has_node_service := prepare_screen.has_node_service_pending()
+		var service_dismantle := _action_button(&"service.dismantle")
+		if service_dismantle != null:
+			service_dismantle.disabled = not has_node_service
+		var service_exit := _action_button(&"service.exit")
+		if service_exit != null:
+			service_exit.disabled = not has_node_service
 		if has_choice:
 			for blocked_action: StringName in [
 				&"prepare.unit",
@@ -1034,12 +1068,15 @@ func _required_action_ids() -> Array[StringName]:
 				&"prepare.forge.cancel",
 				&"prepare.equip",
 				&"prepare.dismantle",
+				&"service.dismantle",
+				&"service.exit",
 				&"prepare.move_board",
 				&"prepare.move_bench",
 				&"prepare.start",
 				&"choice.begin",
 				&"choice.confirm",
 				&"choice.cancel",
+				&"choice.ack",
 				&"run.menu",
 			]
 		&"RUN_COMBAT":

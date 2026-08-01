@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_19",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_19-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_19/attempt-002/raw.png",
+    "sha256": "f7109a1e0cfd88e82ecab274e7d19a047e681b3d9776e1e43803a3bde913360b",
+    "imagegen_output_id": "exec-dc7b8ae1-8b93-4397-b5fc-2fb0142cccda",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_19. Original-only brief: Long-limbed marsh hunter with a tensioned reed-harpoon bow, cattail mantle, woven rush armor, olive green and river-clay red. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479729,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "60f86390038a13ddb45d38c43f8862c005bac26d5fec4175bbcdb4409af4ad11",
-    "portrait": "824003314d61ef9f22f4dcfdb49bfccc5397e25872026ebdbb845fbd3985af8d",
-    "board_icon": "77fb36826c61918c28074cbdfde7e61937dde06f56f49680b05e1716319cb1ef",
-    "ability_icon": "570a9437a864c8478b02ec814537a2599b1f0fa0f86cb052017e67cb939371a8",
-    "atlas": "d4722c812d92b957a95b53f55bdedf4494342020b94f614aa3163fcb1dd078d3",
-    "sprite_frames": "832b7c9bdcef7535243c68a2a890a012866b72caa9a2b62d897656a25b025731"
+    "source_sheet": "3baf9936bbd3ef5fefb74f4d7776c6fc0ea7806663f0542d4bfd3332d596359b",
+    "portrait": "a20a45b10a450c4566df9226ea10f0d8b14f5cc1e55bc7f337b6deb54eca7b30",
+    "board_icon": "cdb036d058052cc100ed3e65220203f3b7987c6baeaf91c2747d33489c139ee8",
+    "ability_icon": "171e6d49f85e14f54eeeddea47e3808d72835c3454e134cbdc545172ab2a8867",
+    "atlas": "f6ff68cf7e903fec70b01db239f45156a9bc6a6a18dbcb908d49dffdfaabd94c",
+    "sprite_frames": "30d3a30f5c7aa0c15d4c8cdc9aaa8ccae168a785b67752b2f2d84c86c10637fa"
   }
 }

@@ -94,3 +94,33 @@ REQ-SCOPE-002,見 content-production-acceptance.json 的 blocked_row_ids。
 最終證據:全 Gut 281 scripts/1091 tests 全綠、10k ExpeditionSoak exit 0、
 -Suite All exit 0(acceptance verified=true、fully_closed=false)。
 原文:`.pipeline/content-production/reviews/t25-round3-claude-reviewer.md`。
+
+---
+
+# T18A／T20 Final Closure（2026-08-01）
+
+T25 當時列出的四個 blocked row 保留為歷史紀錄；後續 closure 不回寫成
+T25 當時已通過。
+
+- T18A：獨立 Claude reviewer 對全批 44 個候選完成 originality、silhouette、
+  weapon/role、direction/action gate，44 個 decision 均為 ADOPT。審查原文：
+  `.pipeline/content-production/reviews/t18a-full-batch-claude-review.md`，SHA-256
+  `8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0`。
+- Ledger／inventory：58 attempts＝44 adopted＋14 rejected＋0 generated；每單位
+  恰一個 adopted，rejected 歷史完整保留。Camp 與五張 shared atlas 已由各自
+  adopted source 覆寫 production；inventory status=`adopted`。
+- 圖像契約：44 portraits、44 atlases、44 SpriteFrames；每份 SpriteFrames
+  72 animations／240 frames，atlas 尾 16 cells 透明。32 位玩家 pairwise 最大
+  silhouette IoU `0.8870063812`（門檻 `<0.92`），SSIM 門檻 `<0.95` 全通過。
+- T20：5 首 24 秒可循環 music 與 21 個 SFX 重生為 48kHz／stereo／OGG
+  Vorbis quality 0.5；true peak、50ms seam 與 Music/UI/SFX bus 均由解碼 validator
+  核對通過。
+- fresh gates：Wave 4 `4/4`（311 assertions）、Wave 4B `1/1`（12 assertions）、
+  Content/Canonical/Import/Smoke/RunnerContract 全 exit 0、全 Gut
+  `281 scripts / 1093 tests / 22074 assertions`、10k ExpeditionSoak exit 0、
+  `-Suite All -TimeoutSeconds 600` exit 0。
+- acceptance：21 acceptance rows＋1 dependency row 全 PASS，
+  `evidence_verified=true`、`blocked_row_ids=[]`、`fully_closed=true`。
+
+最終 verdict：**APPROVED / FULLY CLOSED（本地未提交）**。下一片仍為
+TUNE／balance 與 30k bot soak，本 closure 未執行該範圍。

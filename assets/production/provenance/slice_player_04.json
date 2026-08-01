@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_04",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_04-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_04/attempt-001/raw.png",
+    "sha256": "9f08a11ef0993b1fdd586396e1ea7600108e08baf996f21cea7318f8a4217af1",
+    "imagegen_output_id": "exec-d9e7b7eb-d75d-4f27-85ff-6bf5bbc8fb6d",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_04. Original-only brief: Tall off-balance clockwork duelist with one reinforced boot, collapsible gear-chakram launcher, striped mechanic tailcoat, blackened steel and tarnished brass. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479714,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "fdf9c99b1d0018e748c1c2324a36debc1cdc901ad27d2a79be912592f8c695bf",
-    "portrait": "8a58bd6fe4bd002316b5dc39f45f6f1e71d2abb5589cb7d0830a9046ba189882",
-    "board_icon": "1f47971f8f18020bfb93eac726d7111f27626cb3180c28cb78dc46f57506f619",
-    "ability_icon": "8c673e0e4f608b2ced7f1294cb2171df2b0f91014ef263f95ce86933974864fb",
-    "atlas": "a9085bafd95d18167a7d420e982393eb20b9836899cc9c422c06879799ea0541",
-    "sprite_frames": "9f1e5e8d5957e3a7f06a72e8428697b4f4dc935ccc03c1fd72fdbc2bd16a87f3"
+    "source_sheet": "204f7f44872642bac5e42dcfaee666a5e9707a677f838e5a0dd030bcc8f24340",
+    "portrait": "fb8de0769550fad7c8befd783153bfb07635042f0da7ead2397dcc308b92da24",
+    "board_icon": "36482c2d9a98cc66507f73413d46fb0582cc2506ef3fc42c2031153b0530ea7a",
+    "ability_icon": "07b8d908259d6303eaf505205cc6c41f89ea552cb59fd192dd94544b155e141b",
+    "atlas": "379b810beae9a50686ca7bc7413447600e90d3fb84543ffc8d90adcf7e4a3d54",
+    "sprite_frames": "e4b8638bebe0a674a8a6deddcf4006ea87cefc5a5acb79116e848ec22dcfb185"
   }
 }

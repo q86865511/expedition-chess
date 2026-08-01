@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_09",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_09-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_09/attempt-001/raw.png",
+    "sha256": "875d81789bb886fcc1d59be27d33b94b0c2579c318ba92a5920ecd7c9f42976c",
+    "imagegen_output_id": "exec-09a2f6fa-2e66-4128-af2b-7ea0551c3f05",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_09. Original-only brief: Top-heavy swamp brute with bone-antler crown, enormous moss fists, narrow reed legs and peat brown, algae green and bone white. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479707,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "d5ace3c45258be04345092117d764b22e85ab3577414a3a703e6e3343cfba6ec",
-    "portrait": "17a145fc5e04c9a0e9505bd94f92f33f0394d5e68e66d9650b58429da2081783",
-    "board_icon": "cbe10255c951926946b5b821c0963c288f40310003cbbcabb007bf73be7fdaa2",
-    "ability_icon": "4d9d8616bdf3bc9daf77ebecbccdc8bf5cd63dfb885c1edb733f34d35d4e739a",
-    "atlas": "73ac3ba531ca6577c6f8a7e0a29898b93d736d64e60369eba9cc6491aeef00ef",
-    "sprite_frames": "ec5cd70e8514bcf38a01069bd67ebc4111695d821b5e45a7fca19b2dc51a3e35"
+    "source_sheet": "29a785f9b66164a2d228da8aeb894eeca8918738aade30cf0c295ab4ef71f40f",
+    "portrait": "715fecf5669a351e5640ceebdb74cf0cb22c96f0aaed4f2cf3c7f0c3bb4ae8e1",
+    "board_icon": "65fde5c08605735a83b3b4ea3a67fb4236fe0059565dfe96066b7f12b0ced867",
+    "ability_icon": "b13a883360e9d4554da43f9fc894fc4b8c5ecf6efa2e910d97489fc7062127ab",
+    "atlas": "926513146072f6ce17a6088f747af184060ea36abae9eb716b3b71c9ad2fa926",
+    "sprite_frames": "4d3e1b12185215a358eb40795a0dd504fc5dbc0f5455b6e2088426da40da5b4d"
   }
 }

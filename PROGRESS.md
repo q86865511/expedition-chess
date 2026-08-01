@@ -4,9 +4,18 @@
 
 ## 目前狀態
 
-G2 `content-production` 已完成並 merge:PR #7 於 2026-08-01 合併為 `8a2c97b`(11 commits,fresh 全綠:Gut 281 scripts/1091 tests、10k ExpeditionSoak、All exit 0,T25 三輪雙審閉環)。尚餘 blocked-on-codex 項:T18A 資產採納 gate、音訊 R9 格式重生成;完成後 acceptance 的 4 個 blocked 列自動翻綠。下一片依 roadmap 為 TUNE/balance。
+G2 `content-production` 的既有 PR #7 已於 2026-08-01 合併為 `8a2c97b`；後續 closure 現在本地分支 `codex/g2-content-production-closure` 完成但未提交。T18/T18A 全批人工採納與 T20 R9 音訊重生成均已閉環；fresh Gut 281 scripts/1093 tests、10k ExpeditionSoak、All exit 0，acceptance 21＋1 全 PASS、`blocked_row_ids=[]`、`fully_closed=true`。下一片依 roadmap 為 TUNE/balance（含 30k bot soak）。
 
 ## 已完成
+
+- [2026-08-01] ✅ G2 `content-production` 圖像／音訊最終閉環 — Claude reviewer
+  一次審完 44 個候選並全數 ADOPT；ledger 回寫為 44 adopted＋14 rejected，
+  inventory 與 Camp/shared production 全部綁定 adopted source。正式角色輸出為
+  44 portraits、44 個 240-frame atlases、44 份 72-animation SpriteFrames；
+  音訊依 R9 重生為 5 首 24 秒 loop＋21 SFX（48kHz/stereo/OGG q0.5），
+  peak/seam/bus 由實際解碼驗證。fresh Wave 4、Wave 4B、Content、Canonical、
+  Import、Smoke、RunnerContract、Gut 281/1093、10k soak 與 All 全綠；acceptance
+  21＋1 全 PASS、`fully_closed=true`。工作樹保留未提交，未跑 TUNE／30k。
 
 - [2026-08-01] ✅ G2 `content-production` Claude 接手完成實作與 T25 雙審閉環 —
   接手 codex 暫停點後依序完成:node runtime digest 修正驗證(`"<kind>_"+64hex`
@@ -102,20 +111,15 @@ G2 `content-production` 已完成並 merge:PR #7 於 2026-08-01 合併為 `8a2c9
 
 ## 進行中
 
-- G2 `content-production`:實作與 T25 雙審已閉環,停在 push/PR gate 待使用者裁決。
+- G2 `content-production`：fully closed，停在本地未提交交接點；未執行 Git 發布動作。
 
 ## 待辦
 
-- content-production 的 blocked-on-codex 項:T18A 人工採納 gate(inventory
-  status generated→adopted、production-asset-attempts.json ledger)、
-  音訊 R9 格式重生成(現況 44.1kHz/8s/q0.8/mono vs 規格 48kHz/20-40s/q0.5/stereo,
-  或由使用者裁決修規格)。完成後 acceptance 的 AC-033/038/REQ-PROD-001/
-  REQ-SCOPE-002 自動翻綠(判定機械化)。
-- 後續兩片:TUNE＋30k bot soak、效能/migration bridge/90 場真人 release gate。
+- 下一片：TUNE／balance 與 30k bot soak；其後為效能/migration bridge／90 場真人 release gate。
 
 ## 已知問題
 
-- Combat／Expedition／Build／Camp／Run／Results Lab 都是開發用灰盒，不是正式產品 UI；正式美術、音效與 UX 仍屬 G2 橫切工作。
+- Combat／Expedition／Build／Camp／Run／Results Lab 仍是開發用灰盒，不是正式產品 UI；正式 production 美術與音訊已由 content-production 閉環，後續產品化 UX 依 roadmap 的剩餘切片處理。
 - Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
@@ -130,9 +134,10 @@ G2 `content-production` 已完成並 merge:PR #7 於 2026-08-01 合併為 `8a2c9
   的 single-hop 檢查限制(現不可達);emergency catalog 為全量 keys 而非
   design 要求的 boot/recovery 子集(seal 已擋 production 誤用);map node
   generated_payload_digest 於 ALIAS 改寫後不重算(validator 僅驗格式,無反推路徑)。
-- [2026-08-01] G2 `content-production` SFX 命名不一致採「改名對映」(使用者裁決):
-  21 個 SFX 檔名對齊 R9 語意名,不重生成音訊;音訊格式(取樣率/長度/品質/聲道)
-  與 R9 規格的差異另列 blocked-on-codex 待裁決。
+- [2026-08-01] G2 `content-production` 音訊最終裁決：維持 R9 規格，不修改規格
+  遷就舊輸出；5 music／21 SFX 已重生成為 48kHz、stereo、OGG Vorbis q0.5，
+  music 固定 24 秒且通過 true-peak／loop-seam／bus gate。較早「只改名、不重生」
+  條目為 closure 前歷史狀態。
 - [2026-07-28] G2 `presentation-ui` 使用者 override：R12/R13 規格複審先延後，允許繼續本地 baseline/TDD/implementation；R12 findings 不視為 resolved，R13 與 Git/PR gate 未豁免。
 - [2026-07-28] G2 `presentation-ui` R12 後續 ownership：使用者指定四項 finding 保留待修，交由 Claude 完成；R13 雙審原文與彙整狀態必須先同步 review-log／PROGRESS／HANDOFF／roadmap，未達雙 zero findings 不進 TDD。
 - [2026-07-28] G2 `presentation-ui` R12 雙審未通過：terminal handoff DAG/ownership 循環、Results snapshot commit boundary 矛盾、invalid playback multiplier 與完整 accessibility runtime/static evidence 缺口；4 項均待使用者裁決，TDD 硬停。

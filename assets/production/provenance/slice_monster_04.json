@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_04",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_04-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_04/attempt-001/raw.png",
+    "sha256": "aec50f8e517e54ada0d80ed0675813c28de2aab81d5f9d88ff091da2e4820e4b",
+    "imagegen_output_id": "exec-3f556ee9-8005-4f06-ae28-0696d244d33e",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_04. Original-only brief: Tall ice-quill owlbeast that fires crystalline pinions, diamond head silhouette, shaggy snow chest and pale blue slate feathers. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479702,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "e45e57c93e6e82c1b37ce99623d6c5a5716f73a0d908695c301a23f35bf2fcac",
-    "portrait": "b59a3540f3cf13d6dd7dca7cb45bd79e543070c25999a048ac8aa38b446e420f",
-    "board_icon": "5bf75406c3c3b5a280148b996e789e97e33d431ad5edd2c9b811fd844a1a4cbd",
-    "ability_icon": "df51b1c9afcec1e09d8c7b12b563d265749cc5bd0b7dadb99d5f2ab04b993c31",
-    "atlas": "50d7f14c2972dca2ec72b8531cfc9c79755d72287f9d8a602b88ba8baa0025d5",
-    "sprite_frames": "012bc3d2d0a7c23684aed2b310d7475dcb85e0d44bd2a4ea20abc990712c1155"
+    "source_sheet": "f8b9ffc21027d9a0a308b5ee5f187791289ca6f3f51347e13e7333c71e1ab721",
+    "portrait": "cd1a0293af54ba7034fe648e9a229dada49b03ad0f06fb294d17e994700ec460",
+    "board_icon": "3a2cad49c89a97f4c4489ac209fa0c3bd4ca33fa0361a1bef551a40ed4fdeefa",
+    "ability_icon": "2f81a8d9fe985907d6a2889bde91c79388123d1e35aa3545c9e69e6eedea2b05",
+    "atlas": "40ccdbd355d6b3e77b6e27c9d8419b9a423f445553a8db67d003f78e55d53a00",
+    "sprite_frames": "88f6f6d8afb6db2f590c80ffd2184f6155054276b715ed951836a8fea63de27c"
   }
 }

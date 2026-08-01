@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_09",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_09-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_09/attempt-001/raw.png",
+    "sha256": "d17ab14d27049ed22d25d2d35b1280c5b7e824ff74223ec60f7eddb09e031a20",
+    "imagegen_output_id": "exec-a1df3847-86c1-4876-a6ef-30bd6cf1517e",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_09. Original-only brief: Tall snowshoe guardian with crescent ice shield, hooked rescue glaive, quilted white coat, pale wood braces and glacier-blue trim. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479719,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "cab63cee4b02506d525267d2db755f47ad47c3ca0a66c73765502a4c2f685434",
-    "portrait": "93c3c3fe9e2cc6985aefb9f9b4b01948b3057ff970769fa8b8853bd3e4e326da",
-    "board_icon": "321a13da2e6d13aaa4a8acaaf8b2805586955b5b51b13e9ad4d12677d282e7c7",
-    "ability_icon": "0356fd106ef5df74b8c250966d237273ec3f0d880539e56ad7ff715ea38244ce",
-    "atlas": "42725b8b6c415bba5e9d90f6004e77e6935cc069fe86f271c9a2a36539bf0627",
-    "sprite_frames": "0874953ba4ec377729e58d2df5fff530d9006e9ceedb6b864c1bf99189a78c62"
+    "source_sheet": "ceccbcffd2ad4cbf6fbfa2fd01015f49cd45340c72838fcd75c4a69504b2f153",
+    "portrait": "974ff7cd557b90413cab595fa01d41370e22b32634b283fd7539cb90356fed7a",
+    "board_icon": "c1bbd5bb1be797507ec4822fbdb9e76a69333780e60a5cbd03f8b4b7103fe49c",
+    "ability_icon": "f6e34603fa3c4521f67c53bc5b4c8553de99474971ed149b90cdbdd3df822a80",
+    "atlas": "f5da0305443009949c37fae189b90ef2508fa02c20de7a0f592f20c17d9429e2",
+    "sprite_frames": "c9d5d0f6b61a2ed8297f0bcb05722b805738df9925128aaeeb627f1492b1dac4"
   }
 }

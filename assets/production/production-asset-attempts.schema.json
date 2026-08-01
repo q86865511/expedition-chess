@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "production-asset-attempts.schema.json",
+  "title": "Production Asset Attempt Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "slice", "updated_at", "processing_contract", "attempts"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "slice": { "const": "content-production" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "processing_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_background", "normalized_source_size", "grid", "action_cells", "directions_per_action_cell", "direction_order", "model_native_seed_exposure"],
+      "properties": {
+        "raw_background": { "const": "#ff00ff" },
+        "normalized_source_size": { "const": [1280, 1280] },
+        "grid": { "const": [5, 5] },
+        "action_cells": { "const": 20 },
+        "directions_per_action_cell": { "const": 4 },
+        "direction_order": { "const": ["north", "east", "south", "west"] },
+        "model_native_seed_exposure": { "const": "not_exposed_by_builtin_image_gen" }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/attempt" }
+    }
+  },
+  "$defs": {
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempt_id", "unit_id", "status", "generation", "raw_source", "mechanical_gate", "review"],
+      "properties": {
+        "attempt_id": { "type": "string", "pattern": "^slice_(player|monster)_[0-9]{2}-attempt-[0-9]{3}$" },
+        "unit_id": { "type": "string", "pattern": "^unit\\.slice_(player|monster)_[0-9]{2}$" },
+        "status": { "enum": ["generated", "rejected", "adopted"] },
+        "generation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "independent_call", "prompt", "imagegen_output_id", "call_id", "model_native_seed"],
+          "properties": {
+            "mode": { "const": "built-in-imagegen" },
+            "independent_call": { "const": true },
+            "prompt": { "type": "string", "minLength": 80 },
+            "prompt_capture": { "enum": ["exact", "reconstructed-after-parent-termination", "normalized-from-tool-invocation-template"] },
+            "imagegen_output_id": { "type": "string", "minLength": 1 },
+            "call_id": { "type": ["string", "null"] },
+            "call_id_exposure": { "type": "string" },
+            "model_native_seed": { "type": ["integer", "string", "null"] }
+          }
+        },
+        "raw_source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "width", "height"],
+          "properties": {
+            "path": { "type": "string" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "mechanical_gate": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "min_direction_quadrant_pixels", "failures"],
+          "properties": {
+            "status": { "enum": ["passed", "failed"] },
+            "min_direction_quadrant_pixels": { "type": "integer", "minimum": 0 },
+            "failures": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reviewer", "decision", "reviewed_at", "review_record_sha256"],
+          "properties": {
+            "reviewer": { "type": ["string", "null"] },
+            "decision": { "enum": ["adopted", "rejected", "pending"] },
+            "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
+            "review_record_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+            "reason": { "type": ["string", "null"] }
+          }
+        }
+      }
+    }
+  }
+}

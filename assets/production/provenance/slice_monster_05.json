@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_05",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_05-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_05/attempt-002/raw.png",
+    "sha256": "d1292e54f77a1daafb8fd22c9e4feab0f4b799ca28e695917b2e722f5f3a6a83",
+    "imagegen_output_id": "exec-b1b9f6a2-f02d-45c5-8c25-e4049351a7ce",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_05. Original-only brief: Long shadow candle slug with many wax tapers on its back, single violet flame eye, glossy ink body and dripping ivory wax. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479703,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "b31405264819a133005ad34edfde28c1ccecd6160c4e8b622748d0af9add742d",
-    "portrait": "28600063631ca32b853137dd6cfe50ef20b417beff0c6b4ad8f2e5b32c6d2c75",
-    "board_icon": "d9dd49ac077c02916b41a401c83cea76c36d272013bfaef709a47ad28c31a708",
-    "ability_icon": "1cfb54aec11975b55b2a29f13f5015768f96f16649916742206360b09d85c4a2",
-    "atlas": "f9d15d6b4456989a6ac849f79baedef43dfbd24999994f8feae0d0bba376cbad",
-    "sprite_frames": "b8c841a18ebc81d3ac58320c331a6cc0260d5c3b38f5a86517af7af54eed1ec8"
+    "source_sheet": "54c8d9b6a4345c7cbdc5d6712f8cb27bcde1ae4016c9e7b2ea5fb0e33a4500a0",
+    "portrait": "02c6547651fcac7f14097506e2f3bcb64be82f766f8104747b6bd92e418eb9a2",
+    "board_icon": "f69ef1e42bc9e03d9be6aa9ae7bda8a85de23c9bd3792db9e73fab6d4a21bca5",
+    "ability_icon": "481b20aadc9600817177343514b3a2977d625ec591f71fb635a9839098c1225a",
+    "atlas": "0afc3b098c39e15b61087fb56f042ae5d82a91f39489307a288f21ac8df437e3",
+    "sprite_frames": "eddcfedb5a2e75f0caec7250582d054cd05cc2f627060d1420a12ffbd48060e8"
   }
 }

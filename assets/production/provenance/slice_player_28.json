@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_28",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_28-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_28/attempt-001/raw.png",
+    "sha256": "dd4d728707c49d39dc8a12e46068fb7d4d60e6128c252dd9eb9fafd09b19f9ff",
+    "imagegen_output_id": "exec-f1faa7f6-fe7a-4b44-b5b2-1e7d16ac82e6",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_28. Original-only brief: Masked wire dancer with twin cable-spool handguns, ribbon-like steel cords, one-sleeved burgundy coat and polished graphite mask. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479738,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "e474c9df8f973f8ded50f8db8cd5ba78b7319113f367a98f3f8b179e965406fb",
-    "portrait": "59eb532eb775f69eda66b931254e46d3ec1f779119886808b6356b5daeffe223",
-    "board_icon": "0e42b36e48c2e8a6b00703231f297f63192756f5d185380aaea0d93bb2b3edd0",
-    "ability_icon": "1de069e9210c8c7da0d3aa2ba529537a183b8a24ba2dd8478b7c09bf3259f6ba",
-    "atlas": "ff334651d3bfe955977c38af9ea6c98eb6228161a03193b1db5de98b38b8978e",
-    "sprite_frames": "9385bc80a1e8763912c590ec5ec83c86a14803e34870d8c1290d7f54d7cada0a"
+    "source_sheet": "7e1a0a4db7ca7575376550d884feb874e57d296a6b32388a91e62f994493da98",
+    "portrait": "6b233e96d7341dce8fb1645c7f38fc4836005912211deceb7cd2b04459f11195",
+    "board_icon": "79c3cb756144b13ba2182451f5e4931e97bd3ec102ea76ca364ec35b33d01c8f",
+    "ability_icon": "4f0410ed643377ae7cc13d637c19e60baa44f2cee020079c8303dce16a76d72d",
+    "atlas": "da81168ce086817e3fa423480934a21ce225ae65d214cea535dd0d6e5225e870",
+    "sprite_frames": "7241ea571ce0c707b4890eb418e0eaab16279a61702ec379babdbead4c553dff"
   }
 }

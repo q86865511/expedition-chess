@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_14",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_14-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_14/attempt-001/raw.png",
+    "sha256": "509f3fb713e37ae9418ab063a893071b71066a8cd574635526667f5169fe8357",
+    "imagegen_output_id": "exec-ec9c9f4c-691f-4fac-9191-9c9bf48cc9d0",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_14. Original-only brief: Long-necked salamander oracle in layered heat-silk, wielding a molten chain-orb focus, obsidian scales, saffron fabric and ruby sparks. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479724,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "be527fc30dca2fcbecefa62981a3b4da362e1856715f69cfa7f23f0c324a6e3f",
-    "portrait": "ca599a29cf189c7868826fa0fbb28e9d391c1d14efc413f187c0ed5e971c3d9b",
-    "board_icon": "5eaacf85fa9afa5aea1ea0910a6096df5a801cd457fa7ccf90a884d53915bd4a",
-    "ability_icon": "079dc6b7f7e498cf5bb024774d2b83ba85ef0222aa866cae0d0b77d6fdcecfc2",
-    "atlas": "855fd144b9a294cc416cd31a3748a28035d34a04230104b97f05f1204fb3c394",
-    "sprite_frames": "616319d30a79cc18440f5471daea23f1b3c6631a4c69211074c72e8f1bc27018"
+    "source_sheet": "13591c287cf2efadf16f367c5a3fdb2ca019b4dcc40e2465562f388d52969293",
+    "portrait": "050da4c88516e578103f57d99b6b27ccf2732071bab58549e9107fa31bb70df5",
+    "board_icon": "2c6a5f227b3a091f08c7d47cc3af2711af93feb28ba55994071dbb0495508d3c",
+    "ability_icon": "bbea0b295b8fae473da2fb464cc54778ec6df42e134ad3cdb7c4ab2956c30ae5",
+    "atlas": "7558315d8f043f26550329bebd9589426b827cb380ba91c815c627d6b3e03390",
+    "sprite_frames": "00b23a4cebd7e49e8d00bace8366df5ad349f139098c43f0942148af1073ed14"
   }
 }

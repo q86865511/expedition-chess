@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_17",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_17-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_17/attempt-001/raw.png",
+    "sha256": "c45b65312bb02784cbe6f31f00850a78baf06c60f1db4ec2a23a1fda0e4a2627",
+    "imagegen_output_id": "exec-13060793-4168-4899-ab83-f194a05b5886",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_17. Original-only brief: Tall moth-winged undertaker with lantern scythe focus, folded velvet wings, long grave-cloth coat, moon-grey fur and violet flame. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479727,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "b1025f9370f67c847a3649fdc60e14880964fe7496454086e416424f3dc44bfd",
-    "portrait": "03feeb8a2edca738b9e7cbd43ca99c3839dfc314d9972f9d8f78647beb752afb",
-    "board_icon": "4c36c6419c68a36a45061ac472baf5f854d2ddc7bea19a8b3bdd8258e8b8ac18",
-    "ability_icon": "9cbf7694e7f80eda8ece2d28313aa4abed28474e8655560e3fc3865c0aee28fe",
-    "atlas": "5dec1a47e0949c227bd5d1b09e1a6f921c5816c6248c7bbb73a9da0430eeec34",
-    "sprite_frames": "c2be266925f30ef26cda26c9f0827019f204fd4698ccf11bae9fce18e3e62432"
+    "source_sheet": "e4916d01ae09c756058552fb3ece6202e0ebb485b14682e3c284a5c85a52168d",
+    "portrait": "f65b6de29f2a029ac6a20724dadd0713dd63e690491c18d3ce371ff5d297cc42",
+    "board_icon": "c7234cfd333f368d41b4599d69a526b58c2aaabf47b9396076e763c25bab3b79",
+    "ability_icon": "5e51fc8fbb0f0522cf4ff3a0d21a2c677c16235678de712040ebed8a0128613c",
+    "atlas": "35842e75cc0944e67af1bb332d365987d5b9824456790cbbf58cb0b2c7564ab0",
+    "sprite_frames": "910cd0188a800f83a2811694e7195235f3e257982d27996c17311d8c9d145876"
   }
 }

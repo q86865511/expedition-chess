@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_26",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_26-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_26/attempt-002/raw.png",
+    "sha256": "afdb9d3af007c29d0fc5774a0599999f521130dce2a1fbab7a6a0d5f7616fd07",
+    "imagegen_output_id": "exec-838dba8e-9055-45ae-aa47-96ebf72af630",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_26. Original-only brief: Round coal-smoke alchemist with glass retort staff, stacked reagent bulbs, soot apron, dull brass clamps and acidic turquoise vapor. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479736,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "cd1db76bc58f5430a11695735f073c07f4ac62ca9b126c47c13d3addc32f7787",
-    "portrait": "21e4780ae4a5f7d80b17c0545b02f4316026e0682bd42435545c2a68e8367d60",
-    "board_icon": "9024e3f61e1a1c02d3cfe7ea1a88236301883ce9f1b955a0284f4161d52b74fa",
-    "ability_icon": "c3fb602d5535ffa6411dc78b3509dda61bf5f9bd51602877f9ba89cefdc60b41",
-    "atlas": "2fba2e74acdce070be10a67bcdbfe89d010db3b78edaf21a0a03e64f2812fa14",
-    "sprite_frames": "83bf5c541d38fcc290c55c293a83857181e7db2534abf21f714ded9f8d99aaff"
+    "source_sheet": "91d585041c8841c78908247d4f47531540ee70823061e06bd909bffc4c63ec78",
+    "portrait": "c33752181137d12b505aecce8792c6000874d3f6cfd3a1cdaa06047c34951239",
+    "board_icon": "a815ecee883c97d42e988dfb6730a09dc99d5b4f9716e84f6efe9b880245b775",
+    "ability_icon": "b1fac046b092ba01f6c30a19a03f28a37528e7b6cab08ef6330806a287d3b88b",
+    "atlas": "c5a16f3b5437ccc5941fa732848219e03557c39e47e0e8dba8aabfc0320d4f01",
+    "sprite_frames": "6bb21c9b2c9df68b40dcbb052e0f2d92da1359646368f7f0a15c779b6be1aa23"
   }
 }

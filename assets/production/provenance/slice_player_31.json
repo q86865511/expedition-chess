@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_31",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_31-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_31/attempt-001/raw.png",
+    "sha256": "35f6defbfb899fd0355cb79fb0dc066046399b1f9724f708f9535835bc36afac",
+    "imagegen_output_id": "exec-c4902180-a921-4b5b-b609-2fa3ab54e159",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_31. Original-only brief: Canopy glider archer with petal-disk bow, wing-like woven leaf cloak, narrow bamboo greaves, orchid magenta and deep jungle green. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479741,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "cbb1432329051ac2060b94d08f967e596530ec81e12a3a79f6b2950e2edd49cc",
-    "portrait": "b5c456272abd55230ab0f29b0778834fdd24d1dfeb70f0af871e0b813afa926f",
-    "board_icon": "44e9a8f2333af89eb37ffcf4915d36c1c556c4a5aa251f3c373d3a0f15b16945",
-    "ability_icon": "2912fb45cae3ef2ccad159787d7790c92897ce1937b9442bdf97c510455e67d0",
-    "atlas": "efa5d6570e5a2cc6c5f8d49789449ce086c52b5d9ce72526764dd31a0150a9d5",
-    "sprite_frames": "d68390edd4df739b47975a2a56d1f137c1322bad823c45ea12a5a12e686bee6c"
+    "source_sheet": "c225b060c19d3f3fd197194865e0dc5534264542230b87d090aed769ae7e26af",
+    "portrait": "b851ee1852969816e9938fd7a78f793824a90bc0028970bb457805b00e079490",
+    "board_icon": "57c07cf4dedfc8303a1784d930d37bc841f50932950e5c1d0bcdc0f7b9610058",
+    "ability_icon": "39e6f6d5932db2d2388feb2137036552b36af7cbec47a3e4127670f34e25782d",
+    "atlas": "c84aaf15d5da19d55005b0927605c411f412bb9ef1e6d5f1ce66ad62bb5b2f70",
+    "sprite_frames": "3adc6b123a26a4075ff64ddc75e64e3416d37dc717b52adf2bc2c47c1a1f5b30"
   }
 }

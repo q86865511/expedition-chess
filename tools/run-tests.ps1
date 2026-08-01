@@ -1036,9 +1036,12 @@ function Get-ContentProductionEvidenceEvaluation {
         $adoptedPerUnit = @{}
         foreach ($attempt in $attempts) {
             $attemptStatus = [string]$attempt.status
+            $attemptReview = $attempt.review
             if ($attemptStatus -notin @('reviewed', 'adopted', 'rejected') -or
-                [string]::IsNullOrWhiteSpace([string]$attempt.reviewer) -or
-                [string]::IsNullOrWhiteSpace([string]$attempt.decision)) {
+                $null -eq $attemptReview -or
+                [string]::IsNullOrWhiteSpace([string]$attemptReview.reviewer) -or
+                [string]::IsNullOrWhiteSpace([string]$attemptReview.decision) -or
+                [string]$attemptReview.decision -eq 'pending') {
                 $ledgerReviewed = $false
             }
             if ($attemptStatus -eq 'adopted') {
@@ -1334,6 +1337,19 @@ function Write-ContentProductionAcceptanceArtifact {
     #   All 中途失敗時 artifacts 可能是上一輪殘留,不得據以宣稱 verified。
     # - fully_closed 另計 blocked 列:任何顯式 blocked gate 未解除,切片就不算 closure。
     $verifiedThisRun = [bool]$evaluation.Verified -and ($AllExitCode -eq 0)
+    $declaredBlockedGates = New-Object System.Collections.Generic.List[string]
+    if (@($evaluation.BlockedIds) -contains 'AC-033' -or
+        @($evaluation.BlockedIds) -contains 'REQ-PROD-001') {
+        $declaredBlockedGates.Add(
+            'AC-033 / REQ-PROD-001: T18A independent reviewer originality decision table is not recorded'
+        )
+    }
+    if (@($evaluation.BlockedIds) -contains 'AC-038' -or
+        @($evaluation.BlockedIds) -contains 'REQ-SCOPE-002') {
+        $declaredBlockedGates.Add(
+            'AC-038 / REQ-SCOPE-002: production image inventory/attempt adoption gate is incomplete'
+        )
+    }
     $payload = [ordered]@{
         schema_version = 1
         scope = 'content-production'
@@ -1350,10 +1366,7 @@ function Write-ContentProductionAcceptanceArtifact {
             P = 'required evidence verified, one named clause still blocked by a manual gate'
             B = 'no automated evidence exists; explicitly blocked on a named manual gate'
         }
-        declared_blocked_gates = @(
-            'AC-033 / REQ-PROD-001: T18A independent reviewer originality decision table is not recorded',
-            'AC-038 / REQ-SCOPE-002: assets/production/inventory.json status is not adopted and production-asset-attempts.json is absent'
-        )
+        declared_blocked_gates = $declaredBlockedGates.ToArray()
         acceptance = $evaluation.Rows
         dependency_requirements = $evaluation.DependencyRows
     }

@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_00",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_00-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_00/attempt-002/raw.png",
+    "sha256": "cbefe0e718d5249cb9fdf3956dac003f301ff8373531684fb4719b29f6f98ff6",
+    "imagegen_output_id": "exec-902bf796-3acc-4794-b607-5ef64d570163",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "BRAND-NEW ORIGINAL pixel-art 5x5 production sheet for slice_player_00, Arcane/Verdant Vanguard with stocky silhouette, asymmetric hexagonal bark-and-brass shield, crystal war hammer, moss cloak and teal plate. Exact 20 ordered action cells; every cell exactly four complete N/E/S/W sprites, no omitted direction or cross-quadrant VFX; five reference cells; flat #ff00ff; no text, logos, Riot, or existing-work references. Retry explicitly audits the prior cast/hit south/west omissions."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-player-batch-001.md",
+    "sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+    "reviewer": "user:T18A-independent-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479710,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "25ea9208ce07e0ff275b289346ce41281931b7c237a08ba1a999ba36dcc1c014",
-    "portrait": "b662bcab00c995da11bb16edf126fb847c0baa811bf8de19ce0ab69330afa21f",
-    "board_icon": "c72bd59023fcd16899378f5d045dcafcc840564bc1c798b93688e1a7bf15567c",
-    "ability_icon": "aa9013dc24d7a154e653fe1b563e12a07312ec215186c900a826ddca50a1ebe0",
-    "atlas": "e54aa62feeb0fb5c6bf5708c7e901fc4571556fc9140ac0a5ecd20484670d8c1",
-    "sprite_frames": "9fab98ca3e0e7dc9915d8edf9f2090823f057454e6b12fce8a7f9b0a3dc33c14"
+    "source_sheet": "c9691c61fef1412565335bb051320d6cf8307a45d7d30759171fa563344c2ffb",
+    "portrait": "d44e0a850f0da7212b4be13e4e211582c2e7b6937f521ef89184dade9b493747",
+    "board_icon": "ce9529887aff8eea558152f1045cce35298cf740bde8b6444be086b1ae2f0b38",
+    "ability_icon": "d7da7d9f00a31328ed86d86605cf70aff6251e320c6ed07294c6669ad8f1d3e3",
+    "atlas": "cbad4227c7df8d0fbe04942ec87b1691ee882c45c149a724f1911e20d86260e4",
+    "sprite_frames": "7a48f7b6c054cf1dd346659d6a4926a579685a4892295c0b13c1948a928058f0"
   }
 }

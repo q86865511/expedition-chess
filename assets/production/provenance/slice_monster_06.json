@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_06",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_06-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_06/attempt-001/raw.png",
+    "sha256": "e1c4a1372bed044f5183ddb89eb4e9bac6db06608b3079e60e286614e0c1ac3a",
+    "imagegen_output_id": "exec-a26dde6b-83fa-407d-b385-9dc1722bf529",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_06. Original-only brief: Round scrap-iron beetle with riveted furnace mandibles, mismatched plate elytra, short piston legs and rust, soot and brass finish. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479704,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "3146335462060708d64aff719df9c3c36fb51c0c40990354265d72ea08ef51de",
-    "portrait": "5e2d8867863bf15f3009da528a102282ec2cb7f025b7f96dddce309ceb63e594",
-    "board_icon": "12fcf8c529b8615fea95626c66f2738c4f858fe3139fe2c0180271c0b89d9876",
-    "ability_icon": "bd1365861a47f4d41d1f4d3d927724a389076e9c008b0fdcca2c3328a664cc29",
-    "atlas": "bf36bfe8e01aaec1697daecf9d33b595a2d443595240368993b8ba5a551ce237",
-    "sprite_frames": "41570fa78476ef7e0d31e79e4d850d3c530488a4c9e54292682fe1ca74e6aa5d"
+    "source_sheet": "77b286822415720a6e59fde46af6994460308c8a3454ac92bc6a2760e047471d",
+    "portrait": "7ee41ffb7de3e71278316470c7307887fe1605edfaaf902fa6444ba2642338eb",
+    "board_icon": "c28134200fc8ad59a4b37119d1cba12a1c1ab4f69a94c46be554f66f5ea3a654",
+    "ability_icon": "e1f94ab23606fdb4a16b29621cab580e6e103741bd9205a9416501790dddbb9f",
+    "atlas": "afea9de97c62733226ba03c896f410ee04def001d778dab435213a49e7880936",
+    "sprite_frames": "8077b379c49bf0150e25aba538445561f3fede5c53383f650cadb3275407c85c"
   }
 }

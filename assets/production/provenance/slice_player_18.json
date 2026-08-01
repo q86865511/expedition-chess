@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_18",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_18-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_18/attempt-001/raw.png",
+    "sha256": "5f9fc36a1401ffa1752b39b88bb0be1b6875e48e6b7eecc34689a77996356716",
+    "imagegen_output_id": "exec-5af92e4d-4752-4ba6-9933-c3df89bd04df",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_18. Original-only brief: Bulky star-chart guardian with circular astrolabe shield, square-headed scepter, midnight enamel plate and luminous turquoise constellations. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479728,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "c6a9c48e1ec0e63a5602c066a3acded30a982d3fe561709020491e03541cd96c",
-    "portrait": "880ca4ef24bf9700dfcfdb9fffbc08bd9a7a5245528196defd22cba42c96c077",
-    "board_icon": "89dce3f26b42c6547140c90a1765a3949c1362347cf98cd2c830436708f56303",
-    "ability_icon": "eb1118d26ebf5e16b0ea8c074fb51c3725aeb6e59ec7ced811967ae0af2827c0",
-    "atlas": "c563d984625ed4ef188b7df81ae195301840c32a90bfae578ab5a10ef63f8625",
-    "sprite_frames": "492a967c3bdc895f4960ac147fb6d1030b0bc6e48b36363efb79b85df7721c0c"
+    "source_sheet": "f866ca4c14c12a7681119d1cedcd831183db0a1ba14e2387152d9046ff216203",
+    "portrait": "f5b4f9879d263ddd5706b31d85cd95ca54801e194dac6ffc006d045acf98b2f2",
+    "board_icon": "86fd55652355d31e46585e1cde02199fa0919f6d07e4553e8a8c1e0b589cc359",
+    "ability_icon": "bba442383ba865bd4fbf9ad748a006ac5f7b36f34fc02dc3caa0d8ccd6a73d08",
+    "atlas": "b731933affb39d574b34ea420e6b9be1c4e36db5856721bfec0349d428a30d75",
+    "sprite_frames": "1fbd26faa85d8393de5122a05d741bb8ea2cacbe52a0e0d9e2d3cc395820a7a5"
   }
 }

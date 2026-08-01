@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_08",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_08-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_08/attempt-001/raw.png",
+    "sha256": "7e22c252b2ae16299f337b566ded7402f255cc55b8955cb648ec0eba3c384b28",
+    "imagegen_output_id": "exec-9f89ddce-0366-43e8-9d10-ca8818c91033",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_08. Original-only brief: Broad crystal cave moth with lantern abdomen, mineral-dusted wings, curled antennae and jade, violet and warm amber luminescence. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479706,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "4f1dea40c8b306bd7064c30dfe4f53bfc159a84de3a25fa1d635511247a1c751",
-    "portrait": "ce4fd66fb160757b184eae7dab3dade0c39511ba4fa98b99240c0ae9dcafe196",
-    "board_icon": "9024e3f61e1a1c02d3cfe7ea1a88236301883ce9f1b955a0284f4161d52b74fa",
-    "ability_icon": "3365f402d6f9f9258b59fe3036267b6f372505de7654c0096c249f354a9b5a59",
-    "atlas": "171c0397c6b6ac0a1e5344df5949784aaaa4bd3b54356754c3e7caf83d2aca6c",
-    "sprite_frames": "fa3ec865a83ab0b30dd7cbb086cc41d19a9584114cbfc2f3cc94c77fb788de25"
+    "source_sheet": "445397c41c4a398cc500aff0734ea620d66a6c7372b8bb6117dc692b3c482f2f",
+    "portrait": "9b5f115e4db6af948c33b5f288e94bd44e21ec0b8b66c7eae0884d19ca02e562",
+    "board_icon": "5a56f9743167037ed685da021e8677b29472937b69b141ff7ac61ba4b2e836d4",
+    "ability_icon": "7927b6c54f9ce250900798026020318603f362a98d8cd73fd193ce6f3362f36f",
+    "atlas": "d5dcf912cdd7eae36d033bda96e32ab6fb5395bf2c04c31920ae104472da56a0",
+    "sprite_frames": "a9c18ce7f3d7e325f4ff7ea5f75ed6cbefa2619539c9fa88aaeca8a7085e8993"
   }
 }

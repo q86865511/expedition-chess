@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_29",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_29-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_29/attempt-001/raw.png",
+    "sha256": "7f94554ad6121b0ca8b0f150233aec823e2c6db602f8878b5016ba87352f892a",
+    "imagegen_output_id": "exec-f19ae4b7-337b-41ee-9342-aa40cef7ba86",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_29. Original-only brief: Raven-plume jailer with chained obelisk focus, broad feather collar, narrow barred mask, black basalt plates and muted plum cloth. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479739,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "cdf82a2903bd94399bb62bf8d6e30adf3c8df15ee990b6db0ee9adb02b7ade9f",
-    "portrait": "8072095e4cf0b5442dfb16e677a8db08e035a201d5ab065841a7f771d8b4489d",
-    "board_icon": "616f82c539a4cd7f32bbba7b2f8e931a64b28fb3613777d33210191f533c58de",
-    "ability_icon": "a7ad4c5e1a9f9031f355da265d58a3cb436638fcdcffd53cdb35ad808a38bc75",
-    "atlas": "8ff2fa8999e62eaed6057881cd67ff87e24ad261c30b33515280fd1537f058f8",
-    "sprite_frames": "2c90ef9e49fd6df56f32d17ab63ec6cb666b7b6dd7a14eb66b49ffea5b064c4a"
+    "source_sheet": "72f459502dea72338740bf1841fbee27d41d09fa09753a1224e5227878874905",
+    "portrait": "2cf3d07a3b27adac96e471a4ec0608ed095531eea174ef973358a37ee5e3e697",
+    "board_icon": "c52ff03b726895b5b6facabb309e018a1211935163dba068c1baa7adf7e6b055",
+    "ability_icon": "02bb3dbfe7db7ef0011354ab8c85ae90566d534ef6ac76de02cecbdcf0cf210b",
+    "atlas": "2eeef3b73e7daad7f8daf9c75bcb23ef32a7c1a670880ac3bc90f6526db28b4b",
+    "sprite_frames": "ba9227edaab6e470b6046450675a02fb16610c8509d2358aa1ea4ae43ee0bf9a"
   }
 }

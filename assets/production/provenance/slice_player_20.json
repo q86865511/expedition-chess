@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_20",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_20-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_20/attempt-001/raw.png",
+    "sha256": "5c158582a6eaebd15f0bd13d9d83ccc2db5184b8ab5d2ee627304f5b410bab78",
+    "imagegen_output_id": "exec-a10c2b28-112d-4f3b-86da-8921cfbc3508",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_20. Original-only brief: Spinning furnace dancer with twin brazier fans, bell-shaped layered skirt, hammered copper mask, coal-black cloth and white-hot edges. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479730,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "2268312c471bc30a965787039d8bcdcc4f95b62d4f05f15785b9dee4150419a3",
-    "portrait": "0e601f8bfcb9b91b1d0c2abb81143a5753cfd077dadbf364808e0f3e3989c313",
-    "board_icon": "e71c070aed0b2a04cf0bc889205fced158846f25da280b8cf39abee105232b4d",
-    "ability_icon": "149d5b7309472c8575d5bc2450c03a8c037a9d0a5407def60586750180819b2f",
-    "atlas": "8502f381c86c41a40b4239ddeeb211a2fc94b2e1f294f65a804d8f9bf157ec7f",
-    "sprite_frames": "92355fb1d85d969bcf9923480389c1cd0cb6e555b736f0a1702ee70b1ef1f6f8"
+    "source_sheet": "8d4234882b6e406af95181e5529323128e0501fb17cd6d87ff7a8b269f650ead",
+    "portrait": "19d184cae1e3397422c63df900133549edf735242bb791874f7c8aab0afff933",
+    "board_icon": "7ba5818ac6a31160762190830d3d83166f23d66bb6ae50b09b3dcb0c978a35c2",
+    "ability_icon": "ebb97e60afae289403df17dae380cfd70bde84eea3bdee24b8fed8e361ce5d4b",
+    "atlas": "6e8ef816c87a99b0a20adcf1ee6eb0dd967f5582e6851f4eee546e3a069a6b39",
+    "sprite_frames": "5e2707e15e48375753c0f7e7fcd6536233a3b2b294ece27b9efb3811807388a1"
   }
 }

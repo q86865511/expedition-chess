@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_05",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_05-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_05/attempt-001/raw.png",
+    "sha256": "3552a9206f26b998e286524b34d2536ccb4bd31661e65d691d6d9f8c469faafe",
+    "imagegen_output_id": "exec-e0332c97-4d3c-4d56-a4b7-14c1be23503c",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_05. Original-only brief: Floating lantern jailer with crescent cage staff, layered veil, trailing spectral chains, deep indigo lacquer and cold silver fittings. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479715,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "cc7cd6542ef090784dfc81bcab816b9ebe4ecc057e59bc7b7ea46883d4c80f3c",
-    "portrait": "ec49ea41c38097a0d61226f8ea7556e414a838c3b094c53336c84c0426c4356a",
-    "board_icon": "cfd709a6907d6ed6a5577ec13172691e50bf428e80f46e137bec977788f5ffef",
-    "ability_icon": "7ff74bf399e4f4f2cf5e324c10059ec230b8fa69d27a7110cc31540964cc6b26",
-    "atlas": "fa5b28372f022647f9eb16298e97ee47f23bde6a23042068e1e5e2bce9df926f",
-    "sprite_frames": "102b1acdddd34f00e591dbc324affc63a76757b72852b24d10d411282791226e"
+    "source_sheet": "5561bdbe12c8722435727cd07049aaa04bee2d53b803f59876e0cc4bb580b0ce",
+    "portrait": "e7aa53b4043afb7375dbc3b3611bc2d907d3f8d9abf762f4b3a6a8086ab65216",
+    "board_icon": "38293fad6c00ad46238b63da79683017b2aedb2a95694a9cd1320ea5395ff7ef",
+    "ability_icon": "7e3e6cd5a854a87a2dbef79ffee1f6c3093961554ded260934f72021f13fca8f",
+    "atlas": "b91f4da4beaaaff5a708fef905be079c43100279848010334b872f4affbe2e3e",
+    "sprite_frames": "f0bcf03b3914e78f0090a7e328c7a2adcc158970ce8d85b1f5de5bb181b24371"
   }
 }

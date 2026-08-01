@@ -43,23 +43,17 @@
 | S3 `economy-expedition` | ✅ 完成，複檢 PASS | `specs/economy-expedition/`（final-review.md＋implementation-review.md） | 11/11 S3-AC evidence、10,000-seed ExpeditionSoak |
 | S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
 | S5 `meta-progression` | ✅ 實作完成（2026-07-26） | `specs/meta-progression/`（三件套＋implementation-review.md） | T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All exit 0、W5 R4 雙審零未決 |
-| PROD／SCOPE／UX／QA 橫切 15 REQ | 🟡 `content-production` 實作+雙審閉環,停在 PR gate;T18A/音訊格式 blocked-on-codex | `specs/g2-roadmap.md`、`specs/content-production/` | 分支 10 commits;Gut 281/1091、10k soak、All exit 0;acceptance verified=true/fully_closed=false(4 blocked) |
+| PROD／SCOPE／UX／QA 橫切 15 REQ | ✅ `content-production` 本地 fully closed（未提交） | `specs/g2-roadmap.md`、`specs/content-production/` | `codex/g2-content-production-closure`；44 adopted＋14 rejected；Gut 281/1093、10k soak、All exit 0；acceptance 21＋1 PASS／fully_closed=true |
 
-- **content-production 實作與 T25 雙審已閉環(2026-08-01,Claude 接手完成)**:
-  分支 `codex/g2-content-production` 有 10 個檢查點 commit(d5a6325…886395b),
-  fresh 全綠(Gut 281 scripts/1091 tests、10k ExpeditionSoak exit 0、
-  -Suite All exit 0、acceptance 21 列 verified);T25 三輪雙審 closure 見
-  `specs/content-production/review-log.md`。停在 push/PR gate 待使用者。
-- **留給 codex 的美術/資產工作(blocked gate,acceptance 判定機械化)**:
-  (1) T18A 人工採納 gate:對 `assets/production/` 圖像做 originality/
-  silhouette 審查,產出 decision table 回寫 attempt ledger
-  (`assets/production/production-asset-attempts.json`,現缺檔),
-  `assets/production/inventory.json` status 由 generated 改 adopted;
-  (2) 音訊 R9 格式:現況 44.1kHz/8s/q0.8/mono vs 規格 48kHz/20-40s/q0.5/stereo,
-  重生成(`tools/content-production/generate-production-audio.py`,21 個語意名
-  已對齊 R9)或由使用者裁決修規格。完成後
-  `content-production-acceptance.json` 的 AC-033/038/REQ-PROD-001/
-  REQ-SCOPE-002 自動翻綠(blocked 判定讀檔案內容,不需改 runner)。
+- **content-production 最終閉環（2026-08-01）**：Claude 全批 T18A review
+  已落 `.pipeline/content-production/reviews/t18a-full-batch-claude-review.md`；Codex
+  依決定回寫 ledger 44 adopted＋14 rejected，inventory status=`adopted`，並以
+  adopted source 重建 44 portraits／atlases／SpriteFrames、Camp 與五張 shared
+  atlas。T20 維持 R9，5 music／21 SFX 已重生為 48kHz/stereo/OGG q0.5，解碼
+  peak/seam/bus 全通過。fresh Gut 281/1093、10k ExpeditionSoak、All exit 0；
+  acceptance 21＋1 全 PASS、`blocked_row_ids=[]`、`fully_closed=true`。
+  工作樹位於 `codex/g2-content-production-closure` 且未提交；下一片直接進
+  TUNE／balance 與 30k bot soak，本次未執行。
 - 測試 gate：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`（其餘 suite 見專案 `CLAUDE.md`）。`artifacts/test/` 為本機驗證輸出。
 - 表現層現況：production scene catalog/shell、typed router/lease、settings/audio、
   真 SubViewport/UI layer、playback/accessibility、formal typed controls 與 T13

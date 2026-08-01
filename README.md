@@ -6,7 +6,7 @@
 
 架構規格 v0.2 已核可；S1～S5 五個系統切片均已完成實作，G1 灰盒全系統閉環成立。現在具備決定性 RNG／canonical codec、pinned 內容 registry、schema-3 原子存檔、三幕遠征、羈絆／裝備／遺物構築、營地五設施、指揮官／挑戰、局外解鎖／圖鑑、exactly-once meta 結算，以及 AppRoot CAMP↔RUN↔RESULTS 的可恢復 composition。
 
-S2～S4 提供純 domain 戰鬥、經濟遠征與構築系統；S5 補齊 Profile settlement、Camp/Run/Results 灰盒、challenge 詞綴、claim_scope 真語意與 retained-run 安全流程。G2 `presentation-ui` 的 T00～T15、R12～R16 closure 與 merge 後 UI 審查修正均已完成；PR #5 已合併為 9362e7d，PR #6 已合併為 5e78ccf。`content-production` 已由最新 master 啟動，負責正式內容／資產、codec 3、save schema 4、事件選項與 localization；TUNE 平衡、30k bot soak 與 release gate 留待後續切片。
+S2～S4 提供純 domain 戰鬥、經濟遠征與構築系統；S5 補齊 Profile settlement、Camp/Run/Results 灰盒、challenge 詞綴、claim_scope 真語意與 retained-run 安全流程。G2 `presentation-ui` 的 T00～T15、R12～R16 closure 與 merge 後 UI 審查修正均已完成；PR #5 已合併為 9362e7d，PR #6 已合併為 5e78ccf。`content-production` 已完成正式內容／資產、codec 3、save schema 4、事件選項與 localization，後續圖像／音訊 closure 在本地達 `fully_closed=true`；TUNE 平衡、30k bot soak 與 release gate 留待後續切片。
 
 ## 技術棧
 

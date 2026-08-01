@@ -1,6 +1,6 @@
 # G2 內容完整切片 — 四切片交付 Roadmap
 
-> 建立日期：2026-07-26｜狀態：執行中（presentation-ui 已合併；content-production active）
+> 建立日期：2026-07-26｜狀態：執行中（content-production 本地 fully closed；下一片 balance-playtest）
 > 架構基線：`docs/game-architecture/`、`docs/implementation-slices.md`
 > 基準提交：`5ddf80a30481ee701ba90be48e0fd474bc8c2715`（S5 merged）
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R1 雙審全部 14 項修正建議
@@ -153,7 +153,7 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 | Slice | SDD | Implementation | Review | External gate | Git |
 |---|---|---|---|---|---|
 | `presentation-ui` | COMPLETE | T00–T15 COMPLETE; 19 AC PASS | R16 history＋merge-after-review findings closed | T13 USER APPROVED; final repair baseline Gut 1000/1000 | PR #5 MERGED @ 9362e7d；PR #6 MERGED @ 5e78ccf |
-| `content-production` | DRAFTING／SDD REVIEW | BASELINE GREEN | PENDING | T13 approved；All/Gut 1000/1000；Content 39/39；static zero issues | `codex/g2-content-production` active |
+| `content-production` | COMPLETE | T00–T27 COMPLETE；acceptance 21＋1 全 PASS | T25 三輪雙審＋T18A 全批獨立人工採納 CLOSED | 44 adopted／14 rejected retained；Gut 281/1093；10k soak；All exit 0；fully_closed=true | `codex/g2-content-production-closure` 本地未提交 |
 | `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |
 

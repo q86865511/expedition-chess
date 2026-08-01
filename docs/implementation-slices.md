@@ -60,6 +60,8 @@
 - G2 `presentation-ui`：T00～T15 與 R12～R16 findings closure 已完成，T13
   視覺樣板獲使用者核可；PR #5 已合併為 9362e7d，merge 後 UI 審查修正由
   PR #6 合併為 5e78ccf。原 R16 `NOT APPROVED` 報告與 closure table 均保留。
-- G2 `content-production`：已由 `master@5e78ccf` 建立
-  `codex/g2-content-production`；負責正式內容／資產、事件選項、codec 3、
-  save schema 4、3 條橫切 REQ 與 18 條 global AC。
+- G2 `content-production`：既有實作已合併；後續圖像／音訊 closure 在
+  `codex/g2-content-production-closure` 本地完成但未提交。T00～T27 全勾，
+  44 adopted attempts、R9 音訊、21＋1 acceptance 全 PASS，
+  `blocked_row_ids=[]`、`fully_closed=true`。下一片為 TUNE／balance 與
+  30k bot soak，本 closure 未執行。

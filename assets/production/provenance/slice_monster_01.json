@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_01",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_01-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_01/attempt-001/raw.png",
+    "sha256": "02f2351d0108e2251852a3f7f0cd869485ed6b3c4e79954381388d5aadd17faf",
+    "imagegen_output_id": "exec-d0c58a9e-dcc8-44b8-beae-7ab0b15eb835",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_01. Original-only brief: Wide pitcher-plant crab with seed-spitting trumpet claw, leaf-shell carapace, thin vine legs and lime, burgundy and tan materials. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479699,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "714aedfb954448048aa31944e8776f7f646924c017525f36f4fe2d83ce657048",
-    "portrait": "40370377700d2c0533449be0d386d221cacabc15f6106c82f4fe06e89c729612",
-    "board_icon": "77fb36826c61918c28074cbdfde7e61937dde06f56f49680b05e1716319cb1ef",
-    "ability_icon": "95dd8787ea92c8a0e3e595229490fc16d80c9372206423c615f67bd4ce5a7036",
-    "atlas": "60b2e8a166b9f0cf50db1a675c33f7e4a3a89bcb0eacc020afadb2a13a6e5eb4",
-    "sprite_frames": "35f53ee0b74b11db8e00eb86711bb476f14379bb95d734de70458d63cf8e130b"
+    "source_sheet": "c85a3ede0c3c4573468c45d0fee78fda61ed99e56255049677a99ed0d7f7645f",
+    "portrait": "2094cfd9a990a88e9038aa9ed7737e6df2f7e9af2e9be48e4706cc199a0f715a",
+    "board_icon": "ee007126730d8e5c8c5ca5580c84bcf53c6152cf7bca422dde169b75882164d7",
+    "ability_icon": "15cfe5ee27cae60d7838c59bb000f81ef12ee5919b3ffbde99a799ddb2bc88d9",
+    "atlas": "1a243be8192f793a60cd44361d083f07bf4ebb192e049d4d659141f4b8ca51a0",
+    "sprite_frames": "8ad875ce1200e5f4de5405947be433b3f27f303d7c874f3b67f0f896d160e366"
   }
 }

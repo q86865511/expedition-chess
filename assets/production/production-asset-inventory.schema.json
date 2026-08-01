@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "production-asset-inventory.schema.json",
+  "title": "Adopted Production Asset Inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "slice",
+    "status",
+    "unit_count",
+    "frames_per_unit",
+    "animations_per_unit",
+    "attempt_ledger",
+    "review_record",
+    "processor",
+    "units",
+    "shared_atlases",
+    "camp"
+  ],
+  "properties": {
+    "schema_version": { "const": 2 },
+    "slice": { "const": "content-production" },
+    "status": { "const": "adopted" },
+    "unit_count": { "const": 44 },
+    "frames_per_unit": { "const": 240 },
+    "animations_per_unit": { "const": 72 },
+    "attempt_ledger": { "$ref": "#/$defs/evidence_file" },
+    "review_record": { "$ref": "#/$defs/evidence_file" },
+    "processor": { "$ref": "#/$defs/processor" },
+    "units": {
+      "type": "array",
+      "minItems": 44,
+      "maxItems": 44,
+      "items": { "$ref": "#/$defs/unit" }
+    },
+    "shared_atlases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trait", "ability", "status_damage", "combat_vfx", "core_ui"],
+      "properties": {
+        "trait": { "$ref": "#/$defs/shared" },
+        "ability": { "$ref": "#/$defs/shared" },
+        "status_damage": { "$ref": "#/$defs/shared" },
+        "combat_vfx": { "$ref": "#/$defs/shared" },
+        "core_ui": { "$ref": "#/$defs/shared" }
+      }
+    },
+    "camp": { "$ref": "#/$defs/camp" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "path": { "type": "string", "minLength": 1 },
+    "evidence_file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "attempt_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "processor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["python", "python_implementation", "pillow", "numpy", "script", "script_sha256"],
+      "properties": {
+        "python": { "type": "string", "minLength": 1 },
+        "python_implementation": { "type": "string", "minLength": 1 },
+        "pillow": { "type": "string", "minLength": 1 },
+        "numpy": { "type": "string", "minLength": 1 },
+        "script": { "$ref": "#/$defs/path" },
+        "script_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sheet", "portrait", "board_icon", "ability_icon", "atlas", "sprite_frames"],
+      "properties": {
+        "source_sheet": { "$ref": "#/$defs/path" },
+        "portrait": { "$ref": "#/$defs/path" },
+        "board_icon": { "$ref": "#/$defs/path" },
+        "ability_icon": { "$ref": "#/$defs/path" },
+        "atlas": { "$ref": "#/$defs/path" },
+        "sprite_frames": { "$ref": "#/$defs/path" }
+      }
+    },
+    "output_hashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sheet", "portrait", "board_icon", "ability_icon", "atlas", "sprite_frames"],
+      "properties": {
+        "source_sheet": { "$ref": "#/$defs/sha256" },
+        "portrait": { "$ref": "#/$defs/sha256" },
+        "board_icon": { "$ref": "#/$defs/sha256" },
+        "ability_icon": { "$ref": "#/$defs/sha256" },
+        "atlas": { "$ref": "#/$defs/sha256" },
+        "sprite_frames": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit_id", "status", "adopted_attempt_id", "source", "local_processing_seed", "outputs", "sha256", "provenance"],
+      "properties": {
+        "unit_id": { "type": "string", "pattern": "^unit\\.slice_(player|monster)_[0-9]{2}$" },
+        "status": { "const": "adopted" },
+        "adopted_attempt_id": { "type": "string", "pattern": "^slice_(player|monster)_[0-9]{2}-attempt-[0-9]{3}$" },
+        "source": { "$ref": "#/$defs/source" },
+        "local_processing_seed": { "type": "integer", "minimum": 0 },
+        "outputs": { "$ref": "#/$defs/outputs" },
+        "sha256": { "$ref": "#/$defs/output_hashes" },
+        "provenance": { "$ref": "#/$defs/path" }
+      }
+    },
+    "shared": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "adopted_attempt_id", "source_path", "source_sha256", "path", "sha256", "review_record_sha256"],
+      "properties": {
+        "status": { "const": "adopted" },
+        "adopted_attempt_id": { "const": "shared-atlas-attempt-001" },
+        "source_path": { "$ref": "#/$defs/path" },
+        "source_sha256": { "$ref": "#/$defs/sha256" },
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "review_record_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "camp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "adopted_attempt_id", "source_path", "source_sha256", "path", "sha256", "review_record_sha256"],
+      "properties": {
+        "status": { "const": "adopted" },
+        "adopted_attempt_id": { "const": "camp-attempt-001" },
+        "source_path": { "$ref": "#/$defs/path" },
+        "source_sha256": { "$ref": "#/$defs/sha256" },
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "review_record_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

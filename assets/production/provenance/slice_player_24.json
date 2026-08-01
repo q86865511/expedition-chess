@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_24",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_24-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_24/attempt-001/raw.png",
+    "sha256": "2323524af6ab1d267b176ec08b8c4aa13ae291d9f15b8d840eeccd6568c65bdc",
+    "imagegen_output_id": "exec-c148c855-54ab-4681-b1ee-73eeba52d32f",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_24. Original-only brief: Low crystalline tortoise exosuit with rhombus shield and prism battering ram, amethyst shell facets, brass joints and ivory padding. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479734,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "0b021f6344d843a590154ec7c1955127f16809e5a890d870f8c8a6e64414ee21",
-    "portrait": "d9f7eb9d9ec36a1cb5c7d6620a2b86f782c4af149e15faf9f972fd4e5a34e42b",
-    "board_icon": "12fcf8c529b8615fea95626c66f2738c4f858fe3139fe2c0180271c0b89d9876",
-    "ability_icon": "fb9293f4b86a0f62e0a931f5f09264995447cd72023edcc3f04f3bc26e59ce8a",
-    "atlas": "5879df882185409e36b202f545212fa7529491f3b70eb4f7a8e870171b687dd8",
-    "sprite_frames": "eb6117250cd609bbd4a3cd801effc00d59db5cf96f6c0f7a350250b380b7ab23"
+    "source_sheet": "1d4735657a946be0a6c6ae4b90ad9fc54f646e591cad9c944acbf16aa3f75f6a",
+    "portrait": "5265897323dd3ed905d86fe11ee5fdca13fc2ca64079f32fd3bc9004b1c57344",
+    "board_icon": "e4dbaa398c9443f8bd091f49a14e1521495ee00ed377c65ceabcae1ed8fb24ad",
+    "ability_icon": "01266002447a8204b60e72ff61b1a62f24eebb74372d8eb52c74b6c621c3d18f",
+    "atlas": "80a6f032dcbdf6d06bf9c5d51dabf35395668145df11c00111fc81f9bf1919de",
+    "sprite_frames": "2e3bf970cbfc779c0612c3e26b2fc709b1ad2ddd0e4245185e4d45d07d8b8a3b"
   }
 }

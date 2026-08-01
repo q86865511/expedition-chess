@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_07",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_07-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_07/attempt-001/raw.png",
+    "sha256": "f276c60d1125ff7c23925984b9ec82cb4f88999fec3d7ac1e780825ced865a7f",
+    "imagegen_output_id": "exec-5a5705be-493e-45e9-b921-18e179651ebc",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_07. Original-only brief: Angular thorn mantis with crossbow-like forelimbs that launch barbs, dry vine abdomen and sage, tan and red thorn tips. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479705,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "8b99639908082bb1b6ca1e9ba41acdcb8304aaaa372635c823cbb6f1d563fa3c",
-    "portrait": "4b214514f3a7ea89f10c2dc69181caf45ded60213f8ef3fac3718357e750f9af",
-    "board_icon": "5f41c984a631ea50eb9b6444e73c218e487315bf884853173f85cf46d73fb293",
-    "ability_icon": "443b2e803775529ecd0c7b8b97cde3c5c93305a14e48b67991721a2e0b3fbd2a",
-    "atlas": "23237c2423fafc1dad8be80ab3888e42849d820b9827e937b56fdf49cbb36c52",
-    "sprite_frames": "30691abb704c444b3da051261d0e61f3df2b919e722682a2c5d658f087b0a1ac"
+    "source_sheet": "c818264d2a3c711f9b0c081c204b402607e16a6154aed9e726738047122c1332",
+    "portrait": "8fcdd6a9b10fc30016ef5238300c3881c679cdeee6c2543427a6b970852087c0",
+    "board_icon": "e19840f2afa5221e21b5fa9e9689cca41e19f31b66c71746a66f5c5b3f3166aa",
+    "ability_icon": "ff2709cf8bed4556409df3da6085af77a032ceadc68bdc3973d4611544c34115",
+    "atlas": "cbed50482bd7f31b373021a863ca7d562ab864f1fa4264eba167d3c3a7b4222c",
+    "sprite_frames": "d09bf79b921a28105257462345e6e31130abcd2164e6ee256ecedb4d1e0127dd"
   }
 }

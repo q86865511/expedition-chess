@@ -1,0 +1,1987 @@
+{
+  "schema_version": 1,
+  "slice": "content-production",
+  "updated_at": "2026-08-01T18:15:05+08:00",
+  "processing_contract": {
+    "raw_background": "#ff00ff",
+    "normalized_source_size": [
+      1280,
+      1280
+    ],
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions_per_action_cell": 4,
+    "direction_order": [
+      "north",
+      "east",
+      "south",
+      "west"
+    ],
+    "model_native_seed_exposure": "not_exposed_by_builtin_image_gen"
+  },
+  "attempts": [
+    {
+      "attempt_id": "slice_monster_00-attempt-001",
+      "unit_id": "unit.slice_monster_00",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_00. Original-only brief: Low root-tusk boar made of twisted hardwood and lichen, shovel-like ivory tusks, knotted shoulder hump and muddy fern palette. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-1b30ee8b-369a-41ea-bb05-92fa7332dbf4",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_00/attempt-001/raw.png",
+        "sha256": "b89171f7ed1aad175d80d1ecfe22385e7b563dd3264ce518312b8407568bbd25",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 644,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_01-attempt-001",
+      "unit_id": "unit.slice_monster_01",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_01. Original-only brief: Wide pitcher-plant crab with seed-spitting trumpet claw, leaf-shell carapace, thin vine legs and lime, burgundy and tan materials. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-d0c58a9e-dcc8-44b8-beae-7ab0b15eb835",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_01/attempt-001/raw.png",
+        "sha256": "02f2351d0108e2251852a3f7f0cd869485ed6b3c4e79954381388d5aadd17faf",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 770,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_02-attempt-001",
+      "unit_id": "unit.slice_monster_02",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_02. Original-only brief: Floating prism jelly with faceted bell, three ribbon tentacles, internal rotating light core and translucent cyan-lilac glass body. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-3be1bb5c-f922-4966-9c35-204c1b9fd8f2",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_02/attempt-001/raw.png",
+        "sha256": "623b1fb5cd912143637aade4d3f956afeefbd4537200dcec1dfd005cd938a07c",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 828,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_03-attempt-001",
+      "unit_id": "unit.slice_monster_03",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_03. Original-only brief: Compact molten armadillo with hexagonal basalt shell, glowing seam claws, wedge snout and black, orange and ash-grey surface. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-bf955bc2-f21c-4727-9d8c-97a84638e992",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_03/attempt-001/raw.png",
+        "sha256": "25b86549237c34b7750bee4db62f41c75ffd2f3ccd5d58d9d86ad29f473fab53",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 275,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_04-attempt-001",
+      "unit_id": "unit.slice_monster_04",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_04. Original-only brief: Tall ice-quill owlbeast that fires crystalline pinions, diamond head silhouette, shaggy snow chest and pale blue slate feathers. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-3f556ee9-8005-4f06-ae28-0696d244d33e",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_04/attempt-001/raw.png",
+        "sha256": "aec50f8e517e54ada0d80ed0675813c28de2aab81d5f9d88ff091da2e4820e4b",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 991,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_05-attempt-001",
+      "unit_id": "unit.slice_monster_05",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_05. Original-only brief: Long shadow candle slug with many wax tapers on its back, single violet flame eye, glossy ink body and dripping ivory wax. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-9974ae21-f02c-433c-bbe4-741bc2b7dda0",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_05/attempt-001/raw.png",
+        "sha256": "85542796706a331d090b4444ca6878ea57d64db509f95de45a01f0e49edf5b9e",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 20,
+        "failures": [
+          "move3"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_05-attempt-002",
+      "unit_id": "unit.slice_monster_05",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_05. Original-only brief: Long shadow candle slug with many wax tapers on its back, single violet flame eye, glossy ink body and dripping ivory wax. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-b1b9f6a2-f02d-45c5-8c25-e4049351a7ce",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_05/attempt-002/raw.png",
+        "sha256": "d1292e54f77a1daafb8fd22c9e4feab0f4b799ca28e695917b2e722f5f3a6a83",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1692,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_06-attempt-001",
+      "unit_id": "unit.slice_monster_06",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_06. Original-only brief: Round scrap-iron beetle with riveted furnace mandibles, mismatched plate elytra, short piston legs and rust, soot and brass finish. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-a26dde6b-83fa-407d-b385-9dc1722bf529",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_06/attempt-001/raw.png",
+        "sha256": "e1c4a1372bed044f5183ddb89eb4e9bac6db06608b3079e60e286614e0c1ac3a",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 4017,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_07-attempt-001",
+      "unit_id": "unit.slice_monster_07",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_07. Original-only brief: Angular thorn mantis with crossbow-like forelimbs that launch barbs, dry vine abdomen and sage, tan and red thorn tips. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-5a5705be-493e-45e9-b921-18e179651ebc",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_07/attempt-001/raw.png",
+        "sha256": "f276c60d1125ff7c23925984b9ec82cb4f88999fec3d7ac1e780825ced865a7f",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 403,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_08-attempt-001",
+      "unit_id": "unit.slice_monster_08",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_08. Original-only brief: Broad crystal cave moth with lantern abdomen, mineral-dusted wings, curled antennae and jade, violet and warm amber luminescence. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-9f89ddce-0366-43e8-9d10-ca8818c91033",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_08/attempt-001/raw.png",
+        "sha256": "7e22c252b2ae16299f337b566ded7402f255cc55b8955cb648ec0eba3c384b28",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1347,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_09-attempt-001",
+      "unit_id": "unit.slice_monster_09",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_09. Original-only brief: Top-heavy swamp brute with bone-antler crown, enormous moss fists, narrow reed legs and peat brown, algae green and bone white. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-09a2f6fa-2e66-4128-af2b-7ea0551c3f05",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_09/attempt-001/raw.png",
+        "sha256": "875d81789bb886fcc1d59be27d33b94b0c2579c318ba92a5920ecd7c9f42976c",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1017,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_10-attempt-001",
+      "unit_id": "unit.slice_monster_10",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_10. Original-only brief: Long gear-spine porcupine that launches toothed metal quills, low copper snout, blue-steel back and leather belt-like hide. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-bf7e808d-9dd5-4a4b-808f-33b34dedf718",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_10/attempt-001/raw.png",
+        "sha256": "1b48fb86507e77223c57501ed0a042a1a4327f58b5e6da6f04185ec5c13d7120",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "hit1"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_10-attempt-002",
+      "unit_id": "unit.slice_monster_10",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_10. Original-only brief: Long gear-spine porcupine that launches toothed metal quills, low copper snout, blue-steel back and leather belt-like hide. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-22912430-5df2-41ef-89bb-f232ad68159a",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_10/attempt-002/raw.png",
+        "sha256": "cb4be933d7f58cb8b92d321bba242735cf2b12222885ecf1025f59db7fa5d0db",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "move3",
+          "attack4",
+          "hit1",
+          "death4"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_10-attempt-003",
+      "unit_id": "unit.slice_monster_10",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_10. Original-only brief: Long gear-spine porcupine that launches toothed metal quills, low copper snout, blue-steel back and leather belt-like hide. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-9d86072d-a9fb-4886-a41f-4702202508d1",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_10/attempt-003/raw.png",
+        "sha256": "6570b29c294234281135577cf0ae48b99e150448ef9e71406819b2400a1cf239",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1088,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_monster_11-attempt-001",
+      "unit_id": "unit.slice_monster_11",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_11. Original-only brief: Floating void-lantern cephalopod with cage-shaped head, four curled tentacles, star-speckled membrane and deep navy with green flame. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-af9fc037-02bd-43d0-8c29-aa2fc350ba62",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_monster_11/attempt-001/raw.png",
+        "sha256": "ff05ccbfe72bb4714bdf90c76e666ffae1d7f267af4841c6a0570b2400e293c7",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1489,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_00-attempt-001",
+      "unit_id": "unit.slice_player_00",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Original pixel-art 5x5 source sheet for Arcane/Verdant Vanguard slice_player_00: stocky defender, asymmetric hex bark/brass shield, crystal hammer, moss/teal plate; 20 ordered action cells, each with N/E/S/W sprites in a 2x2 mini-grid; five reference cells; flat #ff00ff; no copyrighted references.",
+        "prompt_capture": "reconstructed-after-parent-termination",
+        "imagegen_output_id": "exec-b0a62a7a-f681-4f3f-af96-53cf61289110",
+        "call_id": null,
+        "call_id_exposure": "parallel parent terminated before metadata return",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_00/attempt-001/raw.png",
+        "sha256": "f3621b6762cade3181abf059ff3fc093d866a9e481cae63ee085937f35dfe22e",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 104,
+        "failures": [
+          "cast2:south",
+          "cast3:south",
+          "cast3:west",
+          "cast4:south",
+          "cast4:west",
+          "hit1:west"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T14:12:32+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction sprites; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_00-attempt-002",
+      "unit_id": "unit.slice_player_00",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "BRAND-NEW ORIGINAL pixel-art 5x5 production sheet for slice_player_00, Arcane/Verdant Vanguard with stocky silhouette, asymmetric hexagonal bark-and-brass shield, crystal war hammer, moss cloak and teal plate. Exact 20 ordered action cells; every cell exactly four complete N/E/S/W sprites, no omitted direction or cross-quadrant VFX; five reference cells; flat #ff00ff; no text, logos, Riot, or existing-work references. Retry explicitly audits the prior cast/hit south/west omissions.",
+        "prompt_capture": "exact",
+        "imagegen_output_id": "exec-902bf796-3acc-4794-b607-5ef64d570163",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_00/attempt-002/raw.png",
+        "sha256": "cbefe0e718d5249cb9fdf3956dac003f301ff8373531684fb4719b29f6f98ff6",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1885,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "user:T18A-independent-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T14:20:30+08:00",
+        "review_record_sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+        "reason": "Reviewer accepted the candidate."
+      }
+    },
+    {
+      "attempt_id": "slice_player_01-attempt-001",
+      "unit_id": "unit.slice_player_01",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Original pixel-art 5x5 source sheet for Verdant/Ember Marksman slice_player_01: tall lean hunter, vinewood and ember-glass crossbow, leaf mantle and layered leather; 20 ordered action cells, each with N/E/S/W sprites in a 2x2 mini-grid; five reference cells; flat #ff00ff; no copyrighted references.",
+        "prompt_capture": "reconstructed-after-parent-termination",
+        "imagegen_output_id": "exec-c2d45d5d-5c20-48d7-8879-a0e279a9c15c",
+        "call_id": null,
+        "call_id_exposure": "parallel parent terminated before metadata return",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_01/attempt-001/raw.png",
+        "sha256": "a40b60aa5f0cedd08181d15674e044870fb0c1dd148f35f0e5632d0e984fea11",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 648,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "user:T18A-independent-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T14:20:30+08:00",
+        "review_record_sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+        "reason": "Reviewer accepted the candidate."
+      }
+    },
+    {
+      "attempt_id": "slice_player_02-attempt-001",
+      "unit_id": "unit.slice_player_02",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Original pixel-art 5x5 source sheet for Ember/Frost Mystic slice_player_02: tall narrow caster, dual levitating fire/ice orbs, split-temperature robe and forked crystal headpiece; 20 ordered action cells, each with N/E/S/W sprites in a 2x2 mini-grid; five reference cells; flat #ff00ff; no copyrighted references.",
+        "prompt_capture": "reconstructed-after-parent-termination",
+        "imagegen_output_id": "exec-bbec312c-8dc4-4b14-b33c-b19f8bcf7a7c",
+        "call_id": null,
+        "call_id_exposure": "parallel parent terminated before metadata return",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_02/attempt-001/raw.png",
+        "sha256": "2ca52312e94039fea86e44beec9dbb78b76075016be6b6975dd29e7c086b8a8f",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1196,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "user:T18A-independent-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T14:20:30+08:00",
+        "review_record_sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+        "reason": "Reviewer accepted the candidate."
+      }
+    },
+    {
+      "attempt_id": "slice_player_03-attempt-001",
+      "unit_id": "unit.slice_player_03",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Original pixel-art 5x5 source sheet for Frost/Iron Sentinel slice_player_03: squat broad guardian, rectangular iron tower shield, icebreaker pick and frost-rimed segmented plate; 20 ordered action cells, each with N/E/S/W sprites in a 2x2 mini-grid; five reference cells; flat #ff00ff; no copyrighted references.",
+        "prompt_capture": "reconstructed-after-parent-termination",
+        "imagegen_output_id": "exec-0dfdbac3-497a-40d4-bbfd-7a1e92abace7",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_03/attempt-001/raw.png",
+        "sha256": "53557fb1e07208ab6bed4617526c223991c44a7942f8c031819c0c0912441202",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 33,
+        "failures": [
+          "attack2:south"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T14:12:32+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction sprite; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_03-attempt-002",
+      "unit_id": "unit.slice_player_03",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "BRAND-NEW ORIGINAL pixel-art 5x5 production sheet for slice_player_03, Frost/Iron Sentinel with squat broad silhouette, huge vertical riveted iron tower shield, icebreaker pick, segmented plate and frost trim. Exact 20 ordered action cells; every cell exactly four complete N/E/S/W sprites including four directional fallen bodies in death cells; no omitted direction or cross-quadrant VFX; five reference cells; flat #ff00ff; no text, logos, Riot, or existing-work references. Retry explicitly audits the prior attack2 south omission.",
+        "prompt_capture": "exact",
+        "imagegen_output_id": "exec-1ad357e3-7a0f-4972-9333-8aa3d9fb7f90",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_03/attempt-002/raw.png",
+        "sha256": "e05a0135ee39f579ffeba25ec099e6d13fd34855fd9b7c9c527c51f92ebc0cea",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 589,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "user:T18A-independent-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T14:20:30+08:00",
+        "review_record_sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+        "reason": "Reviewer accepted the candidate."
+      }
+    },
+    {
+      "attempt_id": "slice_player_04-attempt-001",
+      "unit_id": "unit.slice_player_04",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_04. Original-only brief: Tall off-balance clockwork duelist with one reinforced boot, collapsible gear-chakram launcher, striped mechanic tailcoat, blackened steel and tarnished brass. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-d9e7b7eb-d75d-4f27-85ff-6bf5bbc8fb6d",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_04/attempt-001/raw.png",
+        "sha256": "9f08a11ef0993b1fdd586396e1ea7600108e08baf996f21cea7318f8a4217af1",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 351,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_05-attempt-001",
+      "unit_id": "unit.slice_player_05",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_05. Original-only brief: Floating lantern jailer with crescent cage staff, layered veil, trailing spectral chains, deep indigo lacquer and cold silver fittings. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-e0332c97-4d3c-4d56-a4b7-14c1be23503c",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_05/attempt-001/raw.png",
+        "sha256": "3552a9206f26b998e286524b34d2536ccb4bd31661e65d691d6d9f8c469faafe",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 722,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_06-attempt-001",
+      "unit_id": "unit.slice_player_06",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_06. Original-only brief: Wide triangular defender with a prism kite shield, tuning-fork mace, translucent glass lamellar, cyan edges and muted violet cloth. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-d80b1af1-abbe-427d-a707-8f73eafbdc19",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_06/attempt-001/raw.png",
+        "sha256": "7c1b6416314b9ab6180026de03bb7321b305560b852fe0298fbd39bb56b5666b",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 694,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_07-attempt-001",
+      "unit_id": "unit.slice_player_07",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_07. Original-only brief: Crouched thorn ranger with a seed-pod longbow, branching antler cape, woven bark gaiters, fern green and dry ochre palette. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-bc745c39-213c-46ce-8869-deeee084898c",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_07/attempt-001/raw.png",
+        "sha256": "5f264b423330553324caf5af146e632f7d4276b1deb8482e28ac57dc5ab88f21",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "move1",
+          "move2",
+          "attack1",
+          "attack2"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_07-attempt-002",
+      "unit_id": "unit.slice_player_07",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_07. Original-only brief: Crouched thorn ranger with a seed-pod longbow, branching antler cape, woven bark gaiters, fern green and dry ochre palette. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-62314a61-068a-42df-b9f3-4959f633993e",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_07/attempt-002/raw.png",
+        "sha256": "7cabd1d06858711090eb8132add9fe2f7d892b8016b6697fc358df4eb3ef8eb9",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 657,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_08-attempt-001",
+      "unit_id": "unit.slice_player_08",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_08. Original-only brief: Hovering kiln acolyte with orbiting ceramic censer rings, broad fireproof apron robes, charcoal clay mask and glowing orange cracks. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-8a818973-99d6-4953-91d5-e17b8c56de44",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_08/attempt-001/raw.png",
+        "sha256": "a3db83937714d62c8144204ea4aa4702dcadb49784ed85f2b983c62759bf6ff9",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 939,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_09-attempt-001",
+      "unit_id": "unit.slice_player_09",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_09. Original-only brief: Tall snowshoe guardian with crescent ice shield, hooked rescue glaive, quilted white coat, pale wood braces and glacier-blue trim. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-a1df3847-86c1-4876-a6ef-30bd6cf1517e",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_09/attempt-001/raw.png",
+        "sha256": "d17ab14d27049ed22d25d2d35b1280c5b7e824ff74223ec60f7eddb09e031a20",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 333,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_10-attempt-001",
+      "unit_id": "unit.slice_player_10",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_10. Original-only brief: Nimble gambling automaton with coin-disk repeater, narrow spring limbs, split velvet tailcoat, copper faceplate and green felt accents. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-b64463d8-34bb-40fe-95a0-f4c4984730cd",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_10/attempt-001/raw.png",
+        "sha256": "a00cee376d50e3fde46ba87f2b76212ab72b983207cbbe493be15f57af5f8ad2",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "death2",
+          "death3",
+          "death4"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_10-attempt-002",
+      "unit_id": "unit.slice_player_10",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_10. Original-only brief: Nimble gambling automaton with coin-disk repeater, narrow spring limbs, split velvet tailcoat, copper faceplate and green felt accents. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-c32101b4-cbac-4734-8fc5-82cd0c74b6ff",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_10/attempt-002/raw.png",
+        "sha256": "554936e865ef9ca597f566a061177db542b5d63a4cf373688ad578bee76a792c",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "move3"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_10-attempt-003",
+      "unit_id": "unit.slice_player_10",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_10. Original-only brief: Nimble gambling automaton with coin-disk repeater, narrow spring limbs, split velvet tailcoat, copper faceplate and green felt accents. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-7e5052fe-f2c3-4385-9de8-08495c4b247f",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_10/attempt-003/raw.png",
+        "sha256": "c48c17d699575add130cd2537a099e1b890d0a14b140ead00fa7d2c29c312437",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 120,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_11-attempt-001",
+      "unit_id": "unit.slice_player_11",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_11. Original-only brief: Squat eclipse-bell monk with an oversized black handbell focus, rune buckler, layered rope sash, smoky purple wool and bone-white mask. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-bb11f286-c4df-4eeb-982d-58f436f13d04",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_11/attempt-001/raw.png",
+        "sha256": "21342dcac07f45043b51681e33dd1dd7c46723bb886baa25c346a4948b6d3749",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 36,
+        "failures": [
+          "hit1"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_11-attempt-002",
+      "unit_id": "unit.slice_player_11",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_11. Original-only brief: Squat eclipse-bell monk with an oversized black handbell focus, rune buckler, layered rope sash, smoky purple wool and bone-white mask. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-690c3025-239b-4e76-bc62-3969de79f688",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_11/attempt-002/raw.png",
+        "sha256": "a7222fa47360343e7b865c194f98a297b6341ec80532e540f89192e014f5ce08",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 787,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_12-attempt-001",
+      "unit_id": "unit.slice_player_12",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_12. Original-only brief: Four-armed comet guard carrying a cylindrical ward shield and short meteor flail, stacked sapphire plates and cream astronomical tabard. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-dc0996f0-d19d-4a04-ad49-5069f69e0a30",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_12/attempt-001/raw.png",
+        "sha256": "e701d958975408327b0da4aedeb7854802607be08e4a94e355e7c1a1d13304f7",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 11,
+        "failures": [
+          "attack4",
+          "death2",
+          "death3"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_12-attempt-002",
+      "unit_id": "unit.slice_player_12",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_12. Original-only brief: Four-armed comet guard carrying a cylindrical ward shield and short meteor flail, stacked sapphire plates and cream astronomical tabard. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-62b2aad2-cfaa-41cc-9f53-4e3276e60116",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_12/attempt-002/raw.png",
+        "sha256": "490a895e52d5c5d69aaafe8c75af36cf4380c81b7d128723c33f702f96f48bde",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 469,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_13-attempt-001",
+      "unit_id": "unit.slice_player_13",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_13. Original-only brief: Small mushroom-canopy scout with a long reed blowpipe, shelf-fungus cloak, spore satchels, russet caps and moss-green wraps. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-4cb1271f-775e-4683-9b08-1b14631e7ff4",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_13/attempt-001/raw.png",
+        "sha256": "ba2af298d462ca46d6edc406fdbd29bb2a11602f72541be4540bc5b076257950",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 111,
+        "failures": [
+          "attack4"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_13-attempt-002",
+      "unit_id": "unit.slice_player_13",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_13. Original-only brief: Small mushroom-canopy scout with a long reed blowpipe, shelf-fungus cloak, spore satchels, russet caps and moss-green wraps. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-10091bb5-6174-4b5f-9982-2472b13f6e79",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_13/attempt-002/raw.png",
+        "sha256": "310a255093e8e25218aabdcabea1d1b4cc239899c946fa0bb6498dc585ca7ea8",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 338,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_14-attempt-001",
+      "unit_id": "unit.slice_player_14",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_14. Original-only brief: Long-necked salamander oracle in layered heat-silk, wielding a molten chain-orb focus, obsidian scales, saffron fabric and ruby sparks. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-ec9c9f4c-691f-4fac-9191-9c9bf48cc9d0",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_14/attempt-001/raw.png",
+        "sha256": "509f3fb713e37ae9418ab063a893071b71066a8cd574635526667f5169fe8357",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1192,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_15-attempt-001",
+      "unit_id": "unit.slice_player_15",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_15. Original-only brief: Broad iceberg-crab armored sailor with round porthole shield, compact anchor hammer, blue-white shell plates and navy rope coat. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-b327c08f-e9ff-4629-983a-042da5647caa",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_15/attempt-001/raw.png",
+        "sha256": "c656f9aa463d55f150d9138e6e8711f00e2722bd702acf6fac5564e6e77d9917",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1322,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_16-attempt-001",
+      "unit_id": "unit.slice_player_16",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_16. Original-only brief: Stilt-legged magnet engineer with a horseshoe induction pistol, asymmetrical patchwork coat, red cable coils and matte iron braces. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-12b7e1a1-1612-4f69-be15-cf765cf2b5da",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_16/attempt-001/raw.png",
+        "sha256": "6846d6c7d80d8bbb803d937a4725ce130f33ed1d76009bda9d86dd82c53be01a",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 976,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_17-attempt-001",
+      "unit_id": "unit.slice_player_17",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_17. Original-only brief: Tall moth-winged undertaker with lantern scythe focus, folded velvet wings, long grave-cloth coat, moon-grey fur and violet flame. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-13060793-4168-4899-ab83-f194a05b5886",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_17/attempt-001/raw.png",
+        "sha256": "c45b65312bb02784cbe6f31f00850a78baf06c60f1db4ec2a23a1fda0e4a2627",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 793,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_18-attempt-001",
+      "unit_id": "unit.slice_player_18",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_18. Original-only brief: Bulky star-chart guardian with circular astrolabe shield, square-headed scepter, midnight enamel plate and luminous turquoise constellations. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-5af92e4d-4752-4ba6-9933-c3df89bd04df",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_18/attempt-001/raw.png",
+        "sha256": "5f9fc36a1401ffa1752b39b88bb0be1b6875e48e6b7eecc34689a77996356716",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 2625,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_19-attempt-001",
+      "unit_id": "unit.slice_player_19",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_19. Original-only brief: Long-limbed marsh hunter with a tensioned reed-harpoon bow, cattail mantle, woven rush armor, olive green and river-clay red. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-e4e6ebdc-456f-4f35-a98a-d963aeef5874",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_19/attempt-001/raw.png",
+        "sha256": "d6b8430d6bd08dac914244459e89f4d0545fad4b2449206dade7b5a19239ee29",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "attack1"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_19-attempt-002",
+      "unit_id": "unit.slice_player_19",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_19. Original-only brief: Long-limbed marsh hunter with a tensioned reed-harpoon bow, cattail mantle, woven rush armor, olive green and river-clay red. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-dc7b8ae1-8b93-4397-b5fc-2fb0142cccda",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_19/attempt-002/raw.png",
+        "sha256": "f7109a1e0cfd88e82ecab274e7d19a047e681b3d9776e1e43803a3bde913360b",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 869,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_20-attempt-001",
+      "unit_id": "unit.slice_player_20",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_20. Original-only brief: Spinning furnace dancer with twin brazier fans, bell-shaped layered skirt, hammered copper mask, coal-black cloth and white-hot edges. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-a10c2b28-112d-4f3b-86da-8921cfbc3508",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_20/attempt-001/raw.png",
+        "sha256": "5c158582a6eaebd15f0bd13d9d83ccc2db5184b8ab5d2ee627304f5b410bab78",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 191,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_21-attempt-001",
+      "unit_id": "unit.slice_player_21",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_21. Original-only brief: Heavy walrus-mask protector with sled-plank shield, square ice mallet, thick rope harness, snow-grey hide and bright blue runners. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-b396384b-e74b-4ce2-bb23-156066ec5a40",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_21/attempt-001/raw.png",
+        "sha256": "86f70645caffba0d11d5cbbfadd6e642775f566b5f197e9aaed8e9885b25be37",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1708,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_22-attempt-001",
+      "unit_id": "unit.slice_player_22",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_22. Original-only brief: Compact clockwork courier with twin spring boomerang launchers, forward-leaning satchel silhouette, nickel plates and postal-red scarf. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-b1c6c205-a526-4346-b489-98efbfcc4551",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_22/attempt-001/raw.png",
+        "sha256": "a0b6433ca0c8f45fc538441e461cfbaa0e43a0374778d4c5bfdacd206ae32ddf",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 457,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_23-attempt-001",
+      "unit_id": "unit.slice_player_23",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_23. Original-only brief: Very tall mirror knight carrying a dark reflective tower focus, floating rune shard familiar, torn charcoal surcoat and pale cyan reflections. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-d5e0131b-eb4e-4931-8a21-f8cea603a098",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_23/attempt-001/raw.png",
+        "sha256": "2e451a2a6713b509b7a0183f51e84e00ac6076972dd00707eee1b535ea063eac",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 254,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_24-attempt-001",
+      "unit_id": "unit.slice_player_24",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_24. Original-only brief: Low crystalline tortoise exosuit with rhombus shield and prism battering ram, amethyst shell facets, brass joints and ivory padding. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-c148c855-54ab-4681-b1ee-73eeba52d32f",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_24/attempt-001/raw.png",
+        "sha256": "2323524af6ab1d267b176ec08b8c4aa13ae291d9f15b8d840eeccd6568c65bdc",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1070,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_25-attempt-001",
+      "unit_id": "unit.slice_player_25",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_25. Original-only brief: Beekeeping ranger with honeycomb crossbow, broad mesh veil, waxed canvas coat, amber cells and cream linen distinct from all leaf archers. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-71467c48-793c-467f-99d3-42a4ea3c0ca6",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_25/attempt-001/raw.png",
+        "sha256": "447a479865ea14e1834a93961d2a5dfc3b9fdf0c8c70f3fbc36e050846a9da83",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 79,
+        "failures": [
+          "attack4"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_25-attempt-002",
+      "unit_id": "unit.slice_player_25",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_25. Original-only brief: Beekeeping ranger with honeycomb crossbow, broad mesh veil, waxed canvas coat, amber cells and cream linen distinct from all leaf archers. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-67ed6c52-6b10-4315-9bac-e96302a86991",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_25/attempt-002/raw.png",
+        "sha256": "aac6bd3b479b87a8f88204cf244414108dbfc79e993d16ed8424fd1183d5295f",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 319,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_26-attempt-001",
+      "unit_id": "unit.slice_player_26",
+      "status": "rejected",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_26. Original-only brief: Round coal-smoke alchemist with glass retort staff, stacked reagent bulbs, soot apron, dull brass clamps and acidic turquoise vapor. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-baab1953-9224-42f6-b601-b01ec55111bd",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_26/attempt-001/raw.png",
+        "sha256": "18d987dedc1637a28e01fa2dadfaa17bf2ec30fabf2fd251b7e6a0fc4e83d6f1",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "failed",
+        "min_direction_quadrant_pixels": 0,
+        "failures": [
+          "attack1",
+          "cast3",
+          "cast4",
+          "hit1"
+        ]
+      },
+      "review": {
+        "reviewer": "codex:mechanical-gate",
+        "decision": "rejected",
+        "reviewed_at": "2026-08-01T16:30:00+08:00",
+        "review_record_sha256": null,
+        "reason": "Missing required direction/action subject; rejected before human originality review."
+      }
+    },
+    {
+      "attempt_id": "slice_player_26-attempt-002",
+      "unit_id": "unit.slice_player_26",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_26. Original-only brief: Round coal-smoke alchemist with glass retort staff, stacked reagent bulbs, soot apron, dull brass clamps and acidic turquoise vapor. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-838dba8e-9055-45ae-aa47-96ebf72af630",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_26/attempt-002/raw.png",
+        "sha256": "afdb9d3af007c29d0fc5774a0599999f521130dce2a1fbab7a6a0d5f7616fd07",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 602,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_27-attempt-001",
+      "unit_id": "unit.slice_player_27",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_27. Original-only brief: Polar expedition diver with round ice-window shield, short climbing adze, cylindrical insulated suit, orange straps and steel-blue helmet. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-d68f144a-e64d-47ed-a5b8-ad52c9a17d7f",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_27/attempt-001/raw.png",
+        "sha256": "702fcfd82a87a3c00046b031c8700cedbe1a7cc8357a34e1379557a913af0dbe",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 120,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_28-attempt-001",
+      "unit_id": "unit.slice_player_28",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_28. Original-only brief: Masked wire dancer with twin cable-spool handguns, ribbon-like steel cords, one-sleeved burgundy coat and polished graphite mask. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-f1faa7f6-fe7a-4b44-b5b2-1e7d16ac82e6",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_28/attempt-001/raw.png",
+        "sha256": "dd4d728707c49d39dc8a12e46068fb7d4d60e6128c252dd9eb9fafd09b19f9ff",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 817,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_29-attempt-001",
+      "unit_id": "unit.slice_player_29",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_29. Original-only brief: Raven-plume jailer with chained obelisk focus, broad feather collar, narrow barred mask, black basalt plates and muted plum cloth. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-f19ae4b7-337b-41ee-9342-aa40cef7ba86",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_29/attempt-001/raw.png",
+        "sha256": "7f94554ad6121b0ca8b0f150233aec823e2c6db602f8878b5016ba87352f892a",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 181,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_30-attempt-001",
+      "unit_id": "unit.slice_player_30",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_30. Original-only brief: Monolithic rune golem with two floating slab shields and oversized stone fists, pale granite blocks, cobalt seams and gold geometry. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-8fea01a9-ce33-4434-adb7-660e996e097f",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_30/attempt-001/raw.png",
+        "sha256": "edd8fb3ca8996348630cc4bec4413643e6829dc834bd123d07f27e58cb124284",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 446,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    },
+    {
+      "attempt_id": "slice_player_31-attempt-001",
+      "unit_id": "unit.slice_player_31",
+      "status": "adopted",
+      "generation": {
+        "mode": "built-in-imagegen",
+        "independent_call": true,
+        "prompt": "Independent built-in ImageGen attempt for unit.slice_player_31. Original-only brief: Canopy glider archer with petal-disk bow, wing-like woven leaf cloak, narrow bamboo greaves, orchid magenta and deep jungle green. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity.",
+        "prompt_capture": "normalized-from-tool-invocation-template",
+        "imagegen_output_id": "exec-c4902180-a921-4b5b-b609-2fa3ab54e159",
+        "call_id": null,
+        "call_id_exposure": "not exposed by built-in ImageGen",
+        "model_native_seed": "not_exposed_by_builtin_image_gen"
+      },
+      "raw_source": {
+        "path": "assets/production/attempts/slice_player_31/attempt-001/raw.png",
+        "sha256": "35f6defbfb899fd0355cb79fb0dc066046399b1f9724f708f9535835bc36afac",
+        "width": 1254,
+        "height": 1254
+      },
+      "mechanical_gate": {
+        "status": "passed",
+        "min_direction_quadrant_pixels": 1901,
+        "failures": []
+      },
+      "review": {
+        "reviewer": "claude:independent-t18a-reviewer",
+        "decision": "adopted",
+        "reviewed_at": "2026-08-01T17:14:06+08:00",
+        "review_record_sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+        "reason": "Adopted by the aggregate T18A review; no rejection recorded."
+      }
+    }
+  ]
+}

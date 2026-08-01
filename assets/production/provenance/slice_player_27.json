@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_27",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_27-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_27/attempt-001/raw.png",
+    "sha256": "702fcfd82a87a3c00046b031c8700cedbe1a7cc8357a34e1379557a913af0dbe",
+    "imagegen_output_id": "exec-d68f144a-e64d-47ed-a5b8-ad52c9a17d7f",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_27. Original-only brief: Polar expedition diver with round ice-window shield, short climbing adze, cylindrical insulated suit, orange straps and steel-blue helmet. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479737,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "2b9f416671c9f9e62ed6758e3e9286d14ea9e70705a7711b3cfba6bfd0c3b270",
-    "portrait": "d8c1c98fed57786a7fd498f8187c4469615bc5e591a6f905de077e6b75829454",
-    "board_icon": "cbe10255c951926946b5b821c0963c288f40310003cbbcabb007bf73be7fdaa2",
-    "ability_icon": "1f0e24cf6dbca33790e4c439fe5ce9b06fcffe45ef915fb79549d93fe6210f6f",
-    "atlas": "af89a9878123dc9b13bb1ba17465c9a516f1ab80e5476a7461afd6d69365c020",
-    "sprite_frames": "1ef5a69b059465d45896221b0fa12733c39518ae7269535bce5a66c154379139"
+    "source_sheet": "a3015e706f1c01b1a89d19a56bea529548eff07779741890da8f5385af19b852",
+    "portrait": "53e7111e393fac25a3c7969e9d2c86e25470dfc7458e69067389212d234f245a",
+    "board_icon": "3d79a2e85a49a5ecf9eeb3993cfa8b4ed43fcd073cbd6b7da1f902528e836d09",
+    "ability_icon": "ee3e6ca5bdb350fcc8aa2a278ae922ad06e7c635565fcb562e290bf11f158904",
+    "atlas": "1644de357ad9d1ee7545ea2de87712957b6e083512bbb7e58a60fda01ba30389",
+    "sprite_frames": "433ec4b215d07999212b7a369fecb45041d62ee6225560d0761fe9e5e444e130"
   }
 }

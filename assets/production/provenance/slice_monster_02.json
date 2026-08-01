@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_02",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_02-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_02/attempt-001/raw.png",
+    "sha256": "623b1fb5cd912143637aade4d3f956afeefbd4537200dcec1dfd005cd938a07c",
+    "imagegen_output_id": "exec-3be1bb5c-f922-4966-9c35-204c1b9fd8f2",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_02. Original-only brief: Floating prism jelly with faceted bell, three ribbon tentacles, internal rotating light core and translucent cyan-lilac glass body. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479700,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "fc13ecf12bda4c429e92fee0c80cfa86f579ff7d581dae041c48016a8d699111",
-    "portrait": "7c17896a8643aba31fd9a232b6680a012ad60ca5a71c99689b46d7fe1a0d31d8",
-    "board_icon": "e71c070aed0b2a04cf0bc889205fced158846f25da280b8cf39abee105232b4d",
-    "ability_icon": "a9832356e57445d3980fe78ef5a16f66d8cbe193bcc01f62f6642a380f3bb2af",
-    "atlas": "222b6dbc7e92539f52c3b8d62d266fbd4aab1fe0155614bfb57e9e470015e3be",
-    "sprite_frames": "1c223495c4e771c98b723815c951d2dca0191c5e41dc9fb12ea85824831d5dd6"
+    "source_sheet": "23ea2d4bf150dbde215a796287ba4b480705079969c7e0379d14a35fa1f195ed",
+    "portrait": "9541640cf3af62f6aff1265947f8b1d197a0d9d17e9fbe44595797186a814ebe",
+    "board_icon": "19249f6c8a2ed1b21a968aa3fd17c2ede46605390c3fb37b9e88ca7bcc412a67",
+    "ability_icon": "6d872b94c147be00a9c284e8af810b1b407732c31e55f98606151b68467c59bc",
+    "atlas": "917bc31cfbd28ab80ad4f89146b32005cc6097a31632397aa50723b233f59de2",
+    "sprite_frames": "01129e157607dcb450a86b3963ba35c7fdb24b666bde6373f8c20f2b0bc93bac"
   }
 }

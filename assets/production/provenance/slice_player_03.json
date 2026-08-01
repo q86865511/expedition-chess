@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_03",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_03-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_03/attempt-002/raw.png",
+    "sha256": "e05a0135ee39f579ffeba25ec099e6d13fd34855fd9b7c9c527c51f92ebc0cea",
+    "imagegen_output_id": "exec-1ad357e3-7a0f-4972-9333-8aa3d9fb7f90",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "BRAND-NEW ORIGINAL pixel-art 5x5 production sheet for slice_player_03, Frost/Iron Sentinel with squat broad silhouette, huge vertical riveted iron tower shield, icebreaker pick, segmented plate and frost trim. Exact 20 ordered action cells; every cell exactly four complete N/E/S/W sprites including four directional fallen bodies in death cells; no omitted direction or cross-quadrant VFX; five reference cells; flat #ff00ff; no text, logos, Riot, or existing-work references. Retry explicitly audits the prior attack2 south omission."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-player-batch-001.md",
+    "sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+    "reviewer": "user:T18A-independent-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479713,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "174dc77e6b358d3111d4bb7c48f27a2b41200ad6d4378671ca2d04706509fc06",
-    "portrait": "7531201774d420d0536bf90ee2e1778710adbe84b452e8feea5bbe616fb40eee",
-    "board_icon": "1b51e4dde6d09a76f4106ca831e802ce97c7da8a6604aab4ced601a4b6378dce",
-    "ability_icon": "2cddb1c05df8744ca3053103a7c13a15827aef7fc20dc9d298f641a20f3c32ec",
-    "atlas": "3a1035e4713cad161724b1b46fc0cbf1f3135fb69331a8dc83596821f9eb5f79",
-    "sprite_frames": "1388accb8180d7e7a46e4d58c897791e3a6eb8e1776d4f18e31b05334420e7d2"
+    "source_sheet": "6cde4eb7751ac1e17692d5c176e8afc15282c47c5ff029d8b3f0d4b5ee94281c",
+    "portrait": "5d00b1709c5762ddf28d97675aaae1b6ce650ca8cdba0d52e25c800a5c4fa364",
+    "board_icon": "ce238fee09a0dbf273b4a6dba2a6f8a2afa47125e949209a0b7aee4df6d9b940",
+    "ability_icon": "d6ad1f298a5af4c8c8d62e4642ccda2b53503f1c752e5eca3a777ad90aa37dca",
+    "atlas": "38581662e07637932602663cc575a7c772144451a776dfc36ca9dc9c201c705e",
+    "sprite_frames": "7ae5a6c4953bf09c8e75c88ea3df2dcc83a87406123fae569157fb00820d27b0"
   }
 }

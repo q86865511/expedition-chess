@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_23",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_23-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_23/attempt-001/raw.png",
+    "sha256": "2e451a2a6713b509b7a0183f51e84e00ac6076972dd00707eee1b535ea063eac",
+    "imagegen_output_id": "exec-d5e0131b-eb4e-4931-8a21-f8cea603a098",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_23. Original-only brief: Very tall mirror knight carrying a dark reflective tower focus, floating rune shard familiar, torn charcoal surcoat and pale cyan reflections. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479733,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "ff7a744c0f4a5365dcc40dee2a765746e63a201644ff90984dd587583c3b539a",
-    "portrait": "ce73eefca9234768bcaeacbafdab9bd6ddb752fda003d67f16751bd1c31fe7ee",
-    "board_icon": "d9dd49ac077c02916b41a401c83cea76c36d272013bfaef709a47ad28c31a708",
-    "ability_icon": "093cdc2f3d70738e31d41c0cf78194a051e6d624c1d53b688f9ec4282987942e",
-    "atlas": "caee441d9a0bec30b6d72ad4aca83811c06ffc01842a79d97972f272e9d5942c",
-    "sprite_frames": "3199237b35616d1eea22625ecbf4b5a333956dd701b755b05e0714cec9995178"
+    "source_sheet": "22d0d8d86f494322c43efe78324f49d48f097877e65511ca92fb58febca24b66",
+    "portrait": "f4b586fea927fdee64535f4dc94730d4a366068d84329fa6a5b7456425cdb559",
+    "board_icon": "056b986ea4b99943176da37efb253fcb8213dc568d4c6c89bbb37ec58a4ead9a",
+    "ability_icon": "91f3b7d3df5d3ec90cb9f441c8644f34904015ef303e59bb1607185404957f43",
+    "atlas": "cdb71309123c3a27e84ebdfc28f24f0fed2f77832250cb205fbf452fc3046c7f",
+    "sprite_frames": "f63ee6ac7ff0710347db8ed9b56091566fefd8cc61a09ca55aaab9582761061f"
   }
 }

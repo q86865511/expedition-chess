@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_25",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_25-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_25/attempt-002/raw.png",
+    "sha256": "aac6bd3b479b87a8f88204cf244414108dbfc79e993d16ed8424fd1183d5295f",
+    "imagegen_output_id": "exec-67ed6c52-6b10-4315-9bac-e96302a86991",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_25. Original-only brief: Beekeeping ranger with honeycomb crossbow, broad mesh veil, waxed canvas coat, amber cells and cream linen distinct from all leaf archers. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479735,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "7501ff9fdde7845deff886885b22b355b047d011911ab69933324c5f3e385c81",
-    "portrait": "9b33f843a9af64df181799a8bec8fbaad4225cd9a642b092632339101884be72",
-    "board_icon": "5f41c984a631ea50eb9b6444e73c218e487315bf884853173f85cf46d73fb293",
-    "ability_icon": "9359eb49b876055fb4cd619baf7499069a122581981862604334de9940b615f6",
-    "atlas": "9af64a4fc3b81fcc4427cba2eaea085bfc2b34f2794bd68465417ac73e7917c5",
-    "sprite_frames": "028e0174f7c3c39d4041d7c23ae1c1a21e581e4bc783df63b0a96b7eaf97da5c"
+    "source_sheet": "fb3f4f10a582130c6c3e1dc598deb66ead8cf6ae439d55212cc666e87aaea7e3",
+    "portrait": "8aa176bc67bf732945ce70e81d66effb6675953408cfa7ee65b91020dec8af7a",
+    "board_icon": "8679f42f792f90abf57b77d1b435b4976b3634ecb375302c85a402a9e8a7655c",
+    "ability_icon": "141cc9bc3c913b81fac4c95a921b2baee4e6fc21daea013acaf2aa4bd0011204",
+    "atlas": "edac746585fda81777c006c1d5c4cb7beb9e0851f936278781a8df84ad1edf70",
+    "sprite_frames": "e5803ce08a8f508ba1616afa2b19cc97e1386ce47b1ba3bd143c79a07081e771"
   }
 }

@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_16",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_16-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_16/attempt-001/raw.png",
+    "sha256": "6846d6c7d80d8bbb803d937a4725ce130f33ed1d76009bda9d86dd82c53be01a",
+    "imagegen_output_id": "exec-12b7e1a1-1612-4f69-be15-cf765cf2b5da",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_16. Original-only brief: Stilt-legged magnet engineer with a horseshoe induction pistol, asymmetrical patchwork coat, red cable coils and matte iron braces. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479726,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "56d01503ce3b412380161f09475afe84b1fe41bb31d4112f32c9a54deae8d7c7",
-    "portrait": "df83fd243f9f95329eb2847fbf496eefcc3058935a16b08c22e1969482df4d0e",
-    "board_icon": "c0895d9ed07a7dd10e5e62b2831e0c08c0e613205d639b7b0bbf4bc9b23b75aa",
-    "ability_icon": "9aef667dda55f413fb232fe5157f3447db4dcd4765212229c8013935d7acca9f",
-    "atlas": "b2a0a314d31d2112332f791cf1948718917fd025fd40f9099279ae1f7374ddc1",
-    "sprite_frames": "a8fb5c603140075513b84cf21ae96ecaff13eef0adf3862177098cb0d98ea4d0"
+    "source_sheet": "ad256a564c99a787d8b86f7db2f7c46783ee77b254820ecfdd410803f00d73a1",
+    "portrait": "42c35d48f119ddf0ccc1497d01457a98f1d3ad9a887249cdd57fc3e6d0f1b71c",
+    "board_icon": "1cc9c8d4117d18620b7f4a42580353496604cae11c5504e3e76d9fc1fb52d596",
+    "ability_icon": "029220c63d21dbd3c782e2772dc664b59151f94b7af597a421cc767c33e248c3",
+    "atlas": "68941feb5a820df554caa264af26d3ca00ce2932d5121c13020dedde8c705417",
+    "sprite_frames": "785946a76b58765768aa4fa14b6d67e2582d155087d8840f1ed020aa0b79debf"
   }
 }

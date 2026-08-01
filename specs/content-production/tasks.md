@@ -1,19 +1,18 @@
 # G2 content-production — 任務清單
 
-> 建立日期：2026-07-31｜狀態：APPROVED / IMPLEMENTING
+> 建立日期：2026-07-31｜狀態：COMPLETE（本地未提交）
 > 對應：[requirements.md](requirements.md) R1～R14
 > 設計：[design.md](design.md)
 > 勾選只由主流程在 fresh evidence 存在後回寫。
 >
-> **2026-08-01 回勾**:Claude 接手完成實作與 T25 三輪雙審(closure 見
-> review-log.md 與 `.pipeline/content-production/reviews/`);fresh 證據=
-> 全 Gut 281 scripts/1091 tests、10k ExpeditionSoak exit 0、-Suite All exit 0、
-> `artifacts/test/content-production-acceptance.json`(verified=true)。
-> 未勾項均 blocked-on-codex/使用者:T18/T18A(人工採納 gate 未執行,
-> inventory status=generated、attempt ledger 缺檔)、T20(generator 已存在但
-> 輸出 44.1kHz/8s/q0.8/mono 不符 R9 的 48kHz/20-40s/q0.5/stereo,待重生成
-> 或修規格)。acceptance 的 AC-033/038/REQ-PROD-001/REQ-SCOPE-002 對應
-> blocked,gate 判定機械化,資產採納完成後自動翻綠。
+> **2026-08-01 最終回勾**：保留 Claude/T25 舊證據為歷史；Codex 後續完成
+> T18/T18A 全批人工採納與 T20 R9 音訊重生成。44 個單位各恰一個 adopted
+> attempt（另保留 14 rejected）、inventory status=`adopted`，Camp/shared 已由
+> adopted source 覆寫 production。fresh 證據：全 Gut 281 scripts/1093 tests、
+> 10k ExpeditionSoak exit 0、`-Suite All` exit 0；acceptance 21 列加 1 dependency
+> row 全 PASS，`evidence_verified=true`、`blocked_row_ids=[]`、
+> `fully_closed=true`。詳見 review-log、implementation-review 與
+> `.pipeline/content-production/final-evidence-2026-08-01.md`。
 
 ## Gate A — SDD 與 baseline
 
@@ -69,15 +68,15 @@
 - [x] **T17 [NORMAL / TDD]** 先建立 production asset validator red：
   inventory、count、dimension、alpha/chroma、frame map、hash、reference、
   perceptual distinction、OGG、loop/peak/bus。
-- [ ] **T18 [MECHANICAL / 免 TDD]** 依T13方向每單位至少一次built-in ImageGen；
+- [x] **T18 [MECHANICAL / 免 TDD]** 依T13方向每單位至少一次built-in ImageGen；
   每attempt獨立call並保存prompt/call/provenance，初始狀態僅generated。
-- [ ] **T18A [HARD / 免 TDD]** 由獨立唯讀 reviewer 做 originality、
+- [x] **T18A [HARD / 免 TDD]** 由獨立唯讀 reviewer 做 originality、
   silhouette、weapon/role、direction/action coverage人工gate；reviewer只輸出
   decision table，由主流程回寫attempt ledger。Rejected回T18新call重試，
   每單位恰一個adopted才可進T19/T21；production inventory只含adopted。
 - [x] **T19 [NORMAL / TDD]** 實作 deterministic processor，輸出 44 portrait、
   44 atlas／SpriteFrames、5 shared atlas 與 camp environment。
-- [ ] **T20 [NORMAL / TDD]** 實作固定種子音訊 generator 與鎖定 encoder，
+- [x] **T20 [NORMAL / TDD]** 實作固定種子音訊 generator 與鎖定 encoder，
   輸出 5 loops／21 SFX／AudioCueDefs。
 - [x] **T21 [NORMAL / TDD]** 將正式 content references 全部切到 production
   assets；pilot 僅留作 reference/provenance。

@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_02",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_02-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_02/attempt-001/raw.png",
+    "sha256": "2ca52312e94039fea86e44beec9dbb78b76075016be6b6975dd29e7c086b8a8f",
+    "imagegen_output_id": "exec-bbec312c-8dc4-4b14-b33c-b19f8bcf7a7c",
+    "call_id": null,
+    "call_id_exposure": "parallel parent terminated before metadata return",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Original pixel-art 5x5 source sheet for Ember/Frost Mystic slice_player_02: tall narrow caster, dual levitating fire/ice orbs, split-temperature robe and forked crystal headpiece; 20 ordered action cells, each with N/E/S/W sprites in a 2x2 mini-grid; five reference cells; flat #ff00ff; no copyrighted references."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-player-batch-001.md",
+    "sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+    "reviewer": "user:T18A-independent-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479712,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "24c6c6ce85319b36b65893fcab4b0f67f69160af2ff354976bad0c3f81bebd4b",
-    "portrait": "3638b48bd4ac7598335fe0121a83cd3ac528fecd69cc55512e7c202ceb7c3bee",
-    "board_icon": "5577bfa83f687dc420b3feb6b5d041b8d98ac6c5ee35de5e49ee3640ceeab352",
-    "ability_icon": "0f26c0c90261cf4d53a0e041e0f0d088f1c991695b0479237c0b74511a90f7a6",
-    "atlas": "8b0a0d69f18d7e192874fbdbdc09a247181f28649b0c50a84227f9e0e005f9df",
-    "sprite_frames": "0214a225c3a7f1712ba7268d2177084c7efaaf06cbee0be1d2681011594dfe70"
+    "source_sheet": "3ba048597d33002e7aea33b3e732e9cff5be84506c619e74dc78bf9f5d2246c8",
+    "portrait": "5d3b864571eb48bf58685b088d9058e1b328297ff4dbb209a51965652348c156",
+    "board_icon": "70cde71f0c7d266c2f585d03b7b2638e9429da8c1ee9112203769471da3e1514",
+    "ability_icon": "9e3d76fb3d2d954f19719eadf714ecb3670177f7e2f85c9f13bbec21f3053dea",
+    "atlas": "9b38319e6b6953b202743cf0db419a6d51ba37ff785ab5f7077c36807dff0789",
+    "sprite_frames": "898d87d743e7ae3e1f4fb9f396a102ed04d92dfd9a3a3b1bdb75e03a63822577"
   }
 }

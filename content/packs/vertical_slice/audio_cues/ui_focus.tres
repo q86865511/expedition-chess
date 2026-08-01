@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_audio")
-bus = &"SFX"
+bus = &"UI"
 stream_path = "res://assets/production/audio/sfx/ui_focus.ogg"
 loop = false
 id = &"audio.ui_focus"

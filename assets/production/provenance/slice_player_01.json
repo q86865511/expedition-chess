@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_01",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_01-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_01/attempt-001/raw.png",
+    "sha256": "a40b60aa5f0cedd08181d15674e044870fb0c1dd148f35f0e5632d0e984fea11",
+    "imagegen_output_id": "exec-c2d45d5d-5c20-48d7-8879-a0e279a9c15c",
+    "call_id": null,
+    "call_id_exposure": "parallel parent terminated before metadata return",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Original pixel-art 5x5 source sheet for Verdant/Ember Marksman slice_player_01: tall lean hunter, vinewood and ember-glass crossbow, leaf mantle and layered leather; 20 ordered action cells, each with N/E/S/W sprites in a 2x2 mini-grid; five reference cells; flat #ff00ff; no copyrighted references."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-player-batch-001.md",
+    "sha256": "c263f485f27276c959c25086bc9a5e340f1f5f17c3df1cb40b7cfffdc018a0da",
+    "reviewer": "user:T18A-independent-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479711,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "d879dd7fa1e10359d52ec4f44047e1ea9991d4caee2ba4c1e54da00ea8b2de40",
-    "portrait": "1328ae059e6829db5c279f22e9957685874acada23b074283be5a93c68c82eca",
-    "board_icon": "44e9a8f2333af89eb37ffcf4915d36c1c556c4a5aa251f3c373d3a0f15b16945",
-    "ability_icon": "b98c44d13542e44bd1b5cd7a80958b56f4ec9710afe0be26fed233a32edb8d0f",
-    "atlas": "392badcd019a3e91ff27022bab644b03c080aa1585559e5f1ebe958be98286ef",
-    "sprite_frames": "90571e0fd3627b50c648bdb7d0798102d516b40ce449055563c2aa73aca1a0c7"
+    "source_sheet": "5b9801337ec89b53025bb499163d6b1993b5c236f2b2fa1b589fda809392132d",
+    "portrait": "1dad30dcae7366681e00063c8bc79cc3c76eea1ed874da00ff554f0c1469ea65",
+    "board_icon": "6502578da60d4845b5a42f734812c73655d20e8b81a60eda18c82359dfb74d3b",
+    "ability_icon": "b5058577e693ea8a87f58cd1f8db9d57793722581db5bb261afc3d3b91f16d7a",
+    "atlas": "ee53eaf336eedfa0d664eeb5cfc1e8f76de8a2dbd1da285c4fe8f5016e54123d",
+    "sprite_frames": "0638da27b149d6c21726d77296aa2cb8e8725e79308a385388742dec4a3aedf9"
   }
 }

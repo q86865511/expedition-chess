@@ -7,12 +7,21 @@ import math
 import sys
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PINNED_PACKAGE_ROOT = REPO_ROOT / ".pipeline" / "content-production" / "python-packages"
+if PINNED_PACKAGE_ROOT.is_dir():
+    sys.path.insert(0, str(PINNED_PACKAGE_ROOT))
+
 import numpy as np
 import soundfile as sf
 
 
-SAMPLE_RATE = 44_100
-MUSIC_SECONDS = 8
+SAMPLE_RATE = 48_000
+CHANNELS = 2
+MUSIC_SECONDS = 24
+VORBIS_QUALITY = 0.5
+TRUE_PEAK_TARGET_DBFS = -3.0
+LOOP_SEAM_SECONDS = 0.05
 LOCAL_SEED_BASE = 0x47324155
 SOUNDFILE_WHEEL_SHA256 = (
     "1e70a05a0626524a69e9f0f4dd2ec174b4e9567f4d8b6c11d38b5c289be36ee9"
@@ -61,6 +70,31 @@ def dbfs(peak: float) -> float:
     return 20.0 * math.log10(max(peak, 1.0e-12))
 
 
+def oversampled_true_peak(samples: np.ndarray, factor: int = 4) -> float:
+    decoded = np.asarray(samples, dtype=np.float64)
+    if decoded.ndim == 1:
+        decoded = decoded[:, None]
+    source = np.arange(decoded.shape[0], dtype=np.float64)
+    target = np.linspace(
+        0.0,
+        float(decoded.shape[0] - 1),
+        (decoded.shape[0] - 1) * factor + 1,
+        dtype=np.float64,
+    )
+    peak = 0.0
+    for channel in range(decoded.shape[1]):
+        peak = max(peak, float(np.max(np.abs(np.interp(target, source, decoded[:, channel])))))
+    return peak
+
+
+def normalize_true_peak(samples: np.ndarray) -> np.ndarray:
+    peak = oversampled_true_peak(samples)
+    target = 10.0 ** (TRUE_PEAK_TARGET_DBFS / 20.0)
+    if peak <= target:
+        return samples.astype(np.float32)
+    return (samples * (target / peak)).astype(np.float32)
+
+
 def synth_music(index: int, root: float, intervals: tuple[int, ...]) -> np.ndarray:
     sample_count = SAMPLE_RATE * MUSIC_SECONDS
     time = np.arange(sample_count, dtype=np.float64) / SAMPLE_RATE
@@ -80,7 +114,17 @@ def synth_music(index: int, root: float, intervals: tuple[int, ...]) -> np.ndarr
         math.tau * (round((root * 4.0) * MUSIC_SECONDS) / MUSIC_SECONDS) * time
     )
     stereo = np.column_stack(((left + shimmer) * pulse, (right - shimmer) * pulse))
-    return np.tanh(stereo * 1.15).astype(np.float32)
+    stereo = np.tanh(stereo * 1.15)
+    seam_frames = round(SAMPLE_RATE * LOOP_SEAM_SECONDS)
+    transition_start = stereo.shape[0] - seam_frames * 2
+    transition_end = stereo.shape[0] - seam_frames
+    fade = np.linspace(0.0, 1.0, seam_frames, endpoint=False, dtype=np.float64)[:, None]
+    stereo[transition_start:transition_end] = (
+        stereo[transition_start:transition_end] * (1.0 - fade)
+        + stereo[:seam_frames] * fade
+    )
+    stereo[-seam_frames:] = stereo[:seam_frames]
+    return normalize_true_peak(stereo)
 
 
 def synth_sfx(index: int) -> np.ndarray:
@@ -98,7 +142,12 @@ def synth_sfx(index: int) -> np.ndarray:
     mix = (0.72 * tonal + 0.18 * noise) * attack * release
     if "combat" in SFX[index]:
         mix += 0.10 * np.sin(phase * 0.5) * release
-    return np.tanh(mix * 0.62).astype(np.float32)
+    mono = np.tanh(mix * 0.62)
+    delay = 7 + index % 11
+    delayed = np.roll(mono, delay)
+    delayed[:delay] = 0.0
+    stereo = np.column_stack((mono, 0.94 * mono + 0.06 * delayed))
+    return normalize_true_peak(stereo)
 
 
 def write_ogg(path: Path, samples: np.ndarray) -> dict[str, object]:
@@ -109,11 +158,11 @@ def write_ogg(path: Path, samples: np.ndarray) -> dict[str, object]:
         SAMPLE_RATE,
         format="OGG",
         subtype="VORBIS",
-        compression_level=0.8,
+        compression_level=VORBIS_QUALITY,
     )
     info = sf.info(path)
     decoded, decoded_rate = sf.read(path, dtype="float32", always_2d=True)
-    peak = float(np.max(np.abs(decoded)))
+    peak = oversampled_true_peak(decoded)
     return {
         "path": path,
         "sha256": sha256(path),
@@ -123,17 +172,16 @@ def write_ogg(path: Path, samples: np.ndarray) -> dict[str, object]:
         "duration_seconds": round(info.duration, 6),
         "format": info.format,
         "subtype": info.subtype,
-        "peak_dbfs": round(dbfs(peak), 4),
+        "true_peak_dbfs": round(dbfs(peak), 4),
         "decoded": decoded,
     }
 
 
-def loop_seam_metrics(decoded: np.ndarray) -> tuple[float, float]:
-    value_jump = float(np.max(np.abs(decoded[0] - decoded[-1])))
-    first_derivative = decoded[1] - decoded[0]
-    last_derivative = decoded[-1] - decoded[-2]
-    derivative_jump = float(np.max(np.abs(first_derivative - last_derivative)))
-    return value_jump, derivative_jump
+def loop_seam_rms_dbfs(decoded: np.ndarray) -> float:
+    seam_frames = round(SAMPLE_RATE * LOOP_SEAM_SECONDS)
+    difference = decoded[:seam_frames] - decoded[-seam_frames:]
+    rms = float(np.sqrt(np.mean(np.square(difference, dtype=np.float64))))
+    return dbfs(rms)
 
 
 def audio_resource_text(token: str, relative_path: str, bus: str, loop: bool) -> str:
@@ -166,7 +214,7 @@ def public_entry(raw: dict[str, object], repo: Path, bus: str, loop: bool) -> di
         "duration_seconds": raw["duration_seconds"],
         "container": raw["format"],
         "codec": raw["subtype"],
-        "peak_dbfs": raw["peak_dbfs"],
+        "true_peak_dbfs": raw["true_peak_dbfs"],
     }
 
 
@@ -179,28 +227,30 @@ def build(repo: Path) -> None:
         raw = write_ogg(audio_root / "music" / f"{token}.ogg", synth_music(index, root, intervals))
         entry = public_entry(raw, repo, "Music", True)
         entry["local_processing_seed"] = LOCAL_SEED_BASE + index
-        seam_peak, seam_derivative_peak = loop_seam_metrics(raw["decoded"])
-        entry["loop_seam_peak"] = round(seam_peak, 7)
-        entry["loop_seam_derivative_peak"] = round(seam_derivative_peak, 7)
+        entry["loop_seam_rms_dbfs"] = round(loop_seam_rms_dbfs(raw["decoded"]), 4)
         music_entries.append(entry)
         relative = str(raw["path"].relative_to(repo)).replace("\\", "/")
-        (cue_root / f"{token}.tres").write_text(
-            audio_resource_text(token, relative, "Music", True), encoding="utf-8"
-        )
+        with (cue_root / f"{token}.tres").open(
+            "w", encoding="utf-8", newline="\n"
+        ) as handle:
+            handle.write(audio_resource_text(token, relative, "Music", True))
     for index, token in enumerate(SFX):
         raw = write_ogg(audio_root / "sfx" / f"{token}.ogg", synth_sfx(index))
-        entry = public_entry(raw, repo, "SFX", False)
+        bus = "UI" if token.startswith("ui_") else "SFX"
+        entry = public_entry(raw, repo, bus, False)
         entry["local_processing_seed"] = LOCAL_SEED_BASE + 100 + index
         sfx_entries.append(entry)
         relative = str(raw["path"].relative_to(repo)).replace("\\", "/")
-        (cue_root / f"{token}.tres").write_text(
-            audio_resource_text(token, relative, "SFX", False), encoding="utf-8"
-        )
+        with (cue_root / f"{token}.tres").open(
+            "w", encoding="utf-8", newline="\n"
+        ) as handle:
+            handle.write(audio_resource_text(token, relative, bus, False))
     inventory = {
         "schema_version": 1,
         "slice": "content-production",
         "status": "adopted",
         "sample_rate": SAMPLE_RATE,
+        "channels": CHANNELS,
         "container": "OGG",
         "codec": "VORBIS",
         "encoder": {
@@ -209,12 +259,15 @@ def build(repo: Path) -> None:
             "wheel": "soundfile-0.13.1-py2.py3-none-win_amd64.whl",
             "wheel_sha256": SOUNDFILE_WHEEL_SHA256,
             "python": sys.version.split()[0],
-            "compression_level": 0.8,
+            "vorbis_quality": VORBIS_QUALITY,
+            "compression_level": VORBIS_QUALITY,
         },
         "synthesis": {
             "script": "tools/content-production/generate-production-audio.py",
             "local_seed_base": LOCAL_SEED_BASE,
             "music_seconds": MUSIC_SECONDS,
+            "loop_seam_window_ms": round(LOOP_SEAM_SECONDS * 1000),
+            "true_peak_oversample": 4,
             "music_recipe": "periodic additive synthesis with exact integer loop cycles",
             "sfx_recipe": "seeded tonal sweep plus shaped noise",
         },
@@ -222,9 +275,8 @@ def build(repo: Path) -> None:
         "sfx": sfx_entries,
     }
     inventory_path = audio_root / "inventory.json"
-    inventory_path.write_text(
-        json.dumps(inventory, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    with inventory_path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(inventory, ensure_ascii=False, indent=2) + "\n")
     print(
         f"generated {len(music_entries)} loop music and {len(sfx_entries)} semantic SFX"
     )

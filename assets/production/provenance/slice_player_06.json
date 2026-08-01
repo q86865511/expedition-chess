@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_06",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_06-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_06/attempt-001/raw.png",
+    "sha256": "7c1b6416314b9ab6180026de03bb7321b305560b852fe0298fbd39bb56b5666b",
+    "imagegen_output_id": "exec-d80b1af1-abbe-427d-a707-8f73eafbdc19",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_06. Original-only brief: Wide triangular defender with a prism kite shield, tuning-fork mace, translucent glass lamellar, cyan edges and muted violet cloth. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479716,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "0412727a46ec79b280cb8fff7beb059bb9bf44eddd80be5b93ed4eac208a60b2",
-    "portrait": "aeb56112a565c380362ad782e5dffa01fda9a367cd9095c1afd892fa5b476ac6",
-    "board_icon": "f5b482bbdae6b0823eb27152aef99343807b3243eb1a7db4f802976d8c6394a0",
-    "ability_icon": "5e897a151f42239e3d972f287064f9d7cc1876074230e630698e225ae53f1897",
-    "atlas": "ca1a257112ce30e35eb8fb656b8a1238f820e3a03e73b1162d949a6339dfed9f",
-    "sprite_frames": "3251665bc12bee4be4d5716b3bfd23b264e703c963c2a528dc88bd97ba31a0fc"
+    "source_sheet": "38aa4145761cf2a02447b151fdb97fc4f5cecdafb106c65cc8e3daa7e7a6e7da",
+    "portrait": "2a547fee03090901f347564832755a9ab4a3ffd84e180b556d633d32c76a6cd1",
+    "board_icon": "42b40dfcbce3616fee6cb4bd5ca6bd0cf078a0abc2c14513f01fbff6ad674a33",
+    "ability_icon": "0958ff27908de7e10782ed4f415f459249bec43648003b275a2ed9b146f04307",
+    "atlas": "02266168734511d93f7123ce4fdc9b47f037c3c3864e064623ae37e065b1c46a",
+    "sprite_frames": "5144533924f2b21dbb9d75f3a07ae437a3c6aef39d67adbec8ce8180b2ac91ff"
   }
 }

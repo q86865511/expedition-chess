@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_22",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_22-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_22/attempt-001/raw.png",
+    "sha256": "a0b6433ca0c8f45fc538441e461cfbaa0e43a0374778d4c5bfdacd206ae32ddf",
+    "imagegen_output_id": "exec-b1c6c205-a526-4346-b489-98efbfcc4551",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_22. Original-only brief: Compact clockwork courier with twin spring boomerang launchers, forward-leaning satchel silhouette, nickel plates and postal-red scarf. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479732,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "9e88af8575e79c19cd50adf8f522f1c94f8ec405cfaa6885a4e4a837a88240b5",
-    "portrait": "8dd15e116e3fbf2105a6c429fa66e28f7e27205de2d52ea39cc075882f311665",
-    "board_icon": "5bf75406c3c3b5a280148b996e789e97e33d431ad5edd2c9b811fd844a1a4cbd",
-    "ability_icon": "694256fabb3cfe3b7f0bb02fe6990c509a43646150002f79cc09a70f2ce519cf",
-    "atlas": "8db4a3773ebe57cf9464487128205bdf42c0611340af189de88352c3eba72708",
-    "sprite_frames": "e6e95b909360387fe65cf7b6cc6bef110a16eaf65e8cfabe683a2863d76cd3e3"
+    "source_sheet": "1764378eed397eccbc9aa0936d4c5fd128ce50c78d96c3f365793ead5734c521",
+    "portrait": "4460d50d9ba570a99deb260495d071a45800722df041466f2b19ba0b5fb674b8",
+    "board_icon": "7579dfceed23673b6bbe59ce41b506a723d8e5677c037bdbe0c570a16644c09e",
+    "ability_icon": "2f4ce3b938ccbf96b9af18a6f1a34cb13d49d1532011e04eb92273436e93a051",
+    "atlas": "122debb56dd1f2bf052ad687581c7a40477ee0ac87d0908d4d8fe13e4f9b7d1f",
+    "sprite_frames": "6605a1657ca3fe62df5886643962b392cc2f20b720f37e0de6c18c47dcd0473c"
   }
 }

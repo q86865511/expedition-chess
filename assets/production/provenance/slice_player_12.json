@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_12",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_12-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_12/attempt-002/raw.png",
+    "sha256": "490a895e52d5c5d69aaafe8c75af36cf4380c81b7d128723c33f702f96f48bde",
+    "imagegen_output_id": "exec-62b2aad2-cfaa-41cc-9f53-4e3276e60116",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_12. Original-only brief: Four-armed comet guard carrying a cylindrical ward shield and short meteor flail, stacked sapphire plates and cream astronomical tabard. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479722,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "401bc672c0209aba49e3f76b73e9aad7be896a58af06a93c8f196164e069f772",
-    "portrait": "d1acae47895f27865d4f320c55328a6c0058ade0cbd06c803ebc1b59d79ba71e",
-    "board_icon": "5549b380d4ff795d25383fab80132bfa23f8a58cdec0b3b0403d6502cb0dadd8",
-    "ability_icon": "95fb69757a34cd9ecb08d24fa062523758b1d085bad4b64e45a0351734c89ceb",
-    "atlas": "c4a21da9244d793875b8d1633ca5cc476dcc0d8b88f3661107c3dc943d4d7a01",
-    "sprite_frames": "83a34fd9bac81aadee6b90827d2c3e8f708df44ca8d80de1ff45d69c8b8862eb"
+    "source_sheet": "f405ce8046c7ea88a477f2a6ee2b94aa42f8c6c79bcf86583b986b010faaa8ff",
+    "portrait": "a59f6c86010afe37ce8825f3e9d8ae617b49d83df8e123309ca49798e4458839",
+    "board_icon": "e6461e711a3ebe3b2ced811ae69d75fa1e3ee3f7e2e860c93d388580ef1a7c75",
+    "ability_icon": "3e60fa8dd9844bd37406200e4ecdba0e0d65b075fe1528ab51335be4b709d298",
+    "atlas": "3657b0cb5995bbf19016d4be9596592b2ecfa97db24c56eb2b273b6180955be0",
+    "sprite_frames": "bb7791a15cf7ef941a82abb6862ac0f344735b963f998da108e9b8a2701ed4a7"
   }
 }

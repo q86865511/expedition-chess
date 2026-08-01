@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_03",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_03-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_03/attempt-001/raw.png",
+    "sha256": "25b86549237c34b7750bee4db62f41c75ffd2f3ccd5d58d9d86ad29f473fab53",
+    "imagegen_output_id": "exec-bf955bc2-f21c-4727-9d8c-97a84638e992",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_03. Original-only brief: Compact molten armadillo with hexagonal basalt shell, glowing seam claws, wedge snout and black, orange and ash-grey surface. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479701,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "e2ae78e93d5c1dd1cba2d23e52e8548887a62f870b303bddd5362120cf63fc25",
-    "portrait": "e834c56796db7c677560e64b356194e6bebe8ec981a955efa5c0dc4e9438b9df",
-    "board_icon": "45fc3815a9d4eef1fcba853ae15dfe44314c1d940f17a917f624c2a53d896bf7",
-    "ability_icon": "f058ddc3b0db030dc9567d6562d7ba29bd10c062480b0861060ed53d1a9b852b",
-    "atlas": "66ae6622fa3df38f5240249619b2056dee8afd27671556aaf7a98c201e8bec80",
-    "sprite_frames": "cec8f07304a2f826a5a50d5c87c359dc585d01a355efb8d17d4af5c6eb645c66"
+    "source_sheet": "7bcb5cc3967620db5c16b9de916459fd79120b7d6b9309a84b72c02ac29289fd",
+    "portrait": "802c668561767f0d327bc6c8d4e001668c74eb152777a224059faf6f4c9c8b2a",
+    "board_icon": "f2b30b89b50810eaf3d51e4dc9a5e58cd9281fccd582eaaafbb66b1cbbbcb741",
+    "ability_icon": "2ad260fd89fe53500a5d39450357592afaf1e13cd9c07e6177a6aba0d5492f79",
+    "atlas": "b494f97499a7133a3e2e0e7105a37e9b6b4224c285342f25cb381510fb5fde61",
+    "sprite_frames": "1b1a9195edc83ae037e191fb3a690150b4e779821885a215a7ff4c9e4a247682"
   }
 }

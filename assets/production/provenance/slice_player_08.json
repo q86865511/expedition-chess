@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_08",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_08-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_08/attempt-001/raw.png",
+    "sha256": "a3db83937714d62c8144204ea4aa4702dcadb49784ed85f2b983c62759bf6ff9",
+    "imagegen_output_id": "exec-8a818973-99d6-4953-91d5-e17b8c56de44",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_08. Original-only brief: Hovering kiln acolyte with orbiting ceramic censer rings, broad fireproof apron robes, charcoal clay mask and glowing orange cracks. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479718,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "650cb8e75a946f3153d6f39c046af57319da8d88719ef195659053e8fc8457f3",
-    "portrait": "ea3030df34cace1345cdd0249fc81fbb1d4dbadddce6fe71322b57d4636fb192",
-    "board_icon": "f5c3b4d5032cd50ad8bf78bdcc4506fe55cd138fd204cc0b4609cc8993b4778c",
-    "ability_icon": "01f8fa5cbb18772e7c9eb0d80e591565d3f31c85a4236b1e0cc8b97b9f32b2f3",
-    "atlas": "8d3ed5c35de22feb0431480428791cf3b741b8e4c1a3b52b8ee379c05fd40754",
-    "sprite_frames": "9a515fa9511740f8c7198e3db18de73134977a9193932685220e18fc92a63f50"
+    "source_sheet": "e6e54682059a42763b7534c8d370eedd88cb3bb310e20ab4bbcef82b1d21ad4d",
+    "portrait": "40ed71a9a0e4694ed22bc754f17fe8ab6201a9ff1c3ebfb790bfc76567e78312",
+    "board_icon": "515aaf1f4ce2f5cc2101e972f1ebb92edc72d267d2725d7931206d4f15f07a75",
+    "ability_icon": "dfc834988727709cf4a36731529399148b738c4c64575ab43943b3d0e643a6df",
+    "atlas": "471c61fd98a3f5bf6fe5bf37488434eef17996c319f4cf942731381285240279",
+    "sprite_frames": "3dd9dd0a35750d3b9a6e5bfe5b005d2cca8ace2a33970132193956b0b0e59771"
   }
 }

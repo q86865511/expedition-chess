@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_30",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_30-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_30/attempt-001/raw.png",
+    "sha256": "edd8fb3ca8996348630cc4bec4413643e6829dc834bd123d07f27e58cb124284",
+    "imagegen_output_id": "exec-8fea01a9-ce33-4434-adb7-660e996e097f",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_30. Original-only brief: Monolithic rune golem with two floating slab shields and oversized stone fists, pale granite blocks, cobalt seams and gold geometry. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479740,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "392169460da630652dccfceb9e3319c3228992b60be8244d06151b76fce09e05",
-    "portrait": "17e06a44a0c215bf294c6e04ed8f876bde7ee64c45cfd4ffbd5439c1445d3712",
-    "board_icon": "c72bd59023fcd16899378f5d045dcafcc840564bc1c798b93688e1a7bf15567c",
-    "ability_icon": "81f46efd9c690d3396bece32d43b5440a412022da411c433b07f390b709381d5",
-    "atlas": "93c5083a2bf8598831165aaf776b0617143b7d7554301b74d9d91eb1a28d6f2b",
-    "sprite_frames": "7e3275b7389faa8ed0578adedd19828a895002e98200609b2a485b13fdea6f74"
+    "source_sheet": "8809312f80f87dddb9f6d650bd3ad112bb743f4481c23ca38d3c2a9d5bfc55dd",
+    "portrait": "0ebaaf678a69c1b7ca822dc8faad13b2ecd5fe0dcc5d59f5530d5c6f2fde6b81",
+    "board_icon": "c00903c03c7b04a3cbe4486f1476ddbdc6c63fd6701103fb0195d94b54e5fb90",
+    "ability_icon": "812a7e7adf995e877de13541d0bd85ec27d18715e9b9f6ec6dc866237a92a289",
+    "atlas": "a8473d54cf8e1449af4acc71a3e1a63b1c78b9e9eb05ee61ac3e7ad8bdb3c22c",
+    "sprite_frames": "5c3ed20f6cfdf6a8f8638327fac39b504378956ab8401777da7357c90c91c847"
   }
 }

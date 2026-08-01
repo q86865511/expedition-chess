@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_player_13",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_player_13-attempt-002",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_player_13/attempt-002/raw.png",
+    "sha256": "310a255093e8e25218aabdcabea1d1b4cc239899c946fa0bb6498dc585ca7ea8",
+    "imagegen_output_id": "exec-10091bb5-6174-4b5f-9982-2472b13f6e79",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_player_13. Original-only brief: Small mushroom-canopy scout with a long reed blowpipe, shelf-fungus cloak, spore satchels, russet caps and moss-green wraps. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479723,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "17cc862ac6a677d6b0ce6244ed346eb6c94c377db7c1391efd699c372eb4fbb0",
-    "portrait": "9e0dded98aff7d78bb4574cdb5ac0de2f9ffc65d0484f367e394b71d258cd9c5",
-    "board_icon": "a25abdab6495fc2e24a0a43d6f1ab91dab82942d818e135ef02a71e7e13bcc29",
-    "ability_icon": "c27ddf56af5e0ddad235a919b5a9598d34eeeb20773f9d52be7536741ec66649",
-    "atlas": "b386b69a4e7c052d5819acd650cb62f3cbf7a82f1557f44d6c23874aa33243af",
-    "sprite_frames": "851555272d1b50cde4e2223a33d6ed54e1ee688d1ad028249294ed77f7882455"
+    "source_sheet": "a44cfe3e8b077eb26c9c01a5a75d253c529fac2daf7a39b95e27ef0d68874538",
+    "portrait": "efde89cd69ec49b768e841d0d384501dcbc6951feef57240d7b6631c28ecf633",
+    "board_icon": "ebe29bf50eb4983cbdea5bb8c5220d7bf18c011279b89ecd68b2fb628232082e",
+    "ability_icon": "cb486231fb02d7f7a55388b6d1e5a71c48371c6c0846f0f80c70a959db7c31c5",
+    "atlas": "f39d90882f15077689d056748e4bae4afc5afe6a9fdcaaa4789b4a036f1bc32c",
+    "sprite_frames": "41198dd52270ed3aa8b061d5080d8734fd5d96e1db4b9ae348d2d77f772bcde6"
   }
 }

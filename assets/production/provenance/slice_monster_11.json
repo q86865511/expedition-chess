@@ -1,23 +1,45 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "unit_id": "unit.slice_monster_11",
   "status": "adopted",
-  "source_master": "res://assets/production/source/master_arcane_vanguard.png",
-  "source_master_sha256": "f2b52981eedce9f7c83020f1dd10c3a1510c31dbf2657e6066ec16648d96c490",
-  "imagegen_call_id": "call_zIAbU7Ezj77PG2kvaep0fEbC",
-  "model_native_seed": "not_exposed_by_builtin_image_gen",
+  "adopted_attempt_id": "slice_monster_11-attempt-001",
+  "source_attempt": {
+    "path": "assets/production/attempts/slice_monster_11/attempt-001/raw.png",
+    "sha256": "ff05ccbfe72bb4714bdf90c76e666ffae1d7f267af4841c6a0570b2400e293c7",
+    "imagegen_output_id": "exec-af9fc037-02bd-43d0-8c29-aa2fc350ba62",
+    "call_id": null,
+    "call_id_exposure": "not exposed by built-in ImageGen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Independent built-in ImageGen attempt for unit.slice_monster_11. Original-only brief: Floating void-lantern cephalopod with cage-shaped head, four curled tentacles, star-speckled membrane and deep navy with green flame. Exact 5x5 sheet; 20 ordered action cells; each cell four complete N/E/S/W subjects; row 5 portrait/material/glyph/turnaround/palette; flat #ff00ff; no copied identity."
+  },
+  "review": {
+    "path": ".pipeline/content-production/reviews/t18a-full-batch-claude-review.md",
+    "sha256": "8f184279232c989c3697db289ef94cf5959fa1d72e74bfb8c4dc52c557ba1ec0",
+    "reviewer": "claude:independent-t18a-reviewer",
+    "decision": "adopted"
+  },
   "local_processing_seed": 1194479709,
   "processing": {
-    "script": "res://tools/content-production/build-production-assets.py",
+    "python": "3.12.13",
+    "python_implementation": "CPython",
     "pillow": "12.2.0",
     "numpy": "2.3.5",
+    "script": "tools/content-production/build-production-assets.py",
+    "script_sha256": "a430b03ef7371fbcf6046dd455ffc6968d879dd23440275e2330bb66632418e2",
     "canvas": [
       1280,
       1280
     ],
-    "cell": [
-      256,
-      256
+    "grid": [
+      5,
+      5
+    ],
+    "action_cells": 20,
+    "directions": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "frame": [
       64,
@@ -29,14 +51,15 @@
     ],
     "sampling": "nearest",
     "chroma": "#ff00ff",
-    "star_overlay": "non-color diamond count 1/2/3"
+    "star_overlay": "non-color diamond count 1/2/3",
+    "icon_badges": "deterministic non-color circle/shield backing"
   },
   "outputs_sha256": {
-    "source_sheet": "b533ed6f4483528477f5f5be89448232e01e2c489041979ebe23dae497b3e1cb",
-    "portrait": "aa5f57caa10df1b1edc223fedaf445fc1147a8fda0167e669587f1ee5f13fe16",
-    "board_icon": "616f82c539a4cd7f32bbba7b2f8e931a64b28fb3613777d33210191f533c58de",
-    "ability_icon": "337fbcd81c1b1a49bb41967d14b096747bbcb2951cdb50de9a42fa7976d8b793",
-    "atlas": "17c219b0064986afccec3d371b224ab283ae400a224d27551d56b3f4357d65ec",
-    "sprite_frames": "5422374bc12a4ed9a5d385474ffa007e53ee2ed41ad80fd7ff6bf99b66626fbd"
+    "source_sheet": "9fadc84d74e092327f7851082a2c1f332a4525de66ef5c40007f5482e4be51ee",
+    "portrait": "d3b7a6c052d0507711e8ae917937ff66acb0a23016fcb182b869393918d686b8",
+    "board_icon": "eef5d7695a577132b83747013f49c9e92753b982d095d4ba6fab10e0ea018476",
+    "ability_icon": "8430cba19be1b8243627adbc2a7a171edc8aee467c34bdf435c0b2b51d76f2f4",
+    "atlas": "59e981e5aa87929366c8553f6cbc0193eeefe84cf23dc8982bda43c11d8f113a",
+    "sprite_frames": "ccdda855c4041641a110a6ff696d1425ee8ed83b511fc98f6b06600b79dbbfd3"
   }
 }

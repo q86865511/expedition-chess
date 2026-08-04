@@ -11,10 +11,13 @@ static func production_candidate(
 	content_version: String
 ) -> BalanceCandidateDescriptor:
 	var scan := BalanceTuneSourceScanner.scan()
+	var tune_entries: Array[BalanceTuneEntry] = []
+	if scan.ok:
+		tune_entries.assign(scan.entries)
 	return BalanceCandidateDescriptor.new(
 		&"", content_version, manifest_digest,
 		BalanceCandidateDescriptor.RNG_VERSION,
-		scan.entries if scan.ok else [] as Array[BalanceTuneEntry]
+		tune_entries
 	)
 
 

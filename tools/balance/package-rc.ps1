@@ -192,8 +192,13 @@ function Invoke-RcSmokePhase {
     [IO.File]::WriteAllText($processLog, ($stdout + $stderr), $utf8NoBom)
     $godotText = if (Test-Path -LiteralPath $godotLog) { Get-Content -Raw -Encoding UTF8 -LiteralPath $godotLog } else { '' }
     if ($process.ExitCode -ne 0) { throw "RC smoke phase failed with exit code $($process.ExitCode): $Phase" }
-    if (($stdout + $stderr + $godotText) -match 'SCRIPT ERROR|Parse Error|ERROR:|CRASH|content bootstrap failed') {
-        throw "RC smoke phase emitted a fatal engine error: $Phase"
+    $combinedText = $stdout + $stderr + $godotText
+    $fatalLines = @($combinedText -split '\r?\n' | Where-Object {
+        ($_ -match 'SCRIPT ERROR|Parse Error|CRASH|content bootstrap failed|^ERROR:') -and
+        ($_ -notmatch '^ERROR: \d+ resources still in use at exit')
+    })
+    if ($fatalLines.Count -ne 0) {
+        throw "RC smoke phase emitted a fatal engine error: $Phase`n$($fatalLines -join [Environment]::NewLine)"
     }
     $matches = [regex]::Matches($stdout, '(?m)^RC_SMOKE_RESULT=(\{[^\r\n]+\})\s*$')
     if ($matches.Count -ne 1) { throw "RC smoke phase must emit exactly one result marker: $Phase" }

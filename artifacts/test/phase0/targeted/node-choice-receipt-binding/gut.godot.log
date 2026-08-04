@@ -1,0 +1,42 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+---  GUT  ---
+[INFO]:  using [C:/Users/q86865511/AppData/Roaming/Godot/app_userdata/遠征棋] for temporary output.
+Godot version:  4.7.0
+GUT version:  9.7.1
+
+
+res://tests/unit/content_production_regression/test_node_choice_receipt_binding.gd
+* test_committed_dismantle_service_run_is_the_valid_baseline
+* test_receipt_pointing_at_a_foreign_transaction_is_rejected
+* test_transaction_command_kind_mismatch_is_rejected
+* test_transaction_serial_mismatch_is_rejected
+* test_transaction_node_mismatch_is_rejected
+* test_transaction_run_mismatch_is_rejected
+* test_transaction_payload_digest_mismatch_is_rejected
+* test_unknown_transaction_digest_keeps_its_own_failure_path
+* test_reward_service_kind_is_rejected
+* test_service_node_must_be_the_current_node
+* test_service_receipt_from_another_node_is_rejected
+* test_service_receipt_with_non_dismantle_outcome_is_rejected
+* test_service_receipt_digest_must_exist_in_the_ledger
+13/13 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+Totals
+------
+Scripts               1
+Tests                13
+Passing Tests        13
+Asserts              38
+Time              0.349s
+
+
+---- All tests passed! ----
+

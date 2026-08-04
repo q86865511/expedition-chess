@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="38" name="GutTests" failures="0" tests="13" >
+  <testsuite name="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" tests="13" failures="0" skipped="0" time="0.05631" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_committed_dismantle_service_run_is_the_valid_baseline" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004929" >
+      </testcase>
+      <testcase name="test_receipt_pointing_at_a_foreign_transaction_is_rejected" assertions="4" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004377" >
+      </testcase>
+      <testcase name="test_transaction_command_kind_mismatch_is_rejected" assertions="4" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.005839" >
+      </testcase>
+      <testcase name="test_transaction_serial_mismatch_is_rejected" assertions="4" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004432" >
+      </testcase>
+      <testcase name="test_transaction_node_mismatch_is_rejected" assertions="4" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004363" >
+      </testcase>
+      <testcase name="test_transaction_run_mismatch_is_rejected" assertions="4" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004231" >
+      </testcase>
+      <testcase name="test_transaction_payload_digest_mismatch_is_rejected" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004009" >
+      </testcase>
+      <testcase name="test_unknown_transaction_digest_keeps_its_own_failure_path" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.003951" >
+      </testcase>
+      <testcase name="test_reward_service_kind_is_rejected" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.00398" >
+      </testcase>
+      <testcase name="test_service_node_must_be_the_current_node" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.003948" >
+      </testcase>
+      <testcase name="test_service_receipt_from_another_node_is_rejected" assertions="4" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004217" >
+      </testcase>
+      <testcase name="test_service_receipt_with_non_dismantle_outcome_is_rejected" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.004103" >
+      </testcase>
+      <testcase name="test_service_receipt_digest_must_exist_in_the_ledger" assertions="2" status="pass" classname="tests/unit/content_production_regression/test_node_choice_receipt_binding.gd" time="0.003931" >
+      </testcase>
+  </testsuite>
+</testsuites>

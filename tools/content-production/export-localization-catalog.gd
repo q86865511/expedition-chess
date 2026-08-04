@@ -1,6 +1,11 @@
 extends SceneTree
 
 const OUTPUT_PATH := "res://localization/catalog.v2.csv"
+# runtime checksum 讀取的 byte-identical 副本(app/content/project_content_bootstrap.gd
+# LOCALIZATION_CATALOG_PATH)。導出工具必須與 .csv 同步寫出,否則兩檔會漂移
+# (review B-03):tests/unit/presentation_ui_content/test_localization_catalog_raw_parity.gd
+# 用 SHA-256 相等斷言守住這件事。
+const OUTPUT_RAW_PATH := "res://localization/catalog.v2.csv.raw"
 
 
 func _init() -> void:
@@ -34,14 +39,24 @@ func _init() -> void:
 		push_error("could not create localization output directory")
 		quit(3)
 		return
+	var buffer := ("\n".join(lines) + "\n").to_utf8_buffer()
 	var file := FileAccess.open(OUTPUT_PATH, FileAccess.WRITE)
 	if file == null:
 		push_error("could not open localization output")
 		quit(3)
 		return
-	file.store_buffer(("\n".join(lines) + "\n").to_utf8_buffer())
+	file.store_buffer(buffer)
 	file.close()
-	print("exported %d localization rows to %s" % [keys.size(), OUTPUT_PATH])
+	# byte-identical .raw 副本是 runtime SHA-256 checksum 的實際讀取來源(見上方常數
+	# 註解);兩檔必須同一次寫出,避免只更新 .csv 造成 checksum 漂移。
+	var raw_file := FileAccess.open(OUTPUT_RAW_PATH, FileAccess.WRITE)
+	if raw_file == null:
+		push_error("could not open localization raw output")
+		quit(3)
+		return
+	raw_file.store_buffer(buffer)
+	raw_file.close()
+	print("exported %d localization rows to %s and %s" % [keys.size(), OUTPUT_PATH, OUTPUT_RAW_PATH])
 	quit(0)
 
 

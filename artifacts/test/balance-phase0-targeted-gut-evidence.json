@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "kind": "balance-phase0-targeted-gut",
+  "passed": true,
+  "suites": [
+    {
+      "name": "balance-playtest-final-s3",
+      "source_commit": "6b072f8be1be39f5ee0644e5b2d7ab4d4960756e",
+      "path": "artifacts/test/phase0/targeted/balance-playtest-final-s3",
+      "runner_exit_code": 0,
+      "tests": 24,
+      "assertions": 136,
+      "failures": 0,
+      "errors": 0,
+      "orphans": 0
+    },
+    {
+      "name": "node-choice-receipt-binding",
+      "path": "artifacts/test/phase0/targeted/node-choice-receipt-binding",
+      "runner_exit_code": 0,
+      "tests": 13,
+      "assertions": 38,
+      "failures": 0,
+      "errors": 0,
+      "orphans": 0
+    },
+    {
+      "name": "meta-progression",
+      "path": "artifacts/test/phase0/targeted/meta-progression",
+      "runner_exit_code": 0,
+      "tests": 216,
+      "assertions": 1147,
+      "failures": 0,
+      "errors": 0,
+      "orphans": 0
+    }
+  ],
+  "unexpected_nul_warning_count": 0
+}

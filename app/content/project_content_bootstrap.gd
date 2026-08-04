@@ -5,7 +5,9 @@ const BUILD_SYSTEMS_ROOT: String = "res://content/packs/build_systems"
 const VERTICAL_SLICE_ROOT: String = "res://content/packs/vertical_slice"
 const CONTENT_VERSION: String = "0.2.0-content-production"
 const PACK_IDS: Array[StringName] = [&"pack.build_systems", &"pack.vertical_slice"]
-const LOCALIZATION_CATALOG_PATH: String = "res://localization/catalog.v2.csv"
+# csv_translation importer 不會把原始 CSV bytes 放入 export PCK；runtime checksum
+# 讀取 byte-identical `.raw` 副本，顯示用 Translation resources 仍由原 CSV 產生。
+const LOCALIZATION_CATALOG_PATH: String = "res://localization/catalog.v2.csv.raw"
 const LOCALIZATION_CATALOG_SHA256: String = \
 	"cdd0e1b6642821b81f48e3983b2917e127aab5cc617e61405d5bd6ad48edf841"
 const REQUIRED_ASSET_PATHS: Array[String] = [
@@ -19,6 +21,7 @@ var _dependency_port: ContentDependencyPort
 var _registry_for_result: ContentRegistryService
 var _owns_registry_for_result: bool
 var _localization_catalog_error: StringName = &""
+var _localization_catalog_error_detail: String = ""
 ## 只在正式 load 路徑上有值(注入 dependency port 的測試路徑為 null);
 ## codec 2→3 migration pack 的 L10N2 digest 必須綁在這份實際安裝的 catalog 上。
 var _localization_catalog: LocalizationCatalog
@@ -45,6 +48,13 @@ func _init(
 			_dependency_port = ProjectContentDependencyPort.new(loaded.catalog)
 		else:
 			_localization_catalog_error = LOCALIZATION_CATALOG_INVALID
+			_localization_catalog_error_detail = (
+				"%s/row=%d/key=%s" % [
+					String(loaded.error.code), loaded.error.row,
+					String(loaded.error.key),
+				]
+				if loaded.error != null else "UNKNOWN"
+			)
 
 
 func _load_production_localization_catalog() -> LocalizationCatalogLoadResult:
@@ -77,7 +87,9 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 	if not _localization_catalog_error.is_empty():
 		return _failure(
 			_localization_catalog_error,
-			"production localization catalog load failed"
+			"production localization catalog load failed: %s" % String(
+				_localization_catalog_error_detail
+			)
 		)
 	for path: String in REQUIRED_ASSET_PATHS:
 		if not _dependency_port.asset_exists(path):
@@ -191,6 +203,10 @@ func run(registry: ContentRegistryService) -> ProjectContentBootstrapResult:
 	battle_roots.append_array(ids.unit_ids)
 	battle_roots.append_array(ids.equipment_ids)
 	battle_roots.append_array(ids.battle_relic_ids)
+	# Encounter compilation is a production battle concern too.  Keeping these
+	# out of the pinned battle catalog made MapNodeRule.generator_id resolve in
+	# economy while the formal NodeEntry/StartCombat path failed closed.
+	battle_roots.append_array(ids.encounter_ids)
 	var battle_result := BattleRuleCatalogBuilder.new().build(
 		registry, digest, battle_roots
 	)
@@ -355,11 +371,18 @@ func _load_dir(path: String, output: Array[ContentDefinition]) -> String:
 				if not nested_error.is_empty():
 					dir.list_dir_end()
 					return nested_error
-			elif entry.ends_with(".tres"):
-				var resource := load(full_path)
+			elif entry.ends_with(".tres") or entry.ends_with(".tres.remap"):
+				# Exported PCK directory enumeration exposes compiled resources with
+				# a `.remap` suffix; ResourceLoader still resolves the canonical
+				# `.tres` path through that remap.
+				var load_path := (
+					full_path.trim_suffix(".remap")
+					if entry.ends_with(".remap") else full_path
+				)
+				var resource := load(load_path)
 				if not (resource is ContentDefinition):
 					dir.list_dir_end()
-					return "unexpected resource type at " + full_path
+					return "unexpected resource type at " + load_path
 				output.append(resource)
 		entry = dir.get_next()
 	dir.list_dir_end()

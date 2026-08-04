@@ -1,0 +1,30 @@
+{
+    "schema_version":  1,
+    "kind":  "balance-phase0-source-manifest",
+    "git_commit":  "6b072f8be1be39f5ee0644e5b2d7ab4d4960756e",
+    "content_version":  "0.2.0-content-production",
+    "tune_digest":  "7d47fada8091a79a68a2c50a4d63c5d57e0752d0bac7776b30230717a6f8dea4",
+    "candidate_id":  "balance.g2.7d47fada8091",
+    "canonical_manifest_digest":  "923c6c11fddc0d1684f1f1f0da92a0990a922aef7ef1a2a30c93a92f90a00a60",
+    "pinned_production_candidate":  {
+                                        "path":  "application/balance/production_balance_candidate.json",
+                                        "sha256":  "439b522b8884157a6d9dab9a442f16239d5837234b7b6a4569486647a5c463b8",
+                                        "manifest_digest":  "923c6c11fddc0d1684f1f1f0da92a0990a922aef7ef1a2a30c93a92f90a00a60"
+                                    },
+    "frozen_source_digest":  "5982d579a02d7efe06318aa6135305db827b660255b1e38ccc7b57c070220758",
+    "godot_version":  "4.7.stable.official.5b4e0cb0f",
+    "godot_executable_sha256":  "b2ca888d5115a6cedee564764a2ee494a625f2ec2edbabd010fe33c9a88a6bf8",
+    "frozen_3k":  {
+                      "path":  "artifacts/test/balance-playtest-screening.json",
+                      "sha256":  "810d36a31f756f500307de26f7ede36f2e0c21290767121a7aef9f0e665f3717"
+                  },
+    "tier2_evidence":  {
+                           "path":  "artifacts/test/balance-phase0-tier2plus-evidence.json",
+                           "sha256":  "7285c49ab8d5e0cad6fff291f3139d1d8327f7b44617c1eab33fad05b7e46a07"
+                       },
+    "nul_equivalence_evidence":  {
+                                     "path":  "artifacts/test/balance-phase0-nul-replay-equivalence.json",
+                                     "sha256":  "40450fb2656cdf4973233655c7390f4de647bc04f97b05e7700999643f04d8b4"
+                                 },
+    "generated_at_utc":  "2026-08-04T08:35:56Z"
+}

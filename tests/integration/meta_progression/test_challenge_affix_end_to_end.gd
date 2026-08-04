@@ -1,32 +1,27 @@
 extends GutTest
 
-## T07 (specs/meta-progression) — 端到端：Challenge N 遠征的詞綴 1..N 累積、經作用點/run 參數
-## 實際生效，決定性（同輸入同結果）。串接本任務其餘測試各自鎖定的單點行為
-## （ChallengeAffixResolver／EncounterCompiler／ShopService／BattleSettlementService），驗證
-## 它們接在一起確實構成 design §6.3 描述的完整雙軌管線。
+## T07 (specs/meta-progression) — 端到端：Challenge N 的合法 battle affix 1..N 累積、
+## 經 EncounterCompiler 實際生效，且同輸入決定性。BP-SI-001 的 global source lifecycle
+## 已禁止 challenge run track；RunModifierTable 必須對 challenge 鏈保持零貢獻。
 ## Covers：S5-AC-009（端到端段："詞綴 1..N 累積實際生效"）、S5-AC-010；design.md §6.3、§9
-## （"§5.1、§4.2" 端到端流程另由 T02/T05 覆蓋，本檔只聚焦詞綴雙軌這一段的串接，不重跑
+## （"§5.1、§4.2" 端到端流程另由 T02/T05 覆蓋，本檔只聚焦 battle affix 串接，不重跑
 ## StartExpeditionCommand／MetaSettlementCommand 的存檔交易——那些是各自任務的既有測試範圍）。
 ##
-## 情境設計：三階挑戰鏈——level 1 掛軌 A（battle affix）、level 2 掛軌 B 的 ShopSurcharge、
-## level 3 掛軌 B 的 DrainExpeditionHp。在 Challenge 3 建構的管線必須同時看到三者；在
-## Challenge 2 建構的管線只看到前兩者（尚未累積到 level 3 的 drain）——直接驗證「1..N 累積」
-## 而非只驗證「最終態」，呼應 design「詞綴 1..N 累積」的逐階疊加語意。
+## 情境設計：level 1/2/3 各掛一個純 battle affix；Challenge 3 必須解析三個、Challenge 2
+## 只能解析前兩個，Challenge 0 為空。三個層級的 RunModifierTable 均不得得到 challenge 規則。
 ##
-## 假設聲明：本檔沿用同任務其餘檔案已宣告的簽名假設（ChallengeAffixResolver.resolve(registry,
-## manifest_digest, challenge_level)、RunModifierTableBuilder.build(registry, manifest_digest,
-## relic_ids, commander_id, challenge_level)——RunModifierTableBuilder 為既有型別，非本任務新增
-## ——ShopSurchargeOperationDef/DrainExpeditionHpOperationDef 兩個內容編譯層新類別），不重複
-## 展開理由，詳見各自檔案的假設聲明段。
+## 假設聲明：沿用 ChallengeAffixResolver.resolve(registry, manifest_digest, challenge_level)
+## 與 RunModifierTableBuilder.build(registry, manifest_digest, relic_ids, commander_id,
+## challenge_level) 既有簽名。
 
 const RESOLVER_SCRIPT_PATH := "res://domain/run/build/challenge_affix_resolver.gd"
 
-const BATTLE_AFFIX_ID: StringName = &"effect.e2e_battle_l1"
-const SURCHARGE_AFFIX_ID: StringName = &"effect.e2e_surcharge_l2"
-const DRAIN_AFFIX_ID: StringName = &"effect.e2e_drain_l3"
+const BATTLE_AFFIX_L1: StringName = &"effect.e2e_battle_l1"
+const BATTLE_AFFIX_L2: StringName = &"effect.e2e_battle_l2"
+const BATTLE_AFFIX_L3: StringName = &"effect.e2e_battle_l3"
 
 
-func test_challenge_three_accumulates_all_three_prior_levels_deterministically() -> void:
+func test_challenge_three_accumulates_three_battle_affixes_deterministically() -> void:
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var installed := _install(registry, "fixture.challenge_e2e.1")
@@ -35,42 +30,13 @@ func test_challenge_three_accumulates_all_three_prior_levels_deterministically()
 		return
 	var digest := installed.handle.manifest_digest
 	var no_relics: Array[StringName] = []
-
-	# --- 軌 B：RunModifierTableBuilder 在 Challenge 3 必須同時看到 surcharge(level2) 與
-	# drain(level3) 的 always-active 貢獻 ---
 	var built_lvl3 := RunModifierTableBuilder.new().build(registry, digest, no_relics, &"commander.c0", 3)
 	assert_true(built_lvl3.ok, "%s" % (built_lvl3.error.code if not built_lvl3.ok else ""))
 	if not built_lvl3.ok:
 		return
-	assert_eq(built_lvl3.table.sum_always_active(&"economy", &"shop_surcharge"), 4, "level2 的 surcharge 貢獻必須累積進 Challenge 3")
-	assert_eq(built_lvl3.table.sum_always_active(&"rule", &"drain_expedition_hp"), 6, "level3 自身的 drain 貢獻")
+	assert_eq(built_lvl3.table.always_active_count(&"economy"), 0)
+	assert_eq(built_lvl3.table.always_active_count(&"rule"), 0)
 
-	# --- 軌 B 實際生效：ShopService 成本反映 surcharge ---
-	var shop_catalog := _shop_catalog(digest, 10)
-	var shop_result := ShopService.new().generate_offers(GenerateOffersRequest.new(
-		&"run_e2e", &"node_e2e", EconomyState.new(50, 3, 0, 0, 0, 0, []),
-		shop_catalog.create_initial_pool(), EconomyTestFixture.empty_roster(),
-		EconomyTestFixture.empty_owners(), EconomyTestFixture.shop_rng(),
-		U64Bits.zero(), U64Bits.one(), shop_catalog, built_lvl3.table, []
-	))
-	assert_true(shop_result.ok)
-	if shop_result.ok:
-		for offer: ShopOffer in shop_result.transaction.economy_state.shop_offers:
-			assert_eq(offer.cost, 14, "10 base + 4 challenge surcharge(累積自 level2)")
-
-	# --- 軌 B 實際生效：BattleSettlementService 戰敗損失反映 drain ---
-	var loss_root := _loss_root(100, 20)
-	var root_digest := loss_root.run.content_snapshot.manifest_digest_value()
-	var settlement_catalog := EconomyTestFixture.settlement_catalog(root_digest)
-	# 規則本體＝上方 RunModifierTableBuilder 從 registry 解出的 Challenge 3 規則，僅把表重釘到
-	# root 的世代以滿足 BattleSettlementService 的世代守衛（三方同世代）。
-	var settlement_table := RunRelicTable.new(root_digest, built_lvl3.table.all_rules())
-	var settled := BattleSettlementService.new().settle(loss_root.run, settlement_catalog, settlement_table, [])
-	assert_true(settled.ok, "%s" % (settled.error.code if not settled.ok else ""))
-	if settled.ok:
-		assert_eq(settled.run_state.expedition_hp, 74, "100 - (20 damage + 6 challenge drain(累積自 level3))")
-
-	# --- 軌 A：ChallengeAffixResolver 在 Challenge 3 必須列出 level1 的 battle affix ---
 	var resolver_result := _resolve(registry, digest, 3)
 	if resolver_result == null:
 		return
@@ -78,7 +44,10 @@ func test_challenge_three_accumulates_all_three_prior_levels_deterministically()
 	if not bool(resolver_result.get("ok")):
 		return
 	var battle_ids := _battle_track_effect_ids(resolver_result.get("entries"))
-	assert_eq(battle_ids, [BATTLE_AFFIX_ID], "軌 A 詞綴（level1）必須累積進 Challenge 3 的清單")
+	var expected_ids: Array[StringName] = [
+		BATTLE_AFFIX_L1, BATTLE_AFFIX_L2, BATTLE_AFFIX_L3,
+	]
+	assert_eq(battle_ids, expected_ids, "Challenge 3 必須按層級累積三個 battle affix")
 
 	# --- 軌 A 實際生效：EncounterCompiler 合併進 encounter 的 affix_effects ---
 	var request := EncounterCompileRequest.new()
@@ -89,27 +58,21 @@ func test_challenge_three_accumulates_all_three_prior_levels_deterministically()
 	request.depth = 0
 	request.challenge_level = 3
 	request.set("challenge_affix_effect_ids", battle_ids)
-	var compiled := EncounterCompiler.new().compile(request, _battle_catalog(digest, [BATTLE_AFFIX_ID]))
+	var compiled := EncounterCompiler.new().compile(request, _battle_catalog(digest, expected_ids))
 	assert_true(compiled.ok, _compile_error_text(compiled))
 	if not compiled.ok:
 		return
 	var compiled_ids: Array[StringName] = []
 	for assignment: BattleEffectSourceAssignmentSnapshot in compiled.preview.affix_effects:
 		compiled_ids.append(assignment.effect_id)
-	assert_eq(compiled_ids, [BATTLE_AFFIX_ID], "軌 A 詞綴必須實際合併進 encounter 編譯結果")
+	assert_eq(compiled_ids, expected_ids, "三個 battle affix 必須實際合併進 encounter")
 
 	# --- 決定性：同輸入（Challenge 3）第二次跑整條管線必須得到完全相同的結果 ---
 	var built_lvl3_again := RunModifierTableBuilder.new().build(registry, digest, no_relics, &"commander.c0", 3)
 	assert_true(built_lvl3_again.ok)
 	if built_lvl3_again.ok:
-		assert_eq(
-			built_lvl3_again.table.sum_always_active(&"economy", &"shop_surcharge"),
-			built_lvl3.table.sum_always_active(&"economy", &"shop_surcharge")
-		)
-		assert_eq(
-			built_lvl3_again.table.sum_always_active(&"rule", &"drain_expedition_hp"),
-			built_lvl3.table.sum_always_active(&"rule", &"drain_expedition_hp")
-		)
+		assert_eq(built_lvl3_again.table.always_active_count(&"economy"), 0)
+		assert_eq(built_lvl3_again.table.always_active_count(&"rule"), 0)
 	var resolver_result_again := _resolve(registry, digest, 3)
 	if resolver_result_again != null and bool(resolver_result_again.get("ok")):
 		assert_eq(
@@ -119,7 +82,7 @@ func test_challenge_three_accumulates_all_three_prior_levels_deterministically()
 		)
 
 
-func test_challenge_two_has_not_yet_accumulated_level_three_drain() -> void:
+func test_challenge_two_has_not_yet_accumulated_level_three_battle_affix() -> void:
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var installed := _install(registry, "fixture.challenge_e2e.2")
@@ -132,8 +95,16 @@ func test_challenge_two_has_not_yet_accumulated_level_three_drain() -> void:
 	assert_true(built_lvl2.ok)
 	if not built_lvl2.ok:
 		return
-	assert_eq(built_lvl2.table.sum_always_active(&"economy", &"shop_surcharge"), 4, "level2 已累積")
-	assert_eq(built_lvl2.table.sum_always_active(&"rule", &"drain_expedition_hp"), 0, "level3 尚未累積進 Challenge 2")
+	assert_eq(built_lvl2.table.always_active_count(&"economy"), 0)
+	assert_eq(built_lvl2.table.always_active_count(&"rule"), 0)
+	var resolved := _resolve(registry, digest, 2)
+	assert_true(resolved != null and bool(resolved.get("ok")), _error_text(resolved))
+	if resolved != null and bool(resolved.get("ok")):
+		assert_eq(
+			_battle_track_effect_ids(resolved.get("entries")),
+			[BATTLE_AFFIX_L1, BATTLE_AFFIX_L2] as Array[StringName],
+			"Challenge 2 只能累積前兩層 battle affix"
+		)
 
 
 func test_challenge_zero_run_modifier_table_has_no_challenge_contribution() -> void:
@@ -149,9 +120,8 @@ func test_challenge_zero_run_modifier_table_has_no_challenge_contribution() -> v
 	assert_true(built_lvl0.ok)
 	if not built_lvl0.ok:
 		return
-	assert_eq(built_lvl0.table.sum_always_active(&"economy", &"shop_surcharge"), 0)
-	assert_eq(built_lvl0.table.sum_always_active(&"rule", &"drain_expedition_hp"), 0)
 	assert_eq(built_lvl0.table.always_active_count(&"economy"), 0)
+	assert_eq(built_lvl0.table.always_active_count(&"rule"), 0)
 	var resolver_result := _resolve(registry, digest, 0)
 	if resolver_result == null:
 		return
@@ -162,37 +132,13 @@ func test_challenge_zero_run_modifier_table_has_no_challenge_contribution() -> v
 
 func _install(registry: ContentRegistryService, content_version: String) -> CatalogCompileResult:
 	var fixture := _fixture_with_renamed_challenge_chain()
-	_append_battle_only_effect(fixture, BATTLE_AFFIX_ID)
-	_append_run_only_effect(fixture, SURCHARGE_AFFIX_ID, _surcharge_operation())
-	_append_run_only_effect(fixture, DRAIN_AFFIX_ID, _drain_operation())
-	_set_modifier_refs(fixture, 1, [BATTLE_AFFIX_ID])
-	_set_modifier_refs(fixture, 2, [SURCHARGE_AFFIX_ID])
-	_set_modifier_refs(fixture, 3, [DRAIN_AFFIX_ID])
+	_append_battle_only_effect(fixture, BATTLE_AFFIX_L1)
+	_append_battle_only_effect(fixture, BATTLE_AFFIX_L2)
+	_append_battle_only_effect(fixture, BATTLE_AFFIX_L3)
+	_set_modifier_refs(fixture, 1, [BATTLE_AFFIX_L1])
+	_set_modifier_refs(fixture, 2, [BATTLE_AFFIX_L2])
+	_set_modifier_refs(fixture, 3, [BATTLE_AFFIX_L3])
 	return registry.install_validated(fixture, content_version, [&"pack.core"])
-
-
-func _surcharge_operation() -> RunOperationDef:
-	var script := load("res://content/definitions/shop_surcharge_operation_def.gd") as GDScript
-	assert_not_null(script, "ShopSurchargeOperationDef must exist")
-	if script == null:
-		return null
-	var operation: RunOperationDef = script.new()
-	operation.set("operation_index", 0)
-	operation.set("amount", 4)
-	operation.set("claim_scope", &"always")
-	return operation
-
-
-func _drain_operation() -> RunOperationDef:
-	var script := load("res://content/definitions/drain_expedition_hp_operation_def.gd") as GDScript
-	assert_not_null(script, "DrainExpeditionHpOperationDef must exist")
-	if script == null:
-		return null
-	var operation: RunOperationDef = script.new()
-	operation.set("operation_index", 0)
-	operation.set("amount", 6)
-	operation.set("claim_scope", &"always")
-	return operation
 
 
 func _resolve(registry: ContentRegistryService, manifest_digest: String, challenge_level: int) -> Object:
@@ -367,10 +313,10 @@ func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: Stri
 	var operation := ModifyStatOperationDef.new()
 	operation.operation_index = 0
 	operation.stat = &"attack"
-	operation.mode = &"flat"
+	operation.mode = &"add"
 	operation.amount = 1
 	operation.duration_ticks = 20
-	operation.target = &"self"
+	operation.target = &"all_allies"
 	var effect := EffectDef.new()
 	effect.id = effect_id
 	effect.schema_version = 2
@@ -382,23 +328,6 @@ func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: Stri
 	effect.max_stacks = 1
 	effect.duration_ticks = 20
 	effect.battle_operations = [operation]
-	fixture.definitions.append(effect)
-
-
-func _append_run_only_effect(fixture: ContentValidationInput, effect_id: StringName, operation: RunOperationDef) -> void:
-	if operation == null:
-		return
-	var effect := EffectDef.new()
-	effect.id = effect_id
-	effect.schema_version = 2
-	effect.display_name_key = StringName("loc.%s" % String(effect_id))
-	effect.description_key = StringName("loc.%s.description" % String(effect_id))
-	effect.content_role = &"challenge_affix"
-	effect.trigger = &"battle_start"
-	effect.stacking = &"replace"
-	effect.max_stacks = 1
-	effect.duration_ticks = 1
-	effect.run_operations = [operation]
 	fixture.definitions.append(effect)
 
 

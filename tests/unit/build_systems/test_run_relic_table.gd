@@ -127,6 +127,10 @@ func _fixture_with_categorized_relics() -> ContentValidationInput:
 		if index < 0:
 			continue
 		relic.category = _category_for_index(index)
+		if relic.category == &"battle":
+			relic.effect_refs = [&"effect.global_battle"]
+		else:
+			relic.effect_refs = [&"effect.operation_matrix"]
 	return fixture
 
 func _non_battle_relic_ids() -> Array[StringName]:

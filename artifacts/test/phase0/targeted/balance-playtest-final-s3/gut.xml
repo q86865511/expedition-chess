@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="136" name="GutTests" failures="0" tests="24" >
+  <testsuite name="tests/unit/balance_playtest/test_balance_bot_report_sampling.gd" tests="5" failures="0" skipped="0" time="0.010052" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_replay_sampling_is_deterministic_five_percent_by_absolute_seed" assertions="6" status="pass" classname="tests/unit/balance_playtest/test_balance_bot_report_sampling.gd" time="0.00048" >
+      </testcase>
+      <testcase name="test_report_records_replay_sample_list_and_split_elapsed_metrics" assertions="13" status="pass" classname="tests/unit/balance_playtest/test_balance_bot_report_sampling.gd" time="0.00692" >
+      </testcase>
+      <testcase name="test_report_serializes_authoritative_case_proof_and_regression_evidence" assertions="8" status="pass" classname="tests/unit/balance_playtest/test_balance_bot_report_sampling.gd" time="0.000781" >
+      </testcase>
+      <testcase name="test_report_regression_gate_rejects_old_artifact_pathologies" assertions="3" status="pass" classname="tests/unit/balance_playtest/test_balance_bot_report_sampling.gd" time="0.000192" >
+      </testcase>
+      <testcase name="test_build_none_is_visible_but_excluded_from_build_dominance_gate" assertions="1" status="pass" classname="tests/unit/balance_playtest/test_balance_bot_report_sampling.gd" time="0.001679" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" tests="13" failures="0" skipped="0" time="0.297788" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_production_case_driver_script_loads" assertions="1" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.000105" >
+      </testcase>
+      <testcase name="test_candidate_digest_is_order_independent_and_codec_round_trips" assertions="8" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.000387" >
+      </testcase>
+      <testcase name="test_candidate_rejects_duplicate_and_fixed_rule_fields" assertions="2" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.000138" >
+      </testcase>
+      <testcase name="test_scanner_policy_is_shared_and_unknown_numeric_fields_fail_closed" assertions="12" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.074649" >
+      </testcase>
+      <testcase name="test_pinned_production_candidate_matches_source_and_fails_closed" assertions="7" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.19721" >
+      </testcase>
+      <testcase name="test_candidate_archive_is_append_only_and_conflict_fails" assertions="4" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.013031" >
+      </testcase>
+      <testcase name="test_candidate_archive_preserves_same_tune_across_manifest_revisions" assertions="7" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.009306" >
+      </testcase>
+      <testcase name="test_strategies_choose_different_scores_and_stable_ties" assertions="4" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.00038" >
+      </testcase>
+      <testcase name="test_observation_and_selected_action_are_clone_only" assertions="2" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.000213" >
+      </testcase>
+      <testcase name="test_illegal_and_unaffordable_actions_are_rejected" assertions="2" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.00018" >
+      </testcase>
+      <testcase name="test_economy_policy_fills_board_then_spends_only_above_max_interest" assertions="7" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.000162" >
+      </testcase>
+      <testcase name="test_build_attribution_requires_active_faction_and_tie_is_run_bound" assertions="3" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.000182" >
+      </testcase>
+      <testcase name="test_appendix_c_tune_values_are_exact" assertions="14" status="pass" classname="tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd" time="0.001845" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" tests="6" failures="0" skipped="0" time="0.010808" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_session_report_round_trip_has_only_anonymous_allowlisted_fields" assertions="8" status="pass" classname="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" time="0.000256" >
+      </testcase>
+      <testcase name="test_session_report_rejects_future_schema_and_unknown_privacy_field" assertions="3" status="pass" classname="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" time="0.000235" >
+      </testcase>
+      <testcase name="test_session_report_rejects_non_string_route_values_and_non_hex_digest" assertions="2" status="pass" classname="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" time="0.00024" >
+      </testcase>
+      <testcase name="test_session_report_writer_publishes_readable_local_json" assertions="4" status="pass" classname="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" time="0.008757" >
+      </testcase>
+      <testcase name="test_session_report_rejects_path_like_or_unknown_prefix_values" assertions="9" status="pass" classname="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" time="0.000931" >
+      </testcase>
+      <testcase name="test_session_report_requires_hour_bucket_and_three_terminal_outcomes" assertions="6" status="pass" classname="tests/unit/balance_playtest/test_playtest_session_report_codec.gd" time="0.000389" >
+      </testcase>
+  </testsuite>
+</testsuites>

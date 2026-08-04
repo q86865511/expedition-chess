@@ -10,7 +10,7 @@ func build(
 		return ForgeRecipeTableBuildResult.failure(ForgeRecipeTableError.INPUT_INVALID, &"manifest_digest")
 	var recipes: Array[ForgeRecipeRule] = []
 	var sorted_ids: Array[StringName] = equipment_ids.duplicate()
-	sorted_ids.sort()
+	sorted_ids.sort_custom(StableNameSort.id_less)
 	for equipment_id: StringName in sorted_ids:
 		if not StableIdValidator.new().is_valid(equipment_id):
 			return ForgeRecipeTableBuildResult.failure(ForgeRecipeTableError.INPUT_INVALID, &"equipment_ids", equipment_id)

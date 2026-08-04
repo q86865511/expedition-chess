@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_aponm"]
 script = ExtResource("2_e81mt")
 stat = &"armor"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_sm6hf"]
 script = ExtResource("2_e81mt")
 stat = &"attack_speed"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [resource]

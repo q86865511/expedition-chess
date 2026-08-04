@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_8pjfx"]
 script = ExtResource("2_173kv")
 stat = &"magic_resist"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_bia7g"]
 script = ExtResource("2_173kv")
 stat = &"attack_speed"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [resource]

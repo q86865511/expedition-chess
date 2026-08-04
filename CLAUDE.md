@@ -17,7 +17,9 @@
 - **完整快速 gate**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All`
 - **S2 正式 soak**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Soak -SeedCount 10000 -TimeoutSeconds 600`
 - **S3 正式 soak**：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite ExpeditionSoak -SeedCount 10000 -TimeoutSeconds 600`
-- **單一 runner**：將 `All` 改成 `Toolchain`、`Import`、`Smoke`、`Gut`、`Content`、`Canonical`、`Combat`、`Soak`、`Expedition`、`ExpeditionSoak`、`Spec` 或 `RunnerContract`。
+- **單一 runner**：將 `All` 改成 `Toolchain`、`Import`、`Smoke`、`Gut`、`Content`、`Canonical`、`Combat`、`Soak`、`Expedition`、`ExpeditionSoak`、`BalancePlaytest`、`Spec` 或 `RunnerContract`。
+- **BalancePlaytest targeted suite**（只跑 balance_playtest 測試目錄，不含大樣本 bot 跑批）：
+  `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Gut -TestPath res://tests/unit/balance_playtest`
 - **限定 GUT 目錄**：加上 `-TestPath res://tests/<path>`；canonical／content 可用 `-Case <case>`。
 - Godot executable 由環境變數 `GODOT_BIN` 或 wrapper 的 `-GodotPath` 傳入；不得把本機絕對路徑寫進 repository。
 - Runner artifacts 位於 `artifacts/test/`；退出碼固定為 `0／2／3／124`。
@@ -58,4 +60,8 @@
   `codex/g2-content-production` 10 個檢查點 commit);codec 3、save schema 4、
   codec 2→3 production migration、44 單位內容、node-choice 交易鏈、
   T24 acceptance(21+1 列)全數落地,fresh 全綠(Gut 1091、10k soak、All exit 0)。
-  blocked-on-codex:T18A 資產採納 gate 與音訊 R9 格式;停在 push/PR gate。
+  PR #8 已合併至 `master@bf818fb`。
+- G2 `balance-playtest`（`codex/g2-balance-playtest`，未提交）:driver 重寫走正式
+  RunController 鏈路、51 檔 content 值域修正＋global lifecycle 修正、3k screening #2
+  gate PASS(candidate `balance.g2.7d47fada8091`)。Phase 0 收尾中;大樣本依
+  2026-08-04 裁決延後至 Phase 2。Phase 0~3 roadmap 見 `specs/g2-roadmap.md` §9。

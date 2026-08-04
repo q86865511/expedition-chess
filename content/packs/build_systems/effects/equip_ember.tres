@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="Resource_0v8cv"]
 script = ExtResource("2_ljbl6")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount = 5
 duration_ticks = 1800
 target = &"self"

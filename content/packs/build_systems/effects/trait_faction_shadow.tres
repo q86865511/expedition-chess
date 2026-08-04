@@ -8,11 +8,12 @@
 
 [sub_resource type="Resource" id="Resource_4ol5k"]
 script = ExtResource("2_0abxx")
-stat = &"attack_speed"
-mode = &"flat"
-amount = 8
+stat = &"attack_speed_milli"
+mode = &"add"
+# TUNE: attack_speed 8 依附錄 B 暫定 ×10 映射為 milli 80。
+amount = 80
 duration_ticks = 1800
-target = &"self"
+target = &"all_allies"
 
 [resource]
 script = ExtResource("5_6epbf")

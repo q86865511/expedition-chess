@@ -9,10 +9,10 @@
 [sub_resource type="Resource" id="Resource_ca00op"]
 script = ExtResource("2_ca00m")
 stat = &"armor"
-mode = &"flat"
+mode = &"add"
 amount = 3
 duration_ticks = 1800
-target = &"self"
+target = &"all_allies"
 
 [resource]
 script = ExtResource("5_ca00e")

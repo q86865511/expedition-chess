@@ -52,9 +52,12 @@ content/packs/<pack_name>/<category>/<short_id>.tres
   的 amount、遺物 `activation_limit`、run 效果的 amount/claim_scope）皆為 TUNE 佔位，非最終平衡；
   用整數慣例（多為 5 的倍數、門檻取 2/4/6 或 2/4/5 三階）標示「尚待調校」，不代表最終數值。
   最終平衡屬下游 content-completion 橫切（SCOPE-002），不在本片範圍。
-- **戰鬥觸發慣例**：被動類效果（trait tier／equipment aura／battle 遺物中的 stat 型）一律
-  `trigger = &"battle_start"`、`stacking = &"replace"`、`duration_ticks = 1800`（視為持續整場戰鬥）；
-  唯一例外 `effect.relic_frost_edge` 用 `trigger = &"hit"` 示範 on-hit proc 型戰鬥效果。
+- **戰鬥觸發慣例**：被動類效果（trait tier／equipment aura／battle 遺物）一律
+  `trigger = &"battle_start"`、`stacking = &"replace"`；持續型效果使用
+  `duration_ticks = 1800`（視為持續整場戰鬥）。`effect.relic_frost_edge` 依
+  `specs/balance-playtest/rewrite-plan.md` 附錄 B 改為開戰時提供玩家全隊 attack 加成；舊版
+  on-hit proc 會把 global relic source 接到只允許 entity source 的 hit/target/attack-scaling
+  lifecycle，從未是合法 production 路徑。
 
 ## 重新產生方式
 

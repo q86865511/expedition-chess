@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="Resource_k11ci"]
 script = ExtResource("2_f0ccy")
 stat = &"armor"
-mode = &"flat"
+mode = &"add"
 amount = 5
 duration_ticks = 1800
 target = &"self"

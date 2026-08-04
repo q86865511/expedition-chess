@@ -1,0 +1,3 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+RC_SMOKE_RESULT={"abandon_durable_readback":true,"error_codes":[],"ok":true,"outcomes":["abandoned","victory"],"phase":"restart-abandon-verify","report_codec_readback":true,"report_count":2,"schema_version":1,"second_run_id":"run_542213b2138d075b3e26ff05a79cff4622b87df430c7a91e3811894851c54935"}

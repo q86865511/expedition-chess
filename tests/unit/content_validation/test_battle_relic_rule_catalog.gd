@@ -125,8 +125,8 @@ func _minimal_effect(content_id: StringName) -> EffectDef:
 	var damage := DamageOperationDef.new()
 	damage.operation_index = 0
 	damage.base = 0
-	damage.scaling = &"attack"
+	damage.scaling = &"flat"
 	damage.damage_type = &"physical"
-	damage.target = &"target"
+	damage.target = &"all_enemies"
 	value.battle_operations = [damage]
 	return value

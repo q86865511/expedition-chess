@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_owj5x"]
 script = ExtResource("2_iayha")
 stat = &"magic_resist"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_3l6uh"]
 script = ExtResource("2_iayha")
 stat = &"health"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 20
 
 [resource]

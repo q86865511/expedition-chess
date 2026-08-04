@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_0m183"]
 script = ExtResource("2_cvkyo")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_xe0dp"]
 script = ExtResource("2_cvkyo")
 stat = &"attack_speed"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [resource]

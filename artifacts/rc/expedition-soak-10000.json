@@ -1,0 +1,33 @@
+{
+	"artifact_schema_version": 1,
+	"runner": "economy-expedition-soak",
+	"started_at_utc": "2026-08-04T08:41:32Z",
+	"finished_at_utc": "2026-08-04T08:43:49Z",
+	"versions": {
+		"engine_version": "4.7-stable (official)",
+		"app_version": "0.2.0",
+		"schema_version": 4,
+		"content_codec_version": 3,
+		"rng_version": 1,
+		"hash_version": 1,
+		"simulation_version": 1,
+		"battle_event_codec_version": 1,
+		"battle_result_codec_version": 1
+	},
+	"completed_scopes": [
+		"three_act_full_topology_seed_soak",
+		"shop_reservation_ledger_seed_soak",
+		"deterministic_map_replay",
+		"relic_route_and_economy_effect_seed_soak",
+		"deterministic_build_operation_walk"
+	],
+	"deferred_scopes": [],
+	"case_count": 10000,
+	"failures": [],
+	"scope": "economy-expedition",
+	"seed_count": 10000,
+	"deterministic_replay_count": 64,
+	"pool_conservation_checks": 10000,
+	"build_operation_count": 40000,
+	"passed": true
+}

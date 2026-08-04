@@ -1,10 +1,8 @@
 extends GutTest
 
-## T07 (specs/meta-progression) — 挑戰詞綴內容著作：五條新 EffectDef
-## effect.slice_challenge_affix_00..04（content_role=challenge_affix、四類全覆蓋、loc key），
-## 重指 content/packs/vertical_slice/unlocks/slice_challenge_1..5.tres 的 modifier_refs（現指向
-## content_role=elite_affix 的 slice_affix_00..04 佔位）。菁英詞綴與其被 treasure/rest/merchant
-## generator_ref 複用之處、map nodes 一律不動。
+## Phase 0 / BP-SI-001：五條 challenge EffectDef 保留 authoring 與 localization；目前只掛載
+## level 1/5 的合法 battle track，level 2/3/4 不掛 modifier_refs，Phase 1 才處理新機制。
+## 菁英詞綴、treasure/rest/merchant generator_ref 與 map nodes 一律不動。
 ## Covers：S5-AC-010；design.md §7.1（"新著作 5 條 challenge 詞綴...重指
 ## unlocks/slice_challenge_1..5.tres 的 modifier_refs...不動菁英詞綴與其被 treasure/rest/
 ## merchant generator 複用之處、不動 map nodes"）；tasks.md T07 驗收「五條
@@ -18,19 +16,9 @@ extends GutTest
 ## 目的就是驗證「真的著作了」這件事本身，合成內容無法覆蓋這個目標。
 ##
 ## 假設聲明：
-## 1. 五條新效果 id 與 challenge_level 的對應關係比照現行 slice_affix_00..04 的既有映射
-##    （unlock.slice_challenge_N 的 modifier_refs 現指向 effect.slice_affix_(N-1)，見
-##    content/packs/vertical_slice/unlocks/slice_challenge_1..5.tres 逐檔核對）：
-##      slice_challenge_1 -> effect.slice_challenge_affix_00
-##      slice_challenge_2 -> effect.slice_challenge_affix_01
-##      slice_challenge_3 -> effect.slice_challenge_affix_02
-##      slice_challenge_4 -> effect.slice_challenge_affix_03
-##      slice_challenge_5 -> effect.slice_challenge_affix_04
-## 2. 四類覆蓋判準與 tests/unit/content_validation/test_challenge_affix_operation_validation.gd
-##    的假設聲明第 2 點完全一致（3 個可機械判別的桶：battle_operations 非空／
-##    operation_type()==0x3109／operation_type()==0x310A），此處對「五條效果聯集」驗證同一
-##    件事，不重複展開理由。
-## 3. 不得變動的既有內容（本檔逐項迴歸斷言，任一項改變都視為違反 design 的「不得動」約束）：
+## 1. 現行掛載恰為 level 1 -> affix_00、level 5 -> affix_04；level 2/3/4 為空。
+## 2. 掛載中的效果必須只有 battle_operations，不得恢復 challenge run_operations。
+## 3. 不得變動的既有內容（本檔逐項迴歸斷言）：
 ##      effect.slice_affix_00..04 的 content_role 仍是 &"elite_affix"；
 ##      map_node.slice_treasure.generator_ref 仍是 &"choice_set.treasure"；
 ##      map_node.slice_merchant.generator_ref 仍是 &"effect.slice_affix_02"；
@@ -57,16 +45,24 @@ const UNCHANGED_MERCHANT_GENERATOR := &"effect.slice_affix_02"
 const UNCHANGED_REST_GENERATOR := &"choice_set.rest"
 
 
-func test_challenge_unlocks_1_to_5_are_repointed_to_new_challenge_affix_effects() -> void:
+func test_only_current_battle_challenge_layers_reference_affix_effects() -> void:
 	var pack := _load_pack(VERTICAL_SLICE_ROOT)
+	var expected_by_level := {
+		1: [EXPECTED_CHALLENGE_AFFIX_IDS[0]] as Array[StringName],
+		2: [] as Array[StringName],
+		3: [] as Array[StringName],
+		4: [] as Array[StringName],
+		5: [EXPECTED_CHALLENGE_AFFIX_IDS[4]] as Array[StringName],
+	}
 	for level in range(1, 6):
 		var unlock := _find(pack, StringName("unlock.slice_challenge_%d" % level)) as UnlockDef
 		assert_not_null(unlock, "缺少 unlock.slice_challenge_%d" % level)
 		if unlock == null:
 			continue
 		assert_eq(
-			unlock.modifier_refs, [EXPECTED_CHALLENGE_AFFIX_IDS[level - 1]],
-			"unlock.slice_challenge_%d.modifier_refs 必須重指到 %s" % [level, EXPECTED_CHALLENGE_AFFIX_IDS[level - 1]]
+			unlock.modifier_refs,
+			expected_by_level[level],
+			"Phase 0 只允許目前實際掛載的 battle challenge layers；不得恢復 run track"
 		)
 
 
@@ -90,27 +86,24 @@ func test_five_challenge_affix_effects_exist_with_challenge_affix_content_role_a
 		assert_false(effect.display_name_key.is_empty(), "%s 缺 loc key" % effect_id)
 
 
-func test_five_challenge_affix_effects_collectively_cover_all_three_mechanical_buckets() -> void:
+func test_currently_referenced_challenge_affixes_are_battle_only() -> void:
 	var pack := _load_pack(VERTICAL_SLICE_ROOT)
-	var has_battle_track := false
-	var has_shop_surcharge := false
-	var has_drain_expedition_hp := false
-	for effect_id: StringName in EXPECTED_CHALLENGE_AFFIX_IDS:
+	var referenced_ids: Array[StringName] = []
+	for level in range(1, 6):
+		var unlock := _find(pack, StringName("unlock.slice_challenge_%d" % level)) as UnlockDef
+		if unlock != null:
+			referenced_ids.append_array(unlock.modifier_refs)
+	assert_eq(
+		referenced_ids,
+		[EXPECTED_CHALLENGE_AFFIX_IDS[0], EXPECTED_CHALLENGE_AFFIX_IDS[4]] as Array[StringName],
+		"Phase 0 只有 level 1/5 掛載 battle challenge affix"
+	)
+	for effect_id: StringName in referenced_ids:
 		var effect := _find(pack, effect_id) as EffectDef
-		if effect == null:
-			continue
-		if not effect.battle_operations.is_empty():
-			has_battle_track = true
-		for operation: RunOperationDef in effect.run_operations:
-			if operation == null:
-				continue
-			if operation.operation_type() == 0x3109:
-				has_shop_surcharge = true
-			elif operation.operation_type() == 0x310A:
-				has_drain_expedition_hp = true
-	assert_true(has_battle_track, "五條效果聯集必須至少一條有非空 battle_operations（軌 A：敵人編成/遭遇規則）")
-	assert_true(has_shop_surcharge, "五條效果聯集必須至少一條含 ShopSurchargeOperationDef（經濟壓力）")
-	assert_true(has_drain_expedition_hp, "五條效果聯集必須至少一條含 DrainExpeditionHpOperationDef（遠征傷害）")
+		assert_not_null(effect, "缺少目前掛載的 challenge affix: %s" % effect_id)
+		if effect != null:
+			assert_false(effect.battle_operations.is_empty(), "%s 必須走 battle track" % effect_id)
+			assert_true(effect.run_operations.is_empty(), "%s 不得恢復 Phase 1 run track" % effect_id)
 
 
 func test_elite_affix_effects_are_unchanged() -> void:

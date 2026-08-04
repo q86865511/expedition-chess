@@ -42,37 +42,37 @@ tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
 [sub_resource type="Resource" id="Resource_7nx8e"]
 script = ExtResource("3_a646h")
 level = 3
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([7500, 2500, 0, 0, 0])
 
 [sub_resource type="Resource" id="Resource_ee105"]
 script = ExtResource("3_a646h")
 level = 4
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([7500, 2500, 0, 0, 0])
 
 [sub_resource type="Resource" id="Resource_8knpm"]
 script = ExtResource("3_a646h")
 level = 5
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([5500, 3000, 1500, 0, 0])
 
 [sub_resource type="Resource" id="Resource_d87oa"]
 script = ExtResource("3_a646h")
 level = 6
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([5500, 3000, 1500, 0, 0])
 
 [sub_resource type="Resource" id="Resource_cuotb"]
 script = ExtResource("3_a646h")
 level = 7
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([3500, 3500, 2000, 1000, 0])
 
 [sub_resource type="Resource" id="Resource_uaa6s"]
 script = ExtResource("3_a646h")
 level = 8
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([3500, 3500, 2000, 1000, 0])
 
 [sub_resource type="Resource" id="Resource_olnla"]
 script = ExtResource("3_a646h")
 level = 9
-tier_basis_points = Array[int]([10000, 0, 0, 0, 0])
+tier_basis_points = Array[int]([2500, 3000, 2500, 1500, 500])
 
 [sub_resource type="Resource" id="Resource_7nome"]
 script = ExtResource("1_3yr7h")
@@ -177,3 +177,4 @@ display_name_key = &"loc.economy_slice_default"
 # battle_settlement_service.gd 的 _add_xp() 撞上 -1 fallback → REWARD_CONFIG_INVALID。
 # 數值延續既有 3..8 曲線（4/8/16/28/44/64，增量 4/8/12/16/20）的「前期便宜、後期陡」
 # 形狀：1→2、2→3 之後銜接 3→4，遞增單調不倒退。
+# TUNE (balance-playtest Appendix C): shop_odds_by_level 依等級階梯開放 tier 2–5。

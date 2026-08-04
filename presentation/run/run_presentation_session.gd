@@ -503,9 +503,11 @@ func _build_combat_inspection(
 			and not inspection.status_ids.has(assignment.effect_id)
 		):
 			inspection.status_ids.append(assignment.effect_id)
-	inspection.equipment_ids.sort()
-	inspection.trait_ids.sort()
-	inspection.status_ids.sort()
+	# StringName 的裸 sort() 依 interned 指標序排序（受 process 歷史影響，BP-SI-007）；
+	# 檢視面板顯示順序須具決定性，改用字典序。
+	inspection.equipment_ids.sort_custom(StableNameSort.id_less)
+	inspection.trait_ids.sort_custom(StableNameSort.id_less)
+	inspection.status_ids.sort_custom(StableNameSort.id_less)
 	return inspection
 
 

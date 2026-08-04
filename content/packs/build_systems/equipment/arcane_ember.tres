@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_wl5wf"]
 script = ExtResource("2_ri131")
 stat = &"max_mana"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 10
 
 [sub_resource type="Resource" id="Resource_17lfc"]
 script = ExtResource("2_ri131")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [resource]

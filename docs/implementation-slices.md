@@ -65,3 +65,7 @@
   44 adopted attempts、R9 音訊、21＋1 acceptance 全 PASS，
   `blocked_row_ids=[]`、`fully_closed=true`。下一片為 TUNE／balance 與
   30k bot soak，本 closure 未執行。
+- G2 `balance-playtest`：Phase 0 初版實作與證據收尾已完成（runtime source
+  `6b072f8`；final All／10k ExpeditionSoak／RC 全鏈 PASS），目前等待兩位 fresh reviewer
+  與使用者確認；`AC-030` 大樣本依附錄 D 延後 Phase 2，`AC-032=PENDING_EXTERNAL`，
+  不宣稱整片完成。

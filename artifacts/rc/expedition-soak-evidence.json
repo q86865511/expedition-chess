@@ -1,0 +1,22 @@
+{
+    "schema_version":  1,
+    "kind":  "balance-phase0-expedition-soak",
+    "passed":  true,
+    "source_manifest_sha256":  "345bb6c4f3c1a06b64dc346110832fb4e26792b8a5f6f75ef4922b222bd40b26",
+    "runner_execution":  {
+                             "file":  "expedition-soak-runner-execution.json",
+                             "sha256":  "c8bb120d3e4df1aa07bb2d62b9a114dbbfd7a0efaedbcf047e999a03d272cc93"
+                         },
+    "soak":  {
+                 "file":  "expedition-soak-10000.json",
+                 "sha256":  "d81860a74e656f208a0ad4eac674cc3c51351778b8d69cdacd7e49d9a43abcd4",
+                 "seed_count":  10000,
+                 "case_count":  10000,
+                 "pool_conservation_checks":  10000,
+                 "deterministic_replay_count":  64,
+                 "build_operation_count":  40000,
+                 "failures":  [
+
+                              ]
+             }
+}

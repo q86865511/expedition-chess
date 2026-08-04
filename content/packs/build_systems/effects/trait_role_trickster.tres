@@ -8,11 +8,12 @@
 
 [sub_resource type="Resource" id="Resource_lmo7r"]
 script = ExtResource("2_trgmp")
-stat = &"attack_speed"
-mode = &"flat"
-amount = 10
+stat = &"attack_speed_milli"
+mode = &"add"
+# TUNE: attack_speed 10 依附錄 B 暫定 ×10 映射為 milli 100。
+amount = 100
 duration_ticks = 1800
-target = &"self"
+target = &"all_allies"
 
 [resource]
 script = ExtResource("5_p8vnf")

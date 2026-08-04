@@ -87,37 +87,29 @@ func test_battle_operation_only_effect_is_classified_into_battle_affix_track() -
 	)
 
 
-func test_run_operation_only_effect_is_classified_into_run_modifier_track() -> void:
+func test_run_operation_only_challenge_effect_is_rejected_at_content_boundary() -> void:
 	var fixture := _fixture_with_renamed_challenge_chain()
 	var effect_id := &"effect.challenge_run_only"
 	_append_run_only_effect(fixture, effect_id)
 	_set_modifier_refs(fixture, 1, [effect_id])
-	var registry := ContentRegistryService.new()
-	add_child_autofree(registry)
-	var installed := registry.install_validated(fixture, "fixture.challenge_affix_resolver.3", [&"pack.core"])
-	assert_true(installed.ok)
-	if not installed.ok:
-		return
-	var result := _resolve(registry, installed.handle.manifest_digest, 1)
-	if result == null:
-		return
-	assert_true(bool(result.get("ok")), _error_text(result))
-	if not bool(result.get("ok")):
-		return
-	assert_eq(
-		_entry_strings(result.get("entries")),
-		["effect.challenge_run_only|1|run_modifier"]
+	var report := ContentValidator.new().validate(fixture)
+	assert_true(
+		_has_content_issue_for(
+			report, &"CONTENT_EFFECT_SOURCE_LIFECYCLE", effect_id
+		),
+		"challenge global source 不得攜帶 run operation；run-layer 分流前必須在內容邊界拒載: %s" %
+			_content_issue_text(report)
 	)
 
 
 func test_entries_accumulate_across_levels_one_to_n() -> void:
 	var fixture := _fixture_with_renamed_challenge_chain()
 	var battle_id := &"effect.challenge_battle_l1"
-	var run_id := &"effect.challenge_run_l2"
+	var second_battle_id := &"effect.challenge_battle_l2"
 	_append_battle_only_effect(fixture, battle_id)
-	_append_run_only_effect(fixture, run_id)
+	_append_battle_only_effect(fixture, second_battle_id)
 	_set_modifier_refs(fixture, 1, [battle_id])
-	_set_modifier_refs(fixture, 2, [run_id])
+	_set_modifier_refs(fixture, 2, [second_battle_id])
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var installed := registry.install_validated(fixture, "fixture.challenge_affix_resolver.4", [&"pack.core"])
@@ -139,8 +131,8 @@ func test_entries_accumulate_across_levels_one_to_n() -> void:
 	)
 	assert_eq(
 		_entry_strings(level2.get("entries")),
-		["effect.challenge_battle_l1|1|battle_affix", "effect.challenge_run_l2|2|run_modifier"],
-		"level 2 累積 slice_challenge_1(戰)+slice_challenge_2(經)，對齊「詞綴 1..N 累積」"
+		["effect.challenge_battle_l1|1|battle_affix", "effect.challenge_battle_l2|2|battle_affix"],
+		"level 2 累積 slice_challenge_1+slice_challenge_2 的合法 battle track，對齊「詞綴 1..N 累積」"
 	)
 
 
@@ -172,7 +164,7 @@ func test_duplicate_effect_id_within_the_same_level_is_rejected_at_the_content_b
 func test_duplicate_effect_id_across_different_levels_is_deduplicated_to_the_lowest_level() -> void:
 	var fixture := _fixture_with_renamed_challenge_chain()
 	var effect_id := &"effect.challenge_cross_level_dup"
-	_append_run_only_effect(fixture, effect_id)
+	_append_battle_only_effect(fixture, effect_id)
 	_set_modifier_refs(fixture, 1, [effect_id])
 	_set_modifier_refs(fixture, 3, [effect_id])
 	var registry := ContentRegistryService.new()
@@ -190,20 +182,19 @@ func test_duplicate_effect_id_across_different_levels_is_deduplicated_to_the_low
 	assert_eq(
 		_entry_strings(result.get("entries")),
 		[
-			"effect.challenge_cross_level_dup|1|run_modifier",
-			"effect.challenge_affix_1|2|battle_affix",
+			"effect.challenge_cross_level_dup|1|battle_affix",
 		],
-		"level1/level3 的重複 effect 只保留 level1 一筆；level2 的獨立 fixture 預設內容不受影響，軌 B 不得雙倍計"
+		"level1/level3 的重複 effect 只保留 level1 一筆；BP-SI-001 下中間層可無 modifier refs，battle track 不得重複"
 	)
 
 func test_resolve_is_deterministic_for_identical_inputs() -> void:
 	var fixture := _fixture_with_renamed_challenge_chain()
 	var battle_id := &"effect.challenge_battle_det"
-	var run_id := &"effect.challenge_run_det"
+	var second_battle_id := &"effect.challenge_battle_det_l2"
 	_append_battle_only_effect(fixture, battle_id)
-	_append_run_only_effect(fixture, run_id)
+	_append_battle_only_effect(fixture, second_battle_id)
 	_set_modifier_refs(fixture, 1, [battle_id])
-	_set_modifier_refs(fixture, 2, [run_id])
+	_set_modifier_refs(fixture, 2, [second_battle_id])
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
 	var installed := registry.install_validated(fixture, "fixture.challenge_affix_resolver.6", [&"pack.core"])
@@ -300,10 +291,10 @@ func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: Stri
 	var operation := ModifyStatOperationDef.new()
 	operation.operation_index = 0
 	operation.stat = &"attack"
-	operation.mode = &"flat"
+	operation.mode = &"add"
 	operation.amount = 1
 	operation.duration_ticks = 20
-	operation.target = &"self"
+	operation.target = &"all_allies"
 	var effect := EffectDef.new()
 	effect.id = effect_id
 	effect.schema_version = 2
@@ -337,6 +328,24 @@ func _append_run_only_effect(fixture: ContentValidationInput, effect_id: StringN
 	effect.duration_ticks = 1
 	effect.run_operations = [operation]
 	fixture.definitions.append(effect)
+
+
+func _has_content_issue_for(
+	report: ContentValidationReport,
+	code: StringName,
+	source_id: StringName
+) -> bool:
+	for issue: ContentValidationIssue in report.issues:
+		if issue.code == code and issue.source_id == source_id:
+			return true
+	return false
+
+
+func _content_issue_text(report: ContentValidationReport) -> String:
+	var values: Array[String] = []
+	for issue: ContentValidationIssue in report.issues:
+		values.append("%s:%s:%s" % [issue.code, issue.source_id, issue.field_path])
+	return ", ".join(values)
 
 
 func _find(fixture: ContentValidationInput, content_id: StringName) -> ContentDefinition:

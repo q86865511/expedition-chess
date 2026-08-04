@@ -16,7 +16,13 @@ signal boot_completed
 signal boot_failed(error_code: StringName)
 signal exit_requested
 
+const EXPORTED_RC_SMOKE_DRIVER = preload(
+	"res://application/balance/exported_rc_smoke_driver.gd"
+)
 const COMBAT_LAB_SCENE_PATH: String = "res://scenes/dev/combat_lab/combat_lab.tscn"
+## B-09：破壞性 rc-smoke phase（不可逆棄置 retained run）在啟動時必須另帶確認旗標
+## （字面值住在 ExportedRcSmokeDriver.CONFIRM_FLAG——dev CLI 白名單測試掃描本檔的
+## 旗標字面值，app 層不得出現）。
 
 ## 單槽 profile 的固定 id：RunStateValidator 要求 32 位小寫 hex
 ## （run_state_validator.gd:8 的 _PROFILE_PATTERN），故不是 "profile.default" 這種 stable id。
@@ -59,7 +65,6 @@ var _app_state_machine: AppStateMachine = AppStateMachine.new()
 var _run_session: RunSession
 var _run_controller: RunController
 var _run_command_factory: RunCommandFactory
-var _run_lab_session: RunLabSession
 var _run_presentation_session: RunPresentationSession
 var _camp_controller: CampController
 var _camp_view_model: CampViewModel
@@ -98,6 +103,15 @@ var _recovery_confirmation_presenter: RecoveryConfirmationPresenter
 ## `submit_discard()`（回傳型別是 SaveResult，裝不下換場失敗）在 durable 棄置成功、
 ## 但 MENU route 沒能 commit 時留下的具名碼；由 `_confirm_menu_recovery` 消費。
 var _route_commit_failure: StringName = &""
+## balance-playtest：只記錄匿名、非 gameplay 的本機 session metadata。這些欄位不參與
+## canonical state、RNG、save 或任何規則判定；寫檔失敗亦不得回滾 terminal commit。
+var _playtest_session_id: String = ""
+var _playtest_started_at_utc: String = ""
+var _playtest_started_unix: int = 0
+var _playtest_candidate: BalanceCandidateDescriptor
+var _playtest_route_ids: Array[StringName] = []
+var _playtest_build_summary: Array[StringName] = []
+var _playtest_clock := RunCommitClock.new()
 
 
 ## 服務來源：production（main.tscn）走 design.md §4.4 的五個 Autoload；本方法讓呼叫端在
@@ -281,6 +295,67 @@ func _ready() -> void:
 		return
 	_booted = true
 	boot_completed.emit()
+	var rc_smoke_phase: StringName = EXPORTED_RC_SMOKE_DRIVER.phase_from(
+		OS.get_cmdline_user_args()
+	)
+	if OS.has_feature("provisional_rc") and not rc_smoke_phase.is_empty():
+		if _rc_smoke_confirm_required(rc_smoke_phase, OS.get_cmdline_user_args()):
+			push_warning(
+				(
+					"balance-playtest: %s=%s 會不可逆棄置 retained run，"
+					+ "缺少 %s，已拒絕執行"
+				) % [
+					EXPORTED_RC_SMOKE_DRIVER.CLI_FLAG,
+					String(rc_smoke_phase),
+					EXPORTED_RC_SMOKE_DRIVER.CONFIRM_FLAG,
+				]
+			)
+		else:
+			call_deferred("_run_exported_rc_smoke_phase", rc_smoke_phase)
+
+
+func _run_exported_rc_smoke_phase(phase: StringName) -> void:
+	EXPORTED_RC_SMOKE_DRIVER.new().run(self, phase)
+
+
+## B-09：唯一具破壞性（不可逆棄置 retained run）的 phase 是
+## `restart-abandon-verify`；缺少確認旗標時拒絕自動觸發。
+## 拆成純函式方便測試——OS.has_feature("provisional_rc") 在編輯器/測試行程恆為
+## false，無法在 GUT 內真的驅動整條啟動流程。
+static func _rc_smoke_confirm_required(
+	phase: StringName, arguments: PackedStringArray
+) -> bool:
+	return phase == EXPORTED_RC_SMOKE_DRIVER.PHASE_RESTART_ABANDON_VERIFY \
+		and not arguments.has(EXPORTED_RC_SMOKE_DRIVER.CONFIRM_FLAG)
+
+
+func _rc_smoke_abandon_active_run(
+	expected_run_id: StringName
+) -> AppActionResult:
+	var phase: StringName = EXPORTED_RC_SMOKE_DRIVER.phase_from(
+		OS.get_cmdline_user_args()
+	)
+	if not OS.has_feature("provisional_rc") or phase.is_empty() \
+		or expected_run_id.is_empty() \
+		or _app_state_machine.state() != AppStateMachine.State.RUN \
+		or _run_presentation_session == null \
+		or _run_presentation_session.snapshot().run_id != expected_run_id:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var returned := return_to_menu()
+	if not returned.ok:
+		return returned
+	var loaded := _save_repository.load()
+	if not loaded.ok or loaded.run_status != LoadResult.RunStatus.LOADED \
+		or loaded.run == null or StringName(loaded.run.run_id) != expected_run_id:
+		return _action_failure(ERROR_RETAINED_RUN_EXISTS)
+	var token := _retained_run_recovery_service.issue_token(
+		loaded, expected_run_id
+	)
+	if token == null or not token.is_issued():
+		return _action_failure(&"RECOVERY_TOKEN_INVALID")
+	_retained_run_recovery_token = token
+	_menu_snapshot.has_recovery = true
+	return discard_retained_run(token)
 
 
 func _resolve_presentation_host() -> Control:
@@ -665,6 +740,12 @@ func discard_retained_run(
 				&"error.presentation.recovery_postcommit"
 			)
 		)
+	# B-02：正常情況（同一行程內棄置）走記憶體路徑；若 `_playtest_session_id` 為空
+	# （行程重啟過、記憶體 metadata 已遺失），改從本機 sidecar 補發 abandoned 報告。
+	if not _playtest_session_id.is_empty():
+		_write_playtest_outcome(&"abandoned", [&"EXPEDITION_ABANDONED"])
+	else:
+		_recover_abandoned_report_from_pending_sidecar()
 	_unresumable_run_id = ""
 	_compose_camp(loaded.profile)
 	_update_menu_from_profile(loaded.profile)
@@ -1075,6 +1156,7 @@ func _commit_terminal_handoff(
 			)
 		)
 	_terminal_presentation_snapshot = snapshot.deep_clone()
+	_write_playtest_session_report(snapshot)
 	return AppActionResult.success(true)
 
 
@@ -1121,6 +1203,7 @@ func _commit_fail_closed_terminal_handoff(
 			)
 		)
 	_terminal_presentation_snapshot = snapshot.deep_clone()
+	_write_playtest_session_report(snapshot)
 	return AppActionResult.success(true)
 
 
@@ -1153,8 +1236,7 @@ func _revoke_run_writers() -> void:
 
 
 func _invalidate_run_session() -> void:
-	# No facade or dev wrapper may retain a dispatch path after terminal save.
-	_run_lab_session = null
+	# No presentation facade may retain a dispatch path after terminal save.
 	_release_run_presentation_session()
 
 
@@ -1585,6 +1667,7 @@ func _handle_run_route_after_intent(
 		or _app_state_machine.state() != AppStateMachine.State.RUN
 	):
 		return _action_failure(ERROR_RUN_SNAPSHOT_UNAVAILABLE)
+	_observe_playtest_snapshot(result.snapshot)
 	var target := _run_route_for_snapshot(result.snapshot)
 	if target.is_empty():
 		return _action_failure(ERROR_RUN_PHASE_INVALID)
@@ -1955,9 +2038,168 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 			battle_result.catalog, commander_passive_effect_ids
 		)
 	)
-	_run_lab_session = RunLabSession.new(_run_presentation_session)
+	_begin_playtest_session(run, content)
 	_unresumable_run_id = ""
 	return &""
+
+
+func _begin_playtest_session(
+	run: RunState,
+	content: ProjectContentBootstrapResult
+) -> void:
+	_playtest_session_id = PlaytestSessionReportWriter.new_session_id()
+	_playtest_started_at_utc = _playtest_clock.now_utc()
+	_playtest_started_unix = _playtest_clock.now_unix()
+	_playtest_candidate = BalanceTuneInventory.production_candidate(
+		content.manifest_digest, content.content_version
+	)
+	_playtest_route_ids.clear()
+	_playtest_build_summary.clear()
+	if run != null:
+		_playtest_build_summary.append(run.commander_id)
+		for node_id: String in run.map_state.completed_node_ids:
+			_playtest_route_ids.append(StringName(node_id))
+	if _playtest_candidate != null and _playtest_candidate.is_valid():
+		# B-02：session 開始就落地一份本機 sidecar，讓跨行程放棄（關遊戲→重啟→於
+		# 主選單棄置 retained run）也能在下一次明示棄置時補發 abandoned 報告。
+		PlaytestSessionReportPending.write(
+			_playtest_session_id,
+			String(_playtest_candidate.candidate_id),
+			str(ProjectSettings.get_setting("application/config/version", "unknown")),
+			_playtest_candidate.content_version,
+			_playtest_candidate.tune_digest,
+			_playtest_started_at_utc,
+			_playtest_started_unix
+		)
+	elif OS.has_feature("provisional_rc"):
+		# F03：sealed candidate 在匯出 build 失效時，先前是整批 playtest 靜默不寫任何
+		# 報告、也不報錯，AC-032 外部 Gate 要白跑一輪才會發現。
+		_report_playtest_candidate_invalid()
+
+
+func _observe_playtest_snapshot(snapshot: RunPresentationSnapshot) -> void:
+	if _playtest_session_id.is_empty() or snapshot == null:
+		return
+	if snapshot.map != null:
+		for node_id: String in snapshot.map.completed_node_ids:
+			var route_id := StringName(node_id)
+			if not _playtest_route_ids.has(route_id):
+				_playtest_route_ids.append(route_id)
+	if snapshot.roster != null:
+		for unit: UnitInstance in snapshot.roster.unit_instances:
+			if not _playtest_build_summary.has(unit.def_id):
+				_playtest_build_summary.append(unit.def_id)
+		for relic: RelicSlotState in snapshot.roster.active_relic_slots:
+			if relic.relic_id != null \
+				and not _playtest_build_summary.has(relic.relic_id.value):
+				_playtest_build_summary.append(relic.relic_id.value)
+	# route_ids 保留本次 session 首次觀察到完成節點的順序；stable 排序只適用於
+	# 無順序語意的構築摘要，不能把實際路線改寫成字典序。
+	_playtest_build_summary.sort_custom(func(left: StringName, right: StringName) -> bool:
+		return String(left) < String(right)
+	)
+
+
+func _write_playtest_session_report(snapshot: ResultsPresentationSnapshot) -> void:
+	if snapshot == null:
+		return
+	if snapshot.receipt == null:
+		# B-08：fail-closed terminal handoff 沒有 receipt，無法判定 outcome，但 terminal
+		# 已經到達。立即清除 session 狀態（含 sidecar），不然之後棄置會沿用同一個
+		# session id 把這局（實際上可能已 victory/failed）誤標成 abandoned。
+		_clear_playtest_session_state()
+		return
+	if _playtest_session_id.is_empty() or _playtest_candidate == null \
+		or not _playtest_candidate.is_valid():
+		return
+	var outcome: StringName = &""
+	var error_codes: Array[StringName] = []
+	match snapshot.receipt.outcome:
+		SettlementReceiptState.Outcome.COMPLETED:
+			outcome = &"victory"
+		SettlementReceiptState.Outcome.FAILED:
+			outcome = &"failed"
+			error_codes.append(&"EXPEDITION_FAILED")
+		SettlementReceiptState.Outcome.ABANDONED:
+			outcome = &"abandoned"
+			error_codes.append(&"EXPEDITION_ABANDONED")
+	_write_playtest_outcome(outcome, error_codes)
+
+
+func _write_playtest_outcome(
+	outcome: StringName,
+	error_codes: Array[StringName] = []
+) -> void:
+	if _playtest_session_id.is_empty() or _playtest_candidate == null \
+		or not _playtest_candidate.is_valid():
+		return
+	var report := PlaytestSessionReport.new()
+	report.session_id = _playtest_session_id
+	report.candidate_id = _playtest_candidate.candidate_id
+	report.build_version = str(
+		ProjectSettings.get_setting("application/config/version", "unknown")
+	)
+	report.content_version = _playtest_candidate.content_version
+	report.tune_digest = _playtest_candidate.tune_digest
+	report.started_at_utc = PlaytestSessionReport.hour_bucket_utc(
+		_playtest_started_at_utc
+	)
+	report.duration_seconds = maxi(
+		0, _playtest_clock.now_unix() - _playtest_started_unix
+	)
+	report.route_ids.assign(_playtest_route_ids)
+	report.build_summary.assign(_playtest_build_summary)
+	report.outcome = outcome
+	report.error_codes.assign(error_codes)
+	PlaytestSessionReportWriter.new().write(report)
+	# terminal handoff 是 exactly-once；不論 report I/O 成敗，都撤銷本次 metadata（含
+	# sidecar），避免 RESULTS retry 或 fallback callback 產生第二份 session report，
+	# 也避免之後的棄置誤把已處理過的 session 再補發一次（B-02／B-08 共用同一個清除點）。
+	_clear_playtest_session_state()
+
+
+## B-08／B-02 共用：清除本次 playtest session 的記憶體與本機 sidecar 狀態。
+func _clear_playtest_session_state() -> void:
+	_playtest_session_id = ""
+	PlaytestSessionReportPending.clear()
+
+
+## B-02：discard_retained_run 在記憶體 session id 已空（行程重啟過）時呼叫，
+## 從 sidecar 補發一份 outcome=abandoned 報告；sidecar 缺失或欄位不全一律
+## fail-closed（不寫檔），不臆測殘缺資料。
+func _recover_abandoned_report_from_pending_sidecar() -> void:
+	var pending := PlaytestSessionReportPending.load()
+	if pending.is_empty():
+		return
+	var report := PlaytestSessionReportPending.build_abandoned_report(
+		pending, _playtest_clock.now_unix()
+	)
+	if report != null:
+		PlaytestSessionReportWriter.new().write(report)
+	PlaytestSessionReportPending.clear()
+
+
+## F03：sealed candidate 在匯出 build 內失效（漏帶 feature tag、pinned JSON 與 scanner
+## 實算值不符等）時，push_error 並在 `user://playtest_reports/` 留一份錯誤標記檔，
+## 讓「整批 playtest 一份報告都不寫、也不報任何錯」的靜默失效可被發現。
+func _report_playtest_candidate_invalid() -> void:
+	push_error(
+		"balance-playtest: production candidate invalid，本次 session 不會寫出任何報告"
+		+ "（BALANCE_CANDIDATE_INVALID）"
+	)
+	var absolute_root := ProjectSettings.globalize_path(
+		PlaytestSessionReportWriter.REPORT_ROOT
+	)
+	if DirAccess.make_dir_recursive_absolute(absolute_root) != OK:
+		return
+	var marker_path := PlaytestSessionReportWriter.REPORT_ROOT.path_join(
+		".candidate-invalid.err"
+	)
+	var file := FileAccess.open(marker_path, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string("BALANCE_CANDIDATE_INVALID\n")
+	file.close()
 
 
 ## BattleRuleCatalogBuilder 的 base roots：棋子／裝備／戰鬥遺物（build lab 既有集合）
@@ -1999,7 +2241,6 @@ func _battle_commander_passive_effect_ids(
 
 
 func _release_active_run() -> void:
-	_run_lab_session = null
 	_release_run_presentation_session()
 	_run_command_factory = null
 	_run_controller = null

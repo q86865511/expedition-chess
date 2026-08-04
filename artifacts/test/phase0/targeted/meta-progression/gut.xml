@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="1147" name="GutTests" failures="0" tests="216" >
+  <testsuite name="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" tests="6" failures="0" skipped="0" time="0.032714" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_challenge_drain_increases_loss_damage_with_no_heal_bonus" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" time="0.007825" >
+      </testcase>
+      <testcase name="test_drain_stacks_additively_with_existing_heal_reduction_on_loss" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" time="0.004303" >
+      </testcase>
+      <testcase name="test_drain_floors_at_zero_expedition_hp" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" time="0.004283" >
+      </testcase>
+      <testcase name="test_drain_bonus_does_not_affect_win_settlement_hp" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" time="0.007587" >
+      </testcase>
+      <testcase name="test_economy_category_drain_rule_does_not_affect_settlement_hp" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" time="0.004908" >
+      </testcase>
+      <testcase name="test_slot_gated_drain_relic_increases_loss_damage_on_loss" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd" time="0.003808" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" tests="6" failures="0" skipped="0" time="0.024812" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_commander_always_active_heal_bonus_applies_on_win_with_no_relic_slots_active" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" time="0.004311" >
+      </testcase>
+      <testcase name="test_always_active_heal_bonus_stacks_with_slot_gated_rule_relic_on_win" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" time="0.004327" >
+      </testcase>
+      <testcase name="test_always_active_heal_bonus_is_still_capped_at_expedition_hp_cap" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" time="0.004355" >
+      </testcase>
+      <testcase name="test_always_active_bonus_reduces_expedition_damage_on_loss" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" time="0.003806" >
+      </testcase>
+      <testcase name="test_always_active_damage_reduction_floors_at_zero_and_never_heals" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" time="0.003734" >
+      </testcase>
+      <testcase name="test_economy_category_always_active_rule_does_not_affect_settlement_hp" assertions="3" status="pass" classname="tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd" time="0.004279" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" tests="7" failures="0" skipped="0" time="0.030979" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_compile_without_commander_ids_still_compiles_and_yields_empty_commander_effects" assertions="2" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.00028" >
+      </testcase>
+      <testcase name="test_compile_with_commander_passive_effect_ids_produces_commander_player_snapshots" assertions="14" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.000473" >
+      </testcase>
+      <testcase name="test_compile_with_empty_commander_passive_effect_ids_array_yields_no_commander_effects" assertions="2" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.00021" >
+      </testcase>
+      <testcase name="test_compile_is_deterministic_for_same_commander_passive_effect_ids" assertions="5" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.000348" >
+      </testcase>
+      <testcase name="test_compiled_commander_effects_pass_start_combat_event_and_enter_combat" assertions="9" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.009928" >
+      </testcase>
+      <testcase name="test_different_commander_passive_effect_ids_yield_different_battle_setup_hash" assertions="5" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.011881" >
+      </testcase>
+      <testcase name="test_baseline_without_commander_ids_still_matches_existing_start_combat_event_behavior" assertions="4" status="pass" classname="tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd" time="0.007859" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_camp_save_root_factory.gd" tests="3" failures="0" skipped="0" time="0.013048" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_build_produces_null_run_root_with_current_schema_and_versions" assertions="6" status="pass" classname="tests/unit/meta_progression/test_camp_save_root_factory.gd" time="0.000523" >
+      </testcase>
+      <testcase name="test_build_accepts_an_arbitrary_content_version_string_when_run_is_null" assertions="2" status="pass" classname="tests/unit/meta_progression/test_camp_save_root_factory.gd" time="0.000628" >
+      </testcase>
+      <testcase name="test_build_round_trips_through_save_repository_as_run_status_none" assertions="6" status="pass" classname="tests/unit/meta_progression/test_camp_save_root_factory.gd" time="0.011897" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_camp_view_model.gd" tests="4" failures="0" skipped="0" time="0.00234" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_all_five_facilities_derive_from_the_same_profile_state" assertions="15" status="pass" classname="tests/unit/meta_progression/test_camp_view_model.gd" time="0.001261" >
+      </testcase>
+      <testcase name="test_changing_the_profile_changes_every_facility_view" assertions="6" status="pass" classname="tests/unit/meta_progression/test_camp_view_model.gd" time="0.000502" >
+      </testcase>
+      <testcase name="test_view_model_holds_a_clone_not_a_live_profile_reference" assertions="3" status="pass" classname="tests/unit/meta_progression/test_camp_view_model.gd" time="0.000358" >
+      </testcase>
+      <testcase name="test_expedition_gate_last_selection_is_null_for_a_profile_that_never_started_a_run" assertions="2" status="pass" classname="tests/unit/meta_progression/test_camp_view_model.gd" time="0.000219" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_challenge_affix_resolver.gd" tests="8" failures="0" skipped="0" time="2.270084" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_challenge_level_zero_returns_no_entries" assertions="10" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.370481" >
+      </testcase>
+      <testcase name="test_battle_operation_only_effect_is_classified_into_battle_affix_track" assertions="11" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.326208" >
+      </testcase>
+      <testcase name="test_run_operation_only_challenge_effect_is_rejected_at_content_boundary" assertions="8" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.008111" >
+      </testcase>
+      <testcase name="test_entries_accumulate_across_levels_one_to_n" assertions="15" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.378643" >
+      </testcase>
+      <testcase name="test_duplicate_effect_id_within_the_same_level_is_rejected_at_the_content_boundary" assertions="8" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.165721" >
+      </testcase>
+      <testcase name="test_duplicate_effect_id_across_different_levels_is_deduplicated_to_the_lowest_level" assertions="12" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.298932" >
+      </testcase>
+      <testcase name="test_resolve_is_deterministic_for_identical_inputs" assertions="14" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.374329" >
+      </testcase>
+      <testcase name="test_unknown_manifest_digest_returns_named_failure" assertions="10" status="pass" classname="tests/unit/meta_progression/test_challenge_affix_resolver.gd" time="0.347659" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_claim_scope_semantics.gd" tests="8" failures="0" skipped="0" time="0.854261" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_validator_and_builder_accept_once_per_node_run_intent_for_non_battle_relic" assertions="3" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.409757" >
+      </testcase>
+      <testcase name="test_validator_and_builder_accept_on_first_clear_run_intent_for_non_battle_relic" assertions="3" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.393537" >
+      </testcase>
+      <testcase name="test_once_per_node_relic_bonus_ignores_loss_then_claims_once_on_win_and_retriggers_on_a_different_node" assertions="16" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.011544" >
+      </testcase>
+      <testcase name="test_on_first_clear_relic_bonus_ignores_loss_then_claims_once_for_the_whole_run_and_never_retriggers" assertions="16" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.012802" >
+      </testcase>
+      <testcase name="test_always_relic_bonus_still_applies_unconditionally_every_settlement_regression" assertions="6" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.008683" >
+      </testcase>
+      <testcase name="test_run_state_validator_rejects_duplicate_claim_receipt_tuple_for_once_per_node_and_on_first_clear" assertions="4" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.00312" >
+      </testcase>
+      <testcase name="test_two_effect_refs_on_the_same_relic_sharing_operation_index_claim_independently_without_colliding" assertions="4" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.007456" >
+      </testcase>
+      <testcase name="test_existing_claim_hit_with_mismatched_payload_digest_is_rejected_not_silently_skipped" assertions="5" status="pass" classname="tests/unit/meta_progression/test_claim_scope_semantics.gd" time="0.007362" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_collection_view_model.gd" tests="6" failures="0" skipped="0" time="0.009345" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_discovered_ids_for_category_filters_by_prefix_and_preserves_order" assertions="3" status="pass" classname="tests/unit/meta_progression/test_collection_view_model.gd" time="0.004345" >
+      </testcase>
+      <testcase name="test_discovered_ids_for_category_is_empty_for_unknown_category" assertions="2" status="pass" classname="tests/unit/meta_progression/test_collection_view_model.gd" time="0.00152" >
+      </testcase>
+      <testcase name="test_unlocked_ids_for_category_filters_by_prefix" assertions="2" status="pass" classname="tests/unit/meta_progression/test_collection_view_model.gd" time="0.000913" >
+      </testcase>
+      <testcase name="test_is_discovered_reflects_membership_in_profile_discovered_content_ids" assertions="3" status="pass" classname="tests/unit/meta_progression/test_collection_view_model.gd" time="0.000939" >
+      </testcase>
+      <testcase name="test_is_unlocked_reflects_membership_in_profile_unlocked_content_ids" assertions="3" status="pass" classname="tests/unit/meta_progression/test_collection_view_model.gd" time="0.000896" >
+      </testcase>
+      <testcase name="test_view_model_holds_a_clone_not_a_live_profile_reference" assertions="2" status="pass" classname="tests/unit/meta_progression/test_collection_view_model.gd" time="0.000732" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_expedition_gate_view_model.gd" tests="8" failures="0" skipped="0" time="1.125274" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_last_selection_reflects_profile_last_selection" assertions="4" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.009704" >
+      </testcase>
+      <testcase name="test_last_selection_is_null_when_profile_has_never_started_an_expedition" assertions="2" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.000412" >
+      </testcase>
+      <testcase name="test_highest_cleared_level_reflects_commander_challenge_records" assertions="3" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.000407" >
+      </testcase>
+      <testcase name="test_highest_cleared_level_is_zero_for_a_commander_with_no_record" assertions="2" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.000319" >
+      </testcase>
+      <testcase name="test_view_model_holds_a_clone_not_a_live_profile_reference" assertions="2" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.000284" >
+      </testcase>
+      <testcase name="test_affix_entries_for_challenge_zero_is_empty" assertions="10" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.384679" >
+      </testcase>
+      <testcase name="test_affix_entries_lists_generated_challenge_affixes_before_the_run_is_created" assertions="14" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.366916" >
+      </testcase>
+      <testcase name="test_affix_entries_surfaces_resolver_failure_distinctly_from_no_affixes" assertions="10" status="pass" classname="tests/unit/meta_progression/test_expedition_gate_view_model.gd" time="0.362553" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" tests="6" failures="0" skipped="0" time="0.007091" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_commander_always_active_add_gold_applies_with_no_relic_slots_active" assertions="2" status="pass" classname="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" time="0.001755" >
+      </testcase>
+      <testcase name="test_challenge_always_active_add_gold_applies_with_no_relic_slots_active" assertions="2" status="pass" classname="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" time="0.001122" >
+      </testcase>
+      <testcase name="test_always_active_contribution_stacks_on_top_of_slot_gated_relic" assertions="2" status="pass" classname="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" time="0.001308" >
+      </testcase>
+      <testcase name="test_always_active_contribution_is_unaffected_by_which_relic_slots_are_active" assertions="2" status="pass" classname="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" time="0.000823" >
+      </testcase>
+      <testcase name="test_always_active_contribution_is_still_clamped_by_gold_cap" assertions="2" status="pass" classname="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" time="0.00113" >
+      </testcase>
+      <testcase name="test_non_economy_category_always_active_rule_does_not_contribute_to_income" assertions="2" status="pass" classname="tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd" time="0.000953" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_map_service_commander_challenge_modifiers.gd" tests="4" failures="0" skipped="0" time="0.085714" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_commander_always_active_route_forces_first_anchor_without_new_entropy" assertions="42" status="pass" classname="tests/unit/meta_progression/test_map_service_commander_challenge_modifiers.gd" time="0.023213" >
+      </testcase>
+      <testcase name="test_always_active_route_count_stacks_with_slot_gated_route_relic" assertions="43" status="pass" classname="tests/unit/meta_progression/test_map_service_commander_challenge_modifiers.gd" time="0.020198" >
+      </testcase>
+      <testcase name="test_always_active_route_contribution_ignores_which_relic_slots_are_active" assertions="42" status="pass" classname="tests/unit/meta_progression/test_map_service_commander_challenge_modifiers.gd" time="0.025012" >
+      </testcase>
+      <testcase name="test_non_route_category_always_active_rule_does_not_affect_map_generation" assertions="42" status="pass" classname="tests/unit/meta_progression/test_map_service_commander_challenge_modifiers.gd" time="0.017291" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_meta_reward_compute_service.gd" tests="5" failures="0" skipped="0" time="0.003441" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_meta_reward_compute_matches_table_formula" assertions="5" status="pass" classname="tests/unit/meta_progression/test_meta_reward_compute_service.gd" time="0.000936" >
+      </testcase>
+      <testcase name="test_meta_reward_compute_adds_completion_only_for_completed_outcome" assertions="4" status="pass" classname="tests/unit/meta_progression/test_meta_reward_compute_service.gd" time="0.000583" >
+      </testcase>
+      <testcase name="test_meta_reward_compute_ignores_failure_reward_field_regardless_of_value" assertions="2" status="pass" classname="tests/unit/meta_progression/test_meta_reward_compute_service.gd" time="0.000532" >
+      </testcase>
+      <testcase name="test_meta_reward_compute_ignores_non_combat_node_scores" assertions="2" status="pass" classname="tests/unit/meta_progression/test_meta_reward_compute_service.gd" time="0.000426" >
+      </testcase>
+      <testcase name="test_meta_reward_compute_is_pure_and_deterministic" assertions="5" status="pass" classname="tests/unit/meta_progression/test_meta_reward_compute_service.gd" time="0.000964" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_meta_reward_table_reader.gd" tests="2" failures="0" skipped="0" time="5.182274" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_reader_rebuilds_every_meta_reward_field_from_pinned_canonical_payload" assertions="36" status="pass" classname="tests/unit/meta_progression/test_meta_reward_table_reader.gd" time="3.63763" >
+      </testcase>
+      <testcase name="test_mutating_reader_clone_does_not_change_registry_view_digest_or_next_read" assertions="15" status="pass" classname="tests/unit/meta_progression/test_meta_reward_table_reader.gd" time="1.544644" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_meta_reward_table_slice_default_alignment.gd" tests="1" failures="0" skipped="0" time="0.001229" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_slice_default_meta_reward_table_matches_section_7_3_alignment" assertions="17" status="pass" classname="tests/unit/meta_progression/test_meta_reward_table_slice_default_alignment.gd" time="0.001229" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_meta_settlement_service.gd" tests="9" failures="0" skipped="0" time="0.014008" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_settle_completed_creates_first_time_commander_record_and_updates_global_highest" assertions="8" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.002104" >
+      </testcase>
+      <testcase name="test_settle_completed_updates_commander_record_to_max_without_regressing" assertions="4" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001224" >
+      </testcase>
+      <testcase name="test_settle_completed_leaves_other_commanders_records_untouched" assertions="8" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001326" >
+      </testcase>
+      <testcase name="test_settle_completed_inserts_new_commander_record_in_sorted_position" assertions="4" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.0014" >
+      </testcase>
+      <testcase name="test_settle_failed_outcome_does_not_touch_challenge_records_or_global_highest" assertions="6" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001483" >
+      </testcase>
+      <testcase name="test_settle_completed_outcome_precedes_zero_expedition_hp_check" assertions="4" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001837" >
+      </testcase>
+      <testcase name="test_settle_receipt_key_equals_build_settlement_receipt_for_run_id" assertions="4" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001438" >
+      </testcase>
+      <testcase name="test_settle_is_idempotent_when_run_id_already_has_a_receipt" assertions="7" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001627" >
+      </testcase>
+      <testcase name="test_settle_does_not_mutate_input_profile_or_terminal_run" assertions="7" status="pass" classname="tests/unit/meta_progression/test_meta_settlement_service.gd" time="0.001569" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_profile_state_meta_fields.gd" tests="6" failures="0" skipped="0" time="0.004489" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_profile_last_selection_state_deep_clone_is_independent_copy" assertions="3" status="pass" classname="tests/unit/meta_progression/test_profile_state_meta_fields.gd" time="0.000319" >
+      </testcase>
+      <testcase name="test_commander_challenge_record_state_deep_clone_is_independent_copy" assertions="3" status="pass" classname="tests/unit/meta_progression/test_profile_state_meta_fields.gd" time="0.000461" >
+      </testcase>
+      <testcase name="test_profile_state_deep_clone_copies_last_selection_as_independent_instance" assertions="4" status="pass" classname="tests/unit/meta_progression/test_profile_state_meta_fields.gd" time="0.000764" >
+      </testcase>
+      <testcase name="test_profile_state_deep_clone_handles_null_last_selection" assertions="1" status="pass" classname="tests/unit/meta_progression/test_profile_state_meta_fields.gd" time="0.001016" >
+      </testcase>
+      <testcase name="test_profile_state_deep_clone_copies_commander_challenge_records_as_independent_list" assertions="3" status="pass" classname="tests/unit/meta_progression/test_profile_state_meta_fields.gd" time="0.000937" >
+      </testcase>
+      <testcase name="test_run_state_deep_clone_copies_discovered_content_ids_as_independent_array" assertions="2" status="pass" classname="tests/unit/meta_progression/test_profile_state_meta_fields.gd" time="0.000992" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_purchase_unlock_command.gd" tests="6" failures="0" skipped="0" time="0.002082" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_is_concrete_true_when_unlock_def_present" assertions="1" status="pass" classname="tests/unit/meta_progression/test_purchase_unlock_command.gd" time="0.000252" >
+      </testcase>
+      <testcase name="test_is_concrete_false_when_unlock_def_missing" assertions="1" status="pass" classname="tests/unit/meta_progression/test_purchase_unlock_command.gd" time="0.000263" >
+      </testcase>
+      <testcase name="test_apply_to_rejects_when_not_concrete_without_touching_profile" assertions="3" status="pass" classname="tests/unit/meta_progression/test_purchase_unlock_command.gd" time="0.000434" >
+      </testcase>
+      <testcase name="test_apply_to_delegates_to_default_service_and_returns_success" assertions="3" status="pass" classname="tests/unit/meta_progression/test_purchase_unlock_command.gd" time="0.000378" >
+      </testcase>
+      <testcase name="test_apply_to_propagates_named_error_from_injected_service" assertions="4" status="pass" classname="tests/unit/meta_progression/test_purchase_unlock_command.gd" time="0.000428" >
+      </testcase>
+      <testcase name="test_apply_to_uses_injected_service_override" assertions="2" status="pass" classname="tests/unit/meta_progression/test_purchase_unlock_command.gd" time="0.000327" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_bootstrap_service.gd" tests="18" failures="0" skipped="0" time="0.104445" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_build_rejects_null_inputs" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.001282" >
+      </testcase>
+      <testcase name="test_build_rejects_catalog_from_a_different_pinned_generation" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.000916" >
+      </testcase>
+      <testcase name="test_build_locks_commander_id_and_challenge_level_on_run" assertions="6" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.004507" >
+      </testcase>
+      <testcase name="test_build_pins_content_snapshot_to_current_generation" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.005503" >
+      </testcase>
+      <testcase name="test_build_seeds_roster_from_starting_pack_and_excludes_commander" assertions="16" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.005537" >
+      </testcase>
+      <testcase name="test_build_canonicalizes_starting_pack_before_assigning_unit_serials" assertions="38" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.010748" >
+      </testcase>
+      <testcase name="test_build_rejects_starting_pack_larger_than_the_bench" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.003916" >
+      </testcase>
+      <testcase name="test_build_accepts_a_starting_pack_exactly_filling_the_bench" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.004295" >
+      </testcase>
+      <testcase name="test_build_pool_is_the_whole_catalog_minus_the_starting_pack" assertions="17" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.004269" >
+      </testcase>
+      <testcase name="test_build_gives_a_commander_exclusive_unit_a_player_only_pool_entry" assertions="7" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.004443" >
+      </testcase>
+      <testcase name="test_build_rejects_a_starting_pack_exceeding_the_catalog_pool_supply" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.003919" >
+      </testcase>
+      <testcase name="test_bootstrapped_run_can_open_a_shop_and_receive_offers" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.00664" >
+      </testcase>
+      <testcase name="test_build_keeps_population_bonus_out_of_the_starting_economy_level" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.016793" >
+      </testcase>
+      <testcase name="test_try_commander_population_source_carries_the_bonus" assertions="7" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.000655" >
+      </testcase>
+      <testcase name="test_build_rejects_a_negative_population_bonus" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.000833" >
+      </testcase>
+      <testcase name="test_build_seeds_four_named_rng_streams" assertions="14" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.006856" >
+      </testcase>
+      <testcase name="test_build_run_seed_is_deterministic_from_profile_id_and_next_run_serial" assertions="5" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.017047" >
+      </testcase>
+      <testcase name="test_build_result_passes_full_run_state_validation" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_bootstrap_service.gd" time="0.006286" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_command_factory.gd" tests="6" failures="0" skipped="0" time="0.052628" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_factory_builds_all_four_command_types_and_each_is_concrete" assertions="9" status="pass" classname="tests/unit/meta_progression/test_run_command_factory.gd" time="0.00232" >
+      </testcase>
+      <testcase name="test_settle_battle_result_command_relic_table_bonus_is_observable" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_command_factory.gd" time="0.008409" >
+      </testcase>
+      <testcase name="test_settle_battle_result_command_without_relic_table_has_no_bonus" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_command_factory.gd" time="0.007921" >
+      </testcase>
+      <testcase name="test_refresh_shop_command_surcharge_raises_the_reroll_price" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_command_factory.gd" time="0.008145" >
+      </testcase>
+      <testcase name="test_enter_node_event_relic_table_income_bonus_is_observable" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_command_factory.gd" time="0.008122" >
+      </testcase>
+      <testcase name="test_generate_expedition_map_command_accepts_a_non_empty_relic_table" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_command_factory.gd" time="0.017711" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_command_factory_commit_board_layout.gd" tests="4" failures="0" skipped="0" time="0.010733" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_commit_board_command_injects_the_commander_population_source" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_command_factory_commit_board_layout.gd" time="0.003274" >
+      </testcase>
+      <testcase name="test_commit_board_command_without_a_commander_bonus_keeps_the_base_cap" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_command_factory_commit_board_layout.gd" time="0.00318" >
+      </testcase>
+      <testcase name="test_commit_board_command_is_not_concrete_without_a_battle_catalog" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_command_factory_commit_board_layout.gd" time="0.002041" >
+      </testcase>
+      <testcase name="test_commit_board_command_does_not_alias_the_caller_board" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_command_factory_commit_board_layout.gd" time="0.002238" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_composition_support.gd" tests="8" failures="0" skipped="0" time="0.004624" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_required_battle_ids_appends_challenge_chain_in_ascending_level_order" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000532" >
+      </testcase>
+      <testcase name="test_required_battle_ids_does_not_mutate_the_callers_base_array" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000442" >
+      </testcase>
+      <testcase name="test_required_battle_ids_at_challenge_zero_returns_base_ids_unchanged" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000412" >
+      </testcase>
+      <testcase name="test_required_battle_ids_with_empty_base_and_challenge_one_yields_only_unlock_id" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000353" >
+      </testcase>
+      <testcase name="test_population_sources_with_zero_bonus_is_empty" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000278" >
+      </testcase>
+      <testcase name="test_population_sources_with_negative_bonus_is_empty" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000278" >
+      </testcase>
+      <testcase name="test_population_sources_with_positive_bonus_yields_one_commander_source" assertions="5" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.000411" >
+      </testcase>
+      <testcase name="test_population_sources_output_actually_changes_board_capacity_via_commit_command" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_composition_support.gd" time="0.001918" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_discovery_log.gd" tests="6" failures="0" skipped="0" time="0.005667" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_mark_appends_new_content_id_in_sorted_order" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_discovery_log.gd" time="0.001096" >
+      </testcase>
+      <testcase name="test_mark_inserts_before_a_lexically_later_existing_id" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_discovery_log.gd" time="0.000788" >
+      </testcase>
+      <testcase name="test_mark_is_idempotent_when_content_id_already_present" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_discovery_log.gd" time="0.000826" >
+      </testcase>
+      <testcase name="test_mark_on_empty_ledger_produces_single_entry" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_discovery_log.gd" time="0.00075" >
+      </testcase>
+      <testcase name="test_mark_does_not_mutate_rng_stream_states" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_discovery_log.gd" time="0.000856" >
+      </testcase>
+      <testcase name="test_mark_result_still_satisfies_run_state_validator" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_discovery_log.gd" time="0.001351" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_modifier_table_builder.gd" tests="10" failures="0" skipped="0" time="3.626179" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_relic_only_resolution_matches_standalone_run_relic_table_builder" assertions="9" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.412322" >
+      </testcase>
+      <testcase name="test_commander_with_no_run_operations_does_not_fail_build_and_contributes_nothing" assertions="5" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.446988" >
+      </testcase>
+      <testcase name="test_commander_passive_run_operations_become_always_active_contribution" assertions="5" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.350815" >
+      </testcase>
+      <testcase name="test_commander_always_active_contribution_stacks_with_slot_gated_relic_end_to_end_via_income_service" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.34318" >
+      </testcase>
+      <testcase name="test_challenge_level_zero_yields_no_run_contribution_when_higher_levels_have_battle_content" assertions="9" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.342321" >
+      </testcase>
+      <testcase name="test_challenge_battle_track_at_requested_level_does_not_enter_run_modifier_table" assertions="9" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.314315" >
+      </testcase>
+      <testcase name="test_challenge_battle_tracks_across_levels_do_not_enter_run_modifier_table" assertions="11" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.324348" >
+      </testcase>
+      <testcase name="test_invalid_commander_id_returns_named_failure" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.414661" >
+      </testcase>
+      <testcase name="test_commander_passive_with_unconsumed_run_kind_returns_named_failure" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.35968" >
+      </testcase>
+      <testcase name="test_same_battle_effect_on_two_challenge_levels_does_not_enter_run_modifier_table" assertions="9" status="pass" classname="tests/unit/meta_progression/test_run_modifier_table_builder.gd" time="0.317549" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_relic_rule_source.gd" tests="6" failures="0" skipped="0" time="0.0016" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_source_defaults_to_relic_when_not_set" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_rule_source.gd" time="0.000409" >
+      </testcase>
+      <testcase name="test_source_can_be_set_to_commander" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_rule_source.gd" time="0.00025" >
+      </testcase>
+      <testcase name="test_source_can_be_set_to_challenge" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_rule_source.gd" time="0.000218" >
+      </testcase>
+      <testcase name="test_deep_clone_preserves_explicit_source" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_relic_rule_source.gd" time="0.000258" >
+      </testcase>
+      <testcase name="test_deep_clone_preserves_default_relic_source" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_rule_source.gd" time="0.000211" >
+      </testcase>
+      <testcase name="test_run_relic_table_constructor_preserves_source_through_its_internal_deep_clone" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_relic_rule_source.gd" time="0.000254" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_relic_table_always_active.gd" tests="13" failures="0" skipped="0" time="0.003153" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_sum_always_active_includes_commander_sourced_rule" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000244" >
+      </testcase>
+      <testcase name="test_sum_always_active_includes_challenge_sourced_rule" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000278" >
+      </testcase>
+      <testcase name="test_sum_always_active_sums_commander_and_challenge_together" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000256" >
+      </testcase>
+      <testcase name="test_sum_always_active_excludes_relic_sourced_rule_even_with_matching_category_and_kind" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000266" >
+      </testcase>
+      <testcase name="test_sum_always_active_excludes_default_source_rule_built_without_explicit_source" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000219" >
+      </testcase>
+      <testcase name="test_sum_always_active_filters_by_category" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000216" >
+      </testcase>
+      <testcase name="test_sum_always_active_filters_by_kind_within_same_category" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000202" >
+      </testcase>
+      <testcase name="test_sum_always_active_on_empty_table_is_zero" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000166" >
+      </testcase>
+      <testcase name="test_sum_always_active_does_not_depend_on_any_slot_or_active_id_information" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.00028" >
+      </testcase>
+      <testcase name="test_always_active_count_counts_commander_and_challenge_rules_for_category" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000307" >
+      </testcase>
+      <testcase name="test_always_active_count_excludes_relic_sourced_rules" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000261" >
+      </testcase>
+      <testcase name="test_always_active_count_filters_by_category" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000263" >
+      </testcase>
+      <testcase name="test_always_active_count_on_empty_table_is_zero" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_relic_table_always_active.gd" time="0.000195" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" tests="15" failures="0" skipped="0" time="0.012272" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_profile_validates_with_null_last_selection" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000692" >
+      </testcase>
+      <testcase name="test_profile_validates_with_well_formed_last_selection" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000684" >
+      </testcase>
+      <testcase name="test_profile_rejects_last_selection_with_non_stable_commander_id" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.00067" >
+      </testcase>
+      <testcase name="test_profile_rejects_last_selection_with_negative_challenge_level" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000657" >
+      </testcase>
+      <testcase name="test_profile_validates_with_empty_commander_challenge_records" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.00061" >
+      </testcase>
+      <testcase name="test_profile_validates_with_sorted_unique_commander_challenge_records" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000607" >
+      </testcase>
+      <testcase name="test_profile_rejects_commander_challenge_records_with_duplicate_commander_id" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000648" >
+      </testcase>
+      <testcase name="test_profile_rejects_commander_challenge_records_out_of_canonical_order" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000736" >
+      </testcase>
+      <testcase name="test_profile_rejects_commander_challenge_record_with_non_stable_commander_id" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000818" >
+      </testcase>
+      <testcase name="test_profile_rejects_commander_challenge_record_with_negative_highest_cleared_level" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000878" >
+      </testcase>
+      <testcase name="test_run_validates_with_empty_discovered_content_ids" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000838" >
+      </testcase>
+      <testcase name="test_run_validates_with_sorted_unique_discovered_content_ids" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.001068" >
+      </testcase>
+      <testcase name="test_run_rejects_duplicate_discovered_content_ids" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.000993" >
+      </testcase>
+      <testcase name="test_run_rejects_discovered_content_ids_out_of_canonical_order" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.001188" >
+      </testcase>
+      <testcase name="test_run_rejects_non_stable_discovered_content_id" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd" time="0.001185" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" tests="7" failures="0" skipped="0" time="0.007278" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_profile_validates_with_empty_settlement_receipts" assertions="1" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.000895" >
+      </testcase>
+      <testcase name="test_profile_validates_with_single_well_formed_settlement_receipt" assertions="2" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.000841" >
+      </testcase>
+      <testcase name="test_profile_validates_with_multiple_receipts_in_strict_digest_order" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.001354" >
+      </testcase>
+      <testcase name="test_profile_rejects_two_receipts_with_the_same_run_id_tuple" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.001337" >
+      </testcase>
+      <testcase name="test_profile_rejects_settlement_receipts_out_of_canonical_digest_order" assertions="4" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.00129" >
+      </testcase>
+      <testcase name="test_profile_rejects_settlement_receipt_whose_key_does_not_reencode" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.0008" >
+      </testcase>
+      <testcase name="test_profile_rejects_settlement_receipt_with_malformed_payload_digest" assertions="3" status="pass" classname="tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd" time="0.000761" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" tests="7" failures="0" skipped="0" time="0.03199" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_challenge_surcharge_increases_offer_cost_with_no_relic_slots_active" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.00245" >
+      </testcase>
+      <testcase name="test_surcharge_nets_against_slot_gated_and_always_active_discount" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.003868" >
+      </testcase>
+      <testcase name="test_surcharge_cannot_push_cost_below_the_existing_one_gold_floor" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.003847" >
+      </testcase>
+      <testcase name="test_refresh_shop_applies_the_same_challenge_surcharge" assertions="7" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.006103" >
+      </testcase>
+      <testcase name="test_refresh_shop_reroll_cost_increases_with_challenge_surcharge" assertions="3" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.006139" >
+      </testcase>
+      <testcase name="test_refresh_shop_reroll_cost_unaffected_at_challenge_zero" assertions="3" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.004392" >
+      </testcase>
+      <testcase name="test_route_category_surcharge_does_not_affect_shop_price" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd" time="0.005191" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd" tests="5" failures="0" skipped="0" time="0.024713" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_commander_always_active_shop_discount_applies_with_no_relic_slots_active" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd" time="0.004502" >
+      </testcase>
+      <testcase name="test_always_active_discount_stacks_on_top_of_slot_gated_relic_discount" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd" time="0.004221" >
+      </testcase>
+      <testcase name="test_always_active_discount_still_floors_at_one_gold" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd" time="0.004687" >
+      </testcase>
+      <testcase name="test_refresh_shop_applies_the_same_always_active_discount" assertions="7" status="pass" classname="tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd" time="0.006914" >
+      </testcase>
+      <testcase name="test_route_category_always_active_rule_does_not_affect_shop_price" assertions="6" status="pass" classname="tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd" time="0.004389" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_start_expedition_command.gd" tests="9" failures="0" skipped="0" time="0.021147" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_is_concrete_false_when_commander_def_missing" assertions="1" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.000872" >
+      </testcase>
+      <testcase name="test_is_concrete_false_when_pinned_receipt_missing" assertions="1" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.00087" >
+      </testcase>
+      <testcase name="test_is_concrete_false_when_catalog_missing" assertions="1" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.000394" >
+      </testcase>
+      <testcase name="test_apply_to_rejects_exhausted_run_serial_with_zero_profile_mutation" assertions="5" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.001145" >
+      </testcase>
+      <testcase name="test_apply_to_rejects_locked_commander_with_zero_profile_mutation" assertions="4" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.001298" >
+      </testcase>
+      <testcase name="test_apply_to_rejects_challenge_prerequisite_unmet_with_zero_profile_mutation" assertions="4" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.000987" >
+      </testcase>
+      <testcase name="test_apply_to_allows_challenge_level_zero_with_no_records_at_all" assertions="2" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.007247" >
+      </testcase>
+      <testcase name="test_apply_to_allows_challenge_level_at_exact_prerequisite_boundary" assertions="1" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.004143" >
+      </testcase>
+      <testcase name="test_apply_to_success_bumps_next_run_serial_and_sets_last_selection" assertions="9" status="pass" classname="tests/unit/meta_progression/test_start_expedition_command.gd" time="0.004191" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/meta_progression/test_unlock_purchase_service.gd" tests="7" failures="0" skipped="0" time="0.003085" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_purchase_succeeds_deducts_currency_and_appends_sorted_unique_ids" assertions="6" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000724" >
+      </testcase>
+      <testcase name="test_purchase_appends_multiple_new_ids_into_canonical_sorted_order" assertions="2" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000358" >
+      </testcase>
+      <testcase name="test_purchase_rejects_insufficient_currency_and_leaves_profile_unchanged" assertions="5" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000463" >
+      </testcase>
+      <testcase name="test_purchase_rejects_already_owned_and_leaves_profile_unchanged" assertions="5" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000416" >
+      </testcase>
+      <testcase name="test_purchase_rejects_unmet_prerequisite_and_leaves_profile_unchanged" assertions="5" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000414" >
+      </testcase>
+      <testcase name="test_purchase_succeeds_when_prerequisite_is_already_unlocked" assertions="3" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000438" >
+      </testcase>
+      <testcase name="test_purchase_rejects_null_unlock_def" assertions="2" status="pass" classname="tests/unit/meta_progression/test_unlock_purchase_service.gd" time="0.000272" >
+      </testcase>
+  </testsuite>
+</testsuites>

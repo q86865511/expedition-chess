@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'Spec', 'RunnerContract')]
+    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'BalancePlaytest', 'Spec', 'RunnerContract')]
     [string]$Suite = 'All',
     [string]$TestPath = '',
     [string]$Case = '',
@@ -1461,11 +1461,13 @@ try {
                     'Soak' { 'soak_runner.gd' }
                     'Expedition' { 'expedition_runner.gd' }
                     'ExpeditionSoak' { 'expedition_soak_runner.gd' }
+                    'BalancePlaytest' { 'balance_playtest_runner.gd' }
                     'Spec' { 'spec_contract_runner.gd' }
                 }
                 $userArgs = @()
                 if (-not [string]::IsNullOrWhiteSpace($Case)) { $userArgs += @('--case', $Case) }
-                if ($name -in @('Soak', 'ExpeditionSoak')) { $userArgs += @('--seed-count', [string]$SeedCount) }
+                if ($name -in @('Soak', 'ExpeditionSoak', 'BalancePlaytest')) { $userArgs += @('--seed-count', [string]$SeedCount) }
+                if ($name -eq 'BalancePlaytest' -and $SeedCount -eq 10000) { $userArgs += '--final' }
                 $code = Invoke-RunnerScript -Executable $resolvedGodot -Name $name -ScriptPath ('res://tests/runners/' + $scriptName) -UserArguments $userArgs
             }
             if ($code -ne 0) {

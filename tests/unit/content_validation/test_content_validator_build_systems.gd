@@ -47,7 +47,7 @@ func _compliant_input() -> ContentValidationInput:
 		relic.activation_limit = 1
 		if BATTLE_RELIC_IDS.has(content_id):
 			relic.category = &"battle"
-			relic.effect_refs = [&"effect.summon"]
+			relic.effect_refs = [&"effect.global_battle"]
 		elif ECONOMY_RELIC_IDS.has(content_id):
 			relic.category = &"economy"
 			relic.effect_refs = [&"effect.operation_matrix"]

@@ -1,18 +1,17 @@
 [gd_resource type="Resource" script_class="EffectDef" format=3]
 
 [ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_pbda2"]
-[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_ked6s"]
+[ext_resource type="Script" path="res://content/definitions/shield_operation_def.gd" id="2_ked6s"]
 [ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_jo8hu"]
 [ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_k884e"]
 [ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_73yqg"]
 
 [sub_resource type="Resource" id="Resource_vynym"]
 script = ExtResource("2_ked6s")
-stat = &"health"
-mode = &"flat"
+# TUNE: health +10 依附錄 B 映射為等值開戰全隊護盾 10。
 amount = 10
 duration_ticks = 1800
-target = &"self"
+target = &"all_allies"
 
 [resource]
 script = ExtResource("5_73yqg")

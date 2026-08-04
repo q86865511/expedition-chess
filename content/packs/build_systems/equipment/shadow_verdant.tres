@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_oycdi"]
 script = ExtResource("2_h1opm")
 stat = &"attack_speed"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_ynf4j"]
 script = ExtResource("2_h1opm")
 stat = &"health"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 20
 
 [resource]

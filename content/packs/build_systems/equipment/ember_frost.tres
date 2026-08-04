@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_fxs6n"]
 script = ExtResource("2_0ygex")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_x26a2"]
 script = ExtResource("2_0ygex")
 stat = &"magic_resist"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [resource]

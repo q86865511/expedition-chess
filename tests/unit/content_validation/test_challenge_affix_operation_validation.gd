@@ -65,6 +65,37 @@ const SHOP_SURCHARGE_SCRIPT_PATH := "res://content/definitions/shop_surcharge_op
 const DRAIN_EXPEDITION_HP_SCRIPT_PATH := "res://content/definitions/drain_expedition_hp_operation_def.gd"
 
 
+func test_modify_stat_flat_mode_is_rejected_by_content_validator() -> void:
+	var input := _minimal_challenge_input()
+	_append_modify_stat_effect(input, &"effect.probe_flat_mode", &"flat", 5)
+	var report := ContentValidator.new().validate(input)
+	assert_true(
+		_has_issue(report, &"CONTENT_OPERATION_INVALID"),
+		"ModifyStatOperationDef.mode=flat 必須在 content gate 被拒絕: %s" % _issue_text(report)
+	)
+
+
+func test_modify_stat_add_and_bounded_multiply_modes_are_accepted() -> void:
+	for mode: StringName in [&"add", &"multiply_bps"]:
+		var input := _minimal_challenge_input()
+		_append_modify_stat_effect(input, StringName("effect.probe_%s" % mode), mode, 100000)
+		var report := ContentValidator.new().validate(input)
+		assert_false(
+			_has_issue(report, &"CONTENT_OPERATION_INVALID"),
+			"合法 modify_stat mode 不應被拒絕 (%s): %s" % [mode, _issue_text(report)]
+		)
+
+
+func test_modify_stat_multiply_bps_above_canonical_bound_is_rejected() -> void:
+	var input := _minimal_challenge_input()
+	_append_modify_stat_effect(input, &"effect.probe_multiply_overflow", &"multiply_bps", 100001)
+	var report := ContentValidator.new().validate(input)
+	assert_true(
+		_has_issue(report, &"CONTENT_OPERATION_INVALID"),
+		"multiply_bps > 100000 必須在 content gate 被拒絕: %s" % _issue_text(report)
+	)
+
+
 func test_shop_surcharge_negative_amount_is_forbidden_on_effect() -> void:
 	var operation := _new_shop_surcharge(0, -1, &"always")
 	if operation == null:
@@ -156,7 +187,7 @@ func test_challenge_chain_modifier_with_challenge_affix_role_and_full_coverage_h
 	assert_false(_has_issue(report, &"CONTENT_CHALLENGE_AFFIX_COVERAGE"), _issue_text(report))
 
 
-func test_challenge_affix_coverage_missing_drain_bucket_is_rejected() -> void:
+func test_challenge_affix_run_operation_buckets_are_deferred_to_spec_issue() -> void:
 	var input := _minimal_challenge_input()
 	var surcharge := _new_shop_surcharge(0, 2, &"always")
 	if surcharge == null:
@@ -167,9 +198,9 @@ func test_challenge_affix_coverage_missing_drain_bucket_is_rejected() -> void:
 	for level in range(1, 6):
 		_set_modifier_refs(input, level, [&"effect.ca_battle_only", &"effect.ca_surcharge_only"])
 	var report := ContentValidator.new().validate(input)
-	assert_true(
+	assert_false(
 		_has_issue(report, &"CONTENT_CHALLENGE_AFFIX_COVERAGE"),
-		"全鏈缺 DrainExpeditionHp 桶時必須回覆蓋不足: %s" % _issue_text(report)
+		"BP-SI-001 裁決後，run-operation 桶暫緩到 run 層分流規格修訂: %s" % _issue_text(report)
 	)
 
 
@@ -210,6 +241,10 @@ func test_challenge_chain_modifier_with_non_always_claim_scope_is_rejected() -> 
 	assert_true(
 		_has_issue(report, &"CONTENT_RELIC_EFFECT_SCOPE"),
 		"challenge 鏈引用的效果若 claim_scope 非 always，消費端（RunModifierTableBuilder）必定拒絕，validator 必須先擋: %s" % _issue_text(report)
+	)
+	assert_true(
+		_has_issue(report, &"CONTENT_EFFECT_SOURCE_LIFECYCLE"),
+		"BP-SI-001 修訂前 challenge global source 不得攜帶 run operation: %s" % _issue_text(report)
 	)
 
 
@@ -292,11 +327,37 @@ func _append_effect(
 		var operation := ModifyStatOperationDef.new()
 		operation.operation_index = 0
 		operation.stat = &"attack"
-		operation.mode = &"flat"
+		operation.mode = &"add"
 		operation.amount = 1
 		operation.duration_ticks = 20
-		operation.target = &"self"
+		operation.target = &"all_enemies"
 		effect.battle_operations = [operation]
+	input.definitions.append(effect)
+
+
+func _append_modify_stat_effect(
+	input: ContentValidationInput,
+	effect_id: StringName,
+	mode: StringName,
+	amount: int
+) -> void:
+	var effect := EffectDef.new()
+	effect.id = effect_id
+	effect.schema_version = 1
+	effect.display_name_key = StringName("loc.%s" % String(effect_id))
+	effect.content_role = &"general"
+	effect.trigger = &"battle_start"
+	effect.stacking = &"replace"
+	effect.max_stacks = 1
+	effect.duration_ticks = 20
+	var operation := ModifyStatOperationDef.new()
+	operation.operation_index = 0
+	operation.stat = &"attack"
+	operation.mode = mode
+	operation.amount = amount
+	operation.duration_ticks = 20
+	operation.target = &"self"
+	effect.battle_operations = [operation]
 	input.definitions.append(effect)
 
 

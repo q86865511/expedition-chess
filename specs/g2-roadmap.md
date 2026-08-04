@@ -1,6 +1,6 @@
-# G2 內容完整切片 — 四切片交付 Roadmap
+# G2 內容完整切片 — 交付 Roadmap（四切片＋3.5 `difficulty-curve` 機制切片）
 
-> 建立日期：2026-07-26｜狀態：執行中（content-production 本地 fully closed；下一片 balance-playtest）
+> 建立日期：2026-07-26｜狀態：執行中（content-production 已合併；balance-playtest 執行中）
 > 架構基線：`docs/game-architecture/`、`docs/implementation-slices.md`
 > 基準提交：`5ddf80a30481ee701ba90be48e0fd474bc8c2715`（S5 merged）
 > 規格裁決：2026-07-26 使用者採用 presentation-ui R1 雙審全部 14 項修正建議
@@ -23,6 +23,13 @@
 > 不啟動 R17／不再次雙審，直接進 T15 文件與 Git handoff。Git 仍需另行確認。
 > Merge closure：PR #5 `MERGED @ 9362e7d`；merge 後 UI findings 修正由
 > PR #6 `MERGED @ 5e78ccf`。第二片由該最新 master 建立。
+> Merge closure：PR #8 已合併至 `master@bf818fb`；第三片由該提交建立
+> `codex/g2-balance-playtest`。舊稱「content-production 本地未提交」已失效。
+> 規格裁決：2026-08-04 使用者裁決大樣本統計（10k/30k，規模屆時裁決）自
+> balance-playtest 移至 Phase 2 平衡收斂後執行；本片以 3k screening #2 gate PASS
+> （candidate `balance.g2.7d47fada8091`）作 screening 證據收尾。
+> 規格裁決：2026-08-04 使用者採用 Phase 0~3 執行計畫（見 §9）；新增機制切片
+> `difficulty-curve` 於第 3、4 片之間。
 
 ## 1. 目的與完成定義
 
@@ -45,8 +52,9 @@ G2 **只有**在第四片同時具備下列外部證據時才可標記完成：
 |---:|---|---|---|---|
 | 1 | `presentation-ui` | `codex/g2-presentation-ui` | production facade、主選單、正式場景、設定、localization、視覺樣板 | `master@5ddf80a` |
 | 2 | `content-production` | `codex/g2-content-production` | 原創內容、美術音訊、事件選擇、codec 3、save schema 4 | 第 1 片已合併 |
-| 3 | `balance-playtest` | `codex/g2-balance-playtest` | 版本化 TUNE、30k bot soak、匿名報告、Windows 可測 RC | 第 2 片已合併 |
-| 4 | `performance-release` | `codex/g2-performance-release` | CI/export、效能、G1→G2 bridge、90 場真人 Gate、最終 review | 第 3 片已合併 |
+| 3 | `balance-playtest` | `codex/g2-balance-playtest` | 版本化 TUNE、3k screening harness＋candidate、匿名報告、Windows 可測 RC（大樣本統計移至 Phase 2） | 第 2 片已合併 |
+| 3.5 | `difficulty-curve` | `codex/g2-difficulty-curve` | 幕間難度縮放、三幕 Boss 差異化、多敵遭遇、trait 門檻階梯、tier-1 池重整、challenge run-op 分流 | 第 3 片已合併 |
+| 4 | `performance-release` | `codex/g2-performance-release` | CI/export、效能、G1→G2 bridge、90 場真人 Gate、最終 review | 第 3.5 片與 Phase 2 大樣本已完成 |
 
 共同 Git 規則：代理不得 commit、push 或 merge；主迴圈在每片文件與證據同步後停下，
 只在使用者確認後進行該片 commit／PR／merge。
@@ -130,13 +138,23 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 - 正式 ContentDependencyPort 實際驗 asset path／localization key；production 無 dev fake。
 - 完整 runtime PNG／OGG、atlas、prompt／seed／處理參數及 provenance 已審。
 
-### 6.3 balance-playtest
+### 6.3 balance-playtest（Phase 0 收尾 gate，2026-08-04 修訂）
 
-- 全部 TUNE 轉為有版本候選；三 bot 策略與至少 30,000 seeds 統計完成。
-- 任一構築通關率或選取率高於次名 20 個百分點即阻擋候選。
-- 至少三條決策路線有穩定通關樣本。
+- 全部 TUNE 轉為有版本候選（candidate id 由 tune_digest 衍生、失敗候選 immutable 留存）。
+- 3k screening（1,000 shared seeds × 3 bot 策略）gate PASS：economy 勝場 ≥50、
+  無 build 選取率超次名 20 個百分點、replay 抽驗 150/150 零 drift。
 - 產出匿名 `PlaytestSessionReport v1`、Windows 可攜 ZIP、SHA-256 與 provisional RC。
 - AC-032 保持 `PENDING_EXTERNAL`。
+- 大樣本統計與「三條決策路線穩定通關」移至 6.3b（2026-08-04 使用者裁決；
+  理由：Act 2/3 難度曲線為機制缺失，修復前的大樣本數字必然作廢）。
+
+### 6.3b Phase 2 平衡收斂 gate（原 6.3 大樣本要求移入）
+
+- 於 `difficulty-curve` 合併後執行 TUNE 迭代迴圈，每輪 3k screening 驗證。
+- 收斂判準：三策略勝率皆落於 45~60% 帶、無任一 build 選取率超次名 20 個百分點、
+  三幕皆有淘汰率（敗局不集中單一節點）、勝局血量有分佈（非滿血通關）。
+- 收斂後執行大樣本統計（10k 或 30k seeds，規模與 runner 分片上限 16→24 屆時由
+  使用者裁決）作為正式平衡基線；至少三條決策路線有穩定通關樣本。
 
 ### 6.4 performance-release
 
@@ -153,8 +171,9 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 | Slice | SDD | Implementation | Review | External gate | Git |
 |---|---|---|---|---|---|
 | `presentation-ui` | COMPLETE | T00–T15 COMPLETE; 19 AC PASS | R16 history＋merge-after-review findings closed | T13 USER APPROVED; final repair baseline Gut 1000/1000 | PR #5 MERGED @ 9362e7d；PR #6 MERGED @ 5e78ccf |
-| `content-production` | COMPLETE | T00–T27 COMPLETE；acceptance 21＋1 全 PASS | T25 三輪雙審＋T18A 全批獨立人工採納 CLOSED | 44 adopted／14 rejected retained；Gut 281/1093；10k soak；All exit 0；fully_closed=true | `codex/g2-content-production-closure` 本地未提交 |
-| `balance-playtest` | NOT STARTED | NOT STARTED | NOT STARTED | 30k bot pending | not created |
+| `content-production` | COMPLETE | T00–T27 COMPLETE；acceptance 21＋1 全 PASS | T25 三輪雙審＋T18A 全批獨立人工採納 CLOSED | 44 adopted／14 rejected retained；Gut 281/1093；10k soak；All exit 0；fully_closed=true | PR #8 MERGED @ bf818fb |
+| `balance-playtest` | IN PROGRESS | Candidate／bots／reports／runner 已實作；3k screening #2 gate PASS（candidate `balance.g2.7d47fada8091`） | final 雙審待 Phase 0 收尾證據後執行 | AC-032 維持 PENDING_EXTERNAL；大樣本移 Phase 2（2026-08-04 裁決） | `codex/g2-balance-playtest`（未提交） |
+| `difficulty-curve` | NOT STARTED | NOT STARTED | NOT STARTED | — | not created |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |
 
 ## 8. 固定假設
@@ -163,3 +182,38 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 - 正式輸入為滑鼠＋鍵盤；完整控制器支援不在 G2。
 - 使用者負責分發測試 ZIP、回收匿名 JSON、提供符合規格的最低 PC。
 - Codex 負責程式、內容、美術、音訊、分析、修正與證據整理。
+
+## 9. Phase 0~3 執行計畫（2026-08-04 使用者裁決）
+
+以「先修機制、再平衡輪迴」為原則排序；大樣本統計延後至平衡收斂後執行。
+
+### Phase 0 — balance-playtest 收尾（進行中，~數天）
+
+1. tier2+ 單位入樣補證（3k #2 報告無直接欄位，自 per-case 資料補確認）。
+2. Part D 證據鏈：RC 重打包、start→save/load→terminal/abandon→report 全鏈路 smoke、
+   source manifest、export 排除與 PCK inventory。
+3. NUL 警告修正合入（`run_state_validator.gd` 的 `String.chr(0)` 分隔符，已另立任務）。
+4. 文件回寫（PROGRESS、HANDOFF、evidence-index、implementation-slices）。
+5. 兩位獨立 fresh reviewer 重審 → 使用者確認 → commit／PR／merge。
+
+### Phase 1 — `difficulty-curve` 機制切片（Phase 0 合併後，spec 三件套流程）
+
+解除平衡迴圈的結構性天花板，對應 `specs/balance-playtest/spec-issues.md`：
+
+- 幕間難度縮放與三幕 Boss 差異化（`slice_boss_1/2` 引用機制）、多敵遭遇編成（BP-SI-004）。
+- trait 門檻階梯化——2/4/6 隻遞增效果（BP-SI-005）。
+- tier-1 池構成重整（shadow 選取率 0.16% 的結構性問題）。
+- challenge run-op 分流與 global source lifecycle 矛盾正解（BP-SI-001/002）。
+- balance runner 逐幕快照與 stable ID 可觀測性（BP-SI-006，可提前隨 Phase 0 順做）。
+
+### Phase 2 — 平衡迭代迴圈（Phase 1 合併後）
+
+- TUNE 迭代：XP 性價比、verdant、單位數值、affix 強度；每輪改值 → 3k screening
+  （約一晚，全自動）→ 分析 → 再調。
+- 收斂判準見 §6.3b；達標後跑大樣本（10k/30k × 24 分片，規模與 runner 上限屆時裁決）
+  作正式平衡基線，完成原 6.3 移入 6.3b 的全部要求。
+
+### Phase 3 — 其後
+
+- `performance-release`（既有第 4 片，§6.4 不變）；AC-032 外部工具鏈於此收口。
+- 內容擴充（單位／遺物／事件充實池子）與後續呈現層迭代依 backlog 排程。

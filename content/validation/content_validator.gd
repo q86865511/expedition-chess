@@ -9,6 +9,19 @@ const STACKING_RULES: Array[StringName] = [&"replace", &"refresh_duration", &"ad
 const BASIC_ATTACK_PROFILES: Array[StringName] = [&"melee", &"ranged", &"magic_projectile"]
 const SHOP_CONDITIONS: Array[StringName] = [&"always", &"unlocked", &"event_only", &"never"]
 const RELIC_CATEGORIES: Array[StringName] = [&"battle", &"economy", &"route", &"rule"]
+const OPERATION_TARGETS: Array[StringName] = [
+	&"self", &"target", &"all_allies", &"all_enemies",
+]
+const MODIFY_STAT_NAMES: Array[StringName] = [
+	&"attack", &"armor", &"magic_resist", &"attack_speed_milli", &"move_speed_milli",
+]
+const GLOBAL_MODIFY_STAT_NAMES: Array[StringName] = [
+	&"attack", &"armor", &"magic_resist", &"attack_speed_milli", &"move_speed_milli",
+]
+const DAMAGE_TYPES: Array[StringName] = [&"physical", &"magical", &"true"]
+const GLOBAL_SOURCE_TRIGGERS: Array[StringName] = [
+	&"battle_start", &"periodic", &"battle_end",
+]
 ## challenge 詞綴專用的 content_role。
 const CHALLENGE_AFFIX_ROLE: StringName = &"challenge_affix"
 ## S5-AC-005（design §7.2）：MetaRewardTableDef.challenge_multiplier_bps 每筆的乘數下限
@@ -42,6 +55,7 @@ func validate(input: ContentValidationInput) -> ContentValidationReport:
 	_validate_unlock_graph(input.definitions)
 	_validate_meta_forbidden_growth(input.definitions)
 	_validate_operations(input.definitions)
+	_validate_global_effect_source_lifecycle(input.definitions)
 	_validate_encounter_sources(input.definitions)
 	_calculate_population_and_entities(input, report)
 	_validate_combat_config(input.definitions, report.entity_stress_minimum)
@@ -489,7 +503,9 @@ func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 			var previous: UnlockDef = levels[level - 1]
 			if unlock.prerequisite_refs.size() != 1 or unlock.prerequisite_refs[0] != previous.id:
 				_issue(&"CONTENT_CHALLENGE_CHAIN", unlock.id, &"prerequisite_refs", "gap")
-			if unlock.modifier_refs.is_empty(): _issue(&"CONTENT_CHALLENGE_CHAIN", unlock.id, &"modifier_refs", "missing")
+			# BP-SI-001：challenge 的 run-layer modifier 尚未與 battle global source 分流；
+			# 空 modifier_refs 在規格修訂前是明示暫緩，不再當作鏈結構缺失。
+			# 見 res://specs/balance-playtest/spec-issues.md。
 	_validate_challenge_affix_roles(levels)
 
 ## design §7.2（S5-AC-010）：challenge 鏈 1..5 的 modifier_refs 必須指向 challenge 詞綴自己的
@@ -524,17 +540,14 @@ func _validate_challenge_affix_roles(levels: Dictionary) -> void:
 				affix_effects.append(effect)
 	if not authored: return
 	var battle_track := false
-	var shop_surcharge := false
-	var expedition_drain := false
 	for effect: EffectDef in affix_effects:
 		if not effect.battle_operations.is_empty(): battle_track = true
-		for operation: RunOperationDef in effect.run_operations:
-			if operation is ShopSurchargeOperationDef: shop_surcharge = true
-			elif operation is DrainExpeditionHpOperationDef: expedition_drain = true
-	if battle_track and shop_surcharge and expedition_drain: return
+	# BP-SI-001：run operation 桶在正式 run-layer 分流規格完成前暫緩；保留 battle track
+	# 守門，不靜默刪除整條 challenge coverage。見 spec-issues.md。
+	if battle_track: return
 	_issue(
 		&"CONTENT_CHALLENGE_AFFIX_COVERAGE", &"catalog.challenge_affix", &"modifier_refs",
-		"battle=%s/surcharge=%s/drain=%s" % [battle_track, shop_surcharge, expedition_drain]
+		"battle=%s/run_buckets=deferred:BP-SI-001" % battle_track
 	)
 
 func _validate_economy(definitions: Array[ContentDefinition]) -> void:
@@ -944,22 +957,36 @@ func _validate_battle_operations(source_id: StringName, operations: Array[Battle
 			_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "index/type")
 			continue
 		if operation is DamageOperationDef:
-			if operation.base < 0 or operation.scaling.is_empty() or operation.damage_type.is_empty() or operation.target.is_empty():
+			if operation.base < 0 or operation.scaling not in [&"flat", &"attack"] \
+				or operation.damage_type not in DAMAGE_TYPES \
+				or operation.target not in OPERATION_TARGETS:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "damage")
 		elif operation is HealOperationDef:
-			if operation.base < 0 or operation.scaling.is_empty() or operation.target.is_empty():
+			if operation.base < 0 or operation.scaling not in [&"flat", &"attack"] \
+				or operation.target not in OPERATION_TARGETS:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "heal")
 		elif operation is ShieldOperationDef:
-			if operation.amount < 0 or operation.duration_ticks < 1 or operation.duration_ticks > 1800 or operation.target.is_empty():
+			if operation.amount < 0 or operation.duration_ticks < 1 \
+				or operation.duration_ticks > 1800 \
+				or operation.target not in OPERATION_TARGETS:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "shield")
 		elif operation is ModifyStatOperationDef:
-			if operation.stat.is_empty() or operation.mode.is_empty() or operation.duration_ticks < 1 or operation.duration_ticks > 1800 or operation.target.is_empty():
+			var mode_is_valid: bool = operation.mode in [&"add", &"multiply_bps"]
+			var multiply_amount_is_valid: bool = operation.mode != &"multiply_bps" \
+				or (operation.amount >= 0 and operation.amount <= 100000)
+			if operation.stat not in MODIFY_STAT_NAMES or not mode_is_valid \
+				or not multiply_amount_is_valid or operation.duration_ticks < 1 \
+				or operation.duration_ticks > 1800 \
+				or operation.target not in OPERATION_TARGETS:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "modify_stat")
 		elif operation is ApplyStatusOperationDef:
-			if operation.stacks < 1 or operation.stacks > 99 or operation.duration_ticks < 1 or operation.duration_ticks > 1800 or operation.target.is_empty():
+			if operation.stacks < 1 or operation.stacks > 99 \
+				or operation.duration_ticks < 1 or operation.duration_ticks > 1800 \
+				or operation.target not in OPERATION_TARGETS:
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "status")
 		elif operation is RemoveStatusOperationDef:
-			if operation.target.is_empty(): _issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "remove_status")
+			if operation.target not in OPERATION_TARGETS:
+				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "remove_status")
 		elif operation is MoveOperationDef:
 			if operation.cells < 0 or operation.cells > 7 or operation.direction_or_target.is_empty():
 				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "move")
@@ -968,7 +995,116 @@ func _validate_battle_operations(source_id: StringName, operations: Array[Battle
 				_issue(&"CONTENT_ENTITY_BOUND", source_id, field_path, "summon_bound")
 			if operation.placement_rule.is_empty(): _issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "summon")
 		elif operation is GrantManaOperationDef:
-			if operation.amount < 0 or operation.target.is_empty(): _issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "grant_mana")
+			if operation.amount < 0 or operation.target not in OPERATION_TARGETS:
+				_issue(&"CONTENT_OPERATION_INVALID", source_id, field_path, "grant_mana")
+
+
+func _validate_global_effect_source_lifecycle(
+	definitions: Array[ContentDefinition]
+) -> void:
+	var checked: Dictionary = {}
+	for definition: ContentDefinition in definitions:
+		if definition is RelicDef:
+			var relic := definition as RelicDef
+			if relic.category == &"battle":
+				_validate_global_effect_refs(
+					relic.effect_refs, relic.id, &"relic", &"player", checked
+				)
+		elif definition is TraitDef:
+			var trait_definition := definition as TraitDef
+			for threshold: TraitThresholdDef in trait_definition.thresholds:
+				if threshold != null:
+					_validate_global_effect_refs(
+						threshold.effect_refs, trait_definition.id,
+						&"trait", &"player", checked
+					)
+		elif definition is CommanderDef:
+			var commander := definition as CommanderDef
+			_validate_global_effect_refs(
+				commander.passive_effect_refs, commander.id,
+				&"commander", &"player", checked
+			)
+		elif definition is EncounterDef:
+			var encounter := definition as EncounterDef
+			_validate_global_effect_refs(
+				encounter.affix_refs, encounter.id,
+				&"encounter_affix", &"enemy", checked
+			)
+		elif definition is UnlockDef:
+			var unlock := definition as UnlockDef
+			if unlock.unlock_kind == &"challenge":
+				_validate_global_effect_refs(
+					unlock.modifier_refs, unlock.id,
+					&"challenge", &"player", checked
+				)
+
+
+func _validate_global_effect_refs(
+	effect_refs: Array[StringName],
+	referrer_id: StringName,
+	source_category: StringName,
+	source_side: StringName,
+	checked: Dictionary
+) -> void:
+	for effect_id: StringName in effect_refs:
+		var key := "%s|%s|%s" % [effect_id, source_category, source_side]
+		if checked.has(key):
+			continue
+		checked[key] = true
+		var definition: ContentDefinition = _by_id.get(effect_id)
+		if not definition is EffectDef:
+			continue
+		var effect := definition as EffectDef
+		if not _global_effect_lifecycle_valid(effect, source_category, source_side):
+			_issue(
+				&"CONTENT_EFFECT_SOURCE_LIFECYCLE", effect_id, &"source_lifecycle",
+				"category=%s/side=%s/referrer=%s" % [
+					source_category, source_side, referrer_id,
+				]
+			)
+
+
+func _global_effect_lifecycle_valid(
+	effect: EffectDef,
+	source_category: StringName,
+	source_side: StringName
+) -> bool:
+	if effect.trigger not in GLOBAL_SOURCE_TRIGGERS:
+		return false
+	if effect.trigger == &"battle_end" and not effect.battle_operations.is_empty():
+		return false
+	for condition: ConditionDef in effect.conditions:
+		if condition == null or condition.kind != &"max_uses_per_battle":
+			return false
+	if (source_category in [&"challenge", &"encounter_affix"] \
+		or source_side == &"enemy") and not effect.run_operations.is_empty():
+		return false
+	for operation: BattleOperationDef in effect.battle_operations:
+		if operation is MoveOperationDef or operation is SummonOperationDef:
+			return false
+		if operation is DamageOperationDef \
+			and (operation as DamageOperationDef).scaling == &"attack":
+			return false
+		if operation is HealOperationDef \
+			and (operation as HealOperationDef).scaling == &"attack":
+			return false
+		if operation is ModifyStatOperationDef \
+			and (operation as ModifyStatOperationDef).stat not in GLOBAL_MODIFY_STAT_NAMES:
+			return false
+		if _battle_operation_target(operation) in [&"self", &"target"]:
+			return false
+	return true
+
+
+func _battle_operation_target(operation: BattleOperationDef) -> StringName:
+	if operation is DamageOperationDef: return (operation as DamageOperationDef).target
+	if operation is HealOperationDef: return (operation as HealOperationDef).target
+	if operation is ShieldOperationDef: return (operation as ShieldOperationDef).target
+	if operation is ModifyStatOperationDef: return (operation as ModifyStatOperationDef).target
+	if operation is ApplyStatusOperationDef: return (operation as ApplyStatusOperationDef).target
+	if operation is RemoveStatusOperationDef: return (operation as RemoveStatusOperationDef).target
+	if operation is GrantManaOperationDef: return (operation as GrantManaOperationDef).target
+	return &""
 
 func _is_known_battle_operation(operation: BattleOperationDef) -> bool:
 	return operation is DamageOperationDef \

@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="Resource_rdr3r"]
 script = ExtResource("2_14gji")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 10
 
 [resource]

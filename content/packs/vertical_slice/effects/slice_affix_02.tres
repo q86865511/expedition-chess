@@ -9,10 +9,10 @@
 [sub_resource type="Resource" id="Resource_4umvs"]
 script = ExtResource("2_rmn2k")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount = 7
 duration_ticks = 1800
-target = &"self"
+target = &"all_allies"
 
 [resource]
 script = ExtResource("5_ycg6q")

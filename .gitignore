@@ -4,7 +4,7 @@
 # Godot 匯出產物
 /build/
 /export/
-export_presets.cfg
+# G2 balance-playtest 起，provisional/release preset 是受測 public build contract，需納版控。
 
 # Godot 3 遺留 import cache（保留無害）
 .import/

@@ -9,7 +9,7 @@
 [sub_resource type="Resource" id="Resource_beggd"]
 script = ExtResource("2_lpwvo")
 stat = &"magic_resist"
-mode = &"flat"
+mode = &"add"
 amount = 5
 duration_ticks = 1800
 target = &"self"

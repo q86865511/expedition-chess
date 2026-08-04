@@ -4,9 +4,60 @@
 
 ## 目前狀態
 
-G2 `content-production` 的既有 PR #7 已於 2026-08-01 合併為 `8a2c97b`；後續 closure 現在本地分支 `codex/g2-content-production-closure` 完成但未提交。T18/T18A 全批人工採納與 T20 R9 音訊重生成均已閉環；fresh Gut 281 scripts/1093 tests、10k ExpeditionSoak、All exit 0，acceptance 21＋1 全 PASS、`blocked_row_ids=[]`、`fully_closed=true`。下一片依 roadmap 為 TUNE/balance（含 30k bot soak）。
+G2 `balance-playtest`（`codex/g2-balance-playtest`，未提交）3k screening #2 gate PASS
+（candidate `balance.g2.7d47fada8091`、12 分片 10.1 小時、3,000/3,000 terminal、
+150/150 replay 零 drift、economy 1,000 勝、dominance 15.8pp），Phase 0 收尾進行中。
+大樣本（10k/30k）依 2026-08-04 使用者裁決延後至 Phase 2 平衡收斂後執行；
+Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXTERNAL`。
 
 ## 已完成
+
+- [2026-08-03] ⏸️ G2 `balance-playtest` Appendix C 修正中途暫停 — 首輪 3k
+  為 3000/3000 terminal、150/150 replay 零 drift，但 economy 0 勝與 build selection
+  dominance 使 Gate FAIL。已落地 economy 補人口／滿利息後買 XP、Boss HP>0 retry、
+  faction≥2 build 歸因、動作計數／逐幕 stable-ID 快照、verdant 30→20、shop tier 階梯，
+  並追加 BP-SI-004～006。第一次 24-case 重跑三策略皆於開局 fail-closed
+  `SHOP_CONFIG_INVALID`；進一步定位 `.tres` scripted subresource runtime 欄位讀取與註解位置。
+  暫停前已把無效 top-level 註解移至 `[resource]` 末端並加入 runtime assertions，**尚未重驗**；
+  第二輪 3k 未啟動。精確接手點見
+  `.pipeline/balance-playtest/PAUSE-2026-08-03-appendix-c.md`。
+
+- [2026-08-02] 🟡 G2 `balance-playtest` 8-shard 校準與可重算 proof gate —
+  `BalanceBotCaseResult`／report 已加入 authoritative final phase、route/completed-node、battle
+  settlement receipt 與 reward receipt digest sequence；replay digest 同步涵蓋 terminal proof。
+  修正通關判定為 21 節點且 HP>0（途中允許戰敗），新增全勝／全 fallback／ending-gold 恆定
+  三條回歸 gate。`run-sharded-cohort.ps1` 以 `seed_index % shard_count == k` 決定性切割，
+  合併時重算 cohort world、proof、replay sample 與 dominance，不信任 shard 局部統計 gate。
+  2-seed／2-shard smoke 產出 6/6 cases、3/3 replay、0 drift，僅因 sample minimum 預期 FAIL。
+  最終 24-case／8-shard 校準 primary 平均 64.402 秒、replay 71.149 秒，相對單程序
+  56.429 秒 slowdown 14.13%，依裁決維持 8 分片；24/24 terminal／proof、0 failed seed，
+  source freeze `716e9a324aae2f95c493ada5fde7ea4e390ad10507bc1bd7db9d4d1e4b3ec477`。
+  3k screening 仍未宣稱完成。
+
+- [2026-08-02] 🟡 G2 `balance-playtest` rewrite Part A～C／效能預量測 — 正式
+  RunController composition 已走完整 21-node terminal；修復 51 檔／66 處 operation mode、
+  global source lifecycle 與三個漏列 equipment effect，Content／Boss first-tick guards 綠。
+  candidate ID 改由 tune digest 衍生並 append-only 留存；session report schema 2 降時戳精度、
+  path-like fail-closed、三 terminal 分流。replay 依使用者裁決改 `seed_index % 20 == 0` 的 5%。
+  六筆 primary 平均 56.429 秒，三筆 replay 平均 57.890 秒，5% 加權約 59.323 秒/case；
+  3k 單程序理想估計 49.44 小時，等待分片裁決，未宣稱 screening 完成。
+
+- [2026-08-01] ⚠️ G2 `balance-playtest` 舊 provisional evidence（rewrite 後撤銷）— 10,000 shared seeds ×
+  3 strategies＝30,000 cases，三策略各 10,000 terminal／wins、0 failed seeds；fresh All
+  1,103/1,103 tests（22,105 asserts）與 10k ExpeditionSoak PASS。Windows x86_64 ZIP
+  fresh-profile boot 無 ERROR，SHA-256 `6b618627d749b2861afd88b3d2a0bb519abb221dffe072bc102b7ef28fb0b840`。
+  但 balance driver 仍只跑每幕代表戰鬥，且 RC 尚缺互動式完整局 smoke，故本片不得 closure。
+- [2026-08-01] ⛔ G2 `balance-playtest` 雙獨立 implementation review — 兩位唯讀
+  reviewer 一致判定 NOT APPROVED：full-expedition/formal settlement 未落地、strategy run_id
+  破壞 shared world cohort、bot action 未實際套用、RC 僅 boot smoke；另有 candidate/TUNE、
+  report privacy/abandon、Gate proof 與 source-manifest findings。完整裁決見
+  `specs/balance-playtest/implementation-review.md`；Git gate 保持封鎖。
+
+- [2026-08-01] ⚠️ G2 `balance-playtest` 舊 3k screening（rewrite 後撤銷）— production bootstrap／pinned
+  catalog／encounter compiler／battle rules／BattleSimulation 以 1,000 shared seeds ×
+  tempo/economy/synergy 完成 3,000 strategy-seed cases；全數 terminal，無 replay drift
+  或 failure seed，20pp selection／win-rate dominance Gate 通過。Candidate 與 TUNE digest、
+  BalanceBotReport v1、PlaytestSessionReport v1 已產生；AC-032 保持 PENDING_EXTERNAL。
 
 - [2026-08-01] ✅ G2 `content-production` 圖像／音訊最終閉環 — Claude reviewer
   一次審完 44 個候選並全數 ADOPT；ledger 回寫為 44 adopted＋14 rejected，
@@ -111,11 +162,18 @@ G2 `content-production` 的既有 PR #7 已於 2026-08-01 合併為 `8a2c97b`；
 
 ## 進行中
 
-- G2 `content-production`：fully closed，停在本地未提交交接點；未執行 Git 發布動作。
+- G2 `balance-playtest` Phase 0 收尾（`specs/balance-playtest/rewrite-plan.md` 附錄 D）：
+  tier2+ 入樣補證、Part D 證據鏈（RC 重打包、全鏈路 smoke、source manifest）、
+  NUL 修正合入、文件回寫、雙 fresh reviewer，之後 commit／PR／merge。
 
 ## 待辦
 
-- 下一片：TUNE／balance 與 30k bot soak；其後為效能/migration bridge／90 場真人 release gate。
+- Phase 1：`difficulty-curve` 機制切片（幕間難度縮放、三幕 Boss 差異化、trait 門檻階梯、
+  tier-1 池重整、challenge run-op 分流；對應 BP-SI-001/002/004/005/006）。
+- Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
+  大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
+- Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
+- 詳見 `specs/g2-roadmap.md` §9。
 
 ## 已知問題
 
@@ -126,6 +184,11 @@ G2 `content-production` 的既有 PR #7 已於 2026-08-01 合併為 `8a2c97b`；
 
 ## 重要決策紀錄
 
+- [2026-08-04] G2 `balance-playtest` 使用者裁決：大樣本統計（10k/30k）自本切片移至
+  Phase 2 平衡收斂後執行，本切片以 3k screening #2 gate PASS 作 screening 證據收尾；
+  採用 Phase 0~3 執行計畫並新增 `difficulty-curve` 機制切片（`specs/g2-roadmap.md` §9）。
+  理由：Act 2/3 難度曲線為機制缺失（BP-SI-004），修復前的大樣本數字必然作廢，
+  先修機制再進平衡輪迴，收斂後的大樣本才是有效基線。
 - [2026-08-01] G2 `content-production` T25 議決記錄項(可接受並記錄,非必修):
   M6 缺 choice set 的 event/rest/treasure 節點硬拒=刻意 fail-closed;
   L3 StableIdValidator 多段 id 放寬=刻意內容設計;L5 digest 大小寫/HashingContext

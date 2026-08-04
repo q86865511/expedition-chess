@@ -1,15 +1,14 @@
 [gd_resource type="Resource" script_class="EffectDef" format=3]
 
 [ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_a33vg"]
-[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_ag3j6"]
+[ext_resource type="Script" path="res://content/definitions/shield_operation_def.gd" id="2_ag3j6"]
 [ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_uxdp8"]
 [ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_adbpw"]
 [ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_y3v44"]
 
 [sub_resource type="Resource" id="Resource_pe5wl"]
 script = ExtResource("2_ag3j6")
-stat = &"health"
-mode = &"flat"
+# TUNE: health +20 依附錄 B 延伸授權映射為等值開戰自身護盾 20。
 amount = 20
 duration_ticks = 1800
 target = &"self"

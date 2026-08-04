@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_a20u8"]
 script = ExtResource("2_wpfj5")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_uturd"]
 script = ExtResource("2_wpfj5")
 stat = &"armor"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [resource]

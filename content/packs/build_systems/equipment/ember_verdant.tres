@@ -6,13 +6,13 @@
 [sub_resource type="Resource" id="Resource_cs7tp"]
 script = ExtResource("2_0kxgg")
 stat = &"attack"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 5
 
 [sub_resource type="Resource" id="Resource_ghc57"]
 script = ExtResource("2_0kxgg")
 stat = &"health"
-mode = &"flat"
+mode = &"add"
 amount_i32 = 20
 
 [resource]

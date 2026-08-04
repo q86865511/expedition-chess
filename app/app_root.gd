@@ -59,7 +59,6 @@ var _app_state_machine: AppStateMachine = AppStateMachine.new()
 var _run_session: RunSession
 var _run_controller: RunController
 var _run_command_factory: RunCommandFactory
-var _run_lab_session: RunLabSession
 var _run_presentation_session: RunPresentationSession
 var _camp_controller: CampController
 var _camp_view_model: CampViewModel
@@ -98,6 +97,15 @@ var _recovery_confirmation_presenter: RecoveryConfirmationPresenter
 ## `submit_discard()`（回傳型別是 SaveResult，裝不下換場失敗）在 durable 棄置成功、
 ## 但 MENU route 沒能 commit 時留下的具名碼；由 `_confirm_menu_recovery` 消費。
 var _route_commit_failure: StringName = &""
+## balance-playtest：只記錄匿名、非 gameplay 的本機 session metadata。這些欄位不參與
+## canonical state、RNG、save 或任何規則判定；寫檔失敗亦不得回滾 terminal commit。
+var _playtest_session_id: String = ""
+var _playtest_started_at_utc: String = ""
+var _playtest_started_unix: int = 0
+var _playtest_candidate: BalanceCandidateDescriptor
+var _playtest_route_ids: Array[StringName] = []
+var _playtest_build_summary: Array[StringName] = []
+var _playtest_clock := RunCommitClock.new()
 
 
 ## 服務來源：production（main.tscn）走 design.md §4.4 的五個 Autoload；本方法讓呼叫端在
@@ -665,6 +673,7 @@ func discard_retained_run(
 				&"error.presentation.recovery_postcommit"
 			)
 		)
+	_write_playtest_outcome(&"abandoned", [&"EXPEDITION_ABANDONED"])
 	_unresumable_run_id = ""
 	_compose_camp(loaded.profile)
 	_update_menu_from_profile(loaded.profile)
@@ -1075,6 +1084,7 @@ func _commit_terminal_handoff(
 			)
 		)
 	_terminal_presentation_snapshot = snapshot.deep_clone()
+	_write_playtest_session_report(snapshot)
 	return AppActionResult.success(true)
 
 
@@ -1121,6 +1131,7 @@ func _commit_fail_closed_terminal_handoff(
 			)
 		)
 	_terminal_presentation_snapshot = snapshot.deep_clone()
+	_write_playtest_session_report(snapshot)
 	return AppActionResult.success(true)
 
 
@@ -1153,8 +1164,7 @@ func _revoke_run_writers() -> void:
 
 
 func _invalidate_run_session() -> void:
-	# No facade or dev wrapper may retain a dispatch path after terminal save.
-	_run_lab_session = null
+	# No presentation facade may retain a dispatch path after terminal save.
 	_release_run_presentation_session()
 
 
@@ -1585,6 +1595,7 @@ func _handle_run_route_after_intent(
 		or _app_state_machine.state() != AppStateMachine.State.RUN
 	):
 		return _action_failure(ERROR_RUN_SNAPSHOT_UNAVAILABLE)
+	_observe_playtest_snapshot(result.snapshot)
 	var target := _run_route_for_snapshot(result.snapshot)
 	if target.is_empty():
 		return _action_failure(ERROR_RUN_PHASE_INVALID)
@@ -1955,9 +1966,100 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 			battle_result.catalog, commander_passive_effect_ids
 		)
 	)
-	_run_lab_session = RunLabSession.new(_run_presentation_session)
+	_begin_playtest_session(run, content)
 	_unresumable_run_id = ""
 	return &""
+
+
+func _begin_playtest_session(
+	run: RunState,
+	content: ProjectContentBootstrapResult
+) -> void:
+	_playtest_session_id = PlaytestSessionReportWriter.new_session_id()
+	_playtest_started_at_utc = _playtest_clock.now_utc()
+	_playtest_started_unix = _playtest_clock.now_unix()
+	_playtest_candidate = BalanceTuneInventory.production_candidate(
+		content.manifest_digest, content.content_version
+	)
+	_playtest_route_ids.clear()
+	_playtest_build_summary.clear()
+	if run != null:
+		_playtest_build_summary.append(run.commander_id)
+		for node_id: String in run.map_state.completed_node_ids:
+			_playtest_route_ids.append(StringName(node_id))
+
+
+func _observe_playtest_snapshot(snapshot: RunPresentationSnapshot) -> void:
+	if _playtest_session_id.is_empty() or snapshot == null:
+		return
+	if snapshot.map != null:
+		for node_id: String in snapshot.map.completed_node_ids:
+			var route_id := StringName(node_id)
+			if not _playtest_route_ids.has(route_id):
+				_playtest_route_ids.append(route_id)
+	if snapshot.roster != null:
+		for unit: UnitInstance in snapshot.roster.unit_instances:
+			if not _playtest_build_summary.has(unit.def_id):
+				_playtest_build_summary.append(unit.def_id)
+		for relic: RelicSlotState in snapshot.roster.active_relic_slots:
+			if relic.relic_id != null \
+				and not _playtest_build_summary.has(relic.relic_id.value):
+				_playtest_build_summary.append(relic.relic_id.value)
+	# route_ids 保留本次 session 首次觀察到完成節點的順序；stable 排序只適用於
+	# 無順序語意的構築摘要，不能把實際路線改寫成字典序。
+	_playtest_build_summary.sort_custom(func(left: StringName, right: StringName) -> bool:
+		return String(left) < String(right)
+	)
+
+
+func _write_playtest_session_report(snapshot: ResultsPresentationSnapshot) -> void:
+	if _playtest_session_id.is_empty() or _playtest_candidate == null \
+		or not _playtest_candidate.is_valid() or snapshot == null \
+		or snapshot.receipt == null:
+		return
+	var outcome: StringName = &""
+	var error_codes: Array[StringName] = []
+	match snapshot.receipt.outcome:
+		SettlementReceiptState.Outcome.COMPLETED:
+			outcome = &"victory"
+		SettlementReceiptState.Outcome.FAILED:
+			outcome = &"failed"
+			error_codes.append(&"EXPEDITION_FAILED")
+		SettlementReceiptState.Outcome.ABANDONED:
+			outcome = &"abandoned"
+			error_codes.append(&"EXPEDITION_ABANDONED")
+	_write_playtest_outcome(outcome, error_codes)
+
+
+func _write_playtest_outcome(
+	outcome: StringName,
+	error_codes: Array[StringName] = []
+) -> void:
+	if _playtest_session_id.is_empty() or _playtest_candidate == null \
+		or not _playtest_candidate.is_valid():
+		return
+	var report := PlaytestSessionReport.new()
+	report.session_id = _playtest_session_id
+	report.candidate_id = _playtest_candidate.candidate_id
+	report.build_version = str(
+		ProjectSettings.get_setting("application/config/version", "unknown")
+	)
+	report.content_version = _playtest_candidate.content_version
+	report.tune_digest = _playtest_candidate.tune_digest
+	report.started_at_utc = PlaytestSessionReport.hour_bucket_utc(
+		_playtest_started_at_utc
+	)
+	report.duration_seconds = maxi(
+		0, _playtest_clock.now_unix() - _playtest_started_unix
+	)
+	report.route_ids.assign(_playtest_route_ids)
+	report.build_summary.assign(_playtest_build_summary)
+	report.outcome = outcome
+	report.error_codes.assign(error_codes)
+	PlaytestSessionReportWriter.new().write(report)
+	# terminal handoff 是 exactly-once；不論 report I/O 成敗，都撤銷本次 metadata，避免
+	# RESULTS retry 或 fallback callback 產生第二份 session report。
+	_playtest_session_id = ""
 
 
 ## BattleRuleCatalogBuilder 的 base roots：棋子／裝備／戰鬥遺物（build lab 既有集合）
@@ -1999,7 +2101,6 @@ func _battle_commander_passive_effect_ids(
 
 
 func _release_active_run() -> void:
-	_run_lab_session = null
 	_release_run_presentation_session()
 	_run_command_factory = null
 	_run_controller = null

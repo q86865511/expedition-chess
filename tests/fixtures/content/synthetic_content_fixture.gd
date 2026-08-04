@@ -9,6 +9,7 @@ static func build_valid(add_fourth_population_source: bool = false) -> ContentVa
 	for index in 12: definitions.append(_effect(StringName("effect.event_%d" % index), &"general"))
 	definitions.append(_summon_effect())
 	definitions.append(_operation_matrix_effect())
+	definitions.append(_global_battle_effect())
 	definitions.append(_summon_ability())
 	for index in 6: definitions.append(_trait(StringName("trait.faction_%d" % index), &"faction"))
 	for index in 6: definitions.append(_trait(StringName("trait.role_%d" % index), &"role"))
@@ -156,11 +157,8 @@ static func _effect(content_id: StringName, role: StringName) -> EffectDef:
 	)
 	return value
 
-## W4-T07（design §7.2）：challenge 鏈 1..5 的 modifier_refs 必須指向 content_role=
-## &"challenge_affix" 的效果（不得挪用菁英詞綴），且五條合起來要覆蓋三個可機械判別的桶——
-## 軌 A（battle_operations 非空）／經濟壓力（ShopSurcharge）／遠征傷害（DrainExpeditionHp）。
-## 桶的分配刻意放在 level 3/4/5：多數測試只覆寫 level 1（含 2、3）的 modifier_refs，把三個桶
-## 留在鏈尾可讓那些覆寫仍維持整體合規，不必逐一補齊三桶。
+## BP-SI-001：challenge 鏈暫時只引用 battle-track global effects；run-operation
+## 分流尚未有合法消費端，因此 synthetic valid baseline 也不得把 run intents 掛回鏈上。
 static func _challenge_affix_effects() -> Array[ContentDefinition]:
 	var result: Array[ContentDefinition] = []
 	for index in 3:
@@ -168,10 +166,10 @@ static func _challenge_affix_effects() -> Array[ContentDefinition]:
 		var modify := ModifyStatOperationDef.new()
 		modify.operation_index = 0
 		modify.stat = &"attack"
-		modify.mode = &"flat"
+		modify.mode = &"add"
 		modify.amount = 1
 		modify.duration_ticks = 20
-		modify.target = &"self"
+		modify.target = &"all_allies"
 		battle_affix.battle_operations = [modify]
 		result.append(battle_affix)
 	var surcharge_affix := _effect(&"effect.challenge_affix_3", &"challenge_affix")
@@ -181,14 +179,29 @@ static func _challenge_affix_effects() -> Array[ContentDefinition]:
 	surcharge.claim_scope = &"always"
 	surcharge_affix.run_operations = [surcharge]
 	result.append(surcharge_affix)
-	var drain_affix := _effect(&"effect.challenge_affix_4", &"challenge_affix")
-	var drain := DrainExpeditionHpOperationDef.new()
-	drain.operation_index = 0
-	drain.amount = 1
-	drain.claim_scope = &"always"
-	drain_affix.run_operations = [drain]
-	result.append(drain_affix)
+	var final_battle_affix := _effect(&"effect.challenge_affix_4", &"challenge_affix")
+	var final_modify := ModifyStatOperationDef.new()
+	final_modify.operation_index = 0
+	final_modify.stat = &"armor"
+	final_modify.mode = &"add"
+	final_modify.amount = 1
+	final_modify.duration_ticks = 20
+	final_modify.target = &"all_allies"
+	final_battle_affix.battle_operations = [final_modify]
+	result.append(final_battle_affix)
 	return result
+
+static func _global_battle_effect() -> EffectDef:
+	var value := _effect(&"effect.global_battle", &"general")
+	var modify := ModifyStatOperationDef.new()
+	modify.operation_index = 0
+	modify.stat = &"attack"
+	modify.mode = &"add"
+	modify.amount = 1
+	modify.duration_ticks = 20
+	modify.target = &"all_allies"
+	value.battle_operations = [modify]
+	return value
 
 static func _summon_effect() -> EffectDef:
 	var value := _effect(&"effect.summon", &"general")
@@ -234,10 +247,10 @@ static func _operation_matrix_effect() -> EffectDef:
 	var modify := ModifyStatOperationDef.new()
 	modify.operation_index = 3
 	modify.stat = &"armor"
-	modify.mode = &"flat"
+	modify.mode = &"add"
 	modify.amount = 1
 	modify.duration_ticks = 20
-	modify.target = &"self"
+	modify.target = &"all_allies"
 	var apply_status := ApplyStatusOperationDef.new()
 	apply_status.operation_index = 4
 	apply_status.status_id = &"effect.general"
@@ -379,7 +392,7 @@ static func _equipment(left: int, right: int) -> EquipmentDef:
 	if left == 0 and right == 0:
 		var modifier := StatModifierDef.new()
 		modifier.stat = &"attack"
-		modifier.mode = &"flat"
+		modifier.mode = &"add"
 		modifier.amount_i32 = 1
 		value.stat_modifiers = [modifier]
 	return value
@@ -388,7 +401,10 @@ static func _relic(index: int) -> RelicDef:
 	var value := RelicDef.new()
 	_common(value, StringName("relic.r%d" % index))
 	value.category = _relic_category_for_index(index)
-	value.effect_refs = [&"effect.operation_matrix"]
+	if index < 4:
+		value.effect_refs = [&"effect.global_battle"]
+	else:
+		value.effect_refs = [&"effect.operation_matrix"]
 	value.activation_limit = 1
 	value.population_bonus = 1 if index == 0 else 0
 	return value
@@ -446,10 +462,10 @@ static func _commander_passive_effects() -> Array[ContentDefinition]:
 	var modify := ModifyStatOperationDef.new()
 	modify.operation_index = 0
 	modify.stat = &"attack"
-	modify.mode = &"flat"
+	modify.mode = &"add"
 	modify.amount = 1
 	modify.duration_ticks = 20
-	modify.target = &"self"
+	modify.target = &"all_allies"
 	modify_effect.battle_operations = [modify]
 	result.append(modify_effect)
 	return result
@@ -591,7 +607,8 @@ static func _unlocks() -> Array[ContentDefinition]:
 		value.challenge_level = level
 		if level > 0:
 			value.prerequisite_refs = [StringName("unlock.challenge_%d" % (level - 1))]
-			value.modifier_refs = [StringName("effect.challenge_affix_%d" % (level - 1))]
+			if level == 1 or level == 5:
+				value.modifier_refs = [StringName("effect.challenge_affix_%d" % (level - 1))]
 		result.append(value)
 	return result
 

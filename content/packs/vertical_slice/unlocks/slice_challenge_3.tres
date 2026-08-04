@@ -7,6 +7,5 @@ script = ExtResource("1_dteh7")
 unlock_kind = &"challenge"
 challenge_level = 3
 prerequisite_refs = Array[StringName]([&"unlock.slice_challenge_2"])
-modifier_refs = Array[StringName]([&"effect.slice_challenge_affix_02"])
 id = &"unlock.slice_challenge_3"
 display_name_key = &"loc.unlock_slice_challenge_3"

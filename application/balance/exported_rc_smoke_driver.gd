@@ -2,6 +2,7 @@ class_name ExportedRcSmokeDriver
 extends RefCounted
 
 const CLI_FLAG: String = "--rc-smoke-phase"
+const CONFIRM_FLAG: String = "--rc-smoke-confirm"
 const PHASE_START_SAVE: StringName = &"start-save"
 const PHASE_RESTART_TERMINAL: StringName = &"restart-terminal"
 const PHASE_RESTART_ABANDON_VERIFY: StringName = &"restart-abandon-verify"

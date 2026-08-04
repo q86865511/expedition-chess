@@ -9,6 +9,84 @@ func test_production_case_driver_script_loads() -> void:
 	assert_not_null(BalanceProductionCaseDriverScript)
 
 
+func test_reward_proof_is_serial_free_and_flags_true_duplicate() -> void:
+	# F09: the ledger-based reward proof was structurally incapable of ever
+	# repeating (every reward transaction key embeds next_transaction_serial), so
+	# BALANCE_DUPLICATE_REWARD could never fire. This exercises the replacement
+	# node+stage+step proof built by _reward_intent directly: two CHOOSING
+	# intents for the same node/stage — simulating "the same node's reward chain
+	# ran twice" — must collide even though their generated offers carry
+	# different serial-derived choice_ids, while a genuinely different node must
+	# not collide.
+	var driver: RefCounted = BalanceProductionCaseDriverScript.new(null, Callable())
+	var result := BalanceBotCaseResult.new()
+	result.final_phase = &"RESULTS"
+	var replay_parts: Array[String] = []
+
+	var first_key := TransactionKeyState.create(
+		&"run-dup", &"node-1", &"reward_generate", U64Bits.one(), &"key-digest-a"
+	)
+	var first_offer := RewardOfferState.new(
+		"choice_standard_1_0", RewardOfferState.RewardKind.GOLD, null, 10, null, "digest-a"
+	)
+	var first_snapshot := RunPresentationSnapshot.new()
+	first_snapshot.pending_reward = PendingRewardState.new(
+		"node-1", PendingRewardState.StageId.STANDARD, PendingRewardState.Phase.CHOOSING,
+		[first_offer] as Array[RewardOfferState], [] as Array[ReservedCopyState],
+		null, null, first_key
+	)
+	driver._reward_intent(first_snapshot, BalanceBotStrategy.TEMPO, result, replay_parts)
+
+	var second_key := TransactionKeyState.create(
+		&"run-dup", &"node-1", &"reward_generate",
+		U64Bits.one().add(U64Bits.one()), &"key-digest-b"
+	)
+	var second_offer := RewardOfferState.new(
+		"choice_standard_9_0", RewardOfferState.RewardKind.GOLD, null, 10, null, "digest-b"
+	)
+	var second_snapshot := RunPresentationSnapshot.new()
+	second_snapshot.pending_reward = PendingRewardState.new(
+		"node-1", PendingRewardState.StageId.STANDARD, PendingRewardState.Phase.CHOOSING,
+		[second_offer] as Array[RewardOfferState], [] as Array[ReservedCopyState],
+		null, null, second_key
+	)
+	driver._reward_intent(second_snapshot, BalanceBotStrategy.TEMPO, result, replay_parts)
+
+	assert_eq(result.reward_receipt_digests.size(), 2)
+	assert_eq(
+		result.reward_receipt_digests[0], result.reward_receipt_digests[1],
+		"同節點同 stage 的重複 choose 必須產生相同 proof"
+	)
+	driver._validate_case_proof(result)
+	assert_true(
+		result.failure_codes.has(&"BALANCE_DUPLICATE_REWARD"),
+		"同節點同 stage 的重複 reward 鏈必須觸發 BALANCE_DUPLICATE_REWARD"
+	)
+
+	var other_result := BalanceBotCaseResult.new()
+	other_result.final_phase = &"RESULTS"
+	var other_replay_parts: Array[String] = []
+	var other_key := TransactionKeyState.create(
+		&"run-dup", &"node-2", &"reward_generate", U64Bits.one(), &"key-digest-c"
+	)
+	var other_offer := RewardOfferState.new(
+		"choice_standard_1_0", RewardOfferState.RewardKind.GOLD, null, 10, null, "digest-c"
+	)
+	var other_snapshot := RunPresentationSnapshot.new()
+	other_snapshot.pending_reward = PendingRewardState.new(
+		"node-2", PendingRewardState.StageId.STANDARD, PendingRewardState.Phase.CHOOSING,
+		[other_offer] as Array[RewardOfferState], [] as Array[ReservedCopyState],
+		null, null, other_key
+	)
+	driver._reward_intent(first_snapshot, BalanceBotStrategy.TEMPO, other_result, other_replay_parts)
+	driver._reward_intent(other_snapshot, BalanceBotStrategy.TEMPO, other_result, other_replay_parts)
+	driver._validate_case_proof(other_result)
+	assert_false(
+		other_result.failure_codes.has(&"BALANCE_DUPLICATE_REWARD"),
+		"不同節點的合法 reward 選擇不得被誤判為重複"
+	)
+
+
 func test_candidate_digest_is_order_independent_and_codec_round_trips() -> void:
 	var entries: Array[BalanceTuneEntry] = [
 		BalanceTuneEntry.new(&"economy.reroll_cost", "2"),
@@ -84,6 +162,53 @@ func test_scanner_policy_is_shared_and_unknown_numeric_fields_fail_closed() -> v
 		"production TUNE scan: %s:%s" % [production.error_path, production.error_detail]
 	)
 	assert_gt(production.entries.size(), 0)
+
+
+func test_scanner_fails_closed_on_unclosed_tracked_field_continuation_line() -> void:
+	# A tracked field (tier_basis_points) whose Array literal is not closed on the
+	# same line simulates the Godot editor wrapping a long array across lines.
+	# scan_text parses line-by-line, so the continuation line's real values would
+	# otherwise be silently dropped and the truncated first line written into the
+	# digest as if it were complete (F06). Assert fail-closed instead.
+	var rejected := BalanceTuneSourceScanner.scan_text(
+		"res://probe_multiline.tres",
+		"[gd_resource]\n[resource]\ntier_basis_points = Array[int]([\n10000, 0, 0, 0, 0\n])\n"
+	)
+	assert_false(rejected.ok)
+	assert_true(rejected.error_path.ends_with(".tier_basis_points"), rejected.error_path)
+	# A same-line (closed) array on a tracked field must still scan normally.
+	var accepted := BalanceTuneSourceScanner.scan_text(
+		"res://probe_singleline.tres",
+		"[gd_resource]\n[resource]\ntier_basis_points = Array[int]([10000, 0, 0, 0, 0])\n"
+	)
+	assert_true(accepted.ok, accepted.error_detail)
+	assert_eq(accepted.entries.size(), 1)
+
+
+func test_pinned_production_constants_match_scanner_computed_digest() -> void:
+	# F02: the sealed RC constants must equal what the scanner computes fresh
+	# from the current source tree, independent of production_balance_candidate.json
+	# and independent of the two constants being merely self-consistent with each
+	# other. This pins the export path to the actual TUNE source, not just to a
+	# committed sealed payload that could silently drift from it.
+	var scan := BalanceTuneSourceScanner.scan()
+	assert_true(scan.ok, scan.error_detail)
+	if not scan.ok:
+		return
+	var source_entries: Array[BalanceTuneEntry] = []
+	source_entries.assign(scan.entries)
+	var computed := BalanceCandidateDescriptor.new(
+		&"", "probe", "a".repeat(64),
+		BalanceCandidateDescriptor.RNG_VERSION, source_entries
+	)
+	assert_eq(
+		BalanceTuneInventory.PINNED_PRODUCTION_TUNE_DIGEST, computed.tune_digest,
+		"sealed PINNED_PRODUCTION_TUNE_DIGEST 必須等於 scanner 對本 source tree 實算的 tune_digest"
+	)
+	assert_eq(
+		String(BalanceTuneInventory.PINNED_PRODUCTION_CANDIDATE_ID), String(computed.candidate_id),
+		"sealed PINNED_PRODUCTION_CANDIDATE_ID 必須等於實算 tune_digest 衍生的 candidate_id"
+	)
 
 
 func test_pinned_production_candidate_matches_source_and_fails_closed() -> void:

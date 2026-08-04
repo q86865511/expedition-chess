@@ -16,6 +16,9 @@ $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $artifactRoot = Join-Path $repoRoot 'artifacts\test'
 $executionPath = Join-Path $artifactRoot 'runner-execution.json'
 $runnerLockPath = Join-Path $artifactRoot '.runner.lock'
+# Gut 步驟的逾時下限（秒）。GUT 套件含 balance driver 的完整遠征整合測試，
+# 單步耗時遠超 $TimeoutSeconds 的預設值；呼叫端仍可用更大的 -TimeoutSeconds 覆寫。
+$GutTimeoutFloorSeconds = 1200
 $startedAt = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
 $runs = New-Object System.Collections.Generic.List[object]
 $finalExitCode = 3
@@ -1449,7 +1452,12 @@ try {
                 elseif ($code -eq 0) {
                     $userArgs = @()
                     if (-not [string]::IsNullOrWhiteSpace($TestPath)) { $userArgs += @('--test-path', $TestPath) }
-                    $code = Invoke-RunnerScript -Executable $resolvedGodot -Name 'Gut' -ScriptPath 'res://tests/runners/gut_runner.gd' -UserArguments $userArgs
+                    # tests/integration/balance_playtest 的 driver 整合測試會跑完整 21 節點遠征
+                    # （rewrite-plan.md §5），單步 Gut 已遠超 $TimeoutSeconds 的預設 180 秒。
+                    # 這裡替 Gut 步驟給一個不小於 $GutTimeoutFloorSeconds 的下限，
+                    # 讓 All 用預設參數也能跑完整套 GUT，而不是被 124 砍掉。
+                    $gutTimeoutSeconds = [Math]::Max($TimeoutSeconds, $GutTimeoutFloorSeconds)
+                    $code = Invoke-RunnerScript -Executable $resolvedGodot -Name 'Gut' -ScriptPath 'res://tests/runners/gut_runner.gd' -UserArguments $userArgs -TimeoutOverrideSeconds $gutTimeoutSeconds
                 }
             }
             else {
@@ -1467,7 +1475,15 @@ try {
                 $userArgs = @()
                 if (-not [string]::IsNullOrWhiteSpace($Case)) { $userArgs += @('--case', $Case) }
                 if ($name -in @('Soak', 'ExpeditionSoak', 'BalancePlaytest')) { $userArgs += @('--seed-count', [string]$SeedCount) }
-                if ($name -eq 'BalancePlaytest' -and $SeedCount -eq 10000) { $userArgs += '--final' }
+                # domain/balance/balance_bot_report.gd 的 FINAL_CASE_COUNT(30000)
+                # 必須等於 cohort_seed_count(=SeedCount) * BalanceBotStrategy.IDS.size()(3)
+                # 才會成立,故嚴格意義的 final 呼叫是 SeedCount=10000。
+                # review B-04:舊邏輯只把 `-eq 10000` 視為 final,若 Phase 2 想跑 30k
+                # 而直覺傳入 `-SeedCount 30000`,不會帶上 --final,樣本下限與最終件數
+                # 檢查全部被略過,artifact 卻仍以 screening gate 靜默寫出 PASS。改成
+                # `-ge 10000` 讓「大樣本一律先走 final gate」,件數與 FINAL_CASE_COUNT
+                # 對不上時會被 BALANCE_FINAL_CASE_COUNT_MISMATCH 明確擋下,而不是被誤判為合格。
+                if ($name -eq 'BalancePlaytest' -and $SeedCount -ge 10000) { $userArgs += '--final' }
                 $code = Invoke-RunnerScript -Executable $resolvedGodot -Name $name -ScriptPath ('res://tests/runners/' + $scriptName) -UserArguments $userArgs
             }
             if ($code -ne 0) {

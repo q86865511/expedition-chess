@@ -142,6 +142,16 @@ static func _scan_assignment(
 	if BalanceTuneFieldPolicy.is_fixed_leaf(field):
 		return null
 	if TUNE_FIELDS.has(field):
+		if not _value_is_balanced(value):
+			# The value's brackets/parens do not close on this line, so it
+			# continues on a following line that our line-by-line parser cannot
+			# see. Silently accepting the truncated first-line text would let a
+			# later change to the continuation lines drift tune_digest without
+			# changing what was scanned (see F06); fail closed instead.
+			return BalanceTuneScanResult.failure(
+				"%s#%d.%s" % [path, section, field],
+				"tracked field value is not closed on this line (continuation lines are unsupported)"
+			)
 		output.append(BalanceTuneEntry.new(
 			StringName("%s#%d.%s" % [path, section, field]), value
 		))
@@ -152,6 +162,16 @@ static func _scan_assignment(
 			"numeric field is neither TUNE, fixed, nor explicitly ignored"
 		)
 	return null
+
+
+static func _value_is_balanced(value: String) -> bool:
+	var depth := 0
+	for character: String in value:
+		if character == "[" or character == "(":
+			depth += 1
+		elif character == "]" or character == ")":
+			depth -= 1
+	return depth == 0
 
 
 static func _is_numeric_value(value: String) -> bool:

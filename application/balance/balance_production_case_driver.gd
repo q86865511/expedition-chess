@@ -71,16 +71,19 @@ func run_case(strategy_id: StringName, seed_index: int) -> BalanceBotCaseResult:
 	var session: RunPresentationSession = composition.session
 	var controller: RunController = composition.controller
 	var strategy := BalanceBotStrategy.new(strategy_id)
-	var replay_parts: Array[String] = [
-		"BALANCE-PRODUCTION-CASE-V2", String(result.run_id), result.world_digest,
-		String(strategy_id), str(seed_index),
-	]
 	var previous_node_id := ""
 	var generated := _dispatch(session, RunPresentationIntent.Kind.GENERATE_MAP)
 	if not generated.is_empty():
 		repository.free()
 		return _fail(result, generated)
 	result.world_digest = _map_world_digest(session.snapshot().map)
+	# world_digest must be computed before replay_parts is seeded, otherwise the
+	# seed entry captures the empty pre-generation value and replay_digest never
+	# actually binds to world identity (see B-06).
+	var replay_parts: Array[String] = [
+		"BALANCE-PRODUCTION-CASE-V2", String(result.run_id), result.world_digest,
+		String(strategy_id), str(seed_index),
+	]
 	_trace("generated run=%s nodes=%d" % [result.run_id, session.snapshot().map.nodes.size()])
 
 	while session.view_state().run_phase != RunState.RunPhase.RESULTS:
@@ -194,15 +197,17 @@ func run_case(strategy_id: StringName, seed_index: int) -> BalanceBotCaseResult:
 
 
 func _capture_receipt_proof(run: RunState, result: BalanceBotCaseResult) -> void:
+	# reward_* receipts are captured directly at dispatch time in _reward_intent
+	# instead of from the ledger here: their key/payload digests always embed
+	# next_transaction_serial, so a ledger-scan proof can never repeat even when
+	# the same reward step genuinely re-runs for the same node (see F09).
 	for receipt: TransactionReceiptState in run.transaction_receipts:
 		if receipt == null or receipt.key == null:
 			continue
-		var proof := "%s:%s" % [String(receipt.key.digest), receipt.payload_digest]
 		var kind := String(receipt.key.command_kind)
 		if kind.begins_with("battle_settle_"):
+			var proof := "%s:%s" % [String(receipt.key.digest), receipt.payload_digest]
 			result.settlement_receipt_digests.append(proof)
-		elif kind.begins_with("reward_"):
-			result.reward_receipt_digests.append(proof)
 	result.settlement_receipt_digests.sort()
 	result.reward_receipt_digests.sort()
 
@@ -356,7 +361,7 @@ func _prepare(
 ) -> StringName:
 	for _step: int in range(PREPARE_ACTION_LIMIT):
 		var snapshot := session.snapshot()
-		var actions := _shop_actions(snapshot, strategy.strategy_id)
+		var actions := _shop_actions(snapshot, strategy.strategy_id, result)
 		var chosen := strategy.try_choose_action(BalanceBotObservation.new(
 			session.economy_state().gold, session.economy_state().level,
 			session.view_state().expedition_hp, session.view_state().act_index, actions
@@ -397,7 +402,7 @@ func _prepare(
 
 
 func _shop_actions(
-	snapshot: RunPresentationSnapshot, strategy_id: StringName
+	snapshot: RunPresentationSnapshot, strategy_id: StringName, result: BalanceBotCaseResult
 ) -> Array[BalanceBotAction]:
 	var actions: Array[BalanceBotAction] = []
 	var unit_count := snapshot.roster.unit_instances.size()
@@ -414,6 +419,10 @@ func _shop_actions(
 		for offer: ShopOffer in snapshot.economy.shop_offers:
 			var rule := _content.battle_catalog.try_unit_rule(offer.unit_def_id)
 			if rule == null:
+				# Diagnostic count, not a silent skip (see F08): lets a later
+				# analysis pass distinguish "unit is content-catalog-missing" from
+				# "unit is legitimately rare per its drop rate".
+				result.null_offer_rule_count += 1
 				continue
 			has_affordable_buy = has_affordable_buy \
 				or offer.cost <= snapshot.economy.gold
@@ -571,6 +580,7 @@ func _reward_intent(
 	result: BalanceBotCaseResult, replay_parts: Array[String]
 ) -> RunPresentationIntent:
 	var pending := snapshot.pending_reward
+	var stage_token: String = PendingRewardState.StageId.keys()[pending.stage_id]
 	match pending.phase:
 		PendingRewardState.Phase.CHOOSING:
 			var offers := pending.offers.duplicate()
@@ -587,22 +597,48 @@ func _reward_intent(
 				selected_id = offer.content_id.value
 			result.selected_ids.append(selected_id)
 			replay_parts.append("reward:%s" % offer.choice_id)
+			result.reward_receipt_digests.append(
+				_reward_proof(pending.node_id, stage_token, "choose")
+			)
 			return intent
 		PendingRewardState.Phase.UNIT_RESOLUTION:
 			var intent := RunPresentationIntent.new(RunPresentationIntent.Kind.RESOLVE_UNIT_REWARD)
 			intent.accept = true
+			result.reward_receipt_digests.append(
+				_reward_proof(pending.node_id, stage_token, "unit_resolve")
+			)
 			return intent
 		PendingRewardState.Phase.ITEM_RESOLUTION:
 			var intent := RunPresentationIntent.new(RunPresentationIntent.Kind.RESOLVE_ITEM_REWARD)
 			intent.item_instance_id = snapshot.roster.pending_item_overflow[0] \
 				if not snapshot.roster.pending_item_overflow.is_empty() else ""
 			intent.abandon = intent.item_instance_id.is_empty()
+			result.reward_receipt_digests.append(
+				_reward_proof(pending.node_id, stage_token, "item_resolve")
+			)
 			return intent
 		PendingRewardState.Phase.RELIC_RESOLUTION:
 			var intent := RunPresentationIntent.new(RunPresentationIntent.Kind.RESOLVE_RELIC_REWARD)
 			intent.relic_slot_index = 0
+			result.reward_receipt_digests.append(
+				_reward_proof(pending.node_id, stage_token, "relic_resolve")
+			)
 			return intent
+	result.reward_receipt_digests.append(_reward_proof(pending.node_id, stage_token, "advance"))
 	return RunPresentationIntent.new(RunPresentationIntent.Kind.ADVANCE_REWARD)
+
+
+func _reward_proof(node_id: String, stage_token: String, step: String) -> String:
+	# Stable, serial-free reward proof: node + reward stage + pipeline step. Unlike
+	# TransactionReceiptState (whose key/payload digests embed
+	# next_transaction_serial and are therefore always unique), this string repeats
+	# verbatim if the same reward step genuinely re-runs for the same node/stage,
+	# which is what lets _contains_duplicate actually raise BALANCE_DUPLICATE_REWARD
+	# (see F09). Each reward stage (STANDARD/RELIC/EVENT_GRANT) drives its own
+	# choose/resolve/advance cycle at most once per node, so this identity does not
+	# false-positive on the legitimate STANDARD-then-RELIC double cycle that elite
+	# nodes run.
+	return "%s:%s:%s" % [node_id, stage_token, step]
 
 
 func _dispatch(session: RunPresentationSession, kind: RunPresentationIntent.Kind) -> StringName:

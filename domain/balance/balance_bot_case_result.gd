@@ -28,6 +28,10 @@ var settlement_receipt_digests: Array[String] = []
 var reward_receipt_digests: Array[String] = []
 var failure_codes: Array[StringName] = []
 var replay_digest: String
+## Shop offers skipped because the catalog had no BattleUnitRule for their
+## unit_def_id (see F08). Diagnostic only: distinguishes "content-catalog
+## gap" from "legitimately rare per drop rate" when attributing selection counts.
+var null_offer_rule_count: int = 0
 
 
 func is_valid() -> bool:
@@ -37,7 +41,7 @@ func is_valid() -> bool:
 		or replay_digest.is_empty():
 		return false
 	if buy_unit_count < 0 or buy_xp_count < 0 or reroll_count < 0 \
-		or sell_unit_count < 0 or boss_retry_count < 0:
+		or sell_unit_count < 0 or boss_retry_count < 0 or null_offer_rule_count < 0:
 		return false
 	var seen_acts: Dictionary = {}
 	for snapshot: BalanceBotActSnapshot in act_snapshots:

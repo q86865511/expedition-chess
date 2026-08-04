@@ -20,6 +20,9 @@ const EXPORTED_RC_SMOKE_DRIVER = preload(
 	"res://application/balance/exported_rc_smoke_driver.gd"
 )
 const COMBAT_LAB_SCENE_PATH: String = "res://scenes/dev/combat_lab/combat_lab.tscn"
+## B-09：破壞性 rc-smoke phase（不可逆棄置 retained run）在啟動時必須另帶確認旗標
+## （字面值住在 ExportedRcSmokeDriver.CONFIRM_FLAG——dev CLI 白名單測試掃描本檔的
+## 旗標字面值，app 層不得出現）。
 
 ## 單槽 profile 的固定 id：RunStateValidator 要求 32 位小寫 hex
 ## （run_state_validator.gd:8 的 _PROFILE_PATTERN），故不是 "profile.default" 這種 stable id。
@@ -296,11 +299,34 @@ func _ready() -> void:
 		OS.get_cmdline_user_args()
 	)
 	if OS.has_feature("provisional_rc") and not rc_smoke_phase.is_empty():
-		call_deferred("_run_exported_rc_smoke_phase", rc_smoke_phase)
+		if _rc_smoke_confirm_required(rc_smoke_phase, OS.get_cmdline_user_args()):
+			push_warning(
+				(
+					"balance-playtest: %s=%s 會不可逆棄置 retained run，"
+					+ "缺少 %s，已拒絕執行"
+				) % [
+					EXPORTED_RC_SMOKE_DRIVER.CLI_FLAG,
+					String(rc_smoke_phase),
+					EXPORTED_RC_SMOKE_DRIVER.CONFIRM_FLAG,
+				]
+			)
+		else:
+			call_deferred("_run_exported_rc_smoke_phase", rc_smoke_phase)
 
 
 func _run_exported_rc_smoke_phase(phase: StringName) -> void:
 	EXPORTED_RC_SMOKE_DRIVER.new().run(self, phase)
+
+
+## B-09：唯一具破壞性（不可逆棄置 retained run）的 phase 是
+## `restart-abandon-verify`；缺少確認旗標時拒絕自動觸發。
+## 拆成純函式方便測試——OS.has_feature("provisional_rc") 在編輯器/測試行程恆為
+## false，無法在 GUT 內真的驅動整條啟動流程。
+static func _rc_smoke_confirm_required(
+	phase: StringName, arguments: PackedStringArray
+) -> bool:
+	return phase == EXPORTED_RC_SMOKE_DRIVER.PHASE_RESTART_ABANDON_VERIFY \
+		and not arguments.has(EXPORTED_RC_SMOKE_DRIVER.CONFIRM_FLAG)
 
 
 func _rc_smoke_abandon_active_run(
@@ -714,7 +740,12 @@ func discard_retained_run(
 				&"error.presentation.recovery_postcommit"
 			)
 		)
-	_write_playtest_outcome(&"abandoned", [&"EXPEDITION_ABANDONED"])
+	# B-02：正常情況（同一行程內棄置）走記憶體路徑；若 `_playtest_session_id` 為空
+	# （行程重啟過、記憶體 metadata 已遺失），改從本機 sidecar 補發 abandoned 報告。
+	if not _playtest_session_id.is_empty():
+		_write_playtest_outcome(&"abandoned", [&"EXPEDITION_ABANDONED"])
+	else:
+		_recover_abandoned_report_from_pending_sidecar()
 	_unresumable_run_id = ""
 	_compose_camp(loaded.profile)
 	_update_menu_from_profile(loaded.profile)
@@ -2028,6 +2059,22 @@ func _begin_playtest_session(
 		_playtest_build_summary.append(run.commander_id)
 		for node_id: String in run.map_state.completed_node_ids:
 			_playtest_route_ids.append(StringName(node_id))
+	if _playtest_candidate != null and _playtest_candidate.is_valid():
+		# B-02：session 開始就落地一份本機 sidecar，讓跨行程放棄（關遊戲→重啟→於
+		# 主選單棄置 retained run）也能在下一次明示棄置時補發 abandoned 報告。
+		PlaytestSessionReportPending.write(
+			_playtest_session_id,
+			String(_playtest_candidate.candidate_id),
+			str(ProjectSettings.get_setting("application/config/version", "unknown")),
+			_playtest_candidate.content_version,
+			_playtest_candidate.tune_digest,
+			_playtest_started_at_utc,
+			_playtest_started_unix
+		)
+	elif OS.has_feature("provisional_rc"):
+		# F03：sealed candidate 在匯出 build 失效時，先前是整批 playtest 靜默不寫任何
+		# 報告、也不報錯，AC-032 外部 Gate 要白跑一輪才會發現。
+		_report_playtest_candidate_invalid()
 
 
 func _observe_playtest_snapshot(snapshot: RunPresentationSnapshot) -> void:
@@ -2054,9 +2101,16 @@ func _observe_playtest_snapshot(snapshot: RunPresentationSnapshot) -> void:
 
 
 func _write_playtest_session_report(snapshot: ResultsPresentationSnapshot) -> void:
+	if snapshot == null:
+		return
+	if snapshot.receipt == null:
+		# B-08：fail-closed terminal handoff 沒有 receipt，無法判定 outcome，但 terminal
+		# 已經到達。立即清除 session 狀態（含 sidecar），不然之後棄置會沿用同一個
+		# session id 把這局（實際上可能已 victory/failed）誤標成 abandoned。
+		_clear_playtest_session_state()
+		return
 	if _playtest_session_id.is_empty() or _playtest_candidate == null \
-		or not _playtest_candidate.is_valid() or snapshot == null \
-		or snapshot.receipt == null:
+		or not _playtest_candidate.is_valid():
 		return
 	var outcome: StringName = &""
 	var error_codes: Array[StringName] = []
@@ -2098,9 +2152,54 @@ func _write_playtest_outcome(
 	report.outcome = outcome
 	report.error_codes.assign(error_codes)
 	PlaytestSessionReportWriter.new().write(report)
-	# terminal handoff 是 exactly-once；不論 report I/O 成敗，都撤銷本次 metadata，避免
-	# RESULTS retry 或 fallback callback 產生第二份 session report。
+	# terminal handoff 是 exactly-once；不論 report I/O 成敗，都撤銷本次 metadata（含
+	# sidecar），避免 RESULTS retry 或 fallback callback 產生第二份 session report，
+	# 也避免之後的棄置誤把已處理過的 session 再補發一次（B-02／B-08 共用同一個清除點）。
+	_clear_playtest_session_state()
+
+
+## B-08／B-02 共用：清除本次 playtest session 的記憶體與本機 sidecar 狀態。
+func _clear_playtest_session_state() -> void:
 	_playtest_session_id = ""
+	PlaytestSessionReportPending.clear()
+
+
+## B-02：discard_retained_run 在記憶體 session id 已空（行程重啟過）時呼叫，
+## 從 sidecar 補發一份 outcome=abandoned 報告；sidecar 缺失或欄位不全一律
+## fail-closed（不寫檔），不臆測殘缺資料。
+func _recover_abandoned_report_from_pending_sidecar() -> void:
+	var pending := PlaytestSessionReportPending.load()
+	if pending.is_empty():
+		return
+	var report := PlaytestSessionReportPending.build_abandoned_report(
+		pending, _playtest_clock.now_unix()
+	)
+	if report != null:
+		PlaytestSessionReportWriter.new().write(report)
+	PlaytestSessionReportPending.clear()
+
+
+## F03：sealed candidate 在匯出 build 內失效（漏帶 feature tag、pinned JSON 與 scanner
+## 實算值不符等）時，push_error 並在 `user://playtest_reports/` 留一份錯誤標記檔，
+## 讓「整批 playtest 一份報告都不寫、也不報任何錯」的靜默失效可被發現。
+func _report_playtest_candidate_invalid() -> void:
+	push_error(
+		"balance-playtest: production candidate invalid，本次 session 不會寫出任何報告"
+		+ "（BALANCE_CANDIDATE_INVALID）"
+	)
+	var absolute_root := ProjectSettings.globalize_path(
+		PlaytestSessionReportWriter.REPORT_ROOT
+	)
+	if DirAccess.make_dir_recursive_absolute(absolute_root) != OK:
+		return
+	var marker_path := PlaytestSessionReportWriter.REPORT_ROOT.path_join(
+		".candidate-invalid.err"
+	)
+	var file := FileAccess.open(marker_path, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_string("BALANCE_CANDIDATE_INVALID\n")
+	file.close()
 
 
 ## BattleRuleCatalogBuilder 的 base roots：棋子／裝備／戰鬥遺物（build lab 既有集合）

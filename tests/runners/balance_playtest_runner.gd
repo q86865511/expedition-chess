@@ -55,8 +55,12 @@ func _run() -> void:
 			var case_started := Time.get_ticks_msec()
 			var value: BalanceBotCaseResult = driver.run_case(strategy_id, seed_index)
 			var primary_elapsed_ms := Time.get_ticks_msec() - case_started
-			report.append(value)
-			report.record_primary_elapsed_ms(primary_elapsed_ms)
+			# An invalid case is dropped by report.append() rather than counted
+			# into cases, so its elapsed time must not be counted either
+			# (previously polluted primary_case_count / mean elapsed_ms; F10).
+			var case_valid := value != null and value.is_valid()
+			if case_valid:
+				report.record_primary_elapsed_ms(primary_elapsed_ms)
 			print("BALANCE_CASE strategy=%s seed=%d elapsed_ms=%d terminal=%s failures=%s" % [
 				String(strategy_id), seed_index,
 				primary_elapsed_ms, str(value.terminal),
@@ -72,6 +76,10 @@ func _run() -> void:
 				)
 				if not replay_matches:
 					value.failure_codes.append(&"BALANCE_REPLAY_DRIFT")
+			# report.append() runs last so a drift code appended above is already
+			# on value.failure_codes before the case is committed into report.cases
+			# / case_proofs (fixes the ordering flagged by F10).
+			report.append(value)
 	_finish(report, _report_exit_code(report), [] as Array[String])
 
 

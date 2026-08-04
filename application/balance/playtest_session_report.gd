@@ -8,6 +8,8 @@ const BUILD_PREFIXES: Array[String] = [
 	"build.", "commander.", "unit.", "trait.", "relic.", "equipment.",
 ]
 const MAX_STABLE_VALUE_LENGTH: int = 128
+const MAX_ERROR_CODE_LENGTH: int = 64
+const MAX_ERROR_CODE_COUNT: int = 32
 
 var session_id: String
 var candidate_id: StringName
@@ -46,7 +48,8 @@ func is_valid() -> bool:
 		and _is_hour_bucket_utc(started_at_utc) \
 		and duration_seconds >= 0 and OUTCOMES.has(outcome) \
 		and _all_allowlisted(route_ids, ROUTE_PREFIXES) \
-		and _all_allowlisted(build_summary, BUILD_PREFIXES)
+		and _all_allowlisted(build_summary, BUILD_PREFIXES) \
+		and _error_codes_valid(error_codes)
 
 
 static func hour_bucket_utc(value: String) -> String:
@@ -86,9 +89,39 @@ static func _allowlisted_value(value: String, prefixes: Array[String]) -> bool:
 			break
 	if not prefix_ok:
 		return false
-	for code: int in value.to_ascii_buffer():
+	# F07：逐 codepoint 明確拒收非 ASCII。實測 Godot 4.7 的 to_ascii_buffer()
+	# 將非 ASCII 映為 0x20（亦會被白名單拒收），但該替換行為未見文件保證；
+	# 改用 unicode_at 使拒收不依賴未保證行為。
+	for index: int in range(value.length()):
+		var code := value.unicode_at(index)
 		var allowed := (code >= 97 and code <= 122) or (code >= 48 and code <= 57) \
 			or code == 95 or code == 46
+		if not allowed:
+			return false
+	return true
+
+
+## B-07：error_codes 先前未經任何驗證。fail-closed 收斂為封閉字元集
+## `[A-Z0-9_]`（與既有具名錯誤碼慣例一致，如 `EXPEDITION_FAILED`），
+## 逐碼長度與陣列長度皆設上限；違反者整份報告視為不合法（is_valid() 回 false）。
+static func _error_codes_valid(values: Array[StringName]) -> bool:
+	if values.size() > MAX_ERROR_CODE_COUNT:
+		return false
+	for value: StringName in values:
+		if not _is_error_code(String(value)):
+			return false
+	return true
+
+
+static func _is_error_code(value: String) -> bool:
+	if value.is_empty() or value.length() > MAX_ERROR_CODE_LENGTH:
+		return false
+	# F07：同 _allowlisted_value——逐 codepoint 明確拒收非 ASCII，
+	# 不依賴 to_ascii_buffer 的未保證替換行為。
+	for index: int in range(value.length()):
+		var code := value.unicode_at(index)
+		var allowed := (code >= 65 and code <= 90) or (code >= 48 and code <= 57) \
+			or code == 95
 		if not allowed:
 			return false
 	return true

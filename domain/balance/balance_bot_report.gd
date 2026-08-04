@@ -198,6 +198,7 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 			"boss_retry_count": value.boss_retry_count,
 			"completed_node_count": value.completed_node_count,
 			"reload_count": value.reload_count,
+			"null_offer_rule_count": value.null_offer_rule_count,
 			"act_snapshots": act_snapshots,
 			"final_phase": String(value.final_phase),
 			"settlement_receipt_count": value.settlement_receipt_digests.size(),

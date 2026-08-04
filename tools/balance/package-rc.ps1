@@ -172,7 +172,9 @@ function Invoke-RcSmokePhase {
     $processLog = Join-Path $allowedRoot "rc-smoke-$safePhase.process.log"
     $startInfo = New-Object Diagnostics.ProcessStartInfo
     $startInfo.FileName = $Executable
-    $startInfo.Arguments = '--headless --log-file "{0}" -- --rc-smoke-phase={1}' -f $godotLog, $Phase
+    $confirmFlag = ''
+    if ($Phase -eq 'restart-abandon-verify') { $confirmFlag = ' --rc-smoke-confirm' }
+    $startInfo.Arguments = ('--headless --log-file "{0}" -- --rc-smoke-phase={1}{2}' -f $godotLog, $Phase, $confirmFlag)
     $startInfo.UseShellExecute = $false
     $startInfo.CreateNoWindow = $true
     $startInfo.RedirectStandardOutput = $true

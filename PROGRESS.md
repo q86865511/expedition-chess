@@ -13,6 +13,16 @@ Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXT
 
 ## 已完成
 
+- [2026-08-04] ✅ G2 `balance-playtest` Phase 0 雙審閉環 — 兩位獨立 reviewer 首輪各
+  10 條 findings（NOT APPROVED）→ 使用者裁決全修 → 四工作包並行修復＋主迴圈補丁 →
+  閉環複核 **雙 APPROVED**。期間實證並修復新立案 BP-SI-007（`Array[StringName]`
+  裸 `sort()` 依 interned 指標序＝隱形亂源；8 個 RNG 池點＋1 處 presentation 改
+  `StableNameSort` 字典序，使用者授權 domain 修正；同 seed 戰局自此改變，3k #2
+  凍結快照不作回歸對照）。F07 審查假說經實測否證（to_ascii_buffer 映非 ASCII 為
+  0x20 本即拒收），仍施防禦性硬化。最終 fresh All 1,156 tests／0 failures、
+  10k ExpeditionSoak 10,000/10,000 passed。四個分類 commit（43c206d/ebbcf50/
+  f66a32b/a63a3a8），停在 push 硬停點。審查原文：
+  `.pipeline/balance-playtest/reviews/phase0-final-review-{A,B}.md`。
 - [2026-08-04] 🧪 G2 `balance-playtest` Phase 0 證據收尾 — tier2+ 入樣兩來源一致
   （277 selections／230 cases／13 units；tier5=0）、NUL 分隔符最小修正後 8 程序
   24/24 replay digest 與 frozen 3k #2 完全一致。Final source `6b072f8` 的 All 為

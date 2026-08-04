@@ -1,0 +1,84 @@
+{
+    "schema_version":  1,
+    "kind":  "balance-phase0-rc",
+    "passed":  true,
+    "source_manifest_sha256":  "345bb6c4f3c1a06b64dc346110832fb4e26792b8a5f6f75ef4922b222bd40b26",
+    "executable_sha256":  "464faa923f5dd57fb4db416698fc69c9b03fcab39a87301c203aac860a439855",
+    "pck_inventory_sha256":  "b1c222aafb3bc085357f631637e3bb643ce9759ecddbe6c447668f53c40b7531",
+    "phases":  [
+                   {
+                       "phase":  "start-save",
+                       "exit_code":  0,
+                       "marker":  {
+                                      "durable_readback":  true,
+                                      "error_codes":  [
+
+                                                      ],
+                                      "first_run_id":  "run_717fa62a59a963e43a4d47582c1c757d0a59736bf6c8cd0fcee8897bc0e49c34",
+                                      "inventory_file_count":  2988,
+                                      "inventory_passed":  true,
+                                      "inventory_path":  "user://rc_smoke/pck-inventory.json",
+                                      "ok":  true,
+                                      "phase":  "start-save",
+                                      "report_count":  0,
+                                      "schema_version":  1
+                                  },
+                       "phase_artifact_sha256":  "e9bd40848ac1ce4b950ba0fdb1239b0dbbe0c8f8329dc858c8618a6e998876cc",
+                       "godot_log_sha256":  "449ce2134b51a12c99f3b961d98fc5b0a048940e16b34bd594b84e5229215bc7",
+                       "process_log_sha256":  "bf15ea76ef42a9aa9909b72fb653dffd5a04e0387c5f8e2e2ef2a1f8bb2d1ac1"
+                   },
+                   {
+                       "phase":  "restart-terminal",
+                       "exit_code":  0,
+                       "marker":  {
+                                      "error_codes":  [
+
+                                                      ],
+                                      "first_run_id":  "run_717fa62a59a963e43a4d47582c1c757d0a59736bf6c8cd0fcee8897bc0e49c34",
+                                      "ok":  true,
+                                      "phase":  "restart-terminal",
+                                      "report_codec_readback":  true,
+                                      "report_count":  1,
+                                      "schema_version":  1,
+                                      "second_run_id":  "run_542213b2138d075b3e26ff05a79cff4622b87df430c7a91e3811894851c54935",
+                                      "terminal_outcome":  "victory"
+                                  },
+                       "phase_artifact_sha256":  "46ae5eb5dd86472b6cce07df514a1b12bcb38099280d0c6b5b5148753115b98d",
+                       "godot_log_sha256":  "c36233c86bfe25e5915a954bca8a0f873b30cc3b168ff400024f176bee49afdb",
+                       "process_log_sha256":  "91f2efa443a9b4d28d4dc12e5059d5ba01be817d1d440c10ef665306bd6944fb"
+                   },
+                   {
+                       "phase":  "restart-abandon-verify",
+                       "exit_code":  0,
+                       "marker":  {
+                                      "abandon_durable_readback":  true,
+                                      "error_codes":  [
+
+                                                      ],
+                                      "ok":  true,
+                                      "outcomes":  [
+                                                       "abandoned",
+                                                       "victory"
+                                                   ],
+                                      "phase":  "restart-abandon-verify",
+                                      "report_codec_readback":  true,
+                                      "report_count":  2,
+                                      "schema_version":  1,
+                                      "second_run_id":  "run_542213b2138d075b3e26ff05a79cff4622b87df430c7a91e3811894851c54935"
+                                  },
+                       "phase_artifact_sha256":  "783330ab7c2d14b3d49dd2cc668985e0638c5dd22905f4411f219e66ec8ad88d",
+                       "godot_log_sha256":  "ed21f3bc4dc08df8a3244861fbcc2afdfc0c1601acbc8ff1b403f3329bb5618b",
+                       "process_log_sha256":  "e8290c8d7400b5b7065ef951761654baae7c81bce4c4d14d8ac177ea8fb4c01f"
+                   }
+               ],
+    "reports":  [
+                    {
+                        "file":  "report-samples/session-1233240883f80a1e06e7ce8505d652ad.json",
+                        "sha256":  "7961816dfe9c5a3f4ca03e034df13b911e6484c84d69fab5b29a5a39fd2f2b0d"
+                    },
+                    {
+                        "file":  "report-samples/session-f72ac4fa1465151261755f1b5bd5c4f3.json",
+                        "sha256":  "e14fef57655412857d23ee75679921d45e288959ac389e19dd6ea79a27fa9ef2"
+                    }
+                ]
+}

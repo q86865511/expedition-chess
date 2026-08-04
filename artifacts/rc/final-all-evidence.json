@@ -1,0 +1,231 @@
+{
+    "schema_version":  1,
+    "kind":  "balance-phase0-final-all",
+    "passed":  true,
+    "source_manifest_sha256":  "345bb6c4f3c1a06b64dc346110832fb4e26792b8a5f6f75ef4922b222bd40b26",
+    "runner_execution":  {
+                             "file":  "final-all-runner-execution.json",
+                             "sha256":  "9ccec153fa2e3f34e4d81a29615aa1be4ba9170522228677d34edb976c1331e0"
+                         },
+    "steps":  [
+                  {
+                      "name":  "Import",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:35:57Z",
+                      "finished_at_utc":  "2026-08-04T08:36:02Z"
+                  },
+                  {
+                      "name":  "RunnerContract",
+                      "exit_code":  0,
+                      "probes":  [
+                                     {
+                                         "name":  "RunnerContractPass",
+                                         "expected_exit_code":  0,
+                                         "actual_exit_code":  0
+                                     },
+                                     {
+                                         "name":  "RunnerContractPause",
+                                         "expected_exit_code":  0,
+                                         "actual_exit_code":  0
+                                     },
+                                     {
+                                         "name":  "RunnerContractAssertion",
+                                         "expected_exit_code":  2,
+                                         "actual_exit_code":  2
+                                     },
+                                     {
+                                         "name":  "RunnerContractPushError",
+                                         "expected_exit_code":  2,
+                                         "actual_exit_code":  2
+                                     },
+                                     {
+                                         "name":  "RunnerContractEngineError",
+                                         "expected_exit_code":  2,
+                                         "actual_exit_code":  2
+                                     },
+                                     {
+                                         "name":  "RunnerContractEngineOrphan",
+                                         "expected_exit_code":  2,
+                                         "actual_exit_code":  2
+                                     },
+                                     {
+                                         "name":  "RunnerContractZeroTests",
+                                         "expected_exit_code":  3,
+                                         "actual_exit_code":  3
+                                     },
+                                     {
+                                         "name":  "RunnerContractInfrastructure",
+                                         "expected_exit_code":  3,
+                                         "actual_exit_code":  3
+                                     },
+                                     {
+                                         "name":  "RunnerContractTimeout",
+                                         "expected_exit_code":  124,
+                                         "actual_exit_code":  124
+                                     },
+                                     {
+                                         "name":  "RunnerContractLoggerCleanup",
+                                         "expected_exit_code":  0,
+                                         "actual_exit_code":  0
+                                     },
+                                     {
+                                         "name":  "RunnerContractLoggerLeak",
+                                         "expected_exit_code":  3,
+                                         "actual_exit_code":  3
+                                     }
+                                 ]
+                  },
+                  {
+                      "name":  "Smoke",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:36:30Z",
+                      "finished_at_utc":  "2026-08-04T08:36:34Z"
+                  },
+                  {
+                      "name":  "Gut",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:36:34Z",
+                      "finished_at_utc":  "2026-08-04T08:40:58Z"
+                  },
+                  {
+                      "name":  "Content",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:40:58Z",
+                      "finished_at_utc":  "2026-08-04T08:41:06Z"
+                  },
+                  {
+                      "name":  "Canonical",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:41:06Z",
+                      "finished_at_utc":  "2026-08-04T08:41:08Z"
+                  },
+                  {
+                      "name":  "Combat",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:41:08Z",
+                      "finished_at_utc":  "2026-08-04T08:41:23Z"
+                  },
+                  {
+                      "name":  "Expedition",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:41:23Z",
+                      "finished_at_utc":  "2026-08-04T08:41:26Z"
+                  },
+                  {
+                      "name":  "Spec",
+                      "exit_code":  0,
+                      "started_at_utc":  "2026-08-04T08:41:26Z",
+                      "finished_at_utc":  "2026-08-04T08:41:29Z"
+                  }
+              ],
+    "gut":  {
+                "file":  "final-all-logs/gut.xml",
+                "sha256":  "b0ef1026dd947773480910cd9237811a484f7d7973de11e647d402850b43bbe8",
+                "statistics":  {
+                                   "tests":  1126,
+                                   "assertions":  22224,
+                                   "failures":  0,
+                                   "errors":  0,
+                                   "orphans":  0
+                               }
+            },
+    "nul_warning_count":  0,
+    "logs":  [
+                 {
+                     "file":  "canonical.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "combat.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "content.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "expedition.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "gut.godot.log",
+                     "sha256":  "e7f34793b43fc050c5129fe08956f3d6bef8905965720fabefb4fe971d40d2b2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "import.godot.log",
+                     "sha256":  "90f20a82af999a85ac65d3213360e289abdc73d79794b6410e0fc7ddf1aafb5e",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractassertion.godot.log",
+                     "sha256":  "cbd4dc9a508a3aae78b67938276d4985ff348be611a522e0bcb37b0b6d04ab3d",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractengineerror.godot.log",
+                     "sha256":  "e5eb77f6e2f576056fdab6e2a7ae491327431ffe174e1af8e0ff51227234b34c",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractengineorphan.godot.log",
+                     "sha256":  "228797c79285bac0e3d59f63dc27c1a8608d87ae8a3a6268935fc8938c0fdec4",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractinfrastructure.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractloggercleanup.godot.log",
+                     "sha256":  "cf688c50ddc7812a4beee60673090804074f23b7f762e89160bb9c4ac128bce9",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractloggerleak.godot.log",
+                     "sha256":  "efd6fa548480157f768cd877a6ee92b750e6014fff42badfddfa03cfb83a49ea",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractpass.godot.log",
+                     "sha256":  "1b15632b83195afe23b38e89c60af7378e37b8fa69a84ed25cbf8bda39eb545d",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractpause.godot.log",
+                     "sha256":  "8a29b865ec694089c251fcc31edbbc0724dc1b22d19f1fb33807add00fafb6a0",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractpusherror.godot.log",
+                     "sha256":  "074f6537e2668a50e110c013c14757e46bd7b4c1f70262153cdf4585080a9c4c",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontracttimeout.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "runnercontractzerotests.godot.log",
+                     "sha256":  "1ec65aa24b032ff98175715ef0d1f263149e4c275769c8165eed3d931e0f4fce",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "smoke.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 },
+                 {
+                     "file":  "spec.godot.log",
+                     "sha256":  "037dd8b42ca7058b62b5555724cff76b748c651cb2252ee73dac52a938d0ecd2",
+                     "nul_warning_count":  0
+                 }
+             ],
+    "finished_at_utc":  "2026-08-04T08:41:30Z"
+}

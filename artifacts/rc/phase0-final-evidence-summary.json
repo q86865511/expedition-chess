@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "kind": "balance-phase0-final-evidence-summary",
+  "passed": true,
+  "runtime_source_commit": "6b072f8be1be39f5ee0644e5b2d7ab4d4960756e",
+  "source_manifest_sha256": "345bb6c4f3c1a06b64dc346110832fb4e26792b8a5f6f75ef4922b222bd40b26",
+  "frozen_3k_sha256": "810d36a31f756f500307de26f7ede36f2e0c21290767121a7aef9f0e665f3717",
+  "candidate_id": "balance.g2.7d47fada8091",
+  "content_version": "0.2.0-content-production",
+  "tune_digest": "7d47fada8091a79a68a2c50a4d63c5d57e0752d0bac7776b30230717a6f8dea4",
+  "all": {
+    "path": "artifacts/rc/final-all-evidence.json",
+    "step_count": 9,
+    "gut_tests": 1126,
+    "gut_assertions": 22224,
+    "gut_failures": 0,
+    "gut_errors": 0,
+    "gut_orphans": 0,
+    "unexpected_nul_warning_count": 0
+  },
+  "expedition_soak": {
+    "path": "artifacts/rc/expedition-soak-evidence.json",
+    "seed_count": 10000,
+    "case_count": 10000,
+    "pool_conservation_checks": 10000,
+    "deterministic_replay_count": 64,
+    "build_operation_count": 40000,
+    "failure_count": 0
+  },
+  "rc": {
+    "path": "artifacts/rc/rc-evidence.json",
+    "phase_count": 3,
+    "phase_exit_codes": [0, 0, 0],
+    "report_count": 2,
+    "report_outcomes": ["victory", "abandoned"],
+    "codec_readback": true,
+    "pck_inventory_path": "artifacts/rc/pck-inventory.json",
+    "pck_file_count": 2988,
+    "forbidden_entry_count": 0,
+    "zip_sha256": "004441c15163b8d99bbc1f180adb0df6b42c2b62b111c6e7898cd8c9f8eadd87",
+    "zip_top_level_file_count": 4
+  }
+}

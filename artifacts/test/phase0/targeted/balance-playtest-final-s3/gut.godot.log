@@ -1,0 +1,61 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+---  GUT  ---
+[INFO]:  using [C:/Users/q86865511/AppData/Roaming/Godot/app_userdata/遠征棋] for temporary output.
+Godot version:  4.7.0
+GUT version:  9.7.1
+
+
+res://tests/unit/balance_playtest/test_balance_bot_report_sampling.gd
+* test_replay_sampling_is_deterministic_five_percent_by_absolute_seed
+* test_report_records_replay_sample_list_and_split_elapsed_metrics
+* test_report_serializes_authoritative_case_proof_and_regression_evidence
+* test_report_regression_gate_rejects_old_artifact_pathologies
+* test_build_none_is_visible_but_excluded_from_build_dominance_gate
+5/5 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd
+* test_production_case_driver_script_loads
+* test_candidate_digest_is_order_independent_and_codec_round_trips
+* test_candidate_rejects_duplicate_and_fixed_rule_fields
+* test_scanner_policy_is_shared_and_unknown_numeric_fields_fail_closed
+* test_pinned_production_candidate_matches_source_and_fails_closed
+* test_candidate_archive_is_append_only_and_conflict_fails
+* test_candidate_archive_preserves_same_tune_across_manifest_revisions
+* test_strategies_choose_different_scores_and_stable_ties
+* test_observation_and_selected_action_are_clone_only
+* test_illegal_and_unaffordable_actions_are_rejected
+* test_economy_policy_fills_board_then_spends_only_above_max_interest
+* test_build_attribution_requires_active_faction_and_tie_is_run_bound
+* test_appendix_c_tune_values_are_exact
+13/13 passed.
+
+
+res://tests/unit/balance_playtest/test_playtest_session_report_codec.gd
+* test_session_report_round_trip_has_only_anonymous_allowlisted_fields
+* test_session_report_rejects_future_schema_and_unknown_privacy_field
+* test_session_report_rejects_non_string_route_values_and_non_hex_digest
+* test_session_report_writer_publishes_readable_local_json
+* test_session_report_rejects_path_like_or_unknown_prefix_values
+* test_session_report_requires_hour_bucket_and_three_terminal_outcomes
+6/6 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+Totals
+------
+Scripts               3
+Tests                24
+Passing Tests        24
+Asserts             136
+Time              0.709s
+
+
+---- All tests passed! ----
+

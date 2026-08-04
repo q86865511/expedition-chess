@@ -1,0 +1,7 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+RC_SMOKE_RESULT={"durable_readback":true,"error_codes":[],"first_run_id":"run_717fa62a59a963e43a4d47582c1c757d0a59736bf6c8cd0fcee8897bc0e49c34","inventory_file_count":2988,"inventory_passed":true,"inventory_path":"user://rc_smoke/pck-inventory.json","ok":true,"phase":"start-save","report_count":0,"schema_version":1}
+WARNING: 2155 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2535)
+ERROR: 85 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

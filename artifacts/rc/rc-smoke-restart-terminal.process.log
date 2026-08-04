@@ -1,0 +1,7 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+RC_SMOKE_RESULT={"error_codes":[],"first_run_id":"run_717fa62a59a963e43a4d47582c1c757d0a59736bf6c8cd0fcee8897bc0e49c34","ok":true,"phase":"restart-terminal","report_codec_readback":true,"report_count":1,"schema_version":1,"second_run_id":"run_542213b2138d075b3e26ff05a79cff4622b87df430c7a91e3811894851c54935","terminal_outcome":"victory"}
+WARNING: 6297 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2535)
+ERROR: 86 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)

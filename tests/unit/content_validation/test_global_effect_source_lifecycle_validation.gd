@@ -60,7 +60,7 @@ func test_unit_scoped_self_target_remains_legal() -> void:
 	)
 
 
-func test_global_hit_trigger_and_challenge_run_operation_are_rejected() -> void:
+func test_global_hit_trigger_and_challenge_dual_track_run_operation_are_rejected() -> void:
 	var hit_input := _empty_input()
 	var hit_effect_id := &"effect.probe_global_hit"
 	hit_input.definitions.append(_modify_stat_effect(
@@ -73,9 +73,12 @@ func test_global_hit_trigger_and_challenge_run_operation_are_rejected() -> void:
 		"global source trigger=hit 必須被拒絕: %s" % _issue_text(hit_report)
 	)
 
+	# DC-REQ-006（BP-SI-001 已解除，combat-core/design.md:117/:236）：RunOperation 禁令的
+	# 作用域限於進入 BattleSetup 的 EffectSourceState——本效果同時帶 battle_operations
+	# （因此會被 pin 進 battle catalog）又帶 run_operations，屬雙軌，仍必須被拒絕。
 	var run_input := _empty_input()
 	var run_effect_id := &"effect.probe_challenge_run"
-	var run_effect := _base_effect(run_effect_id, &"battle_start")
+	var run_effect := _modify_stat_effect(run_effect_id, &"battle_start", &"attack", &"all_allies")
 	var operation := AddGoldOperationDef.new()
 	operation.operation_index = 0
 	operation.amount = 1
@@ -86,7 +89,28 @@ func test_global_hit_trigger_and_challenge_run_operation_are_rejected() -> void:
 	var run_report := ContentValidator.new().validate(run_input)
 	assert_true(
 		_has_issue_for(run_report, LIFECYCLE_ISSUE, run_effect_id),
-		"challenge global source 的 run operation 必須被拒絕: %s" % _issue_text(run_report)
+		"雙軌（battle_operations＋run_operations）challenge global source 必須被拒絕: %s" % _issue_text(run_report)
+	)
+
+
+## DC-REQ-006：純 run_operations（無 battle_operations）的 challenge global source 不進
+## BattleSetup，不受本檔其餘案例的 RunOperation 禁令限制——這是 slice_challenge_affix_01
+## （ShopSurcharge）／_03（DrainExpeditionHp）能回鏈的前提。
+func test_challenge_pure_run_operation_without_battle_operations_is_accepted() -> void:
+	var run_input := _empty_input()
+	var run_effect_id := &"effect.probe_challenge_pure_run"
+	var run_effect := _base_effect(run_effect_id, &"battle_start")
+	var operation := AddGoldOperationDef.new()
+	operation.operation_index = 0
+	operation.amount = 1
+	operation.claim_scope = &"always"
+	run_effect.run_operations = [operation]
+	run_input.definitions.append(run_effect)
+	_append_global_reference(run_input, &"challenge", run_effect_id)
+	var run_report := ContentValidator.new().validate(run_input)
+	assert_false(
+		_has_issue_for(run_report, LIFECYCLE_ISSUE, run_effect_id),
+		"純 run_operations 的 challenge global source 不進 BattleSetup，不應被 lifecycle 規則拒絕: %s" % _issue_text(run_report)
 	)
 
 

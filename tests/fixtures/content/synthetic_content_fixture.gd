@@ -157,8 +157,12 @@ static func _effect(content_id: StringName, role: StringName) -> EffectDef:
 	)
 	return value
 
-## BP-SI-001：challenge 鏈暫時只引用 battle-track global effects；run-operation
-## 分流尚未有合法消費端，因此 synthetic valid baseline 也不得把 run intents 掛回鏈上。
+## W4-T07（design §7.2）／BP-SI-001（已解除，見 specs/difficulty-curve/requirements.md
+## DC-REQ-006）：challenge 鏈 1..5 的 modifier_refs 必須指向 content_role=
+## &"challenge_affix" 的效果（不得挪用菁英詞綴），且五條合起來要覆蓋三個可機械判別的桶——
+## 軌 A（battle_operations 非空）／經濟壓力（ShopSurcharge）／遠征傷害（DrainExpeditionHp）。
+## 桶的分配刻意放在 level 3/4/5：多數測試只覆寫 level 1（含 2、3）的 modifier_refs，把三個桶
+## 留在鏈尾可讓那些覆寫仍維持整體合規，不必逐一補齊三桶。
 static func _challenge_affix_effects() -> Array[ContentDefinition]:
 	var result: Array[ContentDefinition] = []
 	for index in 3:
@@ -179,16 +183,13 @@ static func _challenge_affix_effects() -> Array[ContentDefinition]:
 	surcharge.claim_scope = &"always"
 	surcharge_affix.run_operations = [surcharge]
 	result.append(surcharge_affix)
-	var final_battle_affix := _effect(&"effect.challenge_affix_4", &"challenge_affix")
-	var final_modify := ModifyStatOperationDef.new()
-	final_modify.operation_index = 0
-	final_modify.stat = &"armor"
-	final_modify.mode = &"add"
-	final_modify.amount = 1
-	final_modify.duration_ticks = 20
-	final_modify.target = &"all_allies"
-	final_battle_affix.battle_operations = [final_modify]
-	result.append(final_battle_affix)
+	var drain_affix := _effect(&"effect.challenge_affix_4", &"challenge_affix")
+	var drain := DrainExpeditionHpOperationDef.new()
+	drain.operation_index = 0
+	drain.amount = 1
+	drain.claim_scope = &"always"
+	drain_affix.run_operations = [drain]
+	result.append(drain_affix)
 	return result
 
 static func _global_battle_effect() -> EffectDef:
@@ -607,8 +608,7 @@ static func _unlocks() -> Array[ContentDefinition]:
 		value.challenge_level = level
 		if level > 0:
 			value.prerequisite_refs = [StringName("unlock.challenge_%d" % (level - 1))]
-			if level == 1 or level == 5:
-				value.modifier_refs = [StringName("effect.challenge_affix_%d" % (level - 1))]
+			value.modifier_refs = [StringName("effect.challenge_affix_%d" % (level - 1))]
 		result.append(value)
 	return result
 

@@ -87,17 +87,21 @@ func test_battle_operation_only_effect_is_classified_into_battle_affix_track() -
 	)
 
 
-func test_run_operation_only_challenge_effect_is_rejected_at_content_boundary() -> void:
+## G2 difficulty-curve T06（DC-REQ-006，BP-SI-001 已解除，combat-core/design.md:117/:236）：
+## RunOperation 禁令的作用域限於進入 BattleSetup 的 EffectSourceState——純 run_operations
+## （無 battle_operations）的 challenge 效果不進 battle catalog，不再於內容邊界被拒載。
+## 原斷言（拒載）反映 BP-SI-001 解除前的舊行為，見 git 歷史。
+func test_run_operation_only_challenge_effect_is_accepted_at_content_boundary() -> void:
 	var fixture := _fixture_with_renamed_challenge_chain()
 	var effect_id := &"effect.challenge_run_only"
 	_append_run_only_effect(fixture, effect_id)
 	_set_modifier_refs(fixture, 1, [effect_id])
 	var report := ContentValidator.new().validate(fixture)
-	assert_true(
+	assert_false(
 		_has_content_issue_for(
 			report, &"CONTENT_EFFECT_SOURCE_LIFECYCLE", effect_id
 		),
-		"challenge global source 不得攜帶 run operation；run-layer 分流前必須在內容邊界拒載: %s" %
+		"純 run_operations 的 challenge 詞綴不進 BattleSetup，不受 RunOperation 禁令限制: %s" %
 			_content_issue_text(report)
 	)
 
@@ -183,8 +187,10 @@ func test_duplicate_effect_id_across_different_levels_is_deduplicated_to_the_low
 		_entry_strings(result.get("entries")),
 		[
 			"effect.challenge_cross_level_dup|1|battle_affix",
+			"effect.challenge_affix_1|2|battle_affix",
 		],
-		"level1/level3 的重複 effect 只保留 level1 一筆；BP-SI-001 下中間層可無 modifier refs，battle track 不得重複"
+		"level1/level3 的重複 effect 只保留 level1 一筆；level 2 保留 fixture 預設的" +
+			" effect.challenge_affix_1（battle_affix track），dedup 不得誤刪其他階級的獨立內容"
 	)
 
 func test_resolve_is_deterministic_for_identical_inputs() -> void:

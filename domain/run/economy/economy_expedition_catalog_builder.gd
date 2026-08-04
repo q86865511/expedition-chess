@@ -19,7 +19,7 @@ func build(
 		return EconomyCatalogBuildResult.failure(EconomyCatalogError.CONFIG_INVALID, &"economy_config", economy_config_id)
 	var shop_units: Array[ShopUnitRule] = []
 	var sorted_units: Array[StringName] = unit_ids.duplicate()
-	sorted_units.sort()
+	sorted_units.sort_custom(StableNameSort.id_less)
 	for unit_id: StringName in sorted_units:
 		var resolved := registry.resolve(ContentRef.new(manifest_digest, unit_id))
 		if not resolved.ok:
@@ -31,7 +31,7 @@ func build(
 		return EconomyCatalogBuildResult.failure(EconomyCatalogError.CONFIG_INVALID, &"shop_units")
 	var map_nodes: Array[MapNodeRule] = []
 	var sorted_nodes: Array[StringName] = map_node_ids.duplicate()
-	sorted_nodes.sort()
+	sorted_nodes.sort_custom(StableNameSort.id_less)
 	for node_id: StringName in sorted_nodes:
 		var resolved := registry.resolve(ContentRef.new(manifest_digest, node_id))
 		if not resolved.ok:
@@ -50,7 +50,7 @@ func build(
 			return EconomyCatalogBuildResult.failure(EconomyCatalogError.MAP_KIND_MISSING, &"map_nodes", StringName(MapNodeState.node_kind_to_token(kind)))
 	var reward_tables: Array[RewardTableRule] = []
 	var sorted_reward_ids: Array[StringName] = reward_table_ids.duplicate()
-	sorted_reward_ids.sort()
+	sorted_reward_ids.sort_custom(StableNameSort.id_less)
 	for reward_id: StringName in sorted_reward_ids:
 		var resolved_reward := registry.resolve(ContentRef.new(manifest_digest, reward_id))
 		if not resolved_reward.ok:
@@ -78,7 +78,7 @@ func build(
 			and not node_choice_ids.has(node_rule.generator_id)
 		):
 			node_choice_ids.append(node_rule.generator_id)
-	node_choice_ids.sort()
+	node_choice_ids.sort_custom(StableNameSort.id_less)
 	var node_choice_sets: Array[NodeChoiceSetRule] = []
 	for choice_set_id: StringName in node_choice_ids:
 		var resolved_choice_set := registry.resolve(

@@ -39,7 +39,7 @@ func _next_merge_group(roster: RosterState) -> Array[UnitInstance]:
 	for unit: UnitInstance in roster.unit_instances:
 		if unit.star >= 1 and unit.star <= 2 and not definition_ids.has(unit.def_id):
 			definition_ids.append(unit.def_id)
-	definition_ids.sort()
+	definition_ids.sort_custom(StableNameSort.id_less)
 	for star: int in [1, 2]:
 		for definition_id: StringName in definition_ids:
 			var candidates: Array[UnitInstance] = []
@@ -245,7 +245,7 @@ func _build_copy_ledger(units: Array[UnitInstance]) -> Array[UnitCopyLedgerEntry
 	for unit: UnitInstance in units:
 		if not definition_ids.has(unit.def_id):
 			definition_ids.append(unit.def_id)
-	definition_ids.sort()
+	definition_ids.sort_custom(StableNameSort.id_less)
 	var ledger: Array[UnitCopyLedgerEntry] = []
 	for definition_id: StringName in definition_ids:
 		var copies := 0

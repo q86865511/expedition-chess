@@ -10,7 +10,7 @@ func build(
 		return RunRelicTableBuildResult.failure(RunRelicTableError.INPUT_INVALID, &"manifest_digest")
 	var rules: Array[RunRelicRule] = []
 	var sorted_ids: Array[StringName] = relic_ids.duplicate()
-	sorted_ids.sort()
+	sorted_ids.sort_custom(StableNameSort.id_less)
 	for relic_id: StringName in sorted_ids:
 		if not StableIdValidator.new().is_valid(relic_id):
 			return RunRelicTableBuildResult.failure(RunRelicTableError.INPUT_INVALID, &"relic_ids", relic_id)

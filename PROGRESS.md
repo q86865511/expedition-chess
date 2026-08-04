@@ -13,6 +13,9 @@ Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXT
 
 ## 已完成
 
+- [2026-08-04] 🚢 G2 `balance-playtest` 合併 — PR #9 MERGED @ `master@24edea9`
+  （16 commits、222 檔、+12,637/−489）。切片閉環；第 3.5 片 `difficulty-curve`
+  自該基線開分支，計畫經使用者核可（三件套與實作概括授權）。
 - [2026-08-04] ✅ G2 `balance-playtest` Phase 0 雙審閉環 — 兩位獨立 reviewer 首輪各
   10 條 findings（NOT APPROVED）→ 使用者裁決全修 → 四工作包並行修復＋主迴圈補丁 →
   閉環複核 **雙 APPROVED**。期間實證並修復新立案 BP-SI-007（`Array[StringName]`

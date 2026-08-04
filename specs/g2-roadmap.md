@@ -172,8 +172,8 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 |---|---|---|---|---|---|
 | `presentation-ui` | COMPLETE | T00–T15 COMPLETE; 19 AC PASS | R16 history＋merge-after-review findings closed | T13 USER APPROVED; final repair baseline Gut 1000/1000 | PR #5 MERGED @ 9362e7d；PR #6 MERGED @ 5e78ccf |
 | `content-production` | COMPLETE | T00–T27 COMPLETE；acceptance 21＋1 全 PASS | T25 三輪雙審＋T18A 全批獨立人工採納 CLOSED | 44 adopted／14 rejected retained；Gut 281/1093；10k soak；All exit 0；fully_closed=true | PR #8 MERGED @ bf818fb |
-| `balance-playtest` | IN PROGRESS | Candidate／bots／reports／runner 已實作；3k screening #2 gate PASS（candidate `balance.g2.7d47fada8091`） | final 雙審待 Phase 0 收尾證據後執行 | AC-032 維持 PENDING_EXTERNAL；大樣本移 Phase 2（2026-08-04 裁決） | `codex/g2-balance-playtest`（未提交） |
-| `difficulty-curve` | NOT STARTED | NOT STARTED | NOT STARTED | — | not created |
+| `balance-playtest` | COMPLETE | driver 正式鏈路／candidate／3k screening #2 gate PASS；Phase 0 收尾雙審雙 APPROVED | Phase 0 雙審閉環 CLOSED（含 BP-SI-007 修正） | AC-032 維持 PENDING_EXTERNAL；大樣本移 Phase 2（2026-08-04 裁決） | **PR #9 MERGED @ 24edea9** |
+| `difficulty-curve` | IN PROGRESS（2026-08-04 起） | NOT STARTED | NOT STARTED | — | `codex/g2-difficulty-curve` |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |
 
 ## 8. 固定假設
@@ -187,7 +187,7 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 
 以「先修機制、再平衡輪迴」為原則排序；大樣本統計延後至平衡收斂後執行。
 
-### Phase 0 — balance-playtest 收尾（進行中，~數天）
+### Phase 0 — balance-playtest 收尾（已完成，2026-08-04，PR #9 MERGED @ 24edea9）
 
 1. tier2+ 單位入樣補證（3k #2 報告無直接欄位，自 per-case 資料補確認）。
 2. Part D 證據鏈：RC 重打包、start→save/load→terminal/abandon→report 全鏈路 smoke、

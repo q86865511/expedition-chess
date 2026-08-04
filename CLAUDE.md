@@ -61,7 +61,10 @@
   codec 2→3 production migration、44 單位內容、node-choice 交易鏈、
   T24 acceptance(21+1 列)全數落地,fresh 全綠(Gut 1091、10k soak、All exit 0)。
   PR #8 已合併至 `master@bf818fb`。
-- G2 `balance-playtest`（`codex/g2-balance-playtest`，未提交）:driver 重寫走正式
-  RunController 鏈路、51 檔 content 值域修正＋global lifecycle 修正、3k screening #2
-  gate PASS(candidate `balance.g2.7d47fada8091`)。Phase 0 收尾中;大樣本依
-  2026-08-04 裁決延後至 Phase 2。Phase 0~3 roadmap 見 `specs/g2-roadmap.md` §9。
+- G2 `balance-playtest`:已完成（2026-08-04，PR #9 合併至 `master@24edea9`）;driver
+  重寫走正式 RunController 鏈路、51 檔 content 修正、3k screening #2 gate PASS、
+  Phase 0 雙審雙 APPROVED（含 BP-SI-007 StringName 排序決定性修正）。大樣本依裁決
+  延後至 Phase 2。Phase 0~3 roadmap 見 `specs/g2-roadmap.md` §9。
+- G2 `difficulty-curve`（`codex/g2-difficulty-curve`，進行中）:幕間難度縮放、三幕
+  Boss 差異化、多敵遭遇、trait 門檻階梯、tier-1 池重標、challenge run-op 回鏈;
+  規格位於 `specs/difficulty-curve/`。

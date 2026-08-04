@@ -72,6 +72,10 @@ func run_case(strategy_id: StringName, seed_index: int) -> BalanceBotCaseResult:
 	var controller: RunController = composition.controller
 	var strategy := BalanceBotStrategy.new(strategy_id)
 	var previous_node_id := ""
+	# DC-REQ-007：per-act battle_wins/battle_losses 記「該幕內」增量，故以捕捉當下的
+	# 全局累計值當基準，下次捕捉時再相減；只在真的新增快照時才推進基準（見下方呼叫點）。
+	var act_wins_baseline := 0
+	var act_losses_baseline := 0
 	var generated := _dispatch(session, RunPresentationIntent.Kind.GENERATE_MAP)
 	if not generated.is_empty():
 		repository.free()
@@ -146,8 +150,20 @@ func run_case(strategy_id: StringName, seed_index: int) -> BalanceBotCaseResult:
 			repository.free()
 			return _fail(result, resolution_error)
 		result.completed_node_count = session.snapshot().map.completed_node_ids.size()
-		if node.node_kind == MapNodeState.NodeKind.BOSS:
-			_capture_act_snapshot(session.snapshot(), node.act_index, result, replay_parts)
+		# 每一幕的正常擷取點是該幕 Boss 完成時（不論勝敗）；死在非 Boss 節點
+		# 時上面這個條件永遠等不到，該幕就會漏快照，所以額外用「run 已落 RESULTS」
+		# 當補齊點（見 DC-REQ-007／design.md「觀測性與 per-act gate」段）。
+		var run_ended_here := session.view_state().run_phase == RunState.RunPhase.RESULTS
+		if node.node_kind == MapNodeState.NodeKind.BOSS or run_ended_here:
+			var eliminated_here := run_ended_here and session.view_state().expedition_hp <= 0
+			var captured := _capture_act_snapshot(
+				session.snapshot(), node.act_index, result, replay_parts,
+				act_wins_baseline, act_losses_baseline,
+				StringName(node.node_id) if eliminated_here else &""
+			)
+			if captured:
+				act_wins_baseline = result.battle_wins
+				act_losses_baseline = result.battle_losses
 		_trace("node resolved completed=%d phase=%d" % [
 			result.completed_node_count, session.view_state().run_phase,
 		])
@@ -759,25 +775,35 @@ func _map_world_digest(map: MapState) -> String:
 	return EconomyPayloadDigest.sha256(parts)
 
 
+## 回傳是否真的新增了一筆快照（該幕尚未捕捉過）；呼叫端只在為 true 時才把
+## act_wins_baseline／act_losses_baseline 推進到目前累計值，讓下一幕的
+## battle_wins/battle_losses 差值正確從本幕結束點算起。
 func _capture_act_snapshot(
 	snapshot: RunPresentationSnapshot,
 	act_index: int,
 	result: BalanceBotCaseResult,
-	replay_parts: Array[String]
-) -> void:
+	replay_parts: Array[String],
+	act_wins_baseline: int,
+	act_losses_baseline: int,
+	elimination_node_id: StringName
+) -> bool:
 	for existing: BalanceBotActSnapshot in result.act_snapshots:
 		if existing.act_index == act_index:
-			return
+			return false
 	var unit_ids: Array[StringName] = []
 	for unit: UnitInstance in snapshot.roster.unit_instances:
 		unit_ids.append(unit.def_id)
 	var act_snapshot := BalanceBotActSnapshot.new(
 		act_index, snapshot.economy.gold, snapshot.view.expedition_hp,
 		snapshot.roster.unit_instances.size(),
-		snapshot.roster.board.placements.size(), unit_ids
+		snapshot.roster.board.placements.size(), unit_ids,
+		result.battle_wins - act_wins_baseline,
+		result.battle_losses - act_losses_baseline,
+		elimination_node_id
 	)
 	result.act_snapshots.append(act_snapshot)
 	replay_parts.append(act_snapshot.canonical_token())
+	return true
 
 
 func _derive_build_id(roster: RosterState, run_id: StringName) -> StringName:

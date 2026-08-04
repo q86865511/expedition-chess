@@ -175,6 +175,9 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 				"roster_unit_count": act_snapshot.roster_unit_count,
 				"board_unit_count": act_snapshot.board_unit_count,
 				"stable_unit_ids": stable_unit_ids,
+				"battle_wins": act_snapshot.battle_wins,
+				"battle_losses": act_snapshot.battle_losses,
+				"elimination_node_id": String(act_snapshot.elimination_node_id),
 			})
 		case_proofs.append({
 			"strategy_id": String(value.strategy_id),
@@ -418,7 +421,8 @@ func _opaque_selected_id_count() -> int:
 		for selected_id: StringName in value.selected_ids:
 			var token := String(selected_id)
 			if token.begins_with("reservation_owner_") \
-				or token.begins_with("offer_") or token.begins_with("choice_"):
+				or token.begins_with("offer_") or token.begins_with("choice_") \
+				or token.begins_with("reward.kind."):
 				result += 1
 	return result
 

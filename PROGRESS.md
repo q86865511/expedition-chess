@@ -4,13 +4,24 @@
 
 ## 目前狀態
 
-G2 `balance-playtest`（`codex/g2-balance-playtest`，未提交）3k screening #2 gate PASS
+G2 `balance-playtest`（`codex/g2-balance-playtest`，本地 commits、未 push/PR）3k screening #2 gate PASS
 （candidate `balance.g2.7d47fada8091`、12 分片 10.1 小時、3,000/3,000 terminal、
-150/150 replay 零 drift、economy 1,000 勝、dominance 15.8pp），Phase 0 收尾進行中。
+150/150 replay 零 drift、economy 1,000 勝、dominance 15.8pp）。Phase 0 初版實作與
+證據收尾已完成，runtime source `6b072f8`；等待兩位 fresh reviewer 與使用者確認。
 大樣本（10k/30k）依 2026-08-04 使用者裁決延後至 Phase 2 平衡收斂後執行；
 Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXTERNAL`。
 
 ## 已完成
+
+- [2026-08-04] 🧪 G2 `balance-playtest` Phase 0 證據收尾 — tier2+ 入樣兩來源一致
+  （277 selections／230 cases／13 units；tier5=0）、NUL 分隔符最小修正後 8 程序
+  24/24 replay digest 與 frozen 3k #2 完全一致。Final source `6b072f8` 的 All 為
+  9 steps、GUT 1,126 tests／22,224 assertions／0 failures/errors/orphans、NUL 0；
+  ExpeditionSoak 10,000 seeds／10,000 cases／10,000 pool checks、64 replays、40,000
+  build operations、0 failures。Windows RC 三程序 start/save/restart/load/natural terminal/
+  abandon 全通過，兩份 report codec read-back、PCK 2,988 files／禁入 0、ZIP 四檔與 SHA
+  read-back 通過。證據見 `artifacts/rc/phase0-final-evidence-summary.json`；狀態仍待雙審與
+  使用者確認，不宣稱整片完成。
 
 - [2026-08-03] ⏸️ G2 `balance-playtest` Appendix C 修正中途暫停 — 首輪 3k
   為 3000/3000 terminal、150/150 replay 零 drift，但 economy 0 勝與 build selection
@@ -162,9 +173,8 @@ Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXT
 
 ## 進行中
 
-- G2 `balance-playtest` Phase 0 收尾（`specs/balance-playtest/rewrite-plan.md` 附錄 D）：
-  tier2+ 入樣補證、Part D 證據鏈（RC 重打包、全鏈路 smoke、source manifest）、
-  NUL 修正合入、文件回寫、雙 fresh reviewer，之後 commit／PR／merge。
+- G2 `balance-playtest` Phase 0 審查交接：初版實作、證據與文件已收尾；等待兩位
+  fresh reviewer 逐條重審與使用者確認。未 push、未開 PR、未 merge。
 
 ## 待辦
 

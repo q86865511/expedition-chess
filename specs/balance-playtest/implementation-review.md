@@ -46,3 +46,33 @@ OPEN，第三切片不得 closure。
 
 `T09` 不勾選，Git gate 封鎖。必須先關閉 BP-IR-001～008，重跑所有受影響證據並再做
 兩位 fresh implementation reviewers；AC-032 仍固定 `PENDING_EXTERNAL`。
+
+## Phase 0 初版收尾紀錄（2026-08-04；非審查裁決）
+
+本段只記錄交給 fresh reviewers 的新實作與證據，不變更上方歷史 finding 狀態，亦不自行
+核可。本文件整體仍為 **NOT APPROVED / FINDINGS OPEN**；BP-IR-001～008 是否關閉由後續
+兩位獨立 fresh reviewers 逐條裁決。
+
+- Runtime source commit：`6b072f8be1be39f5ee0644e5b2d7ab4d4960756e`。
+- Source manifest：`artifacts/rc/source-manifest.json`，SHA-256
+  `345bb6c4f3c1a06b64dc346110832fb4e26792b8a5f6f75ef4922b222bd40b26`；final All、
+  ExpeditionSoak 與 RC wrappers 皆綁同一 SHA。
+- BP-IR-001／002／004／007 待審材料：frozen 3k #2 為 1,000 shared seeds × 三策略、
+  3,000/3,000 terminal、150/150 replay 零 drift、0 failure、完整 21-node production
+  composition 與 authoritative proof；artifact SHA 在收尾前後不變。24-case NUL 等價
+  另為 24/24 replay digest 完全一致。
+- BP-IR-003 待審材料：三個實際匯出 EXE 程序完成 start→save→restart/load→natural
+  RESULTS→第二 run→restart/retained-run abandon；兩份 `victory`／`abandoned` report 均經
+  `PlaytestSessionReportCodecV1.try_decode()` 讀回。見 `artifacts/rc/rc-evidence.json`。
+- BP-IR-005／006 待審材料：candidate 由 tune digest 衍生並 append-only；匯出 RC 使用
+  application 內 sealed candidate，逐一核對 content/manifest/candidate/tune identity；PCK
+  不匯出 `specs/`。匿名 session codec、hour bucket、path-like fail-closed 與三 terminal
+  outcome tests 收錄於 final All。
+- BP-IR-008 待審材料：final All 9 steps，GUT 1,126 tests／22,224 assertions／
+  0 failures/errors/orphans、NUL 0；ExpeditionSoak 10,000 seeds／10,000 cases／10,000 pool
+  checks、64 replays、40,000 build operations、0 failures；PCK 2,988 files、禁入清單 0，
+  ZIP 四個頂層檔案且 SHA read-back 通過。
+- `AC-030` 依 `rewrite-plan.md` 附錄 D 保持 `PARTIAL / DEFERRED_PHASE2`；`AC-032`
+  保持 `PENDING_EXTERNAL`。Phase 0 證據收尾完成不等同整片完成。
+
+下一步只交接兩位 fresh reviewers 與使用者確認；本輪未執行任何 reviewer、push、PR 或 merge。

@@ -86,6 +86,34 @@ func test_scanner_policy_is_shared_and_unknown_numeric_fields_fail_closed() -> v
 	assert_gt(production.entries.size(), 0)
 
 
+func test_pinned_production_candidate_matches_source_and_fails_closed() -> void:
+	var scan := BalanceTuneSourceScanner.scan()
+	assert_true(scan.ok, scan.error_detail)
+	if not scan.ok:
+		return
+	var source_entries: Array[BalanceTuneEntry] = []
+	source_entries.assign(scan.entries)
+	var source_candidate := BalanceCandidateDescriptor.new(
+		&"", "0.2.0-content-production",
+		"923c6c11fddc0d1684f1f1f0da92a0990a922aef7ef1a2a30c93a92f90a00a60",
+		BalanceCandidateDescriptor.RNG_VERSION,
+		source_entries
+	)
+	var pinned := BalanceTuneInventory._load_pinned_candidate(
+		source_candidate.manifest_digest, source_candidate.content_version
+	)
+	assert_true(pinned.is_valid())
+	assert_eq(pinned.candidate_id, source_candidate.candidate_id)
+	assert_eq(pinned.tune_digest, source_candidate.tune_digest)
+	assert_eq(pinned.tune_entries.size(), source_candidate.tune_entries.size())
+	assert_false(BalanceTuneInventory._load_pinned_candidate(
+		"f".repeat(64), source_candidate.content_version
+	).is_valid())
+	assert_false(BalanceTuneInventory._load_pinned_candidate(
+		source_candidate.manifest_digest, "wrong-content-version"
+	).is_valid())
+
+
 func test_candidate_archive_is_append_only_and_conflict_fails() -> void:
 	var candidate := BalanceCandidateDescriptor.new(
 		&"", "test", "c".repeat(64), 1,

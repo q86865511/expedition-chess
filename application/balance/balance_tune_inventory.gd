@@ -1,6 +1,14 @@
 class_name BalanceTuneInventory
 extends RefCounted
 
+const PINNED_PRODUCTION_CANDIDATE_PATH: String = (
+	"res://application/balance/production_balance_candidate.json"
+)
+const PINNED_PRODUCTION_CANDIDATE_ID: StringName = &"balance.g2.7d47fada8091"
+const PINNED_PRODUCTION_TUNE_DIGEST: String = (
+	"7d47fada8091a79a68a2c50a4d63c5d57e0752d0bac7776b30230717a6f8dea4"
+)
+
 
 static func collect() -> Array[BalanceTuneEntry]:
 	return BalanceTuneSourceScanner.collect()
@@ -10,14 +18,50 @@ static func production_candidate(
 	manifest_digest: String,
 	content_version: String
 ) -> BalanceCandidateDescriptor:
+	# Imported PCK resources do not expose their original `.tres` source text.
+	# Only the explicitly-featured provisional RC may use the sealed payload;
+	# source/test builds must continue to fail closed through the scanner.
+	if OS.has_feature("provisional_rc"):
+		return _load_pinned_candidate(manifest_digest, content_version)
 	var scan := BalanceTuneSourceScanner.scan()
 	var tune_entries: Array[BalanceTuneEntry] = []
-	if scan.ok:
+	if not scan.ok:
+		return _invalid_candidate(content_version, manifest_digest)
+	if not scan.entries.is_empty():
 		tune_entries.assign(scan.entries)
+		return BalanceCandidateDescriptor.new(
+			&"", content_version, manifest_digest,
+			BalanceCandidateDescriptor.RNG_VERSION,
+			tune_entries
+		)
+	return _invalid_candidate(content_version, manifest_digest)
+
+
+static func _load_pinned_candidate(
+	manifest_digest: String,
+	content_version: String
+) -> BalanceCandidateDescriptor:
+	if not FileAccess.file_exists(PINNED_PRODUCTION_CANDIDATE_PATH):
+		return _invalid_candidate(content_version, manifest_digest)
+	var candidate := BalanceCandidateCodecV1.new().try_decode(
+		FileAccess.get_file_as_string(PINNED_PRODUCTION_CANDIDATE_PATH)
+	)
+	if candidate == null or candidate.manifest_digest != manifest_digest \
+		or candidate.content_version != content_version \
+		or candidate.candidate_id != PINNED_PRODUCTION_CANDIDATE_ID \
+		or candidate.tune_digest != PINNED_PRODUCTION_TUNE_DIGEST:
+		return _invalid_candidate(content_version, manifest_digest)
+	return candidate
+
+
+static func _invalid_candidate(
+	content_version: String,
+	manifest_digest: String
+) -> BalanceCandidateDescriptor:
 	return BalanceCandidateDescriptor.new(
 		&"", content_version, manifest_digest,
 		BalanceCandidateDescriptor.RNG_VERSION,
-		tune_entries
+		[] as Array[BalanceTuneEntry]
 	)
 
 

@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$GodotPath,
     [string]$CandidatePath = 'specs\balance-playtest\candidates\balance.g2.7d47fada8091.json',
+    [string]$PinnedProductionCandidatePath = 'application\balance\production_balance_candidate.json',
     [string]$FrozenScreeningPath = 'artifacts\test\balance-playtest-screening.json',
     [string]$Tier2EvidencePath = 'artifacts\test\balance-phase0-tier2plus-evidence.json',
     [Parameter(Mandatory = $true)]
@@ -239,10 +240,12 @@ $gitCommit = [string](Invoke-Git @('rev-parse', '--verify', 'HEAD') | Select-Obj
 if ($gitCommit -notmatch '^[0-9a-f]{40}$') { throw 'git HEAD is not a full commit SHA.' }
 
 $candidateFile = Resolve-RepoFile $CandidatePath 'CandidatePath'
+$pinnedCandidateFile = Resolve-RepoFile $PinnedProductionCandidatePath 'PinnedProductionCandidatePath'
 $screeningFile = Resolve-RepoFile $FrozenScreeningPath 'FrozenScreeningPath'
 $tier2File = Resolve-RepoFile $Tier2EvidencePath 'Tier2EvidencePath'
 $nulFile = Resolve-RepoFile $NulEvidencePath 'NulEvidencePath'
 $candidate = Read-Json $candidateFile 'candidate'
+$pinnedCandidate = Read-Json $pinnedCandidateFile 'pinned production candidate'
 $screening = Read-Json $screeningFile 'frozen 3k screening'
 $tier2 = Read-Json $tier2File 'tier2 evidence'
 $nulEvidence = Read-Json $nulFile 'NUL equivalence evidence'
@@ -257,6 +260,13 @@ if ([string]$candidate.candidate_id -ne [string]$screening.candidate_id -or
 }
 if ([string]$screening.manifest_digest -notmatch '^[0-9a-f]{64}$') {
     throw 'Frozen screening canonical manifest digest is invalid.'
+}
+if ([string]$pinnedCandidate.candidate_id -ne [string]$screening.candidate_id -or
+    [string]$pinnedCandidate.content_version -ne [string]$screening.content_version -or
+    [string]$pinnedCandidate.manifest_digest -ne [string]$screening.manifest_digest -or
+    [string]$pinnedCandidate.tune_digest -ne [string]$screening.tune_digest -or
+    @($pinnedCandidate.tune_entries).Count -lt 1) {
+    throw 'Pinned production candidate does not match the frozen screening identity.'
 }
 if ([string]$tier2.candidate_id -ne [string]$candidate.candidate_id -or
     [string]$tier2.source_sha256 -ne $screeningSha256 -or
@@ -285,6 +295,11 @@ $sourceManifest = [ordered]@{
     tune_digest = [string]$candidate.tune_digest
     candidate_id = [string]$candidate.candidate_id
     canonical_manifest_digest = [string]$screening.manifest_digest
+    pinned_production_candidate = [ordered]@{
+        path = $PinnedProductionCandidatePath.Replace('\', '/')
+        sha256 = Get-Sha256 $pinnedCandidateFile
+        manifest_digest = [string]$pinnedCandidate.manifest_digest
+    }
     frozen_source_digest = [string]$screening.source_freeze_digest
     godot_version = $godotVersion
     godot_executable_sha256 = $godotSha256
@@ -462,6 +477,12 @@ foreach ($phase in @('start-save', 'restart-terminal', 'restart-abandon-verify')
             @($inventory.forbidden_entries).Count -ne 0) {
             throw "Runtime-mounted PCK inventory contains forbidden entries: $(@($inventory.forbidden_entries) -join ', ')"
         }
+        $pinnedInventoryEntries = @($inventory.entries | Where-Object {
+            [string]$_.logical_res_path -eq 'res://application/balance/production_balance_candidate.json'
+        })
+        if ($pinnedInventoryEntries.Count -ne 1) {
+            throw "Runtime-mounted PCK inventory must contain exactly one pinned production candidate; found $($pinnedInventoryEntries.Count)."
+        }
     }
 }
 if ([string]::IsNullOrWhiteSpace($inventoryHash)) { throw 'Runtime-mounted PCK inventory was not sealed.' }
@@ -469,9 +490,14 @@ Assert-SourceIdentity -ExpectedCommit $gitCommit
 $reports = @(Get-ChildItem -LiteralPath $smokeProfile -Recurse -File -Filter 'session-*.json' |
     Where-Object { $_.DirectoryName.Replace('\', '/').EndsWith('/playtest_reports') })
 if ($reports.Count -ne 2) { throw "RC smoke must produce exactly two playtest reports; found $($reports.Count)." }
+$reportSampleRoot = Join-Path $allowedRoot 'report-samples'
+if (Test-Path -LiteralPath $reportSampleRoot) { Remove-Item -LiteralPath $reportSampleRoot -Recurse -Force }
+New-Item -ItemType Directory -Force -Path $reportSampleRoot | Out-Null
 $reportEvidence = @($reports | Sort-Object Name | ForEach-Object {
     $null = Read-Json $_.FullName 'RC smoke playtest report'
-    [ordered]@{ file = $_.Name; sha256 = Get-Sha256 $_.FullName }
+    $samplePath = Join-Path $reportSampleRoot $_.Name
+    $sampleHash = Copy-SealedArtifact $_.FullName $samplePath
+    [ordered]@{ file = "report-samples/$($_.Name)"; sha256 = $sampleHash }
 })
 $rcWrapperPath = Join-Path $allowedRoot 'rc-evidence.json'
 Write-JsonAtomic ([ordered]@{

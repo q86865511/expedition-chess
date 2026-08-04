@@ -81,6 +81,11 @@ func _start_save(root: ApplicationRoot) -> Dictionary:
 	var started := root.start_expedition(StartExpeditionRequest.new(commander_id, 0))
 	if started == null or not started.ok:
 		return _failure(_app_error(started, &"RC_SMOKE_START_FAILED"))
+	if not _playtest_candidate_is_valid(root):
+		return _failure_with(
+			&"RC_SMOKE_BALANCE_CANDIDATE_INVALID",
+			_candidate_failure_details(root)
+		)
 	var session_result := root.current_run_presentation()
 	if session_result == null or not session_result.ok or session_result.session == null:
 		return _failure(&"RC_SMOKE_SESSION_UNAVAILABLE")
@@ -120,6 +125,11 @@ func _restart_terminal(root: ApplicationRoot) -> Dictionary:
 	var continued := root.continue_active_run()
 	if continued == null or not continued.ok:
 		return _failure(_app_error(continued, &"RC_SMOKE_CONTINUE_FAILED"))
+	if not _playtest_candidate_is_valid(root):
+		return _failure_with(
+			&"RC_SMOKE_BALANCE_CANDIDATE_INVALID",
+			_candidate_failure_details(root)
+		)
 	var session_result := root.current_run_presentation()
 	if session_result == null or not session_result.ok or session_result.session == null:
 		return _failure(&"RC_SMOKE_SESSION_UNAVAILABLE")
@@ -132,6 +142,8 @@ func _restart_terminal(root: ApplicationRoot) -> Dictionary:
 	var settled := root.settle_active_run()
 	if settled == null or not settled.ok:
 		return _failure(_app_error(settled, &"RC_SMOKE_SETTLEMENT_FAILED"))
+	if not root._playtest_session_id.is_empty():
+		return _failure(&"RC_SMOKE_PLAYTEST_REPORT_WRITE_SKIPPED")
 	var report_result := _read_reports()
 	if not bool(report_result.get("ok", false)):
 		return _failure(StringName(report_result.get("error", "RC_SMOKE_REPORT_READ_FAILED")))
@@ -295,6 +307,39 @@ func _helper(root: ApplicationRoot) -> BalanceProductionCaseDriver:
 	var content := root._try_content()
 	return BalanceProductionCaseDriver.new(content, Callable()) \
 		if content != null and content.ok else null
+
+
+func _playtest_candidate_is_valid(root: ApplicationRoot) -> bool:
+	return root != null and root._playtest_candidate != null \
+		and root._playtest_candidate.is_valid() \
+		and root._playtest_candidate.candidate_id \
+		== BalanceTuneInventory.PINNED_PRODUCTION_CANDIDATE_ID \
+		and root._playtest_candidate.tune_digest \
+		== BalanceTuneInventory.PINNED_PRODUCTION_TUNE_DIGEST
+
+
+func _candidate_failure_details(root: ApplicationRoot) -> Dictionary:
+	var candidate := root._playtest_candidate if root != null else null
+	var pinned_text := FileAccess.get_file_as_string(
+		BalanceTuneInventory.PINNED_PRODUCTION_CANDIDATE_PATH
+	)
+	var pinned := BalanceCandidateCodecV1.new().try_decode(pinned_text)
+	var scan := BalanceTuneSourceScanner.scan()
+	return {
+		"candidate_id": String(candidate.candidate_id) if candidate != null else "",
+		"candidate_manifest_digest": candidate.manifest_digest if candidate != null else "",
+		"candidate_tune_digest": candidate.tune_digest if candidate != null else "",
+		"candidate_tune_entry_count": candidate.tune_entries.size() if candidate != null else 0,
+		"candidate_content_version": candidate.content_version if candidate != null else "",
+		"pinned_file_exists": FileAccess.file_exists(
+			BalanceTuneInventory.PINNED_PRODUCTION_CANDIDATE_PATH
+		),
+		"pinned_text_length": pinned_text.length(),
+		"pinned_decoded_valid": pinned != null and pinned.is_valid(),
+		"pinned_manifest_digest": pinned.manifest_digest if pinned != null else "",
+		"scan_ok": scan.ok,
+		"scan_tune_entry_count": scan.entries.size(),
+	}
 
 
 func _menu_run_matches(root: ApplicationRoot, expected_run_id: StringName) -> bool:

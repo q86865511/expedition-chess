@@ -142,7 +142,8 @@ func _expected_field_kinds(type_id: int) -> PackedInt32Array:
 	var C := ContentValue.Kind.SET
 	if type_id == ContentCategory.COMBAT_CONFIG:
 		var result := PackedInt32Array([S, C, C])
-		for _index: int in range(26):
+		# 26 個既有純量 + DC-REQ-001 的三個 per-act 敵方成長乘數。
+		for _index: int in range(29):
 			result.append(U)
 		return result
 	if type_id == 0x2007:

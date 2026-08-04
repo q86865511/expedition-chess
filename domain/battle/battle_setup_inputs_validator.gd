@@ -352,6 +352,14 @@ func _validate_rules(
 		or rules.overtime_cap_bps < rules.overtime_step_bps \
 		or rules.overtime_cap_bps > 10000:
 		return BattleInputValidationResult.failure(INPUT_INVALID, &"battle_rules.overtime")
+	# spec §5.13：act1 的敵方成長乘數是恆等固定規則；act2／act3 為 TUNE，值域沿用
+	# EncounterCompiler 對縮放乘數的既有上下界。
+	if rules.act1_enemy_stat_bps != 10000 \
+		or rules.act2_enemy_stat_bps < 1 or rules.act2_enemy_stat_bps > 100000 \
+		or rules.act3_enemy_stat_bps < 1 or rules.act3_enemy_stat_bps > 100000:
+		return BattleInputValidationResult.failure(
+			INPUT_INVALID, &"battle_rules.act_enemy_stat_bps"
+		)
 	if rules.act_index < 1 or rules.act_index > 3 \
 		or rules.encounter_kind not in [&"normal", &"elite", &"boss"]:
 		return BattleInputValidationResult.failure(INPUT_INVALID, &"battle_rules.encounter")

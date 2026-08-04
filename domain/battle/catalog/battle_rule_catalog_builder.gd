@@ -275,7 +275,7 @@ func _decode_relic(view: ContentDefinitionView) -> BattleRelicRule:
 	return result
 
 func _decode_config(view: ContentDefinitionView) -> BattleCombatConfigRule:
-	if not _payload_is(view, ContentCategory.COMBAT_CONFIG, 29): return null
+	if not _payload_is(view, ContentCategory.COMBAT_CONFIG, 32): return null
 	var result := BattleCombatConfigRule.new()
 	result.config_id = view.content_id
 	var properties := BattleCombatConfigRule._integer_properties()

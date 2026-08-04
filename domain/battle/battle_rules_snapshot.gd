@@ -30,6 +30,9 @@ var effect_resolution_budget: int = 4096
 var operation_budget: int = 8192
 var event_budget: int = 16384
 var entity_budget: int = 64
+var act1_enemy_stat_bps: int = 10000
+var act2_enemy_stat_bps: int = 13000
+var act3_enemy_stat_bps: int = 16000
 var act_index: int = 1
 var encounter_kind: StringName = &"normal"
 var ability_rules: Array[BattleAbilityRuleSnapshot] = []
@@ -67,6 +70,9 @@ func deep_clone() -> BattleRulesSnapshot:
 	copied.operation_budget = operation_budget
 	copied.event_budget = event_budget
 	copied.entity_budget = entity_budget
+	copied.act1_enemy_stat_bps = act1_enemy_stat_bps
+	copied.act2_enemy_stat_bps = act2_enemy_stat_bps
+	copied.act3_enemy_stat_bps = act3_enemy_stat_bps
 	copied.act_index = act_index
 	copied.encounter_kind = encounter_kind
 	for rule: BattleAbilityRuleSnapshot in ability_rules:

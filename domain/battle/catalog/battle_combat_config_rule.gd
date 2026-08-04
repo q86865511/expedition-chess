@@ -28,6 +28,9 @@ var effect_resolution_budget: int
 var operation_budget: int
 var event_budget: int
 var entity_budget: int
+var act1_enemy_stat_bps: int
+var act2_enemy_stat_bps: int
+var act3_enemy_stat_bps: int
 
 func deep_clone() -> BattleCombatConfigRule:
 	var copied := BattleCombatConfigRule.new()
@@ -45,4 +48,5 @@ static func _integer_properties() -> Array[StringName]:
 		&"overtime_step_bps", &"overtime_cap_bps", &"act1_base_damage", &"act2_base_damage",
 		&"act3_base_damage", &"survivor_damage", &"boss_damage", &"effect_resolution_budget",
 		&"operation_budget", &"event_budget", &"entity_budget",
+		&"act1_enemy_stat_bps", &"act2_enemy_stat_bps", &"act3_enemy_stat_bps",
 	]

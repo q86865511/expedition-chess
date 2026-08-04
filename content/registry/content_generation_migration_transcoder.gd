@@ -144,7 +144,7 @@ func _decode_combat_config(bytes: PackedByteArray) -> ContentEntryValue:
 
 func _combat_config_values_valid(payload: ContentValue) -> bool:
 	if payload == null or payload.record_type != ContentCategory.COMBAT_CONFIG \
-		or payload.children.size() != 29:
+		or payload.children.size() != 32:
 		return false
 	var values: Array[int] = []
 	for index: int in range(3, payload.children.size()):
@@ -168,7 +168,10 @@ func _combat_config_values_valid(payload: ContentValue) -> bool:
 		and values[22] >= 64 and values[22] <= 65535 \
 		and values[23] >= values[22] and values[23] <= 65535 \
 		and values[24] >= 64 and values[24] <= 65535 \
-		and values[25] >= 64 and values[25] <= 1024
+		and values[25] >= 64 and values[25] <= 1024 \
+		and values[26] == 10000 \
+		and values[27] >= 1 and values[27] <= 100000 \
+		and values[28] >= 1 and values[28] <= 100000
 
 func _validate_boss_mapping(
 	source: ContentCatalogSnapshot,

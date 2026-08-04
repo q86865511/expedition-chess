@@ -1,6 +1,15 @@
 class_name NodeEntryService
 extends RefCounted
 
+## DC-REQ-002：Boss 節點的 encounter 由 node.act_index 決定性查此固定表覆寫，
+## 不依賴字串拼接;map node schema／generator_ref 內容不因此改變（design.md
+## 「Boss 映射」段）。表外的 act 一律 fail-closed，不 fallback 回 slice_boss_0。
+const BOSS_ENCOUNTER_ID_BY_ACT: Dictionary = {
+	1: &"encounter.slice_boss_0",
+	2: &"encounter.slice_boss_1",
+	3: &"encounter.slice_boss_2",
+}
+
 var _income_service: IncomeService
 var _shop_service: ShopService
 
@@ -56,6 +65,13 @@ func enter(
 		var compile_request := EncounterCompileRequest.new()
 		compile_request.manifest_digest = catalog.manifest_digest_value()
 		compile_request.encounter_id = node_rule.generator_id
+		if node.node_kind == MapNodeState.NodeKind.BOSS:
+			if not BOSS_ENCOUNTER_ID_BY_ACT.has(node.act_index):
+				return NodeEntryResult.failure(
+					NodeEntryError.ENCOUNTER_COMPILE_FAILED,
+					&"map_node.act_index"
+				)
+			compile_request.encounter_id = BOSS_ENCOUNTER_ID_BY_ACT[node.act_index]
 		compile_request.node_id = StringName(node.node_id)
 		compile_request.act_index = node.act_index
 		compile_request.depth = node.layer_index

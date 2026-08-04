@@ -99,7 +99,16 @@ func _catalog(
 	var abilities: Array[BattleAbilityRule] = []
 	var encounters: Array[BattleEncounterRule] = [encounter]
 	var equipment: Array[BattleEquipmentRule] = []
-	var configs: Array[BattleCombatConfigRule] = []
+	# DC-REQ-001：EncounterCompiler 現在必須拿到 pinned combat config 才能取幕乘數。
+	var configs: Array[BattleCombatConfigRule] = [_combat_config()]
 	return BattleRuleCatalog.new(
 		DIGEST, units, traits, abilities, effects, encounters, equipment, configs
 	)
+
+func _combat_config() -> BattleCombatConfigRule:
+	var config := BattleCombatConfigRule.new()
+	config.config_id = &"config.combat_default"
+	var defaults := CombatConfigDef.new()
+	for property: StringName in BattleCombatConfigRule._integer_properties():
+		config.set(property, defaults.get(property))
+	return config

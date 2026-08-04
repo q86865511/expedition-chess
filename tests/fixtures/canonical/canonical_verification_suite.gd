@@ -329,6 +329,9 @@ func _run_battle_codec() -> void:
 			_expect(extended_decoded.inputs.content_version == extended.content_version, "canonical JSON string escaping changed value")
 			_expect(codec.encode(extended_decoded.inputs).canonical_bytes == extended_encoded.canonical_bytes, "non-empty nested DTO round-trip changed bytes")
 
+## DC-REQ-001 重算：battle setup hash 因 BattleRulesSnapshot 新增三個 per-act
+## 敵方成長乘數而變動，summary_hash／result_hash 同批重算；
+## event stream golden 不含 setup hash，維持原值。
 func _run_battle_result() -> void:
 	_begin_case("BattleResultV1")
 	var inputs := BattleSimulationFixture.create_inputs()
@@ -368,11 +371,11 @@ func _run_battle_result() -> void:
 	_expect(result.outcome == &"player_loss", "double death was not player loss")
 	_expect(result.final_tick == 1, "simultaneous-death final tick drifted")
 	_expect(
-		String(result.summary_hash) == "6248075fcbe65a43cda15b2cd4efe0ee241a89f50c830d337d9871c8adc9bb6e",
+		String(result.summary_hash) == "52d67c1d5e17f8891bd4715a33c46ee2582a60e2e93003c43481580a2f758a25",
 		"summary golden mismatch: %s" % String(result.summary_hash)
 	)
 	_expect(
-		String(result.result_hash) == "03d9decb4aa4e26f66fd6f92a1c4464c00e82bc621082c4176ed0f4c64838788",
+		String(result.result_hash) == "34db310eea930df986de8bca9746697b9029ade22cb46e421f25f1693cbd5586",
 		"result golden mismatch: %s" % String(result.result_hash)
 	)
 	var framed := BattleEventStreamHasher.new().framed_bytes(events)

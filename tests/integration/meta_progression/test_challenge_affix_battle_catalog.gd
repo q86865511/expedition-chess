@@ -6,10 +6,8 @@ extends GutTest
 ## T07 既有的軌 A 測試都用手工組出的 BattleRuleCatalog（test_challenge_affix_end_to_end.gd:285
 ## 的 _battle_catalog、test_encounter_compiler_challenge_affixes.gd:143 的 _catalog）繞過真實
 ## builder，因此兩個缺口沒有任何測試釘住：
-## 1. F1：builder 的 run-op 解碼白名單缺 shop_discount／shop_surcharge／drain_expedition_hp
-##    （battle_rule_catalog_builder.gd:_decode_run_operation）。design §6.3 明文允許同一效果同時
-##    帶 battle_operations 與 run_operations；這種雙軌詞綴因軌 A 必須進 catalog，其 run_operations
-##    會被一併解碼 → 整份 BattleRuleCatalog 回 PAYLOAD_INVALID，該遠征所有戰鬥節點都進不去。
+## 1. F1：global source lifecycle 已裁決 challenge affix 不得同時攜帶 battle/run operations；
+##    舊雙軌 fixture 必須在 content boundary fail-closed，而不是要求 battle catalog 解碼 run track。
 ## 2. F2：可達性走訪不含 unlock 分支，challenge 詞綴 effect 進不了 required_ids →
 ##    EncounterCompiler._compile_affixes 回 ENCOUNTER_RULE_MISSING。
 ##
@@ -24,37 +22,17 @@ const RUN_ONLY_AFFIX_UNLOCK_ID: StringName = &"unlock.slice_challenge_4"
 const ENCOUNTER_ID: StringName = &"encounter.normal"
 const NODE_ID: StringName = &"node_fixture_0000000000000000000000000000000000000000000000000000"
 
-func test_dual_track_challenge_affix_effect_does_not_fail_catalog_build() -> void:
-	# F1 的失敗情境：軌 A 詞綴同時著作軌 B 的 run intent（§6.3「兩軌非互斥」）。
+func test_dual_track_challenge_affix_is_rejected_at_content_boundary() -> void:
+	# BP-SI-001：challenge effect 的來源生命週期只能有一條；雙軌內容不得進 registry。
 	var registry := _registry()
 	var installed := registry.install_validated(
 		_fixture_with_dual_track_affix(), "fixture.dual_track_affix.1", [&"pack.core"]
 	)
-	assert_true(installed.ok, "雙軌詞綴內容本身必須通過驗證")
-	if not installed.ok:
-		return
-	var required: Array[StringName] = [BATTLE_AFFIX_ID]
-	var built := BattleRuleCatalogBuilder.new().build(
-		registry, installed.handle.manifest_digest, required
-	)
-	assert_true(
-		built.ok,
-		"同時帶 battle_operations 與 shop_discount/shop_surcharge/drain_expedition_hp 的雙軌詞綴不得讓整份 catalog 建置失敗: %s" % _build_error_text(built)
-	)
-	if not built.ok:
-		return
-	var effect_rule: BattleEffectRule = built.catalog.try_effect_rule(BATTLE_AFFIX_ID)
-	assert_not_null(effect_rule, "雙軌詞綴的軌 A 部分仍必須進 catalog")
-	if effect_rule == null:
-		return
-	assert_eq(effect_rule.battle_operations.size(), 1, "軌 A 的 battle operation 必須保留")
-	var kinds: Array[StringName] = []
-	for operation: BattleRunOperationRule in effect_rule.run_operations:
-		kinds.append(operation.kind)
+	assert_false(installed.ok, "雙軌 challenge affix 必須在 content boundary 被拒絕")
 	assert_eq(
-		kinds,
-		[&"shop_discount", &"shop_surcharge", &"drain_expedition_hp"] as Array[StringName],
-		"三個 scalar run op record type 都必須解得出來（battle 層不消費，但必須能解碼）"
+		installed.error.code if not installed.ok else &"",
+		&"CONTENT_EFFECT_SOURCE_LIFECYCLE",
+		"不得把 challenge run_operations 帶進 battle catalog 後才處理"
 	)
 
 func test_challenge_unlock_pins_track_a_affix_effect_into_catalog() -> void:
@@ -162,9 +140,8 @@ func _fixture_with_slice_challenge_chain() -> ContentValidationInput:
 		unlock.prerequisite_refs = [StringName("unlock.slice_challenge_%d" % (level - 1))]
 	return fixture
 
-## effect.challenge_affix_0 已是 challenge 1 的軌 A 詞綴（ModifyStat）；就地補上三種 scalar
-## run intent 使其成為 §6.3 的雙軌詞綴。amount≥0＋claim_scope=always 滿足 content_validator
-## 對 battle_effect 來源 run_operations 的既有約束。
+## Negative fixture：effect.challenge_affix_0 已是 battle affix；就地補上 run intents，
+## 明確證明 global source lifecycle 會在 content boundary 拒絕雙軌 challenge effect。
 func _fixture_with_dual_track_affix() -> ContentValidationInput:
 	var fixture := _fixture_with_slice_challenge_chain()
 	var effect := _find(fixture, BATTLE_AFFIX_ID) as EffectDef

@@ -45,3 +45,4 @@
 - `artifacts/test/expedition-soak.json`：10,000 seeds，PASS。
 - `artifacts/test/runner-execution.json`：fresh All Gate（待最終保存，避免被單 suite wrapper 覆寫）。
 - `artifacts/rc/ExpeditionChess-g2-rc1-win64.zip(.sha256)`：fresh-profile offline boot PASS；互動式開始／存讀／完成或放棄／report smoke 尚未執行。
+- `artifacts/test/balance-phase0-tier2plus-evidence.json`：frozen 3k #2 的兩來源統計一致，tier2+ 確實入樣（277 selections／230 cases／13 units）；tier5 為 0 selections，不宣稱每一個高階 tier 均已入樣。

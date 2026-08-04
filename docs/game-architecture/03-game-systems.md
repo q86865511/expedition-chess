@@ -313,12 +313,16 @@ Action內事件順序亦固定：cast start為mana reset→cast(start)；attack�
 - 專屬怪物使用同一套 `AbilityDef`、`EffectDef` 與戰鬥事件契約，但不進入玩家商店。
 - 菁英詞綴只透過資料修改既有遭遇，不複製整份敵人定義。
 - Boss 可有階段轉換，但每個階段、觸發門檻及特殊規則都在敵情預覽中顯示。
-- 遭遇強度由幕、節點深度、挑戰階級及遭遇模板決定，不以玩家當前陣容即時作弊式剋制。
+- 遭遇強度由幕、節點深度、挑戰階級及遭遇模板決定，不以玩家當前陣容即時作弊式剋制。三個決定方式都必須可機械驗證：
+  - **幕**：`CombatConfigDef` 為每一幕宣告一組敵方成長乘數（基點，`TUNE`），只作用於 `health`、`attack`、`armor` 與 `magic_resist`，第一幕固定為恆等的 10000。攻速、移速、射程與法力屬節奏與可達性語意，不受幕乘數影響。Encounter compiler 在既有星級縮放之後再套用一次幕乘數，並對最終值套用既有 i32 與值域守衛。
+  - **Boss**：每一幕有各自的 Boss encounter，由節點的 `act_index` 決定性映射；映射表在規格中固定，不由亂數或玩家狀態決定，缺對應 encounter 時必須具名失敗而不是退回其他幕的 Boss。
+  - **節點深度與挑戰階級**：沿用既有 encounter 模板與挑戰詞綴，不因本節新增的幕縮放而改變語意。
 
 Encounter compiler 只接受 manifest digest、已選定 encounter ID、node ID、幕／深度／挑戰，不接受玩家 build 或 RNG snapshot。任何模板隨機分支都由 MapService 使用既有 `map` stream 先選定並提交 chosen spawn keys；compiler 不建立額外 stream，也不在備戰時重抽。
 
 - **[REQ-ENEMY-001]** 遭遇生成不得讀取玩家具體羈絆或裝備後動態替換成針對性剋制敵隊。
 - **[REQ-ENEMY-002]** 玩家預覽與實戰必須引用同一份 EncounterDef、UnitDef、TraitDef 與 AbilityDef。
+- **[REQ-ENEMY-003]** 三幕的 Boss 必須是互異的 encounter，且由 `act_index` 決定性映射；敵方 `health`、`attack`、`armor`、`magic_resist` 必須依所在幕的成長乘數縮放，第一幕為恆等。幕映射與幕縮放都不得新增或消耗亂數流，也不得讀取玩家 build。
 
 ---
 

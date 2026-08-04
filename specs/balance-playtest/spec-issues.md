@@ -5,7 +5,13 @@
 > Phase 對應（2026-08-04 使用者裁決，見 `specs/g2-roadmap.md` §9）：各議題的解除
 > 排入 Phase 1 `difficulty-curve` 機制切片；逐條標註於下。
 
-## BP-SI-001 — Challenge run operation 與 global source lifecycle 衝突
+## BP-SI-001 — Challenge run operation 與 global source lifecycle 衝突（RESOLVED，2026-08-04）
+
+- 解除：`specs/difficulty-curve/`（DC-REQ-006／T06）回復 ContentValidator 三桶 gate，
+  `slice_challenge_affix_01/03` 回到 challenge unlock 的 `modifier_refs`；作用域釐清已寫回
+  `specs/combat-core/design.md`（禁令只適用進入 `BattleSetup` 的 `EffectSourceState`，
+  純 run_operations 詞綴由 `RunModifierTable` 軌 B always-active 消費）。以下保留原始紀錄。
+
 
 - 現況：既有 challenge 鏈要求覆蓋 `ShopSurchargeOperationDef` 與
   `DrainExpeditionHpOperationDef`，但 `combat-core/design.md` §7.2/§236 禁止 challenge
@@ -27,6 +33,8 @@
 - 本輪裁決：該 effect 保留為未連線內容並移出 challenge 鏈，不修改 EffectResolver。
 - 後續方向：另立規格決定 encounter materialization、合法 target 與 deterministic ordering。
 - Phase 對應：Phase 1（`difficulty-curve`）。
+- 狀態更新（2026-08-04）：續 OPEN。`specs/difficulty-curve/requirements.md`「範圍」已明列
+  本議題不在該片範圍內；`slice_challenge_affix_02` 維持停用。
 
 ## BP-SI-003 — `reachable_nodes()` 是拓撲可達，不是當前 frontier
 
@@ -45,6 +53,7 @@
 - 缺口：這不是單一 TUNE 值能修復；需要定義跨幕 encounter 選擇、敵方編成與成長規則。
 - 本輪裁決：不修改 `domain/run/` 或 `domain/battle/`；保留首輪與重跑逐幕快照作為後續規格輸入。
 - Phase 對應：Phase 1（`difficulty-curve`）核心項。
+- 解除中：`specs/difficulty-curve/`（DC-REQ-001／002／003，T01～T03）。
 
 ## BP-SI-005 — Trait 門檻沒有階梯效果
 
@@ -53,6 +62,7 @@
 - 缺口：需要新增分段 effect 內容並明確定義各門檻的替換或疊加語意。
 - 本輪裁決：只記錄，不以 driver 或臨時倍數模擬階梯效果。
 - Phase 對應：Phase 1（`difficulty-curve`）。
+- 解除中：`specs/difficulty-curve/`（DC-REQ-004，T04）。
 
 ## BP-SI-006 — Balance runner 的逐幕與 stable ID 可觀測性
 
@@ -62,6 +72,10 @@
   content stable ID；opaque ID 數量另行 fail-visible 呈現。這只擴充證據，不改正式規則。
 - 後續方向：若正式 telemetry 需要同類資料，另訂隱私與 schema 版本，不直接重用本地 runner。
 - Phase 對應：Phase 1 前置，可隨 Phase 0 順做（僅擴充 runner 證據欄位）。
+- 範圍切分（2026-08-04）：(i) 逐幕快照補 per-act battle win/loss 與死亡節點 ID、
+  (ii) 獎勵／購買選取記正式 content stable ID（opaque 計數 fail-visible）於
+  `specs/difficulty-curve/`（DC-REQ-007，T07）完成；(iii) 動作分佈細分與
+  (iv) 正式 telemetry schema 為選配，本切片不做。
 
 ## BP-SI-007 — 同一 process 內的執行歷史影響 case 勝負（已實證並修復，2026-08-04）
 

@@ -59,3 +59,13 @@
   SHA-256 `004441c15163b8d99bbc1f180adb0df6b42c2b62b111c6e7898cd8c9f8eadd87`。
 - 總摘要：`artifacts/rc/phase0-final-evidence-summary.json`。Phase 0 證據收尾完成，
   但切片仍為 `NOT APPROVED / FINDINGS OPEN`，等待兩位 fresh reviewer 與使用者確認。
+- **證據鎖定**：3k screening #2 的關鍵證據 SHA-256、gate 摘要與已知限制（dirty 工作樹、
+  本機限定產物、Phase 2 重建計畫）已鎖定於 `specs/balance-playtest/evidence-lock.md`
+  （回應 Phase 0 雙審 F04／B-01）。
+- **時序揭露（2026-08-04 追記）**：本節以上的 final All（1,126 tests）、soak、RC ZIP
+  與 `artifacts/rc/` 各 wrapper 產生於 commit `6b072f8`，**早於**雙審 findings 全量修復
+  與 BP-SI-007 排序修正（後者會改變同 seed 戰局，見 evidence-lock 限制第 5 點）。
+  修復後的 fresh 驗證為：All 1,155 tests／22,449 assertions／0 failures、
+  10k ExpeditionSoak 10,000/10,000 passed（`artifacts/test/gut.xml`、
+  `artifacts/test/expedition-soak.json`）。RC ZIP 維持凍結身分供收集工具驗證；
+  下一次 RC 重打包依 roadmap 排程（Phase 2 大樣本階段或外部發放前）。

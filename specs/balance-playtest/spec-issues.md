@@ -62,3 +62,25 @@
   content stable ID；opaque ID 數量另行 fail-visible 呈現。這只擴充證據，不改正式規則。
 - 後續方向：若正式 telemetry 需要同類資料，另訂隱私與 schema 版本，不直接重用本地 runner。
 - Phase 對應：Phase 1 前置，可隨 Phase 0 順做（僅擴充 runner 證據欄位）。
+
+## BP-SI-007 — 同一 process 內的執行歷史影響 case 勝負（已實證並修復，2026-08-04）
+
+- 現象：`(tempo, seed 48)` 單獨執行為 7 節點 HP 0 敗局；同一份程式碼在全套 GUT
+  同 process 內執行則走完 21 節點 HP 72 勝局（driver／domain／content 雜湊相同）。
+- **根因（已實證）**：`Array[StringName].sort()` 依 interned 指標位址排序而非字典序
+  （獨立 Godot 腳本以兩種 intern 順序得出兩種皆非字典序的結果）。8 個 RNG 池餵入端
+  （unit 池、map node 池、reward table、node choice、三星合成 ×2、鍛造表、遺物表）
+  使用裸 `sort()`，process 歷史因此成為隱形亂源。
+- **修復（使用者授權 domain 修改）**：新增共用 `StableNameSort`
+  （`domain/common/stable_name_sort.gd`，`String` 字典序比較），上述 8 處＋
+  1 處 presentation 顯示排序（`run_presentation_session.gd`）改用之；全庫其餘裸
+  `sort()` 逐一查證為 `Array[String]`/`Array[int]`（本即字典序）不需修；驗序端
+  （run_state_validator、battle 各 validator）原本就用 String 比較，無寫入/驗證分歧。
+  回歸測試：`tests/unit/common/test_stable_name_sort.gd`、
+  `tests/unit/economy_expediton/test_economy_catalog_builder_sort_order.gd`（含變異驗證）。
+- **影響揭露**：修復屬「指標序→字典序」一次性遷移，同 seed 的地圖／商店／戰局結果
+  自此與修復前不同；3k screening #2 以凍結快照身分保留（見 evidence-lock.md），
+  **不得作為修復後版本的回歸對照組**；Phase 2 於乾淨 HEAD 重建平衡基線。
+- 邊界釐清（歷史證據有效性）：3k sharded runner 的 per-process case 順序由分片規則
+  固定、in-run replay 同 process 執行，故其「150/150 零 drift」與 NUL 等價證據在其
+  凍結版本內仍成立。

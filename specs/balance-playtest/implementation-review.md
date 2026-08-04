@@ -76,3 +76,52 @@ OPEN，第三切片不得 closure。
   保持 `PENDING_EXTERNAL`。Phase 0 證據收尾完成不等同整片完成。
 
 下一步只交接兩位 fresh reviewers 與使用者確認；本輪未執行任何 reviewer、push、PR 或 merge。
+
+## Phase 0 收尾雙審結果與修復（2026-08-04）
+
+上一節交接的兩位獨立 fresh reviewer（A／B）已完成收尾審查，原文見
+`.pipeline/balance-playtest/reviews/phase0-final-review-A.md`、
+`.pipeline/balance-playtest/reviews/phase0-final-review-B.md`。**兩份皆 NOT APPROVED**：
+
+- Reviewer A：F01（高，1 條）＋F02～F10（中／低，9 條），共 10 條。阻擋項為 F01
+  （driver 整合測試缺席）、F02／F03（sealed candidate 靜默失效模式）、F04／F05
+  （frozen 3k 產自 dirty 工作樹、tasks.md 未依附錄 D 回寫）。
+- Reviewer B：B-01～B-10，共 10 條。Verdict 列 B-01（gate 證據不入版控無法覆核）、
+  B-03（localization `.raw` 無守門）、B-05（BP-IR-007 未以可重跑測試關閉）需裁決或補件；
+  B-02／B-04（行為缺口）另列為需修正。
+
+使用者裁決：**全修＋證據採「鎖定檔＋記錄限制」方案**（不重跑 3k screening 或 RC，
+以 SHA-256 鎖定現有證據並明列限制，取代「必須可由 commit 重算」的原始假設）。
+本輪已修復的項目：
+
+- **B-04**（final gate 繞過）：`tools/run-tests.ps1` 的 `--final` 觸發條件由
+  `$SeedCount -eq 10000` 改為 `$SeedCount -ge 10000`，避免 Phase 2 大樣本執行在未達成
+  `FINAL_CASE_COUNT` 時被 screening gate 靜默判定 PASS。
+- **B-03**（localization `.raw` 無守門）：`tools/content-production/export-localization-catalog.gd`
+  改為同步寫出 `.csv` 與 `.csv.raw`（byte-identical），並新增
+  `tests/unit/presentation_ui_content/test_localization_catalog_raw_parity.gd` 以
+  SHA-256 相等斷言鎖住兩檔同步。
+- **F05／B-10**（tasks.md／CLAUDE.md 回寫）：`specs/balance-playtest/tasks.md` 補齊
+  T03／T07 勾選與交付證據引用、T08 依 `rewrite-plan.md` 附錄 D 註記延後理由、T09
+  記錄雙審 NOT APPROVED 與修復進行中；`CLAUDE.md` 常用指令節補上 `BalancePlaytest`
+  targeted suite 用法與單一 runner 清單項目。
+- **F04／B-01**（gate 證據不可覆核）：新建 `specs/balance-playtest/evidence-lock.md`，
+  以現場實算的 SHA-256 鎖定 3k screening #2 的關鍵證據（screening artifact、
+  source-freeze、12 個 shard json）並記錄四點已知限制（dirty 工作樹產生、本機限定
+  產物不入版控、Phase 2 將於乾淨 HEAD 重建、未來 driver 修正會改變 replay digest）；
+  `evidence-index.md` 已加一行指向該檔。
+
+（上段為 Z2 文件回寫當下的快照，其「不涵蓋」敘述已過時，保留供歷程追溯。）
+
+### 全量修復與閉環複核（2026-08-04 追記）
+
+使用者裁決「全修」後，兩份審查的全部 20 條 findings 已由四個並行工作包＋主迴圈
+補丁完成修復：F01（整合測試四檔＋變異證據）、F02～F10、B-01～B-10（詳見兩份審查檔
+的「## 閉環複核」段）。另完成新立案 BP-SI-007 的根因實證與修復（StringName 裸排序
+指標序 → `StableNameSort` 字典序，使用者授權 domain 修正；詳見 `spec-issues.md`
+BP-SI-007 與 `evidence-lock.md` 限制第 5 點）。修復後 fresh 驗證：All 1,155 tests／
+22,449 assertions／0 failures、10k ExpeditionSoak 10,000/10,000 passed。
+閉環複核結果：reviewer B **APPROVED**（B-01～B-10 全 closed，附 N-01～N-04 機械性
+收尾，均已處理）；reviewer A 首輪閉環 **NOT APPROVED**（F07 漏修——已補修
+`playtest_session_report.gd` 逐 codepoint 檢查＋非 ASCII 拒收測試；N1 CRLF 已還原；
+N2 文件矛盾即本段修正），已送 A 複核三處。最終狀態以 A 的複核 verdict 為準。

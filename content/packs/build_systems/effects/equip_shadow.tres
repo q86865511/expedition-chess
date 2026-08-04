@@ -10,7 +10,6 @@
 script = ExtResource("2_kkvqr")
 stat = &"attack_speed_milli"
 mode = &"add"
-# TUNE: attack_speed 5 依附錄 B 暫定 ×10 映射為 milli 50。
 amount = 50
 duration_ticks = 1800
 target = &"self"
@@ -25,3 +24,4 @@ schema_version = 2
 description_key = &"loc.effect_equip_shadow_description"
 id = &"effect.equip_shadow"
 display_name_key = &"loc.effect_equip_shadow"
+# TUNE: attack_speed 5 依附錄 B 暫定 ×10 映射為 milli 50。

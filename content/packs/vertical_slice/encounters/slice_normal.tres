@@ -11,9 +11,16 @@ logical_x = 3
 spawn_key = "enemy_0"
 unit_ref = &"unit.slice_monster_00"
 
+[sub_resource type="Resource" id="Resource_normal_e1"]
+script = ExtResource("2_rpsys")
+logical_y = 7
+logical_x = 4
+spawn_key = "enemy_1"
+unit_ref = &"unit.slice_monster_01"
+
 [resource]
 script = ExtResource("3_owehy")
 encounter_kind = &"normal"
-enemy_spawns = Array[ExtResource("2_rpsys")]([SubResource("Resource_ijr6i")])
+enemy_spawns = Array[ExtResource("2_rpsys")]([SubResource("Resource_ijr6i"), SubResource("Resource_normal_e1")])
 id = &"encounter.slice_normal"
 display_name_key = &"loc.encounter_slice_normal"

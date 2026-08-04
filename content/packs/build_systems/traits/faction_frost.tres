@@ -11,12 +11,12 @@ effect_refs = Array[StringName]([&"effect.trait_faction_frost"])
 [sub_resource type="Resource" id="Resource_3uuv0"]
 script = ExtResource("2_hfn5h")
 required_count = 4
-effect_refs = Array[StringName]([&"effect.trait_faction_frost"])
+effect_refs = Array[StringName]([&"effect.trait_faction_frost_t2"])
 
 [sub_resource type="Resource" id="Resource_1py3t"]
 script = ExtResource("2_hfn5h")
 required_count = 6
-effect_refs = Array[StringName]([&"effect.trait_faction_frost"])
+effect_refs = Array[StringName]([&"effect.trait_faction_frost_t3"])
 
 [resource]
 script = ExtResource("1_rbbky")

@@ -58,6 +58,122 @@ func test_vertical_slice_map_nodes_cover_all_kinds_with_normal_elite_parity() ->
 	assert_eq(int(kinds.get(&"normal", 0)), int(kinds.get(&"elite", 0)), "normal／elite 節點數須相等（W2-F6）")
 	assert_true(int(kinds.get(&"event", 0)) >= 12, "event 節點應 >= 12（generator_ref 各不相同）")
 
+# G2 difficulty-curve T03（specs/difficulty-curve/design.md「敵方成長與遭遇編成」表）：
+# 五個 encounter 的多敵編成需逐列與 design 表一致，防未來內容漂移。
+func test_vertical_slice_encounters_match_difficulty_curve_spawn_table() -> void:
+	var pack := _load_pack(VERTICAL_SLICE_ROOT)
+	var expected: Dictionary = {
+		&"encounter.slice_normal": [
+			{"spawn_key": "enemy_0", "unit_ref": &"unit.slice_monster_00", "star": 1, "logical_y": 6, "logical_x": 3},
+			{"spawn_key": "enemy_1", "unit_ref": &"unit.slice_monster_01", "star": 1, "logical_y": 7, "logical_x": 4},
+		],
+		&"encounter.slice_elite": [
+			{"spawn_key": "enemy_0", "unit_ref": &"unit.slice_monster_01", "star": 1, "logical_y": 6, "logical_x": 3},
+			{"spawn_key": "enemy_1", "unit_ref": &"unit.slice_monster_06", "star": 1, "logical_y": 5, "logical_x": 2},
+			{"spawn_key": "enemy_2", "unit_ref": &"unit.slice_monster_07", "star": 1, "logical_y": 7, "logical_x": 4},
+		],
+		&"encounter.slice_boss_0": [
+			{"spawn_key": "boss_0", "unit_ref": &"unit.slice_monster_02", "star": 1, "logical_y": 6, "logical_x": 3},
+			{"spawn_key": "add_0", "unit_ref": &"unit.slice_monster_00", "star": 1, "logical_y": 5, "logical_x": 2},
+			{"spawn_key": "add_1", "unit_ref": &"unit.slice_monster_01", "star": 1, "logical_y": 7, "logical_x": 4},
+		],
+		&"encounter.slice_boss_1": [
+			{"spawn_key": "boss_1", "unit_ref": &"unit.slice_monster_03", "star": 2, "logical_y": 6, "logical_x": 3},
+			{"spawn_key": "add_0", "unit_ref": &"unit.slice_monster_06", "star": 1, "logical_y": 5, "logical_x": 2},
+			{"spawn_key": "add_1", "unit_ref": &"unit.slice_monster_07", "star": 1, "logical_y": 5, "logical_x": 4},
+			{"spawn_key": "add_2", "unit_ref": &"unit.slice_monster_08", "star": 1, "logical_y": 7, "logical_x": 3},
+		],
+		&"encounter.slice_boss_2": [
+			{"spawn_key": "boss_2", "unit_ref": &"unit.slice_monster_04", "star": 2, "logical_y": 6, "logical_x": 3},
+			{"spawn_key": "add_0", "unit_ref": &"unit.slice_monster_09", "star": 2, "logical_y": 5, "logical_x": 2},
+			{"spawn_key": "add_1", "unit_ref": &"unit.slice_monster_10", "star": 1, "logical_y": 5, "logical_x": 4},
+			{"spawn_key": "add_2", "unit_ref": &"unit.slice_monster_11", "star": 1, "logical_y": 7, "logical_x": 2},
+			{"spawn_key": "add_3", "unit_ref": &"unit.slice_monster_05", "star": 1, "logical_y": 7, "logical_x": 4},
+		],
+	}
+	var found: Dictionary = {}
+	for definition in pack:
+		if not definition is EncounterDef: continue
+		var encounter := definition as EncounterDef
+		if not expected.has(encounter.id): continue
+		found[encounter.id] = true
+		var expected_spawns: Array = expected[encounter.id]
+		assert_eq(encounter.enemy_spawns.size(), expected_spawns.size(), "%s 敵方單位數應為 %d" % [String(encounter.id), expected_spawns.size()])
+		var seen_keys: Dictionary = {}
+		var seen_positions: Dictionary = {}
+		for spawn in encounter.enemy_spawns:
+			var spawn_def := spawn as EnemySpawnDef
+			assert_false(seen_keys.has(spawn_def.spawn_key), "%s spawn_key 重複: %s" % [String(encounter.id), spawn_def.spawn_key])
+			seen_keys[spawn_def.spawn_key] = true
+			var position := "%d,%d" % [spawn_def.logical_y, spawn_def.logical_x]
+			assert_false(seen_positions.has(position), "%s 格位碰撞: %s" % [String(encounter.id), position])
+			seen_positions[position] = true
+			assert_true(spawn_def.logical_y >= 4 and spawn_def.logical_y <= 7, "%s spawn %s 的 logical_y 應落在敵方半場 4-7" % [String(encounter.id), spawn_def.spawn_key])
+			var matched := false
+			for row in expected_spawns:
+				if row["spawn_key"] != spawn_def.spawn_key: continue
+				matched = true
+				assert_eq(spawn_def.unit_ref, row["unit_ref"], "%s/%s unit_ref 應與 design 表一致" % [String(encounter.id), spawn_def.spawn_key])
+				assert_eq(spawn_def.star, int(row["star"]), "%s/%s star 應與 design 表一致" % [String(encounter.id), spawn_def.spawn_key])
+				assert_eq(spawn_def.logical_y, int(row["logical_y"]), "%s/%s logical_y 應與 design 表一致" % [String(encounter.id), spawn_def.spawn_key])
+				assert_eq(spawn_def.logical_x, int(row["logical_x"]), "%s/%s logical_x 應與 design 表一致" % [String(encounter.id), spawn_def.spawn_key])
+				break
+			assert_true(matched, "%s 出現 design 表外的 spawn_key: %s" % [String(encounter.id), spawn_def.spawn_key])
+	for encounter_id in expected.keys():
+		assert_true(found.has(encounter_id), "缺少 encounter: %s" % String(encounter_id))
+
+# G2 difficulty-curve T05（DC-REQ-005／Acceptance 5）：全庫每個 faction trait 成員數 >= 6，
+# 且 cost_tier == 1（tier-1）子集內每個 faction 至少有 2 名成員，確保 2/4/6 三階皆可達成。
+func test_vertical_slice_faction_distribution_meets_tier1_and_library_thresholds() -> void:
+	var pack := _load_pack(VERTICAL_SLICE_ROOT)
+	var faction_traits: Array[StringName] = [
+		&"trait.faction_arcane", &"trait.faction_ember", &"trait.faction_frost",
+		&"trait.faction_iron", &"trait.faction_shadow", &"trait.faction_verdant",
+	]
+	var total_counts: Dictionary = {}
+	var tier1_counts: Dictionary = {}
+	for faction in faction_traits:
+		total_counts[faction] = 0
+		tier1_counts[faction] = 0
+	for definition in pack:
+		if not definition is UnitDef: continue
+		var unit := definition as UnitDef
+		if unit.availability not in [&"player", &"shared"]: continue
+		for trait_ref in unit.trait_refs:
+			if not total_counts.has(trait_ref): continue
+			total_counts[trait_ref] = int(total_counts[trait_ref]) + 1
+			if unit.cost_tier == 1:
+				tier1_counts[trait_ref] = int(tier1_counts[trait_ref]) + 1
+	for faction in faction_traits:
+		assert_true(int(total_counts[faction]) >= 6, "faction %s 全庫成員數應 >= 6（實際 %d）" % [String(faction), total_counts[faction]])
+		assert_true(int(tier1_counts[faction]) >= 2, "faction %s tier-1（cost_tier=1）子集成員數應 >= 2（實際 %d）" % [String(faction), tier1_counts[faction]])
+
+# G2 difficulty-curve T06（DC-REQ-006／Acceptance 6，DC-REQ-006 已於 T06 回鏈
+# slice_challenge_affix_01/03）：challenge 鏈 modifier_refs 三桶 gate（軌 A／
+# ShopSurcharge／DrainExpeditionHp）正向（現內容覆蓋三桶）與負向（移除 affix_01
+# 引用即缺 ShopSurcharge 桶→FAIL）案例。只用 vertical_slice 單一 pack（不含
+# build_systems），避免與其他切片（T04 trait 階梯）並行工作中的內容耦合。
+func test_vertical_slice_challenge_chain_covers_three_buckets_and_regresses_when_surcharge_missing() -> void:
+	var pack := _load_pack(VERTICAL_SLICE_ROOT)
+	var input := ContentValidationInput.new(pack, [], [], FakeContentDependencyPort.new(), 9)
+	var report := ContentValidator.new().validate(input)
+	assert_false(
+		_has_issue(report, &"CONTENT_CHALLENGE_AFFIX_COVERAGE"),
+		"現行 vertical_slice challenge 鏈應覆蓋三桶: %s" % _issue_text(report)
+	)
+	assert_false(_has_issue(report, &"CONTENT_CHALLENGE_AFFIX_ROLE"), _issue_text(report))
+
+	var mutated := _load_pack(VERTICAL_SLICE_ROOT)
+	for definition in mutated:
+		if definition.id == &"unlock.slice_challenge_2":
+			(definition as UnlockDef).modifier_refs = []
+	var mutated_input := ContentValidationInput.new(mutated, [], [], FakeContentDependencyPort.new(), 9)
+	var mutated_report := ContentValidator.new().validate(mutated_input)
+	assert_true(
+		_has_issue(mutated_report, &"CONTENT_CHALLENGE_AFFIX_COVERAGE"),
+		"移除 unlock.slice_challenge_2 對 effect.slice_challenge_affix_01（ShopSurcharge 桶）的引用後三桶 gate 必須 FAIL: %s" % _issue_text(mutated_report)
+	)
+
 func test_combined_manifest_installs_validated_with_zero_issues_and_pins_into_canonical_snapshot() -> void:
 	var build_systems_pack := _load_pack(BUILD_SYSTEMS_ROOT)
 	var vertical_slice_pack := _load_pack(VERTICAL_SLICE_ROOT)
@@ -195,6 +311,11 @@ func _count_bosses(definitions: Array[ContentDefinition]) -> int:
 	for definition in definitions:
 		if definition is EncounterDef and (definition as EncounterDef).encounter_kind == &"boss": total += 1
 	return total
+
+func _has_issue(report: ContentValidationReport, code: StringName) -> bool:
+	for issue: ContentValidationIssue in report.issues:
+		if issue.code == code: return true
+	return false
 
 func _issue_text(report: ContentValidationReport) -> String:
 	var values: Array[String] = []

@@ -8,7 +8,6 @@
 
 [sub_resource type="Resource" id="Resource_vynym"]
 script = ExtResource("2_ked6s")
-# TUNE: health +10 依附錄 B 映射為等值開戰全隊護盾 10。
 amount = 10
 duration_ticks = 1800
 target = &"all_allies"
@@ -23,3 +22,4 @@ schema_version = 2
 description_key = &"loc.effect_trait_role_sentinel_description"
 id = &"effect.trait_role_sentinel"
 display_name_key = &"loc.effect_trait_role_sentinel"
+# TUNE: health +10 依附錄 B 映射為等值開戰全隊護盾 10。

@@ -46,7 +46,7 @@ move_speed_bps = 32000
 
 [resource]
 script = ExtResource("2_55afr")
-trait_refs = Array[StringName]([&"trait.faction_verdant", &"trait.role_marksman"])
+trait_refs = Array[StringName]([&"trait.faction_shadow", &"trait.role_marksman"])
 base_stats = SubResource("Resource_uxewt")
 star_scalings = Array[ExtResource("3_nykqm")]([SubResource("Resource_puvyh"), SubResource("Resource_g1ygt"), SubResource("Resource_l6r5u")])
 ai_profile = &"frontline"

@@ -9,7 +9,6 @@
 script = ExtResource("2_8drlw")
 stat = &"attack"
 mode = &"add"
-# TUNE: 原 on-hit base 15 改為保守的開戰全隊 attack +15，待 3k screening 調整。
 amount = 15
 duration_ticks = 1800
 target = &"all_allies"
@@ -24,3 +23,4 @@ schema_version = 2
 description_key = &"loc.effect_relic_frost_edge_description"
 id = &"effect.relic_frost_edge"
 display_name_key = &"loc.effect_relic_frost_edge"
+# TUNE: 原 on-hit base 15 改為保守的開戰全隊 attack +15，待 3k screening 調整。

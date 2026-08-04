@@ -13,14 +13,36 @@ effect_refs = Array[StringName]([&"effect.slice_affix_01"])
 [sub_resource type="Resource" id="Resource_4ngca"]
 script = ExtResource("2_216qe")
 logical_y = 6
-logical_x = 1
+logical_x = 3
 spawn_key = "boss_1"
 unit_ref = &"unit.slice_monster_03"
+star = 2
+
+[sub_resource type="Resource" id="Resource_boss1_add0"]
+script = ExtResource("2_216qe")
+logical_y = 5
+logical_x = 2
+spawn_key = "add_0"
+unit_ref = &"unit.slice_monster_06"
+
+[sub_resource type="Resource" id="Resource_boss1_add1"]
+script = ExtResource("2_216qe")
+logical_y = 5
+logical_x = 4
+spawn_key = "add_1"
+unit_ref = &"unit.slice_monster_07"
+
+[sub_resource type="Resource" id="Resource_boss1_add2"]
+script = ExtResource("2_216qe")
+logical_y = 7
+logical_x = 3
+spawn_key = "add_2"
+unit_ref = &"unit.slice_monster_08"
 
 [resource]
 script = ExtResource("3_f4gcm")
 encounter_kind = &"boss"
-enemy_spawns = Array[ExtResource("2_216qe")]([SubResource("Resource_4ngca")])
+enemy_spawns = Array[ExtResource("2_216qe")]([SubResource("Resource_4ngca"), SubResource("Resource_boss1_add0"), SubResource("Resource_boss1_add1"), SubResource("Resource_boss1_add2")])
 affix_refs = Array[StringName]([&"effect.slice_affix_01", &"effect.slice_affix_02"])
 boss_phases = Array[ExtResource("1_f0m08")]([SubResource("Resource_ono24")])
 id = &"encounter.slice_boss_1"

@@ -8,6 +8,9 @@ const MIN_TERMINAL_PER_STRATEGY: int = 500
 const MIN_WINS_PER_STRATEGY: int = 50
 const REPLAY_SAMPLE_MODULUS: int = 20
 const REPLAY_SAMPLE_RATE_BPS: int = 500
+## TUNE：低於此 cohort 樣本量時，敗局集中在單一幕視為統計噪音，per-act 淘汰 gate 不評估。
+const ACT_ELIMINATION_MIN_SEED_COUNT: int = 1000
+const ACT_INDICES: Array[int] = [1, 2, 3]
 
 var candidate: BalanceCandidateDescriptor
 var cases: Array[BalanceBotCaseResult] = []
@@ -95,7 +98,34 @@ func gate_reasons(
 		reasons.append(&"BALANCE_BUILD_ID_ALL_FALLBACK")
 	if not cases.is_empty() and _unique_ending_gold().size() == 1:
 		reasons.append(&"BALANCE_ENDING_GOLD_CONSTANT")
+	if _act_elimination_flat():
+		reasons.append(&"BALANCE_ACT_ELIMINATION_FLAT")
 	return reasons
+
+
+## 各幕的進入數／淘汰數／戰鬥勝敗（DC-REQ-008）。`token` 是跨實作比對用的正規字串，
+## `tools/balance/act-elimination-gate.ps1` 必須對同一輸入逐字產生相同結果。
+func act_curve() -> Dictionary:
+	var rows := _act_curve_rows()
+	var elimination_total := 0
+	var elimination_acts: Array[int] = []
+	for row: Dictionary in rows:
+		var eliminated := int(row["eliminated"])
+		elimination_total += eliminated
+		if eliminated > 0:
+			elimination_acts.append(int(row["act_index"]))
+	return {
+		"min_seed_count": ACT_ELIMINATION_MIN_SEED_COUNT,
+		"enforced": cohort_seed_count >= ACT_ELIMINATION_MIN_SEED_COUNT,
+		"acts": rows,
+		"elimination_total": elimination_total,
+		"elimination_acts": elimination_acts,
+		"token": _act_curve_token(rows),
+	}
+
+
+func act_curve_token() -> String:
+	return _act_curve_token(_act_curve_rows())
 
 
 func passed(final_gate: bool, enforce_sample_minimums: bool = false) -> bool:
@@ -255,6 +285,7 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 			"mean_terminal_hp": _rate_bps(ending_hp_total, cases.size()) / 10000.0,
 		},
 		"battle_outcomes": {"wins": battle_wins, "losses": battle_losses},
+		"act_curve": act_curve(),
 		"case_proofs": case_proofs,
 		"failed_seeds": failed_seeds,
 		"regression_proof": {
@@ -320,6 +351,64 @@ func _act_count(strategy_id: StringName, act: int) -> int:
 		if value.strategy_id == strategy_id and value.act_reached >= act:
 			result += 1
 	return result
+
+
+func _act_curve_rows() -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	for act_index: int in ACT_INDICES:
+		var entered := 0
+		var eliminated := 0
+		var wins := 0
+		var losses := 0
+		for value: BalanceBotCaseResult in cases:
+			for snapshot: BalanceBotActSnapshot in value.act_snapshots:
+				if snapshot.act_index != act_index:
+					continue
+				entered += 1
+				wins += snapshot.battle_wins
+				losses += snapshot.battle_losses
+				if not snapshot.elimination_node_id.is_empty():
+					eliminated += 1
+		rows.append({
+			"act_index": act_index,
+			"entered": entered,
+			"eliminated": eliminated,
+			"battle_wins": wins,
+			"battle_losses": losses,
+		})
+	return rows
+
+
+func _act_curve_token(rows: Array[Dictionary]) -> String:
+	var parts: Array[String] = ["ACT-CURVE-V1", "seed_count=%d" % cohort_seed_count]
+	var elimination_total := 0
+	var elimination_acts: Array[String] = []
+	for row: Dictionary in rows:
+		var eliminated := int(row["eliminated"])
+		parts.append("%d:%d:%d:%d:%d" % [
+			int(row["act_index"]), int(row["entered"]), eliminated,
+			int(row["battle_wins"]), int(row["battle_losses"]),
+		])
+		elimination_total += eliminated
+		if eliminated > 0:
+			elimination_acts.append(str(int(row["act_index"])))
+	parts.append("total=%d" % elimination_total)
+	parts.append("acts=%s" % ",".join(elimination_acts))
+	return "|".join(parts)
+
+
+## 敗局全部集中於單一幕＝「過了那一幕就必勝」的病徵；樣本量不足時不評估。
+func _act_elimination_flat() -> bool:
+	if cohort_seed_count < ACT_ELIMINATION_MIN_SEED_COUNT:
+		return false
+	var elimination_total := 0
+	var elimination_act_count := 0
+	for row: Dictionary in _act_curve_rows():
+		var eliminated := int(row["eliminated"])
+		elimination_total += eliminated
+		if eliminated > 0:
+			elimination_act_count += 1
+	return elimination_total > 0 and elimination_act_count == 1
 
 
 func _action_count(strategy_id: StringName, kind: StringName) -> int:

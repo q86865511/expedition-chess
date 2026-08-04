@@ -16,6 +16,9 @@ signal boot_completed
 signal boot_failed(error_code: StringName)
 signal exit_requested
 
+const EXPORTED_RC_SMOKE_DRIVER = preload(
+	"res://application/balance/exported_rc_smoke_driver.gd"
+)
 const COMBAT_LAB_SCENE_PATH: String = "res://scenes/dev/combat_lab/combat_lab.tscn"
 
 ## 單槽 profile 的固定 id：RunStateValidator 要求 32 位小寫 hex
@@ -289,6 +292,44 @@ func _ready() -> void:
 		return
 	_booted = true
 	boot_completed.emit()
+	var rc_smoke_phase: StringName = EXPORTED_RC_SMOKE_DRIVER.phase_from(
+		OS.get_cmdline_user_args()
+	)
+	if OS.has_feature("provisional_rc") and not rc_smoke_phase.is_empty():
+		call_deferred("_run_exported_rc_smoke_phase", rc_smoke_phase)
+
+
+func _run_exported_rc_smoke_phase(phase: StringName) -> void:
+	EXPORTED_RC_SMOKE_DRIVER.new().run(self, phase)
+
+
+func _rc_smoke_abandon_active_run(
+	expected_run_id: StringName
+) -> AppActionResult:
+	var phase: StringName = EXPORTED_RC_SMOKE_DRIVER.phase_from(
+		OS.get_cmdline_user_args()
+	)
+	if not OS.has_feature("provisional_rc") or phase.is_empty() \
+		or expected_run_id.is_empty() \
+		or _app_state_machine.state() != AppStateMachine.State.RUN \
+		or _run_presentation_session == null \
+		or _run_presentation_session.snapshot().run_id != expected_run_id:
+		return _action_failure(ERROR_ACTION_NOT_AVAILABLE)
+	var returned := return_to_menu()
+	if not returned.ok:
+		return returned
+	var loaded := _save_repository.load()
+	if not loaded.ok or loaded.run_status != LoadResult.RunStatus.LOADED \
+		or loaded.run == null or StringName(loaded.run.run_id) != expected_run_id:
+		return _action_failure(ERROR_RETAINED_RUN_EXISTS)
+	var token := _retained_run_recovery_service.issue_token(
+		loaded, expected_run_id
+	)
+	if token == null or not token.is_issued():
+		return _action_failure(&"RECOVERY_TOKEN_INVALID")
+	_retained_run_recovery_token = token
+	_menu_snapshot.has_recovery = true
+	return discard_retained_run(token)
 
 
 func _resolve_presentation_host() -> Control:

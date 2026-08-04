@@ -22,6 +22,7 @@ Thumbs.db
 # 測試執行產物
 artifacts/test/*
 !artifacts/test/.gitkeep
+/artifacts/rc/**
 *.tmp
 
 # pipeline 狀態(本機)

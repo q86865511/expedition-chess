@@ -232,10 +232,10 @@ func _append_battle_only_effect(fixture: ContentValidationInput, effect_id: Stri
 	var operation := ModifyStatOperationDef.new()
 	operation.operation_index = 0
 	operation.stat = &"attack"
-	operation.mode = &"flat"
+	operation.mode = &"add"
 	operation.amount = 1
 	operation.duration_ticks = 20
-	operation.target = &"self"
+	operation.target = &"all_allies"
 	var effect := EffectDef.new()
 	effect.id = effect_id
 	effect.schema_version = 2

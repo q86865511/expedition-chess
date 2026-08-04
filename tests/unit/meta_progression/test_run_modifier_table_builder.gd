@@ -174,10 +174,10 @@ func test_commander_always_active_contribution_stacks_with_slot_gated_relic_end_
 		"registry→RunModifierTableBuilder→IncomeService 管線"
 	)
 
-func test_challenge_level_zero_yields_no_challenge_contribution_even_when_higher_levels_have_content() -> void:
-	var l1_effect_id := &"effect.challenge_l1_bonus"
+func test_challenge_level_zero_yields_no_run_contribution_when_higher_levels_have_battle_content() -> void:
+	var l1_effect_id := &"effect.challenge_l1_battle"
 	var fixture := _fixture_with_renamed_challenge_chain()
-	_append_add_gold_effect(fixture, l1_effect_id, 1)
+	_append_battle_challenge_effect(fixture, l1_effect_id)
 	(_find(fixture, &"unlock.slice_challenge_1") as UnlockDef).modifier_refs = [l1_effect_id]
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
@@ -194,14 +194,14 @@ func test_challenge_level_zero_yields_no_challenge_contribution_even_when_higher
 		return
 	assert_eq(
 		built.table.sum_always_active(&"economy", &"add_gold"), 0,
-		"challenge_level=0 時,即使 slice_challenge_1 已著作 add_gold 內容,也不應被計入" +
+		"challenge_level=0 時,即使 slice_challenge_1 已著作 battle 內容,也不應被計入 run table" +
 		"(Challenge 0 無詞綴)"
 	)
 
-func test_challenge_chain_at_requested_level_contributes_its_modifiers() -> void:
-	var l1_effect_id := &"effect.challenge_l1_bonus"
+func test_challenge_battle_track_at_requested_level_does_not_enter_run_modifier_table() -> void:
+	var l1_effect_id := &"effect.challenge_l1_battle"
 	var fixture := _fixture_with_renamed_challenge_chain()
-	_append_add_gold_effect(fixture, l1_effect_id, 1)
+	_append_battle_challenge_effect(fixture, l1_effect_id)
 	(_find(fixture, &"unlock.slice_challenge_1") as UnlockDef).modifier_refs = [l1_effect_id]
 	var registry := ContentRegistryService.new()
 	add_child_autofree(registry)
@@ -216,14 +216,17 @@ func test_challenge_chain_at_requested_level_contributes_its_modifiers() -> void
 	assert_true(built.ok)
 	if not built.ok:
 		return
-	assert_eq(built.table.sum_always_active(&"economy", &"add_gold"), 1)
+	assert_eq(
+		built.table.sum_always_active(&"economy", &"add_gold"), 0,
+		"challenge battle track 只能進戰鬥編譯，不得滲入 run modifier table"
+	)
 
-func test_challenge_chain_accumulates_contributions_across_multiple_levels() -> void:
-	var l1_effect_id := &"effect.challenge_l1_bonus"
-	var l2_effect_id := &"effect.challenge_l2_bonus"
+func test_challenge_battle_tracks_across_levels_do_not_enter_run_modifier_table() -> void:
+	var l1_effect_id := &"effect.challenge_l1_battle"
+	var l2_effect_id := &"effect.challenge_l2_battle"
 	var fixture := _fixture_with_renamed_challenge_chain()
-	_append_add_gold_effect(fixture, l1_effect_id, 1)
-	_append_add_gold_effect(fixture, l2_effect_id, 2)
+	_append_battle_challenge_effect(fixture, l1_effect_id)
+	_append_battle_challenge_effect(fixture, l2_effect_id)
 	(_find(fixture, &"unlock.slice_challenge_1") as UnlockDef).modifier_refs = [l1_effect_id]
 	(_find(fixture, &"unlock.slice_challenge_2") as UnlockDef).modifier_refs = [l2_effect_id]
 	var registry := ContentRegistryService.new()
@@ -243,10 +246,13 @@ func test_challenge_chain_accumulates_contributions_across_multiple_levels() -> 
 	assert_true(built_level_2.ok)
 	if not built_level_1.ok or not built_level_2.ok:
 		return
-	assert_eq(built_level_1.table.sum_always_active(&"economy", &"add_gold"), 1, "level 1 只累積 slice_challenge_1")
 	assert_eq(
-		built_level_2.table.sum_always_active(&"economy", &"add_gold"), 3,
-		"level 2 累積 slice_challenge_1(1)+slice_challenge_2(2)=3,對齊「詞綴 1..N 累積」"
+		built_level_1.table.sum_always_active(&"economy", &"add_gold"), 0,
+		"level 1 battle track 不得成為 run contribution"
+	)
+	assert_eq(
+		built_level_2.table.sum_always_active(&"economy", &"add_gold"), 0,
+		"level 2 雖累積兩層 battle track，仍不得成為 run contribution"
 	)
 
 func test_invalid_commander_id_returns_named_failure() -> void:
@@ -352,12 +358,12 @@ func _strip_add_xp_from_operation_matrix(fixture: ContentValidationInput) -> voi
 		supported[index].operation_index = index
 	matrix.run_operations = supported
 
-## W4-F7（2026-07-25）：同一 effect_id 掛在兩個挑戰階級時，run 層貢獻只能計一次——否則
-## sum_always_active 會把同一份詞綴加總兩次（與 ChallengeAffixResolver 的清單去重同語意）。
-func test_same_effect_on_two_challenge_levels_contributes_only_once() -> void:
-	var effect_id := &"effect.challenge_shared_bonus"
+## BP-SI-001：同一合法 battle effect 即使掛在兩個挑戰階級，也不得被 RunModifierTableBuilder
+## 當成 always-active run contribution；跨層去重本身由 ChallengeAffixResolver suite 覆蓋。
+func test_same_battle_effect_on_two_challenge_levels_does_not_enter_run_modifier_table() -> void:
+	var effect_id := &"effect.challenge_shared_battle"
 	var fixture := _fixture_with_renamed_challenge_chain()
-	_append_add_gold_effect(fixture, effect_id, 3)
+	_append_battle_challenge_effect(fixture, effect_id)
 	(_find(fixture, &"unlock.slice_challenge_1") as UnlockDef).modifier_refs = [effect_id]
 	(_find(fixture, &"unlock.slice_challenge_2") as UnlockDef).modifier_refs = [effect_id]
 	var registry := ContentRegistryService.new()
@@ -374,8 +380,8 @@ func test_same_effect_on_two_challenge_levels_contributes_only_once() -> void:
 	if not built.ok:
 		return
 	assert_eq(
-		built.table.sum_always_active(&"economy", &"add_gold"), 3,
-		"同一 effect 被 level1 與 level2 引用時只計一次（3），不得雙倍計（6）"
+		built.table.sum_always_active(&"economy", &"add_gold"), 0,
+		"同一 battle effect 被 level1 與 level2 引用時仍不得進入 run table"
 	)
 
 func _fixture_with_renamed_challenge_chain() -> ContentValidationInput:
@@ -394,24 +400,28 @@ func _fixture_with_renamed_challenge_chain() -> ContentValidationInput:
 	(_find(fixture, &"commander.c0") as CommanderDef).passive_effect_refs = []
 	return fixture
 
-func _append_add_gold_effect(fixture: ContentValidationInput, effect_id: StringName, amount: int) -> void:
-	var operation := AddGoldOperationDef.new()
+func _append_battle_challenge_effect(
+	fixture: ContentValidationInput,
+	effect_id: StringName
+) -> void:
+	var operation := ModifyStatOperationDef.new()
 	operation.operation_index = 0
-	operation.amount = amount
-	operation.claim_scope = &"always"
+	operation.stat = &"attack"
+	operation.mode = &"add"
+	operation.amount = 1
+	operation.duration_ticks = 20
+	operation.target = &"all_allies"
 	var effect := EffectDef.new()
 	effect.id = effect_id
 	effect.schema_version = 2
 	effect.display_name_key = StringName("loc.%s" % String(effect_id))
 	effect.description_key = StringName("loc.%s.description" % String(effect_id))
-	# T10：CONTENT_CHALLENGE_AFFIX_ROLE 收緊為「必須恰為 challenge_affix」（不再放行預設的
-	# &"general"），這些探針效果全部被 challenge 鏈 modifier_refs 引用，改用合規角色。
 	effect.content_role = &"challenge_affix"
 	effect.trigger = &"battle_start"
 	effect.stacking = &"replace"
 	effect.max_stacks = 1
-	effect.duration_ticks = 1
-	effect.run_operations = [operation]
+	effect.duration_ticks = 20
+	effect.battle_operations = [operation]
 	fixture.definitions.append(effect)
 
 func _find(fixture: ContentValidationInput, content_id: StringName) -> ContentDefinition:

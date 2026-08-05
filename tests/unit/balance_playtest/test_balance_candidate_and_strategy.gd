@@ -376,6 +376,149 @@ func test_economy_policy_fills_board_then_spends_only_above_max_interest() -> vo
 	)
 
 
+## G2 difficulty-curve 第二個評分退化修復：bench_pressure_score 是純函式，
+## 只有「板面已滿（unit_count >= level）且板凳真的有溢出戰力（>=2 隻卡住待部署）」
+## 才給 BUY_XP 加成；單一隻溢出（正常換血雜訊）與板面未滿都不算數。
+func test_bench_pressure_score_requires_full_board_and_at_least_two_overflow_units() -> void:
+	assert_eq(
+		BalanceProductionCaseDriverScript.bench_pressure_score(0, 0, 1), 0,
+		"空板開局不得有加成"
+	)
+	assert_eq(
+		BalanceProductionCaseDriverScript.bench_pressure_score(3, 1, 3), 0,
+		"板面尚未鋪滿（unit_count < level）時不得有加成"
+	)
+	assert_eq(
+		BalanceProductionCaseDriverScript.bench_pressure_score(1, 4, 3), 0,
+		"只有 1 隻溢出時不算真正的板凳壓力"
+	)
+	assert_gt(
+		BalanceProductionCaseDriverScript.bench_pressure_score(2, 5, 3), 0,
+		"板滿且溢出 >=2 隻時必須加成"
+	)
+	assert_gt(
+		BalanceProductionCaseDriverScript.bench_pressure_score(4, 7, 3),
+		BalanceProductionCaseDriverScript.bench_pressure_score(2, 5, 3),
+		"溢出戰力越多，加成必須越大"
+	)
+
+
+## 性質 (a)：存在可達狀態（板凳溢出 4 隻）使 tempo 的 BUY_XP 贏過即使是很強的
+## BUY_UNIT（cost_tier 5、免費、3 特質）——修復「tempo 永遠不買 XP」的退化。
+func test_tempo_buys_xp_when_bench_pressure_is_high() -> void:
+	var pressure := BalanceProductionCaseDriverScript.bench_pressure_score(4, 7, 3)
+	assert_gt(pressure, 0, "前提：本測試狀態必須真的觸發板凳壓力")
+	var actions: Array[BalanceBotAction] = [
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.BUY_UNIT, &"action.strong_unit", 0,
+			100 + 5 * 20, 20, 3 * 30
+		),
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.REROLL, &"action.refresh_shop", 2, 80, 40, 35
+		),
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", 4,
+			40 + pressure, 90 + pressure, 20 + pressure
+		),
+	]
+	var chosen := BalanceBotStrategy.new(BalanceBotStrategy.TEMPO).try_choose_action(
+		BalanceBotObservation.new(100, 3, 100, 1, actions)
+	)
+	assert_eq(
+		chosen.stable_id, &"action.buy_xp",
+		"板凳有明顯溢出戰力時 tempo 也必須被說服買經驗，不能永遠不買"
+	)
+
+
+## 性質 (b)：空板開局（沒有溢出戰力，加成為 0）時 BUY_XP 不得壓過 BUY_UNIT——
+## 不能反向退化成「先升級不鋪場」。
+func test_tempo_still_prioritizes_buy_unit_on_empty_board() -> void:
+	var pressure := BalanceProductionCaseDriverScript.bench_pressure_score(0, 0, 1)
+	assert_eq(pressure, 0, "前提：空板開局不得有加成")
+	var actions: Array[BalanceBotAction] = [
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.BUY_UNIT, &"action.opening_unit", 2, 120, -80, 30
+		),
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", 4,
+			40 + pressure, 90 + pressure, 20 + pressure
+		),
+	]
+	var chosen := BalanceBotStrategy.new(BalanceBotStrategy.TEMPO).try_choose_action(
+		BalanceBotObservation.new(10, 1, 100, 1, actions)
+	)
+	assert_eq(
+		chosen.stable_id, &"action.opening_unit",
+		"空板開局不得反向退化成優先買經驗、不鋪場"
+	)
+
+
+## 性質 (c)：同一個板凳壓力狀態下，tempo／economy／synergy 三策略的完整偏好
+## 排序仍然互異——本次修復只解退化，不得抹平策略身分差異。
+func test_three_strategies_rank_actions_differently_under_shared_bench_pressure() -> void:
+	var pressure := BalanceProductionCaseDriverScript.bench_pressure_score(2, 5, 3)
+	assert_gt(pressure, 0, "前提：本測試狀態必須真的觸發板凳壓力")
+	var base_actions: Array[BalanceBotAction] = [
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.BUY_UNIT, &"action.cheap_tempo_unit", 5, 120, -5, 0
+		),
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.BUY_UNIT, &"action.trait_unit", 20, 120, -80, 125
+		),
+		BalanceBotAction.new(
+			BalanceBotAction.Kind.REROLL, &"action.refresh_shop", 2, 80, -40, 35
+		),
+	]
+	var tempo_actions: Array[BalanceBotAction] = base_actions.duplicate()
+	tempo_actions.append(BalanceBotAction.new(
+		BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", 4,
+		40 + pressure, 90 + pressure, 20 + pressure
+	))
+	var synergy_actions: Array[BalanceBotAction] = base_actions.duplicate()
+	synergy_actions.append(BalanceBotAction.new(
+		BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", 4,
+		40 + pressure, 90 + pressure, 20 + pressure
+	))
+	var economy_actions: Array[BalanceBotAction] = base_actions.duplicate()
+	economy_actions.append(BalanceBotAction.new(
+		BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", 4,
+		40 + pressure, 150 + pressure, 20 + pressure
+	))
+
+	var tempo_order := _ranked_ids(BalanceBotStrategy.new(BalanceBotStrategy.TEMPO), tempo_actions)
+	var economy_order := _ranked_ids(
+		BalanceBotStrategy.new(BalanceBotStrategy.ECONOMY), economy_actions
+	)
+	var synergy_order := _ranked_ids(
+		BalanceBotStrategy.new(BalanceBotStrategy.SYNERGY), synergy_actions
+	)
+
+	assert_ne(tempo_order, economy_order, "tempo 與 economy 的完整偏好排序必須不同")
+	assert_ne(tempo_order, synergy_order, "tempo 與 synergy 的完整偏好排序必須不同")
+	assert_ne(economy_order, synergy_order, "economy 與 synergy 的完整偏好排序必須不同")
+
+
+## 依序移除最高分動作、重複呼叫 try_choose_action，還原策略對整批動作的完整排序。
+func _ranked_ids(
+	strategy: BalanceBotStrategy, source: Array[BalanceBotAction]
+) -> Array[StringName]:
+	var remaining: Array[BalanceBotAction] = []
+	remaining.assign(source)
+	var order: Array[StringName] = []
+	while not remaining.is_empty():
+		var chosen := strategy.try_choose_action(
+			BalanceBotObservation.new(1000, 3, 100, 1, remaining)
+		)
+		if chosen == null:
+			break
+		order.append(chosen.stable_id)
+		for index: int in range(remaining.size()):
+			if remaining[index].stable_id == chosen.stable_id:
+				remaining.remove_at(index)
+				break
+	return order
+
+
 func test_build_attribution_requires_active_faction_and_tie_is_run_bound() -> void:
 	assert_eq(BalanceProductionCaseDriverScript.build_id_from_trait_counts({
 		&"trait.faction_arcane": 1,

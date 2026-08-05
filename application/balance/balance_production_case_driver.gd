@@ -424,7 +424,8 @@ func _shop_actions(
 	var unit_count := snapshot.roster.unit_instances.size()
 	var level := snapshot.economy.level
 	var has_affordable_buy := false
-	var bench_is_full := snapshot.roster.bench_unit_instance_ids.size() >= 9
+	var bench_count := snapshot.roster.bench_unit_instance_ids.size()
+	var bench_is_full := bench_count >= 9
 	if bench_is_full:
 		for instance_id: String in snapshot.roster.bench_unit_instance_ids:
 			actions.append(BalanceBotAction.new(
@@ -457,9 +458,10 @@ func _shop_actions(
 			config.max_interest, unit_count, level
 		)
 		xp_economy_score = 150
+	var xp_pressure := bench_pressure_score(bench_count, unit_count, level)
 	actions.append(BalanceBotAction.new(
 		BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", config.xp_buy_cost,
-		40, xp_economy_score, 20, xp_legal
+		40 + xp_pressure, xp_economy_score + xp_pressure, 20 + xp_pressure, xp_legal
 	))
 	actions.append(BalanceBotAction.new(
 		BalanceBotAction.Kind.REROLL, &"action.refresh_shop", config.reroll_cost,
@@ -470,6 +472,17 @@ func _shop_actions(
 		economy_hold_score(unit_count, level), 30
 	))
 	return actions
+
+
+## G2 difficulty-curve 第二個評分退化修復：板面已滿（unit_count >= level，
+## board 容量無法再多塞人）且板凳有真的溢出戰力（>=2 隻卡住待部署，1 隻算正常
+## 換血雜訊不算數）時，給 BUY_XP 加成——讓 tempo/synergy 也會被說服買經驗，
+## 不再永遠不買（3k 實測 buy_xp_count=0）。加成同時疊上 tempo/economy/synergy
+## 三個分數軸，是否被說服取決於各策略自己的加權公式，不改動任一策略的權重。
+static func bench_pressure_score(bench_count: int, unit_count: int, level: int) -> int:
+	if unit_count < level or bench_count < 2:
+		return 0
+	return 60 * (bench_count - 1)
 
 
 static func economy_hold_score(unit_count: int, level: int) -> int:

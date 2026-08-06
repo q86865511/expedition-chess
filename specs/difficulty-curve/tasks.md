@@ -56,11 +56,23 @@
   `tools/balance/tests/test-act-elimination-gate.ps1` 對同一份
   `tests/fixtures/balance_playtest/act_elimination_golden.json`（5 scenarios）逐字比對
   `act_curve_token` 與 `BALANCE_ACT_` 前綴 gate reason 集合。
-- [x] **T09 NORMAL/TDD**：曲線快篩三層（act1／act2／act3 各自的到達率與敗局分布）
-  驗證 T01–T03 合起來確實產生跨幕梯度，非單點回歸。
+- [x] **T09 NORMAL/TDD**：曲線快篩三層——(a) 結構層驗證 T01–T03 合起來對每個 encounter
+  產生跨幕嚴格遞增的敵方 HP/ATK 梯度（act2>act1、act3>act2），(b) 壓力層走正式
+  RunController 鏈路驗證 Act2+ 確實出現真實損傷訊號（非結構層空生效），(c) 趨勢層
+  read-back report 逐案 act_snapshots 欄位供人工判讀。「跨幕梯度」由 (a) 結構層斷言
+  保證；(b) 只驗證「Act2+ 存在真實損傷」，不驗證「隨幕遞增」——W2-B 變異實測：把
+  `act2_enemy_stat_bps` 改回 10000（曲線失效）時，
+  `test_act_scaling_and_formation_structural.gd:66-89`
+  （`test_act2_and_act3_enemy_totals_strictly_exceed_previous_act_for_every_encounter`
+  的 act2>act1 嚴格遞增斷言，5 encounter × HP/ATK 共 10 條）轉紅，而
+  `test_curve_pressure_and_report_trend.gd` 的 `damaged_snapshot_count>0` 斷言在該變異下
+  仍可能維持綠（act3 仍有損傷）——(b) 不承擔梯度守門責任，這是本任務描述「驗證跨幕梯度」
+  時容易誤讀之處（T11 F5 閉環：原措辭未區分兩層各自的守門範圍）。
   交付：commit `8e97d5f`；證據：
+  `tests/integration/difficulty_curve/test_act_scaling_and_formation_structural.gd`
+  （(a) 結構層梯度斷言）、
   `tests/integration/difficulty_curve/test_curve_pressure_and_report_trend.gd`
-  （走正式 RunController 鏈路確認 Act2+ 出現真實傷害訊號，非結構層空生效）。
+  （(b)(c) 壓力層損傷訊號＋趨勢層 read-back）。
 - [x] **T10 HARD**：3k screening、`-Suite All`、10k ExpeditionSoak、逐 Acceptance fresh
   evidence 與文件回寫（PROGRESS／HANDOFF／CLAUDE.md 目前切片／evidence-index）。
   交付：本次文件回寫；證據：`artifacts/test/balance-playtest-screening.json`（gate

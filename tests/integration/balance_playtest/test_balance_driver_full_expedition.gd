@@ -97,6 +97,20 @@ func test_three_strategies_share_one_cohort_world_and_reach_results() -> void:
 			"%s 獎勵 receipt 不得重複（無重複發獎）" % label
 		)
 		assert_true(value.ending_gold >= 0 and value.ending_hp >= 0, "%s 資源不得為負" % label)
+		# review A F12／review B #4：敗局成為常態結果後，per-act 快照必須真的覆蓋
+		# 每一幕，且每個到達的幕都要有實際戰鬥紀錄——不能只因為「有一個策略突破
+		# act1」就放行，敗局幕也必須逐幕打過（BP-IR-001 病徵的完整涵蓋，不只勝局）。
+		assert_eq(
+			value.act_snapshots.size(), value.act_reached,
+			"%s 的 act_snapshots 筆數必須等於實際到達的幕數（每個到達的幕都要有快照）" % label
+		)
+		for act_snapshot: BalanceBotActSnapshot in value.act_snapshots:
+			assert_gt(
+				act_snapshot.battle_wins + act_snapshot.battle_losses, 0,
+				"%s act%d 的快照必須反映該幕真的打過戰鬥，含敗局" % [
+					label, act_snapshot.act_index,
+				]
+			)
 
 	var best_progress: int = 0
 	var total_wins: int = 0

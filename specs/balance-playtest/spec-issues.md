@@ -52,6 +52,15 @@
   `act_curve` 顯示 act1／act3 皆有淘汰（`elimination_acts=[1,3]`，見
   `specs/difficulty-curve/evidence-index.md`），曲線已對戰鬥結果產生實際影響，
   不再是「通過 Act1 條件勝率 100%」的單點回歸。以下保留原始紀錄。
+- 補充措辭（T11 F6／B#6 閉環，2026-08-06）：本議題「解除」指機制層天花板已解除——
+  per-act 乘數／Boss 映射／多敵編成三者皆已接入且對戰鬥結果產生實際影響，act1／act3
+  確實出現淘汰。但 act2 數值目前為 0 淘汰／0 敗場（見
+  `specs/difficulty-curve/evidence-index.md`「已知訊號與缺口」#1／#6），與本議題
+  原始病徵（單幕條件勝率 100%）同構，只是換成 act2；這是**尚未收斂的數值問題**，
+  屬 `specs/g2-roadmap.md` §6.3b 的 Phase 2 目標，不是本議題續 OPEN 的理由——機制解除
+  與數值收斂是本片明文分離的兩件事（見 requirements.md「範圍」：「本片是…機制切片：
+  只移除平衡迴圈的結構性天花板，不做數值收斂」）。Phase 2 規劃或追蹤 act2 曲線調參時
+  應參照本行，不應誤判為機制層仍有缺口。
 
 - 現況：首輪 3k 敗局全部集中在 `route.act1.layer6.boss`；通過 Act 1 的樣本條件勝率
   為 100%，synergy 勝者全數滿血結束。`slice_boss_1/2` 雖已有內容，但 map node 仍只引用

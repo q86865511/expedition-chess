@@ -1093,11 +1093,13 @@ func _global_effect_lifecycle_valid(
 	# catalog／setup）時，challenge 來源才不得再攜帶 run_operations（雙軌）；純
 	# run_operations 的 challenge 詞綴（如 ShopSurcharge／DrainExpeditionHp）不進
 	# BattleSetup，由 run 層 RunModifierTable 軌 B always-active 消費，不受本條禁令限制。
-	# encounter_affix／enemy-side source 的 RunOperation 禁令不受此範圍限縮，維持全面禁止。
+	# encounter_affix source 的 RunOperation 禁令不受此範圍限縮，維持全面禁止——判準是
+	# source_category（不依 source_side）：即使日後出現非 enemy-side 的 encounter_affix
+	# 呼叫點，帶 run_operations 依然必須被拒（review A F3／review B #3）。
 	if source_category == &"challenge":
 		if not effect.run_operations.is_empty() and not effect.battle_operations.is_empty():
 			return false
-	elif source_side == &"enemy" and not effect.run_operations.is_empty():
+	elif source_category == &"encounter_affix" and not effect.run_operations.is_empty():
 		return false
 	for operation: BattleOperationDef in effect.battle_operations:
 		if operation is MoveOperationDef or operation is SummonOperationDef:

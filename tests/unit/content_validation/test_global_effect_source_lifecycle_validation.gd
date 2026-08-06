@@ -114,6 +114,25 @@ func test_challenge_pure_run_operation_without_battle_operations_is_accepted() -
 	)
 
 
+## encounter_affix 的 RunOperation 禁令判準是 source_category，不依 source_side——目前唯一
+## 呼叫點（EncounterDef.affix_refs）固定傳 &"enemy"，故此案例無法透過 validate() 的真實呼叫鏈
+## 驅動，直接白箱呼叫 _global_effect_lifecycle_valid 覆蓋「非 enemy side」分支
+## （review A F3／review B #3：舊碼以 source_side==enemy 判斷，日後新增非 enemy-side 的
+## encounter_affix 呼叫點會靜默放行 run_operations）。
+func test_encounter_affix_run_operation_rejected_regardless_of_source_side() -> void:
+	var effect := _base_effect(&"effect.probe_encounter_affix_non_enemy_run", &"battle_start")
+	var operation := AddGoldOperationDef.new()
+	operation.operation_index = 0
+	operation.amount = 1
+	operation.claim_scope = &"always"
+	effect.run_operations = [operation]
+	var validator := ContentValidator.new()
+	assert_false(
+		validator._global_effect_lifecycle_valid(effect, &"encounter_affix", &"player"),
+		"encounter_affix 帶 run_operations 必須被拒絕，即使 source_side 不是 enemy"
+	)
+
+
 func test_operation_enums_reject_illegal_stat_damage_type_and_target() -> void:
 	var stat_input := _empty_input()
 	stat_input.definitions.append(_modify_stat_effect(

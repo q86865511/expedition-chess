@@ -34,17 +34,25 @@
   authoring 多隻 `EnemySpawnDef`，spawn_key 唯一、格位不重疊且全部落在敵方半場
   （`logical_y` 4–7）。編成內容（單位、星級、格位）為 TUNE；`EncounterDef` schema 與
   compiler 皆不得為此改動。
-- **DC-REQ-004 Trait 階梯**：12 個 trait 的 2／4／6 門檻必須各自指向強度遞增的獨立
-  effect，且第 n 階與第 n+1 階的數值嚴格遞增。`stacking` 維持 `replace`，
-  `BattleSetupSourceCompiler` 取最高達標階的既有語意不得改變（零程式改動）；
-  新增 effect 必須有完整 `zh_TW`／`en` loc key。
+- **DC-REQ-004 Trait 階梯**：12 個 trait 各自既有的三階 `required_count` 門檻（本片只改
+  `effect_refs`，不改門檻值；一／二階皆為 2／4，第三階 `faction_shadow`／
+  `role_mystic`／`role_sentinel`／`role_trickster`／`role_warden` 五者為 5、其餘七個
+  trait 為 6）必須各自指向強度遞增的獨立 effect，且第 n 階與第 n+1 階的數值嚴格遞增。
+  `stacking` 維持 `replace`，`BattleSetupSourceCompiler` 取最高達標階的既有語意不得
+  改變（零程式改動）；新增 effect 必須有完整 `zh_TW`／`en` loc key。
 - **DC-REQ-005 Tier-1 池**：tier-1 單位池的 faction trait 分布必須讓每個 faction 都能在
   tier-1 內湊出 2 門檻；重標後全庫每個 faction 的成員數仍須 ≥6，使 2／4／6 三階皆可達成。
 - **DC-REQ-006 Challenge 回鏈**：`slice_challenge_affix_01/03` 必須回到 challenge unlock 的
   `modifier_refs`，`ContentValidator` 必須回復軌 A／經濟壓力（ShopSurcharge）／遠征傷害
   （DrainExpeditionHp）三桶覆蓋 gate。run-layer challenge modifier 由既有
   `RunModifierTable` 軌 B always-active 路徑消費；EffectResolver、global source lifecycle
-  與 `BattleSetup` 的 challenge 禁令皆不得放寬。
+  與 `BattleSetup` 的 challenge 禁令為 scoped——僅當 challenge 來源的 effect 同時攜帶
+  `battle_operations`（因此會被 pin 進 battle catalog／setup，即「雙軌」）時才拒絕再
+  攜帶 `run_operations`；純 `run_operations` 的 challenge 詞綴（如 ShopSurcharge／
+  DrainExpeditionHp）不進 `BattleSetup`，由軌 B 消費，不受此條禁令限制（與
+  `specs/combat-core/design.md:117／:236` 的作用域限定一致，見 design.md「決定性與
+  失敗政策」段與 `content_validator.gd:1097-1101`）；此範圍之外（例如 encounter_affix／
+  enemy-side source）的 RunOperation 禁令不得放寬。
 - **DC-REQ-007 觀測性**：balance driver 的每一條獎勵／購買選取都必須記錄正式 content
   stable ID；無法取得 stable ID 時必須計入既有 opaque 計數並 fail-visible，不得以
   `reward.kind.N` 之類佔位字串混入 stable ID 統計。`BalanceBotActSnapshot` 必須額外保存
@@ -69,18 +77,25 @@
 3. 五個 encounter 編譯後的敵方單位數分別為 2／3／3／4／5，spawn_key 無重複、
    `(logical_y, logical_x)` 無碰撞且全部 `logical_y` ≥ 4；內容驗證器對重複 spawn_key
    或越界格位以非零碼拒絕。（DC-REQ-003）
-4. 對同一 trait 分別部署 2、4、6 隻不同成員：三次得到不同的 effect ID 與嚴格遞增的
-   數值，`TraitBattleSnapshot.tier` 分別為 1／2／3；刪除任一新增 loc key 會使
-   localization 靜態驗證非零退出。（DC-REQ-004）
+4. 對同一 trait 依其既有三階 `required_count` 門檻（2／4／6，`faction_shadow`／
+   `role_mystic`／`role_sentinel`／`role_trickster`／`role_warden` 五者為 2／4／5）
+   分別部署對應人數的不同成員：三次得到不同的 effect ID 與嚴格遞增的數值，
+   `TraitBattleSnapshot.tier` 分別為 1／2／3；刪除任一新增 loc key 會使 localization
+   靜態驗證非零退出。（DC-REQ-004）
 5. 掃描全庫 `UnitDef.trait_refs`：每個 faction trait 的成員數 ≥6，且 tier-1 子集內每個
    faction 至少有 2 名成員。（DC-REQ-005）
 6. challenge 等級 1–5 的 unlock 鏈上，`modifier_refs` 覆蓋軌 A、ShopSurcharge 與
    DrainExpeditionHp 三桶；移除任一桶會使 `CONTENT_CHALLENGE_AFFIX_COVERAGE` 觸發。
    同時 challenge global source 仍不得攜帶 RunOperation 進入 `BattleSetup`，
    該負向案例維持紅。（DC-REQ-006）
-7. 一份含獎勵、購買與 Boss 敗局的 case proof：所有 `selected_ids` 皆為正式 content
-   stable ID，opaque 計數為 0；per-act 快照含各幕 battle win/loss 與死亡節點 ID，
-   且 canonical token 隨這些欄位改變。（DC-REQ-007）
+7. reward 選取在 `content_id` 存在時記正式 content stable ID；`GOLD`／`EVENT` 等結構上
+   無 content ID 的獎勵種類記 `reward.kind.N` 佔位字串，且該路徑必須同時計入既有 opaque
+   計數並 fail-visible（不得混入 stable ID 統計冒充可回溯 ID）；driver 端
+   reservation_owner／offer 類選取的 opaque 計數為 0；per-act 快照含各幕 battle
+   win/loss 與死亡節點 ID，且 canonical token 隨這些欄位改變。（DC-REQ-007；原「opaque
+   計數為 0」表述已依 T11 F1/#1 修正——`RewardOfferState.RewardKind` 的 GOLD／EVENT
+   結構上沒有 content stable ID，該表述在出貨資料上不可達，見 evidence-index.md
+   DC-REQ-007 列）
 8. 以「敗局全部集中 act1」的 golden cohort 輸入，`seed_count=1000` 時兩份實作都輸出
    `BALANCE_ACT_ELIMINATION_FLAT`，`seed_count=999` 時兩份都不輸出；同一 golden 的
    act-curve gate 段（`BALANCE_ACT_` 前綴）reason 集合與 `act_curve` token 在 GDScript

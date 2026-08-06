@@ -89,6 +89,13 @@ tier1 為現值，tier2 = `round(tier1 × 1.75)`、tier3 = `round(tier1 × 2.5)`
 與 48 個 loc key（每個 effect 各一組 `display_name_key`／`description_key`，
 `zh_TW`／`en` 皆需）。全部數值為 TUNE：
 
+> `required_count` 門檻是既有內容值，本片只改 `effect_refs`、不改門檻：一／二階皆為
+> 2／4；第三階 `faction_shadow`／`role_mystic`／`role_sentinel`／`role_trickster`／
+> `role_warden` 五者為 5、其餘七個 trait（`faction_arcane`／`faction_ember`／
+> `faction_frost`／`faction_iron`／`faction_verdant`／`role_marksman`／`role_vanguard`）
+> 為 6。下表「tier3 (6隻)」欄名沿用多數案例的字面值，實際部署人數以上述門檻為準
+>（T11 F7 閉環）。
+
 | trait | operation | tier1 (2隻) | tier2 (4隻) | tier3 (6隻) |
 |---|---|---|---|---|
 | `trait.faction_arcane` | GrantMana | 15 | 26 | 38 |
@@ -120,10 +127,28 @@ effect，避免 lifecycle 分類意外變動。
 - 新增 `CombatConfigDef` 欄位會改變 `BattleRulesSnapshot` 的 canonical bytes 與
   battle setup hash：這是一次性遷移，既有 battle golden 必須在 T01 同批重算並在
   commit 訊息中揭露；不得為了保住舊 golden 而把新欄位排除在 hash 之外。
-- challenge 回鏈只回復內容編排與 `content/validation/content_validator.gd:506-508`／
-  `:541-551` 的 gate，機制零改動：run-layer 詞綴仍由 `RunModifierTable` 軌 B 的
-  always-active 規則消費（meta-progression design §6.1／§6.3），battle 側對
-  challenge／encounter-affix／enemy-side source 的 RunOperation 禁令維持不變。
+- challenge 回鏈回復內容編排與 `content/validation/content_validator.gd:506-508`／
+  `:541-551` 的三桶覆蓋 gate：run-layer 詞綴仍由 `RunModifierTable` 軌 B 的
+  always-active 規則消費（meta-progression design §6.1／§6.3）。global source lifecycle
+  的 RunOperation 禁令額外於 `content_validator.gd:1097-1101`（`_global_effect_lifecycle_valid`）
+  收斂為 scoped 判準，與 `specs/combat-core/design.md:117／:236` 的作用域限定同步：
+  challenge 來源僅在效果同時攜帶 `battle_operations`（因此會被 pin 進 `BattleSetup` 的
+  `EffectSourceState`，即「雙軌」）時才拒絕再帶 `run_operations`；純 `run_operations`
+  的 challenge 詞綴（ShopSurcharge／DrainExpeditionHp）不進 `BattleSetup`，不受此條
+  限制，這是 `slice_challenge_affix_01/03` 能回鏈的前提。encounter_affix／enemy-side
+  source（`source_side == &"enemy"`）的 RunOperation 禁令不受此範圍限縮，維持全面禁止
+  ——目前 `encounter_affix` 的唯一呼叫點（`content_validator.gd:1039-1044`）固定傳
+  `source_side = &"enemy"`，故落入 enemy-side 全面禁止分支；若未來新增非 enemy-side
+  的 `encounter_affix` 呼叫點，需重新檢視此判準是否仍成立。既有兩處針對「純 run_operations challenge global source」的 `CONTENT_EFFECT_SOURCE_LIFECYCLE`
+  負向斷言被反轉為 `assert_false`（此規則收斂後的有意結果，T11 F2 閉環，不是繞過）：
+  `test_global_effect_source_lifecycle_validation.gd` 舊版 `test_global_hit_trigger_and_
+  challenge_run_operation_are_rejected` 對純 run_operations 案例的 `assert_true` 由新增的
+  `test_challenge_pure_run_operation_without_battle_operations_is_accepted`（:99-114）
+  以 `assert_false` 取代，原函式改名為 `test_global_hit_trigger_and_challenge_dual_track_
+  run_operation_are_rejected`（:63-93）並把其 run 案例改為雙軌效果，`assert_true` 對雙軌
+  案例維持成立；`test_challenge_affix_operation_validation.gd:249-256`
+  （`test_challenge_chain_modifier_with_non_always_claim_scope_is_rejected`）的純
+  run_operations 案例同樣由 `assert_true` 改為 `assert_false`。
 - 既有 3k screening #2 快照（`specs/balance-playtest/evidence-lock.md`）在本片之後
   一律不得作為回歸對照組；本片只證機制，不宣稱平衡結論。
 

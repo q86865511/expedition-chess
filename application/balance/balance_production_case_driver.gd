@@ -806,17 +806,41 @@ func _capture_act_snapshot(
 	var unit_ids: Array[StringName] = []
 	for unit: UnitInstance in snapshot.roster.unit_instances:
 		unit_ids.append(unit.def_id)
-	var act_snapshot := BalanceBotActSnapshot.new(
+	var act_snapshot := _build_act_snapshot(
 		act_index, snapshot.economy.gold, snapshot.view.expedition_hp,
 		snapshot.roster.unit_instances.size(),
 		snapshot.roster.board.placements.size(), unit_ids,
-		result.battle_wins - act_wins_baseline,
-		result.battle_losses - act_losses_baseline,
+		result.battle_wins, result.battle_losses,
+		act_wins_baseline, act_losses_baseline,
 		elimination_node_id
 	)
 	result.act_snapshots.append(act_snapshot)
 	replay_parts.append(act_snapshot.canonical_token())
 	return true
+
+
+## per-act 差值記帳的純函式核心：該幕 battle_wins／battle_losses 由呼叫時的累計值與
+## baseline 相減得出——baseline 只在 _capture_act_snapshot 成功新增快照時才於 run_case
+## 主迴圈推進，本函式不碰任何 driver/session 狀態，可離線單測多幕序列（review A F6／
+## review B #5：per-act differencing 先前無任何整合測試覆蓋 baseline 推進時序）。
+static func _build_act_snapshot(
+	act_index: int,
+	gold: int,
+	expedition_hp: int,
+	roster_unit_count: int,
+	board_unit_count: int,
+	unit_ids: Array[StringName],
+	battle_wins: int,
+	battle_losses: int,
+	act_wins_baseline: int,
+	act_losses_baseline: int,
+	elimination_node_id: StringName
+) -> BalanceBotActSnapshot:
+	return BalanceBotActSnapshot.new(
+		act_index, gold, expedition_hp, roster_unit_count, board_unit_count, unit_ids,
+		battle_wins - act_wins_baseline, battle_losses - act_losses_baseline,
+		elimination_node_id
+	)
 
 
 func _derive_build_id(roster: RosterState, run_id: StringName) -> StringName:

@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'BalancePlaytest', 'Spec', 'RunnerContract')]
+    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'BalancePlaytest', 'Spec', 'RunnerContract', 'ActEliminationGate')]
     [string]$Suite = 'All',
     [string]$TestPath = '',
     [string]$Case = '',

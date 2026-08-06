@@ -51,8 +51,9 @@
   攜帶 `run_operations`；純 `run_operations` 的 challenge 詞綴（如 ShopSurcharge／
   DrainExpeditionHp）不進 `BattleSetup`，由軌 B 消費，不受此條禁令限制（與
   `specs/combat-core/design.md:117／:236` 的作用域限定一致，見 design.md「決定性與
-  失敗政策」段與 `content_validator.gd:1097-1101`）；此範圍之外（例如 encounter_affix／
-  enemy-side source）的 RunOperation 禁令不得放寬。
+  失敗政策」段與 `content_validator.gd:1097-1101`）；`encounter_affix` 的 RunOperation
+  禁令為 category-based 無條件禁止（不依 source_side），不得放寬；side-based 的通用
+  enemy-side 禁令不在本條範圍（如未來需要須另行明文新增，見 design.md 對應段）。
 - **DC-REQ-007 觀測性**：balance driver 的每一條獎勵／購買選取都必須記錄正式 content
   stable ID；無法取得 stable ID 時必須計入既有 opaque 計數並 fail-visible，不得以
   `reward.kind.N` 之類佔位字串混入 stable ID 統計。`BalanceBotActSnapshot` 必須額外保存

@@ -135,11 +135,14 @@ effect，避免 lifecycle 分類意外變動。
   challenge 來源僅在效果同時攜帶 `battle_operations`（因此會被 pin 進 `BattleSetup` 的
   `EffectSourceState`，即「雙軌」）時才拒絕再帶 `run_operations`；純 `run_operations`
   的 challenge 詞綴（ShopSurcharge／DrainExpeditionHp）不進 `BattleSetup`，不受此條
-  限制，這是 `slice_challenge_affix_01/03` 能回鏈的前提。encounter_affix／enemy-side
-  source（`source_side == &"enemy"`）的 RunOperation 禁令不受此範圍限縮，維持全面禁止
-  ——目前 `encounter_affix` 的唯一呼叫點（`content_validator.gd:1039-1044`）固定傳
-  `source_side = &"enemy"`，故落入 enemy-side 全面禁止分支；若未來新增非 enemy-side
-  的 `encounter_affix` 呼叫點，需重新檢視此判準是否仍成立。既有兩處針對「純 run_operations challenge global source」的 `CONTENT_EFFECT_SOURCE_LIFECYCLE`
+  限制，這是 `slice_challenge_affix_01/03` 能回鏈的前提。`encounter_affix` 的
+  RunOperation 禁令不受此範圍限縮，且判準為 **category-based 無條件禁止**
+  （`source_category == &"encounter_affix"`，不依 `source_side`——T11 F3/N1 閉環）：
+  無論呼叫點傳入哪一方 side，encounter_affix 一律不得攜帶 `run_operations`；
+  負向測試 `test_encounter_affix_run_operation_rejected_regardless_of_source_side`
+  以非 enemy side 直呼驗證。注意：舊版「enemy-side 全面禁止」的 side-based 通用
+  分支已不存在——若未來需要對 challenge/encounter_affix 以外的 enemy-side global
+  source 施加 run-op 禁令，須另行明文新增判準，不得假設本段已涵蓋。既有兩處針對「純 run_operations challenge global source」的 `CONTENT_EFFECT_SOURCE_LIFECYCLE`
   負向斷言被反轉為 `assert_false`（此規則收斂後的有意結果，T11 F2 閉環，不是繞過）：
   `test_global_effect_source_lifecycle_validation.gd` 舊版 `test_global_hit_trigger_and_
   challenge_run_operation_are_rejected` 對純 run_operations 案例的 `assert_true` 由新增的

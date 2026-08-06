@@ -1,7 +1,7 @@
 # G2 difficulty-curve — Fresh evidence index
 
-> 本表記錄本分支（`codex/g2-difficulty-curve`）fresh 執行結果，HEAD 為 `493f1b2`
->（T11 修正：原表頭誤標 `20db291`，見已知訊號與缺口段落 T11 F10 說明）。
+> 本表記錄本分支（`codex/g2-difficulty-curve`）fresh 執行結果，最終 HEAD 為
+> `3f30b3b`（T11 閉環完成；最終 fresh All 見「Fresh All／ExpeditionSoak」段）。
 > 3k screening 為 gate_mode `screening`（非 30k full gate）；`AC-032` 沿用
 > `balance-playtest` 定義，第三切片外部 Gate 維持 `PENDING_EXTERNAL`，不在本片重證範圍。
 
@@ -107,8 +107,11 @@
 
 ## Fresh All／ExpeditionSoak
 
-- `artifacts/test/gut.xml`：`tests=1193`、`failures=0`、`errors=0`、`orphans=0`、
-  `assertions=24765`。
+- **最終 HEAD `3f30b3b`（T11 閉環後）fresh `-Suite All`（2026-08-06）**：
+  `artifacts/test/gut.xml`：`tests=1196`、`failures=0`、`errors=0`、`orphans=0`、
+  `assertions=24789`；`ActEliminationGate` 步驟（T11 F4/N2 新接入）
+  `artifacts/test/act-elimination-gate.log`：`RESULT PASS (5 golden scenarios)`。
+  （前表 T11 期間的 1193/24765 為 reviewer A 於 `493f1b2` 的過渡實測，已由本次取代。）
 - `artifacts/test/expedition-soak.json`：`case_count=10000`、`seed_count=10000`、
   `failures=[]`、`passed=true`、`pool_conservation_checks=10000`、
   `build_operation_count=40000`、`deterministic_replay_count=64`。

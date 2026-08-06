@@ -79,7 +79,7 @@
   PASS、candidate `balance.g2.041458b08bb5`、git_head `b2c7895`、3,000/3,000
   terminal、150/150 replay 零 drift）、`artifacts/test/gut.xml`（1,193 tests／0
   failures）、`artifacts/test/expedition-soak.json`（10,000/10,000 seeds passed）。
-- [ ] **T11 HARD**：兩份獨立 implementation review、finding closure 與證據鎖定，
+- [x] **T11 HARD**：兩份獨立 implementation review、finding closure 與證據鎖定，
   停 Git gate 待使用者裁決。
 
 依賴：T00→全部；T01／T02／T03→T09；T07→T08；T08／T09→T10→T11。

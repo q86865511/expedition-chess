@@ -105,7 +105,9 @@ func gate_reasons(
 
 ## 各幕的進入數／淘汰數／戰鬥勝敗（DC-REQ-008）。`token` 是跨實作比對用的正規字串，
 ## `tools/balance/act-elimination-gate.ps1` 必須對同一輸入逐字產生相同結果。
-func act_curve() -> Dictionary:
+## 私有：Dictionary 形狀只允許存在於 to_json() 的 codec 邊界（spec 契約），
+## 對外的具名 API 是 act_curve_token()。
+func _act_curve() -> Dictionary:
 	var rows := _act_curve_rows()
 	var elimination_total := 0
 	var elimination_acts: Array[int] = []
@@ -285,7 +287,7 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 			"mean_terminal_hp": _rate_bps(ending_hp_total, cases.size()) / 10000.0,
 		},
 		"battle_outcomes": {"wins": battle_wins, "losses": battle_losses},
-		"act_curve": act_curve(),
+		"act_curve": _act_curve(),
 		"case_proofs": case_proofs,
 		"failed_seeds": failed_seeds,
 		"regression_proof": {

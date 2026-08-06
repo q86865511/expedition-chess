@@ -34,6 +34,48 @@ func test_pack_directory_has_expected_definition_counts() -> void:
 	assert_true(_count(pack, &"consumable") >= 1, "應至少 1 個 ConsumableDef")
 	assert_true(_count(pack, &"effect") > 0, "應含引用的 EffectDef")
 
+# G2 difficulty-curve T04（DC-REQ-004）：12 個 TraitDef 的 tier1/2/3 門檻須各自指向
+# 互異的 EffectDef，且量值（ModifyStat/GrantMana/Shield 的 amount）嚴格遞增。
+func test_trait_thresholds_reference_distinct_effects_with_strictly_increasing_amounts() -> void:
+	var pack := _load_pack()
+	var effects_by_id: Dictionary = {}
+	for definition in pack:
+		if definition is EffectDef:
+			effects_by_id[definition.id] = definition
+	var checked_trait_count := 0
+	for definition in pack:
+		if not definition is TraitDef: continue
+		var trait_def := definition as TraitDef
+		assert_eq(trait_def.thresholds.size(), 3, "trait 應有 3 個門檻: %s" % trait_def.id)
+		if trait_def.thresholds.size() != 3: continue
+		var effect_ids: Array[StringName] = []
+		var amounts: Array[int] = []
+		for threshold: TraitThresholdDef in trait_def.thresholds:
+			assert_eq(threshold.effect_refs.size(), 1, "門檻應恰指向 1 個 effect: %s" % trait_def.id)
+			if threshold.effect_refs.is_empty(): continue
+			var effect_id: StringName = threshold.effect_refs[0]
+			effect_ids.append(effect_id)
+			var effect := effects_by_id.get(effect_id) as EffectDef
+			assert_not_null(effect, "找不到 trait 門檻引用的 effect: %s (trait=%s)" % [effect_id, trait_def.id])
+			if effect == null: continue
+			assert_eq(effect.battle_operations.size(), 1, "trait 效果應恰含 1 個 battle_operation: %s" % effect_id)
+			if effect.battle_operations.is_empty(): continue
+			amounts.append(int(effect.battle_operations[0].get("amount")))
+		var unique_ids: Dictionary = {}
+		for effect_id: StringName in effect_ids:
+			unique_ids[effect_id] = true
+		assert_eq(
+			unique_ids.size(), 3,
+			"三階 effect id 應互異: %s -> %s" % [trait_def.id, effect_ids]
+		)
+		for index: int in range(1, amounts.size()):
+			assert_true(
+				amounts[index] > amounts[index - 1],
+				"trait %s 的階梯量值應嚴格遞增: %s" % [trait_def.id, amounts]
+			)
+		checked_trait_count += 1
+	assert_eq(checked_trait_count, 12, "應檢查全部 12 個 TraitDef")
+
 func test_pack_equipment_recipes_are_a_closed_set_of_21_unique_pairs() -> void:
 	var pack := _load_pack()
 	var components: Array[StringName] = []
@@ -101,7 +143,8 @@ func test_pack_installs_validated_with_zero_issues_via_content_registry() -> voi
 func _load_pack() -> Array[ContentDefinition]:
 	var result: Array[ContentDefinition] = []
 	_load_dir(PACK_ROOT, result)
-	assert_eq(result.size(), 90, "pack 資源總數應為 90（12+6+21+16+1+34）")
+	# G2 difficulty-curve T04：trait 門檻階梯化新增 24 個 tier2/tier3 effect（34→58）。
+	assert_eq(result.size(), 114, "pack 資源總數應為 114（12+6+21+16+1+58）")
 	return result
 
 func _load_dir(path: String, result: Array[ContentDefinition]) -> void:

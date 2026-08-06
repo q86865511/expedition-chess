@@ -22,7 +22,8 @@ const TUNE_FIELDS: Array[String] = [
 	"damage_mana_min", "damage_mana_max", "overtime_step_bps", "overtime_cap_bps",
 	"act1_base_damage", "act2_base_damage", "act3_base_damage", "survivor_damage",
 	"boss_damage", "effect_resolution_budget", "operation_budget", "event_budget",
-	"entity_budget", "cost_tier", "hp_threshold_bps", "int_value", "stack_limit",
+	"entity_budget", "act1_enemy_stat_bps", "act2_enemy_stat_bps",
+	"act3_enemy_stat_bps", "cost_tier", "hp_threshold_bps", "int_value", "stack_limit",
 	"star", "node_scores",
 ]
 const FIXED_FIELDS: Array[String] = BalanceTuneFieldPolicy.FIXED_FIELDS

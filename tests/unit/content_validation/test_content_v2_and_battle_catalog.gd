@@ -15,12 +15,13 @@ func test_content_v2_compiles_combat_config_and_boss_source_round_trip() -> void
 	if not compiled_config.ok or not compiled_encounter.ok:
 		return
 	assert_eq(compiled_config.entry.payload.record_type, ContentCategory.COMBAT_CONFIG)
-	assert_eq(compiled_config.entry.payload.children.size(), 29)
+	# DC-REQ-001 重算：26 個既有純量 + 3 個 per-act 敵方成長乘數 + 3 個共用欄位。
+	assert_eq(compiled_config.entry.payload.children.size(), 32)
 	var encoded_config := codec.encode_entry(compiled_config.entry)
 	var encoded_encounter := codec.encode_entry(compiled_encounter.entry)
 	assert_true(encoded_config.ok)
 	assert_true(encoded_encounter.ok)
-	assert_eq(codec.decode_entry(encoded_config.canonical_bytes).entry.payload.children.size(), 29)
+	assert_eq(codec.decode_entry(encoded_config.canonical_bytes).entry.payload.children.size(), 32)
 	var decoded_encounter := codec.decode_entry(encoded_encounter.canonical_bytes)
 	assert_true(decoded_encounter.ok)
 	if decoded_encounter.ok:

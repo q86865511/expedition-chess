@@ -170,6 +170,7 @@ runner 腳本以 `SceneTree` 作入口，從 `_init()` 啟動明確的 main coro
 | **[AC-076]** | 每個第 8.7 節公開服務各有一個合法 request 與一個失敗 fixture | 依序觸發缺 ID、非法 transition、stale offer、壞 setup、未知 operation、I/O failure、壞 RNG context，並在錯誤 lifecycle 呼叫 step／result | 每次回傳對應具名 error；canonical state、serial、RNG counter、事件與 committed save 均不變，沒有 silent null、assert crash 或部分套用 |
 | **[AC-077]** | G2 全部場景、ContentDefinition 與 `zh_TW`／`en` 目錄 | 靜態掃描玩家可見字串並比較 key 集合 | 場景／domain 無硬編碼玩家文字，繁中無缺值，英文目錄具有完全相同 key；刪任一必要 key 會使驗證非零退出 |
 | **[AC-078]** | registry 同時保留 manifest A／B，兩者有同 stable ID 但數值不同，active run pinned A 而 CAMP 使用 B | 兩端各自 resolve、重載 active run，並執行公開 API 掃描 | run 永遠取得 A、CAMP／新 run 取得 B；缺 digest 的呼叫不存在，移除 A 後只將 run 標為 incompatible 而不退回 B |
+| **[AC-079]** | 同一 run seed 的三幕 Boss 節點與同一份普通遭遇模板 | 依序進入三幕並比較編譯後的遭遇快照，再把某一幕的 Boss encounter 移出 pinned 集合 | 三幕 Boss 為互異 EncounterDef；第一幕敵方數值等於星級縮放值本身，第二、三幕等於再套幕乘數後的整數值，攻速／移速／射程／法力三幕相同；重複編譯結果完全相同且亂數流計數不變；缺 pinned encounter 時具名失敗而非退回其他幕的 Boss |
 
 ---
 

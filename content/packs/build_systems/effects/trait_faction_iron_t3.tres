@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_ti3a1"]
+[ext_resource type="Script" path="res://content/definitions/modify_stat_operation_def.gd" id="2_ti3a2"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_ti3a3"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_ti3a4"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ti3a5"]
+
+[sub_resource type="Resource" id="Resource_ti3a6"]
+script = ExtResource("2_ti3a2")
+stat = &"armor"
+mode = &"add"
+amount = 20
+duration_ticks = 1800
+target = &"all_allies"
+
+[resource]
+script = ExtResource("5_ti3a5")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_ti3a1")]([SubResource("Resource_ti3a6")])
+stacking = &"replace"
+duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_trait_faction_iron_t3_description"
+id = &"effect.trait_faction_iron_t3"
+display_name_key = &"loc.effect_trait_faction_iron_t3"

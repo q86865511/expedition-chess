@@ -11,12 +11,12 @@ effect_refs = Array[StringName]([&"effect.trait_role_marksman"])
 [sub_resource type="Resource" id="Resource_tn63o"]
 script = ExtResource("2_kl0xf")
 required_count = 4
-effect_refs = Array[StringName]([&"effect.trait_role_marksman"])
+effect_refs = Array[StringName]([&"effect.trait_role_marksman_t2"])
 
 [sub_resource type="Resource" id="Resource_xhakt"]
 script = ExtResource("2_kl0xf")
 required_count = 6
-effect_refs = Array[StringName]([&"effect.trait_role_marksman"])
+effect_refs = Array[StringName]([&"effect.trait_role_marksman_t3"])
 
 [resource]
 script = ExtResource("1_i6vvr")

@@ -72,6 +72,10 @@ func run_case(strategy_id: StringName, seed_index: int) -> BalanceBotCaseResult:
 	var controller: RunController = composition.controller
 	var strategy := BalanceBotStrategy.new(strategy_id)
 	var previous_node_id := ""
+	# DC-REQ-007：per-act battle_wins/battle_losses 記「該幕內」增量，故以捕捉當下的
+	# 全局累計值當基準，下次捕捉時再相減；只在真的新增快照時才推進基準（見下方呼叫點）。
+	var act_wins_baseline := 0
+	var act_losses_baseline := 0
 	var generated := _dispatch(session, RunPresentationIntent.Kind.GENERATE_MAP)
 	if not generated.is_empty():
 		repository.free()
@@ -146,8 +150,20 @@ func run_case(strategy_id: StringName, seed_index: int) -> BalanceBotCaseResult:
 			repository.free()
 			return _fail(result, resolution_error)
 		result.completed_node_count = session.snapshot().map.completed_node_ids.size()
-		if node.node_kind == MapNodeState.NodeKind.BOSS:
-			_capture_act_snapshot(session.snapshot(), node.act_index, result, replay_parts)
+		# 每一幕的正常擷取點是該幕 Boss 完成時（不論勝敗）；死在非 Boss 節點
+		# 時上面這個條件永遠等不到，該幕就會漏快照，所以額外用「run 已落 RESULTS」
+		# 當補齊點（見 DC-REQ-007／design.md「觀測性與 per-act gate」段）。
+		var run_ended_here := session.view_state().run_phase == RunState.RunPhase.RESULTS
+		if node.node_kind == MapNodeState.NodeKind.BOSS or run_ended_here:
+			var eliminated_here := run_ended_here and session.view_state().expedition_hp <= 0
+			var captured := _capture_act_snapshot(
+				session.snapshot(), node.act_index, result, replay_parts,
+				act_wins_baseline, act_losses_baseline,
+				StringName(node.node_id) if eliminated_here else &""
+			)
+			if captured:
+				act_wins_baseline = result.battle_wins
+				act_losses_baseline = result.battle_losses
 		_trace("node resolved completed=%d phase=%d" % [
 			result.completed_node_count, session.view_state().run_phase,
 		])
@@ -408,7 +424,8 @@ func _shop_actions(
 	var unit_count := snapshot.roster.unit_instances.size()
 	var level := snapshot.economy.level
 	var has_affordable_buy := false
-	var bench_is_full := snapshot.roster.bench_unit_instance_ids.size() >= 9
+	var bench_count := snapshot.roster.bench_unit_instance_ids.size()
+	var bench_is_full := bench_count >= 9
 	if bench_is_full:
 		for instance_id: String in snapshot.roster.bench_unit_instance_ids:
 			actions.append(BalanceBotAction.new(
@@ -441,9 +458,10 @@ func _shop_actions(
 			config.max_interest, unit_count, level
 		)
 		xp_economy_score = 150
+	var xp_pressure := bench_pressure_score(bench_count, unit_count, level)
 	actions.append(BalanceBotAction.new(
 		BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", config.xp_buy_cost,
-		40, xp_economy_score, 20, xp_legal
+		40 + xp_pressure, xp_economy_score + xp_pressure, 20 + xp_pressure, xp_legal
 	))
 	actions.append(BalanceBotAction.new(
 		BalanceBotAction.Kind.REROLL, &"action.refresh_shop", config.reroll_cost,
@@ -454,6 +472,17 @@ func _shop_actions(
 		economy_hold_score(unit_count, level), 30
 	))
 	return actions
+
+
+## G2 difficulty-curve 第二個評分退化修復：板面已滿（unit_count >= level，
+## board 容量無法再多塞人）且板凳有真的溢出戰力（>=2 隻卡住待部署，1 隻算正常
+## 換血雜訊不算數）時，給 BUY_XP 加成——讓 tempo/synergy 也會被說服買經驗，
+## 不再永遠不買（3k 實測 buy_xp_count=0）。加成同時疊上 tempo/economy/synergy
+## 三個分數軸，是否被說服取決於各策略自己的加權公式，不改動任一策略的權重。
+static func bench_pressure_score(bench_count: int, unit_count: int, level: int) -> int:
+	if unit_count < level or bench_count < 2:
+		return 0
+	return 60 * (bench_count - 1)
 
 
 static func economy_hold_score(unit_count: int, level: int) -> int:
@@ -759,25 +788,59 @@ func _map_world_digest(map: MapState) -> String:
 	return EconomyPayloadDigest.sha256(parts)
 
 
+## 回傳是否真的新增了一筆快照（該幕尚未捕捉過）；呼叫端只在為 true 時才把
+## act_wins_baseline／act_losses_baseline 推進到目前累計值，讓下一幕的
+## battle_wins/battle_losses 差值正確從本幕結束點算起。
 func _capture_act_snapshot(
 	snapshot: RunPresentationSnapshot,
 	act_index: int,
 	result: BalanceBotCaseResult,
-	replay_parts: Array[String]
-) -> void:
+	replay_parts: Array[String],
+	act_wins_baseline: int,
+	act_losses_baseline: int,
+	elimination_node_id: StringName
+) -> bool:
 	for existing: BalanceBotActSnapshot in result.act_snapshots:
 		if existing.act_index == act_index:
-			return
+			return false
 	var unit_ids: Array[StringName] = []
 	for unit: UnitInstance in snapshot.roster.unit_instances:
 		unit_ids.append(unit.def_id)
-	var act_snapshot := BalanceBotActSnapshot.new(
+	var act_snapshot := _build_act_snapshot(
 		act_index, snapshot.economy.gold, snapshot.view.expedition_hp,
 		snapshot.roster.unit_instances.size(),
-		snapshot.roster.board.placements.size(), unit_ids
+		snapshot.roster.board.placements.size(), unit_ids,
+		result.battle_wins, result.battle_losses,
+		act_wins_baseline, act_losses_baseline,
+		elimination_node_id
 	)
 	result.act_snapshots.append(act_snapshot)
 	replay_parts.append(act_snapshot.canonical_token())
+	return true
+
+
+## per-act 差值記帳的純函式核心：該幕 battle_wins／battle_losses 由呼叫時的累計值與
+## baseline 相減得出——baseline 只在 _capture_act_snapshot 成功新增快照時才於 run_case
+## 主迴圈推進，本函式不碰任何 driver/session 狀態，可離線單測多幕序列（review A F6／
+## review B #5：per-act differencing 先前無任何整合測試覆蓋 baseline 推進時序）。
+static func _build_act_snapshot(
+	act_index: int,
+	gold: int,
+	expedition_hp: int,
+	roster_unit_count: int,
+	board_unit_count: int,
+	unit_ids: Array[StringName],
+	battle_wins: int,
+	battle_losses: int,
+	act_wins_baseline: int,
+	act_losses_baseline: int,
+	elimination_node_id: StringName
+) -> BalanceBotActSnapshot:
+	return BalanceBotActSnapshot.new(
+		act_index, gold, expedition_hp, roster_unit_count, board_unit_count, unit_ids,
+		battle_wins - act_wins_baseline, battle_losses - act_losses_baseline,
+		elimination_node_id
+	)
 
 
 func _derive_build_id(roster: RosterState, run_id: StringName) -> StringName:

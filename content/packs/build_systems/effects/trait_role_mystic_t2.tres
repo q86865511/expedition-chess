@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EffectDef" format=3]
+
+[ext_resource type="Script" path="res://content/definitions/battle_operation_def.gd" id="1_ry2a1"]
+[ext_resource type="Script" path="res://content/definitions/grant_mana_operation_def.gd" id="2_ry2a2"]
+[ext_resource type="Script" path="res://content/definitions/condition_def.gd" id="3_ry2a3"]
+[ext_resource type="Script" path="res://content/definitions/run_operation_def.gd" id="4_ry2a4"]
+[ext_resource type="Script" path="res://content/definitions/effect_def.gd" id="5_ry2a5"]
+
+[sub_resource type="Resource" id="Resource_ry2a6"]
+script = ExtResource("2_ry2a2")
+amount = 18
+target = &"all_allies"
+
+[resource]
+script = ExtResource("5_ry2a5")
+trigger = &"battle_start"
+battle_operations = Array[ExtResource("1_ry2a1")]([SubResource("Resource_ry2a6")])
+stacking = &"replace"
+duration_ticks = 1800
+schema_version = 2
+description_key = &"loc.effect_trait_role_mystic_t2_description"
+id = &"effect.trait_role_mystic_t2"
+display_name_key = &"loc.effect_trait_role_mystic_t2"

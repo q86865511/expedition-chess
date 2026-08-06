@@ -1,6 +1,6 @@
 ﻿[CmdletBinding()]
 param(
-    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'BalancePlaytest', 'Spec', 'RunnerContract')]
+    [ValidateSet('All', 'Toolchain', 'Import', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Soak', 'Expedition', 'ExpeditionSoak', 'BalancePlaytest', 'Spec', 'RunnerContract', 'ActEliminationGate')]
     [string]$Suite = 'All',
     [string]$TestPath = '',
     [string]$Case = '',
@@ -1426,7 +1426,7 @@ try {
         $failureMessage = [string]$toolchain.Message
     }
     else {
-        $selected = if ($Suite -eq 'All') { @('Import', 'RunnerContract', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Expedition', 'Spec') } else { @($Suite) }
+        $selected = if ($Suite -eq 'All') { @('Import', 'RunnerContract', 'Smoke', 'Gut', 'Content', 'Canonical', 'Combat', 'Expedition', 'ActEliminationGate', 'Spec') } else { @($Suite) }
         $finalExitCode = 0
         foreach ($name in $selected) {
             if ($name -eq 'Import') {
@@ -1459,6 +1459,24 @@ try {
                     $gutTimeoutSeconds = [Math]::Max($TimeoutSeconds, $GutTimeoutFloorSeconds)
                     $code = Invoke-RunnerScript -Executable $resolvedGodot -Name 'Gut' -ScriptPath 'res://tests/runners/gut_runner.gd' -UserArguments $userArgs -TimeoutOverrideSeconds $gutTimeoutSeconds
                 }
+            }
+            elseif ($name -eq 'ActEliminationGate') {
+                # DC-REQ-008：GDScript／PowerShell 雙實作的 golden 必須逐字相同；這一步
+                # 讓 PS 半邊（tools/balance/act-elimination-gate.ps1）接進 -Suite All，
+                # 不再只能靠人工單獨執行才會發現雙實作漂移（review A F4／review B #4 相關）。
+                $goldenScriptPath = Join-Path $repoRoot 'tools\balance\tests\test-act-elimination-gate.ps1'
+                $goldenLogPath = Join-Path $artifactRoot 'act-elimination-gate.log'
+                $goldenRunStarted = [DateTime]::UtcNow
+                $goldenOutput = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $goldenScriptPath 2>&1
+                $code = $LASTEXITCODE
+                ($goldenOutput | Out-String) | Out-File -LiteralPath $goldenLogPath -Encoding utf8
+                $runs.Add([pscustomobject]@{
+                        name = $name
+                        exit_code = $code
+                        started_at_utc = $goldenRunStarted.ToString('yyyy-MM-ddTHH:mm:ssZ')
+                        finished_at_utc = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
+                        arguments = @()
+                    })
             }
             else {
                 $scriptName = switch ($name) {

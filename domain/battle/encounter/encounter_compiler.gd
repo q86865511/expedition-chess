@@ -12,6 +12,9 @@ const MAX_U32: int = 0xffffffff
 const I32_MIN: int = -2147483648
 const I32_MAX: int = 2147483647
 const BASIS_POINTS: int = 10000
+const COMBAT_CONFIG_ID: StringName = &"config.combat_default"
+const MIN_ACT_INDEX: int = 1
+const MAX_ACT_INDEX: int = 3
 
 var _entity_ids := BattleEntityIdCodecV1.new()
 var _stable_ids := StableIdValidator.new()
@@ -37,6 +40,11 @@ func compile(
 		return EncounterCompileResult.failure(
 			RULE_INVALID, &"encounter", request.encounter_id
 		)
+	# DC-REQ-001：幕成長乘數是 pinned config 的查表值，不新增亂數也不讀玩家 build。
+	# _validate_request 已擋掉 config 缺席與 act_index 越界，此處必得非 null。
+	var act_bps := _act_multiplier_bps(
+		request.act_index, catalog.try_combat_config_rule(COMBAT_CONFIG_ID)
+	)
 	var preview := EncounterPreviewSnapshot.new()
 	preview.preview_schema_version = encounter.preview_schema_version
 	preview.encounter_id = request.encounter_id
@@ -85,7 +93,7 @@ func compile(
 				RULE_MISSING, StringName("%s.unit_id" % path), spawn.unit_id
 			)
 		var scaling := _find_scaling(unit_rule.star_scalings, spawn.star)
-		if not _unit_rule_valid(unit_rule, scaling):
+		if not _unit_rule_valid(unit_rule, scaling, act_bps):
 			return EncounterCompileResult.failure(
 				RULE_INVALID, StringName("%s.unit_id" % path), spawn.unit_id
 			)
@@ -99,7 +107,7 @@ func compile(
 				reference_error.source_id
 			)
 		var unit := _build_unit_snapshot(
-			encoded_id.entity_id, spawn, unit_rule, scaling, catalog
+			encoded_id.entity_id, spawn, unit_rule, scaling, catalog, act_bps
 		)
 		preview.enemy_units.append(unit)
 		spawn_keys.append(spawn.spawn_key)
@@ -153,8 +161,13 @@ func _validate_request(
 		return EncounterCompileError.create(
 			INPUT_INVALID, &"encounter_id", request.encounter_id
 		)
-	if not _is_u32(request.act_index):
+	# DC-REQ-001：幕成長乘數只在 1–3 有定義；表外的幕必須具名失敗，不得 fallback 到恆等。
+	if request.act_index < MIN_ACT_INDEX or request.act_index > MAX_ACT_INDEX:
 		return EncounterCompileError.create(INPUT_INVALID, &"act_index")
+	if catalog.try_combat_config_rule(COMBAT_CONFIG_ID) == null:
+		return EncounterCompileError.create(
+			INPUT_INVALID, &"combat_config", COMBAT_CONFIG_ID
+		)
 	if not _is_u32(request.depth):
 		return EncounterCompileError.create(INPUT_INVALID, &"depth")
 	if not _is_u32(request.challenge_level):
@@ -202,7 +215,8 @@ func _build_unit_snapshot(
 	spawn: BattleEnemySpawnRule,
 	unit_rule: BattleUnitRule,
 	scaling: BattleStarScalingRule,
-	catalog: BattleRuleCatalog
+	catalog: BattleRuleCatalog,
+	act_bps: int
 ) -> UnitBattleSnapshot:
 	var unit := UnitBattleSnapshot.new()
 	unit.instance_id = instance_id
@@ -211,11 +225,19 @@ func _build_unit_snapshot(
 	unit.logical_y = spawn.logical_y
 	unit.logical_x = spawn.logical_x
 	unit.star = spawn.star
-	unit.health = _scaled(unit_rule.base_stats.health, scaling.health_bps)
-	unit.attack = _scaled(unit_rule.base_stats.attack, scaling.attack_bps)
-	unit.armor = _scaled(unit_rule.base_stats.armor, scaling.armor_bps)
-	unit.magic_resist = _scaled(
-		unit_rule.base_stats.magic_resist, scaling.magic_resist_bps
+	# DC-REQ-001：幕乘數疊乘在星級縮放之後，且只作用於這四個純量；
+	# 攻速／移速／射程／法力是節奏與可達性語意，維持只受星級縮放。
+	unit.health = _act_scaled(
+		unit_rule.base_stats.health, scaling.health_bps, act_bps
+	)
+	unit.attack = _act_scaled(
+		unit_rule.base_stats.attack, scaling.attack_bps, act_bps
+	)
+	unit.armor = _act_scaled(
+		unit_rule.base_stats.armor, scaling.armor_bps, act_bps
+	)
+	unit.magic_resist = _act_scaled(
+		unit_rule.base_stats.magic_resist, scaling.magic_resist_bps, act_bps
 	)
 	unit.attack_speed_milli = _scaled(
 		unit_rule.base_stats.attack_speed_milli, scaling.attack_speed_bps
@@ -430,7 +452,8 @@ func _find_scaling(
 
 func _unit_rule_valid(
 	unit_rule: BattleUnitRule,
-	scaling: BattleStarScalingRule
+	scaling: BattleStarScalingRule,
+	act_bps: int
 ) -> bool:
 	if unit_rule == null or unit_rule.base_stats == null or scaling == null:
 		return false
@@ -456,13 +479,23 @@ func _unit_rule_valid(
 		scaling.max_mana_bps,
 		scaling.move_speed_bps,
 	])
+	# 與 _build_unit_snapshot 同序：前四個純量吃幕乘數，其餘維持恆等。
+	var act_multipliers := PackedInt64Array([
+		act_bps, act_bps, act_bps, act_bps,
+		BASIS_POINTS, BASIS_POINTS, BASIS_POINTS, BASIS_POINTS, BASIS_POINTS,
+	])
 	var scaled: Array[int] = []
 	for index: int in range(base_values.size()):
 		if not _is_i32(base_values[index]) \
 			or multipliers[index] < 1 \
-			or multipliers[index] > 100000:
+			or multipliers[index] > 100000 \
+			or act_multipliers[index] < 1 \
+			or act_multipliers[index] > 100000:
 			return false
 		var value := _scaled(base_values[index], multipliers[index])
+		if not _is_i32(value):
+			return false
+		value = _scaled(value, act_multipliers[index])
 		if not _is_i32(value):
 			return false
 		scaled.append(value)
@@ -478,6 +511,18 @@ func _scaled(base_value: int, multiplier_bps: int) -> int:
 	@warning_ignore("integer_division")
 	var result: int = (base_value * multiplier_bps) / BASIS_POINTS
 	return result
+
+## 星級縮放先、幕縮放後，兩步各自整數截斷（design「敵方成長」段的算例）。
+func _act_scaled(base_value: int, star_bps: int, act_bps: int) -> int:
+	return _scaled(_scaled(base_value, star_bps), act_bps)
+
+func _act_multiplier_bps(
+	act_index: int, config: BattleCombatConfigRule
+) -> int:
+	match act_index:
+		2: return config.act2_enemy_stat_bps
+		3: return config.act3_enemy_stat_bps
+		_: return config.act1_enemy_stat_bps
 
 func _unit_before(left: UnitBattleSnapshot, right: UnitBattleSnapshot) -> bool:
 	if left.logical_y != right.logical_y:

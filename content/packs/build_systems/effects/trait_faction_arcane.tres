@@ -8,7 +8,6 @@
 
 [sub_resource type="Resource" id="Resource_sf3v0"]
 script = ExtResource("2_16gga")
-# TUNE: max_mana +15 依附錄 B 映射為開戰全隊 mana +15。
 amount = 15
 target = &"all_allies"
 
@@ -22,3 +21,4 @@ schema_version = 2
 description_key = &"loc.effect_trait_faction_arcane_description"
 id = &"effect.trait_faction_arcane"
 display_name_key = &"loc.effect_trait_faction_arcane"
+# TUNE: max_mana +15 依附錄 B 映射為開戰全隊 mana +15。

@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$GodotPath,
-    [string]$CandidatePath = 'specs\balance-playtest\candidates\balance.g2.7d47fada8091.json',
+    [string]$CandidatePath = 'specs\balance-playtest\candidates\balance.g2.041458b08bb5.json',
     [string]$PinnedProductionCandidatePath = 'application\balance\production_balance_candidate.json',
     [string]$FrozenScreeningPath = 'artifacts\test\balance-playtest-screening.json',
     [string]$Tier2EvidencePath = 'artifacts\test\balance-phase0-tier2plus-evidence.json',

@@ -10,7 +10,6 @@
 script = ExtResource("2_0abxx")
 stat = &"attack_speed_milli"
 mode = &"add"
-# TUNE: attack_speed 8 依附錄 B 暫定 ×10 映射為 milli 80。
 amount = 80
 duration_ticks = 1800
 target = &"all_allies"
@@ -25,3 +24,4 @@ schema_version = 2
 description_key = &"loc.effect_trait_faction_shadow_description"
 id = &"effect.trait_faction_shadow"
 display_name_key = &"loc.effect_trait_faction_shadow"
+# TUNE: attack_speed 8 依附錄 B 暫定 ×10 映射為 milli 80。

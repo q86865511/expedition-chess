@@ -1,0 +1,592 @@
+{
+	"golden_id": "difficulty-curve.t08.act-elimination.v1",
+	"note": "DC-REQ-008 per-act elimination gate 的雙實作 golden。case_proofs 的欄位形狀與 balance report 的 case_proofs[].act_snapshots[] 相同；GDScript(BalanceBotReport) 與 PowerShell(tools/balance/act-elimination-gate.ps1) 兩側各自消費本檔，必須對每個 scenario 產出逐字相同的 act_curve_token 與 gate_reasons。",
+	"token_format": "ACT-CURVE-V1|seed_count=<n>|<act>:<entered>:<eliminated>:<battle_wins>:<battle_losses>(x3)|total=<n>|acts=<逗號分隔的有淘汰幕>",
+	"scenarios": [
+		{
+			"name": "flat_act1_at_threshold",
+			"cohort_seed_count": 1000,
+			"expected_act_curve_token": "ACT-CURVE-V1|seed_count=1000|1:3:2:4:2|2:1:0:3:0|3:1:0:3:0|total=2|acts=1",
+			"expected_gate_reasons": ["BALANCE_ACT_ELIMINATION_FLAT"],
+			"case_proofs": [
+				{
+					"strategy_id": "tempo",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 1,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 12,
+							"expedition_hp": 0,
+							"roster_unit_count": 2,
+							"board_unit_count": 2,
+							"stable_unit_ids": ["unit.slice_player_00", "unit.slice_player_01"],
+							"battle_wins": 1,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act1.layer2.normal"
+						}
+					]
+				},
+				{
+					"strategy_id": "economy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 1,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 30,
+							"expedition_hp": 0,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 0,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act1.layer1.normal"
+						}
+					]
+				},
+				{
+					"strategy_id": "synergy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "flat_act1_below_threshold",
+			"cohort_seed_count": 999,
+			"expected_act_curve_token": "ACT-CURVE-V1|seed_count=999|1:3:2:4:2|2:1:0:3:0|3:1:0:3:0|total=2|acts=1",
+			"expected_gate_reasons": [],
+			"case_proofs": [
+				{
+					"strategy_id": "tempo",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 1,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 12,
+							"expedition_hp": 0,
+							"roster_unit_count": 2,
+							"board_unit_count": 2,
+							"stable_unit_ids": ["unit.slice_player_00", "unit.slice_player_01"],
+							"battle_wins": 1,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act1.layer2.normal"
+						}
+					]
+				},
+				{
+					"strategy_id": "economy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 1,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 30,
+							"expedition_hp": 0,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 0,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act1.layer1.normal"
+						}
+					]
+				},
+				{
+					"strategy_id": "synergy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "spread_act1_and_act2",
+			"cohort_seed_count": 1000,
+			"expected_act_curve_token": "ACT-CURVE-V1|seed_count=1000|1:3:1:6:1|2:2:1:3:1|3:1:0:3:0|total=2|acts=1,2",
+			"expected_gate_reasons": [],
+			"case_proofs": [
+				{
+					"strategy_id": "tempo",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 1,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 12,
+							"expedition_hp": 0,
+							"roster_unit_count": 2,
+							"board_unit_count": 2,
+							"stable_unit_ids": ["unit.slice_player_00", "unit.slice_player_01"],
+							"battle_wins": 1,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act1.layer2.normal"
+						}
+					]
+				},
+				{
+					"strategy_id": "economy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 2,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 30,
+							"expedition_hp": 14,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 2,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 41,
+							"expedition_hp": 0,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 0,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act2.layer1.elite"
+						}
+					]
+				},
+				{
+					"strategy_id": "synergy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 3,
+							"board_unit_count": 3,
+							"stable_unit_ids": [
+								"unit.slice_player_00",
+								"unit.slice_player_01",
+								"unit.slice_player_02"
+							],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "no_elimination_at_threshold",
+			"cohort_seed_count": 1000,
+			"expected_act_curve_token": "ACT-CURVE-V1|seed_count=1000|1:3:0:9:0|2:3:0:9:0|3:3:0:9:0|total=0|acts=",
+			"expected_gate_reasons": [],
+			"case_proofs": [
+				{
+					"strategy_id": "tempo",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				},
+				{
+					"strategy_id": "economy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				},
+				{
+					"strategy_id": "synergy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "flat_act3_at_threshold",
+			"cohort_seed_count": 1000,
+			"expected_act_curve_token": "ACT-CURVE-V1|seed_count=1000|1:3:0:9:0|2:3:0:9:0|3:3:2:4:2|total=2|acts=3",
+			"expected_gate_reasons": ["BALANCE_ACT_ELIMINATION_FLAT"],
+			"case_proofs": [
+				{
+					"strategy_id": "tempo",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 0,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 1,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act3.layer5.boss"
+						}
+					]
+				},
+				{
+					"strategy_id": "economy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": false,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 33,
+							"expedition_hp": 0,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 0,
+							"battle_losses": 1,
+							"elimination_node_id": "route.act3.layer4.elite"
+						}
+					]
+				},
+				{
+					"strategy_id": "synergy",
+					"seed_index": 0,
+					"terminal": true,
+					"won": true,
+					"act_reached": 3,
+					"act_snapshots": [
+						{
+							"act_index": 1,
+							"gold": 8,
+							"expedition_hp": 18,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 2,
+							"gold": 14,
+							"expedition_hp": 16,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						},
+						{
+							"act_index": 3,
+							"gold": 21,
+							"expedition_hp": 12,
+							"roster_unit_count": 1,
+							"board_unit_count": 1,
+							"stable_unit_ids": ["unit.slice_player_00"],
+							"battle_wins": 3,
+							"battle_losses": 0,
+							"elimination_node_id": ""
+						}
+					]
+				}
+			]
+		}
+	]
+}

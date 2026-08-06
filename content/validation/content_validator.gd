@@ -503,9 +503,10 @@ func _validate_challenge_chain(definitions: Array[ContentDefinition]) -> void:
 			var previous: UnlockDef = levels[level - 1]
 			if unlock.prerequisite_refs.size() != 1 or unlock.prerequisite_refs[0] != previous.id:
 				_issue(&"CONTENT_CHALLENGE_CHAIN", unlock.id, &"prerequisite_refs", "gap")
-			# BP-SI-001：challenge 的 run-layer modifier 尚未與 battle global source 分流；
-			# 空 modifier_refs 在規格修訂前是明示暫緩，不再當作鏈結構缺失。
-			# 見 res://specs/balance-playtest/spec-issues.md。
+			# BP-SI-001（已解除，見 res://specs/balance-playtest/spec-issues.md）：鏈結構本身
+			# （level 序列／prerequisite）不要求每個 unlock 都有非空 modifier_refs——是否覆蓋
+			# 三桶由 _validate_challenge_affix_roles 聚合判定；slice_challenge_affix_02
+			# （BP-SI-002，續 OPEN）仍刻意不連線，level 3 因此維持空 modifier_refs，非鏈結構缺失。
 	_validate_challenge_affix_roles(levels)
 
 ## design §7.2（S5-AC-010）：challenge 鏈 1..5 的 modifier_refs 必須指向 challenge 詞綴自己的
@@ -540,14 +541,17 @@ func _validate_challenge_affix_roles(levels: Dictionary) -> void:
 				affix_effects.append(effect)
 	if not authored: return
 	var battle_track := false
+	var shop_surcharge := false
+	var expedition_drain := false
 	for effect: EffectDef in affix_effects:
 		if not effect.battle_operations.is_empty(): battle_track = true
-	# BP-SI-001：run operation 桶在正式 run-layer 分流規格完成前暫緩；保留 battle track
-	# 守門，不靜默刪除整條 challenge coverage。見 spec-issues.md。
-	if battle_track: return
+		for operation: RunOperationDef in effect.run_operations:
+			if operation is ShopSurchargeOperationDef: shop_surcharge = true
+			elif operation is DrainExpeditionHpOperationDef: expedition_drain = true
+	if battle_track and shop_surcharge and expedition_drain: return
 	_issue(
 		&"CONTENT_CHALLENGE_AFFIX_COVERAGE", &"catalog.challenge_affix", &"modifier_refs",
-		"battle=%s/run_buckets=deferred:BP-SI-001" % battle_track
+		"battle=%s/surcharge=%s/drain=%s" % [battle_track, shop_surcharge, expedition_drain]
 	)
 
 func _validate_economy(definitions: Array[ContentDefinition]) -> void:
@@ -935,6 +939,14 @@ func _validate_combat_config(
 	if config.entity_budget < 64 or config.entity_budget > 1024 \
 		or config.entity_budget < entity_stress_minimum:
 		_issue(&"CONTENT_COMBAT_CONFIG_BUDGET", config.id, &"entity_budget", str(entity_stress_minimum))
+	# spec §5.13:第一幕的敵方成長乘數固定為恆等 10000(固定規則,非 TUNE)。
+	if config.act1_enemy_stat_bps != 10000:
+		_issue(&"CONTENT_COMBAT_CONFIG_FIXED", config.id, &"act1_enemy_stat_bps")
+	# act2／act3 為 TUNE;值域沿用 EncounterCompiler 對縮放乘數的既有上下界。
+	for value: int in [config.act2_enemy_stat_bps, config.act3_enemy_stat_bps]:
+		if value < 1 or value > 100000:
+			_issue(&"CONTENT_COMBAT_CONFIG_TUNE", config.id, &"act_enemy_stat_bps")
+			break
 
 func _validate_conditions(effect: EffectDef) -> void:
 	for condition in effect.conditions:
@@ -1076,8 +1088,18 @@ func _global_effect_lifecycle_valid(
 	for condition: ConditionDef in effect.conditions:
 		if condition == null or condition.kind != &"max_uses_per_battle":
 			return false
-	if (source_category in [&"challenge", &"encounter_affix"] \
-		or source_side == &"enemy") and not effect.run_operations.is_empty():
+	# combat-core/design.md:117／:236：RunOperation 禁令的作用域限於進入 BattleSetup 的
+	# EffectSourceState——只有效果同時帶 battle_operations（因此會被 pin 進 battle
+	# catalog／setup）時，challenge 來源才不得再攜帶 run_operations（雙軌）；純
+	# run_operations 的 challenge 詞綴（如 ShopSurcharge／DrainExpeditionHp）不進
+	# BattleSetup，由 run 層 RunModifierTable 軌 B always-active 消費，不受本條禁令限制。
+	# encounter_affix source 的 RunOperation 禁令不受此範圍限縮，維持全面禁止——判準是
+	# source_category（不依 source_side）：即使日後出現非 enemy-side 的 encounter_affix
+	# 呼叫點，帶 run_operations 依然必須被拒（review A F3／review B #3）。
+	if source_category == &"challenge":
+		if not effect.run_operations.is_empty() and not effect.battle_operations.is_empty():
+			return false
+	elif source_category == &"encounter_affix" and not effect.run_operations.is_empty():
 		return false
 	for operation: BattleOperationDef in effect.battle_operations:
 		if operation is MoveOperationDef or operation is SummonOperationDef:

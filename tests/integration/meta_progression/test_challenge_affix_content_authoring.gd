@@ -1,13 +1,12 @@
 extends GutTest
 
-## Phase 0 / BP-SI-001：五條 challenge EffectDef 保留 authoring 與 localization；目前只掛載
-## level 1/5 的合法 battle track，level 2/3/4 不掛 modifier_refs，Phase 1 才處理新機制。
-## 菁英詞綴、treasure/rest/merchant generator_ref 與 map nodes 一律不動。
-## Covers：S5-AC-010；design.md §7.1（"新著作 5 條 challenge 詞綴...重指
-## unlocks/slice_challenge_1..5.tres 的 modifier_refs...不動菁英詞綴與其被 treasure/rest/
-## merchant generator 複用之處、不動 map nodes"）；tasks.md T07 驗收「五條
-## effect.slice_challenge_affix_00..04...重指 slice_challenge_1..5 modifier_refs...菁英詞綴/
-## map nodes 不動；Ch0 無詞綴」。
+## Phase 0 / BP-SI-001 → Phase 1 / G2 difficulty-curve T06（DC-REQ-006，BP-SI-001 已解除，
+## 見 specs/balance-playtest/spec-issues.md）：五條 challenge EffectDef 保留 authoring 與
+## localization；T06 回鏈 level 1/2/4/5（affix_00/01/03/04），level 3（affix_02，
+## BP-SI-002 續 OPEN）仍不掛 modifier_refs。菁英詞綴、treasure/rest/merchant generator_ref
+## 與 map nodes 一律不動。
+## Covers：S5-AC-010／DC-REQ-006；design.md §7.1、specs/difficulty-curve/design.md「決定性與
+## 失敗政策」；tasks.md T07/T06 驗收。
 ##
 ## 內容斷言策略（依派工簡報二擇一）：本檔選擇「載入正式 pack 後檢查」——直接從磁碟讀取
 ## content/packs/vertical_slice（＋ content/packs/build_systems，validator 的最小計數規則
@@ -15,9 +14,13 @@ extends GutTest
 ## 既有慣例）並對真實 .tres 內容斷言，不使用 SyntheticContentFixture 合成表達——因為本檔的
 ## 目的就是驗證「真的著作了」這件事本身，合成內容無法覆蓋這個目標。
 ##
-## 假設聲明：
-## 1. 現行掛載恰為 level 1 -> affix_00、level 5 -> affix_04；level 2/3/4 為空。
-## 2. 掛載中的效果必須只有 battle_operations，不得恢復 challenge run_operations。
+## 假設聲明（T06 更新）：
+## 1. 現行掛載為 level 1 -> affix_00（battle）、level 2 -> affix_01（ShopSurcharge run
+##    track）、level 3 -> 空（BP-SI-002 續 OPEN，affix_02 維持未連線）、
+##    level 4 -> affix_03（DrainExpeditionHp run track）、level 5 -> affix_04（battle）。
+## 2. affix_00/04 只有 battle_operations；affix_01/03 只有 run_operations（純 run track，
+##    design §7.2／combat-core/design.md:117/:236 已釐清此類效果不進 BattleSetup，
+##    不受 challenge global source 的 RunOperation 禁令限制）。
 ## 3. 不得變動的既有內容（本檔逐項迴歸斷言）：
 ##      effect.slice_affix_00..04 的 content_role 仍是 &"elite_affix"；
 ##      map_node.slice_treasure.generator_ref 仍是 &"choice_set.treasure"；
@@ -49,9 +52,9 @@ func test_only_current_battle_challenge_layers_reference_affix_effects() -> void
 	var pack := _load_pack(VERTICAL_SLICE_ROOT)
 	var expected_by_level := {
 		1: [EXPECTED_CHALLENGE_AFFIX_IDS[0]] as Array[StringName],
-		2: [] as Array[StringName],
+		2: [EXPECTED_CHALLENGE_AFFIX_IDS[1]] as Array[StringName],
 		3: [] as Array[StringName],
-		4: [] as Array[StringName],
+		4: [EXPECTED_CHALLENGE_AFFIX_IDS[3]] as Array[StringName],
 		5: [EXPECTED_CHALLENGE_AFFIX_IDS[4]] as Array[StringName],
 	}
 	for level in range(1, 6):
@@ -62,7 +65,7 @@ func test_only_current_battle_challenge_layers_reference_affix_effects() -> void
 		assert_eq(
 			unlock.modifier_refs,
 			expected_by_level[level],
-			"Phase 0 只允許目前實際掛載的 battle challenge layers；不得恢復 run track"
+			"T06 回鏈後只允許 level 1/2/4/5 掛載對應 affix；level 3（affix_02，BP-SI-002 續 OPEN）維持空"
 		)
 
 
@@ -93,17 +96,31 @@ func test_currently_referenced_challenge_affixes_are_battle_only() -> void:
 		var unlock := _find(pack, StringName("unlock.slice_challenge_%d" % level)) as UnlockDef
 		if unlock != null:
 			referenced_ids.append_array(unlock.modifier_refs)
+	var battle_track_ids: Array[StringName] = [
+		EXPECTED_CHALLENGE_AFFIX_IDS[0], EXPECTED_CHALLENGE_AFFIX_IDS[4],
+	]
+	var run_track_ids: Array[StringName] = [
+		EXPECTED_CHALLENGE_AFFIX_IDS[1], EXPECTED_CHALLENGE_AFFIX_IDS[3],
+	]
 	assert_eq(
 		referenced_ids,
-		[EXPECTED_CHALLENGE_AFFIX_IDS[0], EXPECTED_CHALLENGE_AFFIX_IDS[4]] as Array[StringName],
-		"Phase 0 只有 level 1/5 掛載 battle challenge affix"
+		[
+			EXPECTED_CHALLENGE_AFFIX_IDS[0], EXPECTED_CHALLENGE_AFFIX_IDS[1],
+			EXPECTED_CHALLENGE_AFFIX_IDS[3], EXPECTED_CHALLENGE_AFFIX_IDS[4],
+		] as Array[StringName],
+		"T06 回鏈後 level 1/2/4/5 分別掛載 affix_00（battle）/01（ShopSurcharge）/03（DrainExpeditionHp）/04（battle）"
 	)
 	for effect_id: StringName in referenced_ids:
 		var effect := _find(pack, effect_id) as EffectDef
 		assert_not_null(effect, "缺少目前掛載的 challenge affix: %s" % effect_id)
-		if effect != null:
-			assert_false(effect.battle_operations.is_empty(), "%s 必須走 battle track" % effect_id)
-			assert_true(effect.run_operations.is_empty(), "%s 不得恢復 Phase 1 run track" % effect_id)
+		if effect == null:
+			continue
+		if effect_id in battle_track_ids:
+			assert_false(effect.battle_operations.is_empty(), "%s 必須走軌 A battle track" % effect_id)
+			assert_true(effect.run_operations.is_empty(), "%s 屬軌 A，不應同時攜帶 run_operations" % effect_id)
+		elif effect_id in run_track_ids:
+			assert_true(effect.battle_operations.is_empty(), "%s 屬純軌 B，不應攜帶 battle_operations" % effect_id)
+			assert_false(effect.run_operations.is_empty(), "%s 必須走軌 B run track（ShopSurcharge／DrainExpeditionHp）" % effect_id)
 
 
 func test_elite_affix_effects_are_unchanged() -> void:

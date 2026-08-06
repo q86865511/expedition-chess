@@ -13,6 +13,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# Per-act elimination gate (DC-REQ-008) is shared with the golden test so the
+# aggregate cannot drift from domain/balance/balance_bot_report.gd.
+. (Join-Path $PSScriptRoot 'act-elimination-gate.ps1')
 if ($ShardCount -gt $SeedCount) { throw 'ShardCount cannot exceed SeedCount.' }
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $artifactRoot = Join-Path $repoRoot 'artifacts\test'
@@ -336,7 +339,7 @@ foreach ($proof in $caseProofs) {
         $contentCounts[$key] = [int]$contentCounts[$key] + 1
         $selectedIdCount += 1
         if ($key.StartsWith('reservation_owner_') -or $key.StartsWith('offer_') -or
-            $key.StartsWith('choice_')) {
+            $key.StartsWith('choice_') -or $key.StartsWith('reward.kind.')) {
             $opaqueSelectedIdCount += 1
         }
     }
@@ -452,6 +455,10 @@ foreach ($strategyId in @('tempo', 'economy', 'synergy')) {
 if ($allPerfect) { Add-GateReason 'BALANCE_ALL_STRATEGIES_PERFECT_WIN_RATE' }
 if ($fallbackBuildCount -eq $expectedCaseCount) { Add-GateReason 'BALANCE_BUILD_ID_ALL_FALLBACK' }
 if ($uniqueGold.Count -eq 1) { Add-GateReason 'BALANCE_ENDING_GOLD_CONSTANT' }
+$actCurve = Get-BalanceActCurve -CaseProofs $caseProofs.ToArray() -SeedCount $SeedCount
+foreach ($reason in @(Get-BalanceActEliminationGateReasons -ActCurve $actCurve)) {
+    Add-GateReason $reason
+}
 
 $strategyRank = @{ tempo = 0; economy = 1; synergy = 2 }
 $canonicalCases = @($caseProofs | Sort-Object `
@@ -495,6 +502,7 @@ $payload = [ordered]@{
         mean_terminal_hp = if ($caseProofs.Count -gt 0) { [double]$endingHpTotal / $caseProofs.Count } else { 0.0 }
     }
     battle_outcomes = [ordered]@{ wins = $battleWins; losses = $battleLosses }
+    act_curve = $actCurve
     case_proofs = $orderedProofs
     failed_seeds = $failedSeeds.ToArray()
     regression_proof = [ordered]@{

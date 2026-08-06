@@ -57,13 +57,26 @@ func test_three_strategies_share_one_cohort_world_and_reach_results() -> void:
 			value.completed_node_count, value.route_ids.size(),
 			"%s 走訪節點數必須等於 route 長度" % label
 		)
-		assert_eq(
-			value.completed_node_count,
-			BalanceProductionCaseDriver.EXPECTED_FULL_ROUTE_NODES,
-			"%s 必須走完整條 21 節點路線（關 BP-IR-001 的 3 戰版病徵）" % label
+		# difficulty-curve 之後敗局是合法結果（DC-REQ-001~003）：勝局仍必須走滿
+		# 21 節點（關 BP-IR-001 的 3 戰版病徵）；敗局必須是真淘汰（HP 歸零），
+		# 且走訪數與 route 長度一致（上一條斷言）——排除「跑一半就停」的病徵。
+		if value.won:
+			assert_eq(
+				value.completed_node_count,
+				BalanceProductionCaseDriver.EXPECTED_FULL_ROUTE_NODES,
+				"%s 勝局必須走完整條 21 節點路線" % label
+			)
+		else:
+			assert_eq(value.ending_hp, 0, "%s 敗局必須是遠征 HP 歸零的真淘汰" % label)
+			assert_lt(
+				value.completed_node_count,
+				BalanceProductionCaseDriver.EXPECTED_FULL_ROUTE_NODES,
+				"%s 敗局走訪數應少於完整路線" % label
+			)
+		assert_gt(
+			value.battle_wins + value.battle_losses, 0,
+			"%s 必須真的打過戰鬥" % label
 		)
-		assert_true(value.won, "%s 在 seed %d 應為勝局" % [label, Support.SEED_VICTORY])
-		assert_gt(value.battle_wins, 0, "%s 必須真的打過戰鬥" % label)
 		# victory terminal 的 exactly-once（§5.5）
 		assert_eq(
 			value.settlement_receipt_digests.size(),
@@ -74,12 +87,41 @@ func test_three_strategies_share_one_cohort_world_and_reach_results() -> void:
 			Support.duplicate_of(value.settlement_receipt_digests), "",
 			"%s 結算 receipt 不得重複" % label
 		)
-		assert_gt(value.reward_receipt_digests.size(), 0, "%s 必須有獎勵 receipt" % label)
+		if value.battle_wins > 0:
+			assert_gt(
+				value.reward_receipt_digests.size(), 0,
+				"%s 有勝場就必須有獎勵 receipt" % label
+			)
 		assert_eq(
 			Support.duplicate_of(value.reward_receipt_digests), "",
 			"%s 獎勵 receipt 不得重複（無重複發獎）" % label
 		)
 		assert_true(value.ending_gold >= 0 and value.ending_hp >= 0, "%s 資源不得為負" % label)
+		# review A F12／review B #4：敗局成為常態結果後，per-act 快照必須真的覆蓋
+		# 每一幕，且每個到達的幕都要有實際戰鬥紀錄——不能只因為「有一個策略突破
+		# act1」就放行，敗局幕也必須逐幕打過（BP-IR-001 病徵的完整涵蓋，不只勝局）。
+		assert_eq(
+			value.act_snapshots.size(), value.act_reached,
+			"%s 的 act_snapshots 筆數必須等於實際到達的幕數（每個到達的幕都要有快照）" % label
+		)
+		for act_snapshot: BalanceBotActSnapshot in value.act_snapshots:
+			assert_gt(
+				act_snapshot.battle_wins + act_snapshot.battle_losses, 0,
+				"%s act%d 的快照必須反映該幕真的打過戰鬥，含敗局" % [
+					label, act_snapshot.act_index,
+				]
+			)
+
+	var best_progress: int = 0
+	var total_wins: int = 0
+	for value: BalanceBotCaseResult in [tempo, economy, synergy]:
+		best_progress = max(best_progress, value.completed_node_count)
+		total_wins += value.battle_wins
+	assert_gt(
+		best_progress, 7,
+		"至少一個策略必須突破 Act 1（7 節點）——難度曲線不得是全滅牆"
+	)
+	assert_gt(total_wins, 0, "至少一個策略必須贏過戰鬥（獎勵鏈才有覆蓋）")
 
 	assert_eq(economy.run_id, tempo.run_id, "同 seed 三策略必須同一個 run_id（cohort）")
 	assert_eq(synergy.run_id, tempo.run_id, "同 seed 三策略必須同一個 run_id（cohort）")

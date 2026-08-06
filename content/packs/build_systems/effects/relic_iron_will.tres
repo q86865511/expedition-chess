@@ -8,7 +8,6 @@
 
 [sub_resource type="Resource" id="Resource_vablu"]
 script = ExtResource("2_jt5fa")
-# TUNE: health +40 依附錄 B 映射為等值開戰全隊護盾 40。
 amount = 40
 duration_ticks = 1800
 target = &"all_allies"
@@ -23,3 +22,4 @@ schema_version = 2
 description_key = &"loc.effect_relic_iron_will_description"
 id = &"effect.relic_iron_will"
 display_name_key = &"loc.effect_relic_iron_will"
+# TUNE: health +40 依附錄 B 映射為等值開戰全隊護盾 40。

@@ -58,8 +58,8 @@
     "section_count": 18,
     "mermaid_count": 3,
     "ids": {
-      "REQ": 74,
-      "AC": 78,
+      "REQ": 75,
+      "AC": 79,
       "DEC": 14,
       "ASM": 6,
       "RSK": 12
@@ -94,7 +94,7 @@
     "deferred_class_names": [
     ]
   },
-  "aggregate_sha256": "2cef770401639c52b6d5c5380221ca29971ce910d77defd434f7b64573ed312c"
+  "aggregate_sha256": "b476e9c52af77101b4d7ab06dc2abbb5cbc3a91f1c788db20305c0feef8cfe2b"
 }
 ```
 <!-- spec-manifest:end -->
@@ -126,8 +126,8 @@
 
 ## 完整性基線
 
-- 需求：74 個 REQ
-- 驗收情境：78 個 AC
+- 需求：75 個 REQ
+- 驗收情境：79 個 AC
 - 決策／假設／風險：14 個 DEC、6 個 ASM、12 個 RSK
 - Mermaid 圖：3 張
 - 12 章 aggregate SHA-256：以 Manifest 的 `aggregate_sha256` 為權威；每次正文修訂後由驗證器重算。

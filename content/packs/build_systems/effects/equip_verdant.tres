@@ -8,7 +8,6 @@
 
 [sub_resource type="Resource" id="Resource_pe5wl"]
 script = ExtResource("2_ag3j6")
-# TUNE: health +20 依附錄 B 延伸授權映射為等值開戰自身護盾 20。
 amount = 20
 duration_ticks = 1800
 target = &"self"
@@ -23,3 +22,4 @@ schema_version = 2
 description_key = &"loc.effect_equip_verdant_description"
 id = &"effect.equip_verdant"
 display_name_key = &"loc.effect_equip_verdant"
+# TUNE: health +20 依附錄 B 延伸授權映射為等值開戰自身護盾 20。

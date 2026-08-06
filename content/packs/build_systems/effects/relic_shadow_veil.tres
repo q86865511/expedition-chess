@@ -10,7 +10,6 @@
 script = ExtResource("2_0wkgh")
 stat = &"attack_speed_milli"
 mode = &"add"
-# TUNE: attack_speed 12 依附錄 B 暫定 ×10 映射為 milli 120。
 amount = 120
 duration_ticks = 1800
 target = &"all_allies"
@@ -25,3 +24,4 @@ schema_version = 2
 description_key = &"loc.effect_relic_shadow_veil_description"
 id = &"effect.relic_shadow_veil"
 display_name_key = &"loc.effect_relic_shadow_veil"
+# TUNE: attack_speed 12 依附錄 B 暫定 ×10 映射為 milli 120。

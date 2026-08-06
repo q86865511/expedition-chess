@@ -233,6 +233,9 @@ func _compile_combat_config(value: CombatConfigDef) -> Array[ContentValue]:
 		ContentValue.u32(value.operation_budget),
 		ContentValue.u32(value.event_budget),
 		ContentValue.u32(value.entity_budget),
+		ContentValue.u32(value.act1_enemy_stat_bps),
+		ContentValue.u32(value.act2_enemy_stat_bps),
+		ContentValue.u32(value.act3_enemy_stat_bps),
 	]
 
 func _unit_stats(value: UnitStatsDef) -> ContentValue:

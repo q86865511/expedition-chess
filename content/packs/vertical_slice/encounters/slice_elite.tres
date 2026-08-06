@@ -11,10 +11,24 @@ logical_x = 3
 spawn_key = "enemy_0"
 unit_ref = &"unit.slice_monster_01"
 
+[sub_resource type="Resource" id="Resource_elite_e1"]
+script = ExtResource("2_v17xv")
+logical_y = 5
+logical_x = 2
+spawn_key = "enemy_1"
+unit_ref = &"unit.slice_monster_06"
+
+[sub_resource type="Resource" id="Resource_elite_e2"]
+script = ExtResource("2_v17xv")
+logical_y = 7
+logical_x = 4
+spawn_key = "enemy_2"
+unit_ref = &"unit.slice_monster_07"
+
 [resource]
 script = ExtResource("3_awnaf")
 encounter_kind = &"elite"
-enemy_spawns = Array[ExtResource("2_v17xv")]([SubResource("Resource_57378")])
+enemy_spawns = Array[ExtResource("2_v17xv")]([SubResource("Resource_57378"), SubResource("Resource_elite_e1"), SubResource("Resource_elite_e2")])
 affix_refs = Array[StringName]([&"effect.slice_affix_00", &"effect.slice_affix_01"])
 id = &"encounter.slice_elite"
 display_name_key = &"loc.encounter_slice_elite"

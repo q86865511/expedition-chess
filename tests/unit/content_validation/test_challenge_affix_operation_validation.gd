@@ -187,7 +187,11 @@ func test_challenge_chain_modifier_with_challenge_affix_role_and_full_coverage_h
 	assert_false(_has_issue(report, &"CONTENT_CHALLENGE_AFFIX_COVERAGE"), _issue_text(report))
 
 
-func test_challenge_affix_run_operation_buckets_are_deferred_to_spec_issue() -> void:
+## G2 difficulty-curve T06（DC-REQ-006，BP-SI-001 已解除）：run-operation 桶（ShopSurcharge／
+## DrainExpeditionHp）回復為必要覆蓋，不再暫緩。此檔原斷言「暫緩」的行為（見 git 歷史
+## 805a592）已隨規格解除而反轉——只覆蓋軌 A＋ShopSurcharge、缺 DrainExpeditionHp 桶時
+## 三桶 gate 必須 FAIL。
+func test_challenge_affix_missing_drain_bucket_is_rejected() -> void:
 	var input := _minimal_challenge_input()
 	var surcharge := _new_shop_surcharge(0, 2, &"always")
 	if surcharge == null:
@@ -198,9 +202,9 @@ func test_challenge_affix_run_operation_buckets_are_deferred_to_spec_issue() -> 
 	for level in range(1, 6):
 		_set_modifier_refs(input, level, [&"effect.ca_battle_only", &"effect.ca_surcharge_only"])
 	var report := ContentValidator.new().validate(input)
-	assert_false(
+	assert_true(
 		_has_issue(report, &"CONTENT_CHALLENGE_AFFIX_COVERAGE"),
-		"BP-SI-001 裁決後，run-operation 桶暫緩到 run 層分流規格修訂: %s" % _issue_text(report)
+		"DC-REQ-006 三桶 gate：只覆蓋軌 A＋ShopSurcharge、缺 DrainExpeditionHp 桶時必須 FAIL: %s" % _issue_text(report)
 	)
 
 
@@ -242,9 +246,34 @@ func test_challenge_chain_modifier_with_non_always_claim_scope_is_rejected() -> 
 		_has_issue(report, &"CONTENT_RELIC_EFFECT_SCOPE"),
 		"challenge 鏈引用的效果若 claim_scope 非 always，消費端（RunModifierTableBuilder）必定拒絕，validator 必須先擋: %s" % _issue_text(report)
 	)
+	# DC-REQ-006（BP-SI-001 已解除，combat-core/design.md:117/:236）：RunOperation 禁令
+	# 的作用域限於進入 BattleSetup 的 EffectSourceState——本效果只有 run_operations、
+	# 無 battle_operations，不進 battle catalog，不再觸發 CONTENT_EFFECT_SOURCE_LIFECYCLE
+	# （原斷言反映 BP-SI-001 解除前的舊行為，見 git 歷史）。
+	assert_false(
+		_has_issue(report, &"CONTENT_EFFECT_SOURCE_LIFECYCLE"),
+		"純 run_operations 的 challenge 詞綴不進 BattleSetup，不受 RunOperation 禁令限制: %s" % _issue_text(report)
+	)
+
+
+## DC-REQ-006 的禁令仍全面適用於雙軌（battle_operations＋run_operations 同時非空）效果：
+## 一旦效果同時攜帶 battle_operations，該效果就會被 pin 進 BattleSetup 的 EffectSourceState，
+## RunOperation 因此仍不得存在（對照 test_challenge_affix_battle_catalog.gd 的
+## registry-level 版本，本檔驗證 ContentValidator 自身這一層先擋）。
+func test_challenge_dual_track_battle_and_run_operations_is_rejected_at_lifecycle() -> void:
+	var surcharge := _new_shop_surcharge(0, 2, &"always")
+	if surcharge == null:
+		return
+	var input := _minimal_challenge_input()
+	_append_effect(input, &"effect.ca_dual_track", &"challenge_affix", true)
+	var dual_effect := _find(input, &"effect.ca_dual_track") as EffectDef
+	var run_operations: Array[RunOperationDef] = [surcharge]
+	dual_effect.run_operations = run_operations
+	_set_modifier_refs(input, 1, [&"effect.ca_dual_track"])
+	var report := ContentValidator.new().validate(input)
 	assert_true(
 		_has_issue(report, &"CONTENT_EFFECT_SOURCE_LIFECYCLE"),
-		"BP-SI-001 修訂前 challenge global source 不得攜帶 run operation: %s" % _issue_text(report)
+		"雙軌（battle_operations＋run_operations）challenge 效果仍必須被拒絕: %s" % _issue_text(report)
 	)
 
 

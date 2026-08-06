@@ -658,6 +658,23 @@ func _register_named_family(
 		"Formal tier effect for %s %s."
 		% [en_family.to_lower(), _title(token)]
 	)
+	# difficulty-curve T04：trait 門檻階梯化新增的 tier2/tier3 分段 effect loc key
+	# （命名對齊 localization/catalog.v2.csv 的 _t2/_t3 慣例）。
+	for tier_suffix: Array in [["t2", "二階", "Tier 2"], ["t3", "三階", "Tier 3"]]:
+		_register(
+			StringName("loc.effect_trait_%s_%s_%s" % [family, token, tier_suffix[0]]),
+			"%s效果：%s（%s）" % [zh_family, _title(token), tier_suffix[1]],
+			"%s Effect: %s (%s)" % [en_family, _title(token), tier_suffix[2]]
+		)
+		_register(
+			StringName(
+				"loc.effect_trait_%s_%s_%s_description" % [family, token, tier_suffix[0]]
+			),
+			"%s「%s」的%s正式階段效果。" % [zh_family, _title(token), tier_suffix[1]],
+			"Formal %s effect for %s %s." % [
+				String(tier_suffix[2]).to_lower(), en_family.to_lower(), _title(token),
+			]
+		)
 
 
 func _register_formal_unit_content(

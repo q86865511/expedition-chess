@@ -2,30 +2,25 @@
 
 > 建立於 2026-07-22（使用者裁決）。本檔是兩個 AI 協作者之間的分工契約與接手入口；專案進度見 `PROGRESS.md`，規格單一事實來源見 `docs/game-architecture/`。
 
-## 0. 2026-08-04 balance-playtest Phase 0 收尾接手點
+## 0. 2026-08-04 difficulty-curve（Phase 1）接手點
 
-- 基線：PR #8 已合併，第三切片分支為 `codex/g2-balance-playtest`，起點
-  `master@bf818fb`；目前未 commit、未 push、未建立 PR。
-- 里程碑：附錄 A/B/C 修正全數落地並經 Claude 核驗；**3k screening #2 gate PASS**
-  （candidate `balance.g2.7d47fada8091`、12 分片、10.1 小時、3,000/3,000 terminal、
-  150/150 replay 零 drift、economy 1,000 勝、dominance 15.8pp、
-  source freeze `5982d579…0758`）。舊接手點
-  `.pipeline/balance-playtest/PAUSE-2026-08-03-appendix-c.md` 所列阻擋均已解除。
-- 使用者裁決（2026-08-04）：大樣本統計（10k/30k）延後至 Phase 2 平衡收斂後執行；
-  本切片以 3k #2 作 screening 證據收尾。Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9，
-  收尾 checklist 見 `specs/balance-playtest/rewrite-plan.md` 附錄 D。
-- Phase 0 待辦：tier2+ 入樣補證 → Part D 證據鏈（RC 重打包、全鏈路 smoke、
-  source manifest、export 排除與 PCK inventory）→ NUL 修正合入 → 文件回寫 →
-  兩位 fresh reviewer 重審 → 使用者確認 Git。早前雙審的 NOT APPROVED 針對重寫前
-  實作，其 blockers 已由重寫解除；收尾仍須 fresh 雙審，未 closure 前不得宣稱
-  本片或 G2 complete。
-- 重要修正備忘：production battle catalog 需納入 encounter roots，否則正式
-  NodeEntry／EncounterCompiler 會以 `ENCOUNTER_RULE_MISSING` fail closed；
-  `domain/run/controller/run_commit_clock.gd` 的 `now_unix()`（+3 行加法式儀器支援）
-  須在雙審變更說明中列明。
-- 平衡訊號留檔（Phase 2 迭代起點，非收尾 blocker）：economy 100% 全勝（XP 性價比）、
-  tempo/synergy 不買 XP、verdant 77% 居首、Act 1 Boss 仍是唯一過濾器（BP-SI-004）、
-  shadow build 0.16%（池構成）。
+- 基線：balance-playtest 已由 **PR #9 合併至 `master@24edea9`**（Phase 0 雙審雙
+  APPROVED、3k screening #2 gate PASS、BP-SI-007 StringName 排序決定性已修）。
+  第 3.5 片分支 `codex/g2-difficulty-curve` 自該基線建立。
+- 範圍（`specs/g2-roadmap.md` §9 Phase 1，三件套位於 `specs/difficulty-curve/`）：
+  act 縮放（encounter_compiler 乘數）、三幕 Boss 決定性映射（node_entry_service）、
+  多敵遭遇編成、trait 門檻階梯（純內容 24 effect）、tier-1 池重標
+  （slice_player_07 verdant→shadow）、challenge run-op 回鏈（軌 B 機制已存在，
+  純內容＋validator 三桶 gate 回復）、觀測性殘項（reward stable ID、per-act 勝敗欄位）、
+  per-act 淘汰 gate（gd/ps1 雙實作必須同步）。BP-SI-002（move 型）續 OPEN 不解。
+- 授權模式：使用者已核可 Phase 1 計畫＝三件套與實作概括授權；例外回報：重大設計
+  偏離、新 findings、美術需求；push/PR/merge 硬停點。全程預期零美術需求。
+- 平衡訊號留檔（Phase 2 迭代起點）：economy 100% 全勝（XP 性價比）、tempo/synergy
+  不買 XP、verdant 77% 居首、Act 1 Boss 唯一過濾器（BP-SI-004，本片解除）、
+  shadow build 0.16%（本片解除）。
+- 備忘：production battle catalog 需納入 encounter roots，否則 NodeEntry／
+  EncounterCompiler 以 `ENCOUNTER_RULE_MISSING` fail closed（新增 boss 映射時注意
+  slice_boss_1/2 必須進 required_battle_ids 的 pin 集合）。
 
 ## 1. 分工邊界
 

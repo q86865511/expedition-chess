@@ -10,7 +10,6 @@
 script = ExtResource("2_trgmp")
 stat = &"attack_speed_milli"
 mode = &"add"
-# TUNE: attack_speed 10 依附錄 B 暫定 ×10 映射為 milli 100。
 amount = 100
 duration_ticks = 1800
 target = &"all_allies"
@@ -25,3 +24,4 @@ schema_version = 2
 description_key = &"loc.effect_trait_role_trickster_description"
 id = &"effect.trait_role_trickster"
 display_name_key = &"loc.effect_trait_role_trickster"
+# TUNE: attack_speed 10 依附錄 B 暫定 ×10 映射為 milli 100。

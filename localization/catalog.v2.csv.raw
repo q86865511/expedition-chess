@@ -522,28 +522,76 @@ loc.effect_slice_player_31_primary,Slice Player 31的主要技能效果,Slice Pl
 loc.effect_slice_player_31_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
 loc.effect_trait_faction_arcane,陣營效果：Arcane,Faction Effect: Arcane
 loc.effect_trait_faction_arcane_description,陣營「Arcane」的正式階段效果。,Formal tier effect for faction Arcane.
+loc.effect_trait_faction_arcane_t2,陣營效果：Arcane（二階）,Faction Effect: Arcane (Tier 2)
+loc.effect_trait_faction_arcane_t2_description,陣營「Arcane」的二階正式階段效果。,Formal tier-2 effect for faction Arcane.
+loc.effect_trait_faction_arcane_t3,陣營效果：Arcane（三階）,Faction Effect: Arcane (Tier 3)
+loc.effect_trait_faction_arcane_t3_description,陣營「Arcane」的三階正式階段效果。,Formal tier-3 effect for faction Arcane.
 loc.effect_trait_faction_ember,陣營效果：Ember,Faction Effect: Ember
 loc.effect_trait_faction_ember_description,陣營「Ember」的正式階段效果。,Formal tier effect for faction Ember.
+loc.effect_trait_faction_ember_t2,陣營效果：Ember（二階）,Faction Effect: Ember (Tier 2)
+loc.effect_trait_faction_ember_t2_description,陣營「Ember」的二階正式階段效果。,Formal tier-2 effect for faction Ember.
+loc.effect_trait_faction_ember_t3,陣營效果：Ember（三階）,Faction Effect: Ember (Tier 3)
+loc.effect_trait_faction_ember_t3_description,陣營「Ember」的三階正式階段效果。,Formal tier-3 effect for faction Ember.
 loc.effect_trait_faction_frost,陣營效果：Frost,Faction Effect: Frost
 loc.effect_trait_faction_frost_description,陣營「Frost」的正式階段效果。,Formal tier effect for faction Frost.
+loc.effect_trait_faction_frost_t2,陣營效果：Frost（二階）,Faction Effect: Frost (Tier 2)
+loc.effect_trait_faction_frost_t2_description,陣營「Frost」的二階正式階段效果。,Formal tier-2 effect for faction Frost.
+loc.effect_trait_faction_frost_t3,陣營效果：Frost（三階）,Faction Effect: Frost (Tier 3)
+loc.effect_trait_faction_frost_t3_description,陣營「Frost」的三階正式階段效果。,Formal tier-3 effect for faction Frost.
 loc.effect_trait_faction_iron,陣營效果：Iron,Faction Effect: Iron
 loc.effect_trait_faction_iron_description,陣營「Iron」的正式階段效果。,Formal tier effect for faction Iron.
+loc.effect_trait_faction_iron_t2,陣營效果：Iron（二階）,Faction Effect: Iron (Tier 2)
+loc.effect_trait_faction_iron_t2_description,陣營「Iron」的二階正式階段效果。,Formal tier-2 effect for faction Iron.
+loc.effect_trait_faction_iron_t3,陣營效果：Iron（三階）,Faction Effect: Iron (Tier 3)
+loc.effect_trait_faction_iron_t3_description,陣營「Iron」的三階正式階段效果。,Formal tier-3 effect for faction Iron.
 loc.effect_trait_faction_shadow,陣營效果：Shadow,Faction Effect: Shadow
 loc.effect_trait_faction_shadow_description,陣營「Shadow」的正式階段效果。,Formal tier effect for faction Shadow.
+loc.effect_trait_faction_shadow_t2,陣營效果：Shadow（二階）,Faction Effect: Shadow (Tier 2)
+loc.effect_trait_faction_shadow_t2_description,陣營「Shadow」的二階正式階段效果。,Formal tier-2 effect for faction Shadow.
+loc.effect_trait_faction_shadow_t3,陣營效果：Shadow（三階）,Faction Effect: Shadow (Tier 3)
+loc.effect_trait_faction_shadow_t3_description,陣營「Shadow」的三階正式階段效果。,Formal tier-3 effect for faction Shadow.
 loc.effect_trait_faction_verdant,陣營效果：Verdant,Faction Effect: Verdant
 loc.effect_trait_faction_verdant_description,陣營「Verdant」的正式階段效果。,Formal tier effect for faction Verdant.
+loc.effect_trait_faction_verdant_t2,陣營效果：Verdant（二階）,Faction Effect: Verdant (Tier 2)
+loc.effect_trait_faction_verdant_t2_description,陣營「Verdant」的二階正式階段效果。,Formal tier-2 effect for faction Verdant.
+loc.effect_trait_faction_verdant_t3,陣營效果：Verdant（三階）,Faction Effect: Verdant (Tier 3)
+loc.effect_trait_faction_verdant_t3_description,陣營「Verdant」的三階正式階段效果。,Formal tier-3 effect for faction Verdant.
 loc.effect_trait_role_marksman,職業效果：Marksman,Role Effect: Marksman
 loc.effect_trait_role_marksman_description,職業「Marksman」的正式階段效果。,Formal tier effect for role Marksman.
+loc.effect_trait_role_marksman_t2,職業效果：Marksman（二階）,Role Effect: Marksman (Tier 2)
+loc.effect_trait_role_marksman_t2_description,職業「Marksman」的二階正式階段效果。,Formal tier-2 effect for role Marksman.
+loc.effect_trait_role_marksman_t3,職業效果：Marksman（三階）,Role Effect: Marksman (Tier 3)
+loc.effect_trait_role_marksman_t3_description,職業「Marksman」的三階正式階段效果。,Formal tier-3 effect for role Marksman.
 loc.effect_trait_role_mystic,職業效果：Mystic,Role Effect: Mystic
 loc.effect_trait_role_mystic_description,職業「Mystic」的正式階段效果。,Formal tier effect for role Mystic.
+loc.effect_trait_role_mystic_t2,職業效果：Mystic（二階）,Role Effect: Mystic (Tier 2)
+loc.effect_trait_role_mystic_t2_description,職業「Mystic」的二階正式階段效果。,Formal tier-2 effect for role Mystic.
+loc.effect_trait_role_mystic_t3,職業效果：Mystic（三階）,Role Effect: Mystic (Tier 3)
+loc.effect_trait_role_mystic_t3_description,職業「Mystic」的三階正式階段效果。,Formal tier-3 effect for role Mystic.
 loc.effect_trait_role_sentinel,職業效果：Sentinel,Role Effect: Sentinel
 loc.effect_trait_role_sentinel_description,職業「Sentinel」的正式階段效果。,Formal tier effect for role Sentinel.
+loc.effect_trait_role_sentinel_t2,職業效果：Sentinel（二階）,Role Effect: Sentinel (Tier 2)
+loc.effect_trait_role_sentinel_t2_description,職業「Sentinel」的二階正式階段效果。,Formal tier-2 effect for role Sentinel.
+loc.effect_trait_role_sentinel_t3,職業效果：Sentinel（三階）,Role Effect: Sentinel (Tier 3)
+loc.effect_trait_role_sentinel_t3_description,職業「Sentinel」的三階正式階段效果。,Formal tier-3 effect for role Sentinel.
 loc.effect_trait_role_trickster,職業效果：Trickster,Role Effect: Trickster
 loc.effect_trait_role_trickster_description,職業「Trickster」的正式階段效果。,Formal tier effect for role Trickster.
+loc.effect_trait_role_trickster_t2,職業效果：Trickster（二階）,Role Effect: Trickster (Tier 2)
+loc.effect_trait_role_trickster_t2_description,職業「Trickster」的二階正式階段效果。,Formal tier-2 effect for role Trickster.
+loc.effect_trait_role_trickster_t3,職業效果：Trickster（三階）,Role Effect: Trickster (Tier 3)
+loc.effect_trait_role_trickster_t3_description,職業「Trickster」的三階正式階段效果。,Formal tier-3 effect for role Trickster.
 loc.effect_trait_role_vanguard,職業效果：Vanguard,Role Effect: Vanguard
 loc.effect_trait_role_vanguard_description,職業「Vanguard」的正式階段效果。,Formal tier effect for role Vanguard.
+loc.effect_trait_role_vanguard_t2,職業效果：Vanguard（二階）,Role Effect: Vanguard (Tier 2)
+loc.effect_trait_role_vanguard_t2_description,職業「Vanguard」的二階正式階段效果。,Formal tier-2 effect for role Vanguard.
+loc.effect_trait_role_vanguard_t3,職業效果：Vanguard（三階）,Role Effect: Vanguard (Tier 3)
+loc.effect_trait_role_vanguard_t3_description,職業「Vanguard」的三階正式階段效果。,Formal tier-3 effect for role Vanguard.
 loc.effect_trait_role_warden,職業效果：Warden,Role Effect: Warden
 loc.effect_trait_role_warden_description,職業「Warden」的正式階段效果。,Formal tier effect for role Warden.
+loc.effect_trait_role_warden_t2,職業效果：Warden（二階）,Role Effect: Warden (Tier 2)
+loc.effect_trait_role_warden_t2_description,職業「Warden」的二階正式階段效果。,Formal tier-2 effect for role Warden.
+loc.effect_trait_role_warden_t3,職業效果：Warden（三階）,Role Effect: Warden (Tier 3)
+loc.effect_trait_role_warden_t3_description,職業「Warden」的三階正式階段效果。,Formal tier-3 effect for role Warden.
 loc.encounter_slice_boss_0,第一幕首領,Act I Boss
 loc.encounter_slice_boss_1,第二幕首領,Act II Boss
 loc.encounter_slice_boss_2,第三幕首領,Act III Boss

@@ -208,6 +208,10 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 待辦
 
+- UI／美術／中文化整修（交 Codex）：審核報告與四階段修改計畫已完成於
+  `specs/ui-art-refresh/review-and-plan.md`（2026-08-07 實機截圖審核；含 4 個 P0
+  可玩性 bug、視覺 0% 現況盤點、中文化剩餘四缺口）。Phase A 止血 → B Theme／
+  字型 → C 資產接線 → D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

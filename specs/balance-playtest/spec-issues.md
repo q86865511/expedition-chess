@@ -45,7 +45,13 @@
   避免 UI/AI 再次把 topology reachability 當作 transition eligibility。
 - Phase 對應：Phase 1 或按需（正式 UI 觸及時提前）。
 
-## BP-SI-004 — Act 2/3 難度曲線未接入
+## BP-SI-004 — Act 2/3 難度曲線未接入（RESOLVED，2026-08-06）
+
+- 解除：`specs/difficulty-curve/`（DC-REQ-001／002／003，T01～T03）已落地 per-act
+  敵方成長乘數、三幕 Boss 決定性映射與五個 encounter 多敵編成；3k screening fresh
+  `act_curve` 顯示 act1／act3 皆有淘汰（`elimination_acts=[1,3]`，見
+  `specs/difficulty-curve/evidence-index.md`），曲線已對戰鬥結果產生實際影響，
+  不再是「通過 Act1 條件勝率 100%」的單點回歸。以下保留原始紀錄。
 
 - 現況：首輪 3k 敗局全部集中在 `route.act1.layer6.boss`；通過 Act 1 的樣本條件勝率
   為 100%，synergy 勝者全數滿血結束。`slice_boss_1/2` 雖已有內容，但 map node 仍只引用
@@ -55,7 +61,12 @@
 - Phase 對應：Phase 1（`difficulty-curve`）核心項。
 - 解除中：`specs/difficulty-curve/`（DC-REQ-001／002／003，T01～T03）。
 
-## BP-SI-005 — Trait 門檻沒有階梯效果
+## BP-SI-005 — Trait 門檻沒有階梯效果（RESOLVED，2026-08-06）
+
+- 解除：`specs/difficulty-curve/`（DC-REQ-004，T04）已把 12 個 trait 的 2／4／6 門檻
+  改指向 24 個獨立且數值嚴格遞增的 effect，`stacking=replace` 語意不變；
+  `tests/unit/content_validation/test_build_systems_content_pack.gd` 驗證三階互異。
+  以下保留原始紀錄。
 
 - 現況：2/4/6 三個門檻指向同一 effect，且 `stacking=replace`，因此 2 隻與 6 隻的實際
   效果相同。
@@ -64,7 +75,15 @@
 - Phase 對應：Phase 1（`difficulty-curve`）。
 - 解除中：`specs/difficulty-curve/`（DC-REQ-004，T04）。
 
-## BP-SI-006 — Balance runner 的逐幕與 stable ID 可觀測性
+## BP-SI-006 — Balance runner 的逐幕與 stable ID 可觀測性（RESOLVED，2026-08-06）
+
+- 解除：範圍切分 (i)(ii) 已於 `specs/difficulty-curve/`（DC-REQ-007，T07）完成——
+  `BalanceBotActSnapshot` 補 per-act battle win/loss 與死亡節點 ID 並進 canonical
+  token，driver 獎勵／購買選取優先記正式 content stable ID、opaque 計數
+  fail-visible（`tests/unit/balance_playtest/test_balance_bot_act_snapshot_observability.gd`）。
+  (iii) 動作分佈細分與 (iv) 正式 telemetry schema 明示不做（見
+  `specs/difficulty-curve/requirements.md`「範圍」）,議題整體標 RESOLVED；(iii)(iv)
+  若未來需要另立規格。以下保留原始紀錄。
 
 - 現況：首輪 case proof 缺少逐幕 gold/HP/roster/board，且購買與獎勵選取曾以 offer 或
   reservation owner 雜湊計數，無法直接回答死亡時編成與高階單位採用率。

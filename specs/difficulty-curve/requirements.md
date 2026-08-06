@@ -52,8 +52,10 @@
 - **DC-REQ-008 Per-act 淘汰 gate**：`BalanceBotReport` 必須新增
   `BALANCE_ACT_ELIMINATION_FLAT` gate reason——當 cohort `seed_count` ≥ 1000 且所有敗局
   集中於單一幕時 FAIL；`seed_count` < 1000 時不啟用。GDScript 與
-  `tools/balance/run-sharded-cohort.ps1` 兩份實作必須對同一份 golden 輸入產生完全相同的
-  gate reason 集合。
+  `tools/balance/act-elimination-gate.ps1`（由 `run-sharded-cohort.ps1` dot-source
+  接線）兩份實作必須對同一份 golden 輸入的
+  act-curve gate 段（`BALANCE_ACT_` 前綴）reason 集合與 `act_curve` token 產生逐字相同
+  的結果（PS 聚合端與 GDScript 各自另有其餘既有 gate reason，不要求全集相同）。
 
 ## Acceptance
 
@@ -81,4 +83,6 @@
    且 canonical token 隨這些欄位改變。（DC-REQ-007）
 8. 以「敗局全部集中 act1」的 golden cohort 輸入，`seed_count=1000` 時兩份實作都輸出
    `BALANCE_ACT_ELIMINATION_FLAT`，`seed_count=999` 時兩份都不輸出；同一 golden 的
-   完整 gate reason 集合在 GDScript 與 PowerShell 兩側逐字相同。（DC-REQ-008）
+   act-curve gate 段（`BALANCE_ACT_` 前綴）reason 集合與 `act_curve` token 在 GDScript
+   與 PowerShell 兩側逐字相同（T08 已證：要求「完整 gate reason 集合」兩側逐字相同在
+   結構上不可達——PS 聚合端與 GDScript 各自持有對方沒有的既有 reason）。（DC-REQ-008）

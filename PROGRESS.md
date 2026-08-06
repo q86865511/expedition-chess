@@ -4,15 +4,32 @@
 
 ## 目前狀態
 
-G2 `balance-playtest`（`codex/g2-balance-playtest`，本地 commits、未 push/PR）3k screening #2 gate PASS
-（candidate `balance.g2.7d47fada8091`、12 分片 10.1 小時、3,000/3,000 terminal、
-150/150 replay 零 drift、economy 1,000 勝、dominance 15.8pp）。Phase 0 初版實作與
-證據收尾已完成，runtime source `6b072f8`；等待兩位 fresh reviewer 與使用者確認。
-大樣本（10k/30k）依 2026-08-04 使用者裁決延後至 Phase 2 平衡收斂後執行；
-Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXTERNAL`。
+G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/PR）Phase 1
+實作完成：六項機制（act 縮放、三幕 Boss、多敵編成、trait 階梯、池重標、challenge
+回鏈）＋觀測性＋per-act gate 全數落地；3k screening fresh gate **PASS**（candidate
+`balance.g2.041458b08bb5`、勝率 tempo 65.7%／economy 23.5%／synergy 84.1%、act1/act3
+皆有淘汰）、fresh All 1,193/1,193、10k soak passed。T11 雙 fresh reviewer 進行中；
+大樣本（10k/30k）依裁決屬 Phase 2。AC-032 維持 `PENDING_EXTERNAL`。
 
 ## 已完成
 
+- [2026-08-06] 🎯 G2 `difficulty-curve` Phase 1 實作完成（T01～T09） — 解除平衡迴圈
+  結構性天花板六項機制：per-act 敵方成長縮放（DC-REQ-001）、三幕 Boss 決定性映射
+  fail-closed（DC-REQ-002）、五個 encounter 多敵編成（DC-REQ-003）、12 trait 三階
+  遞增 effect（DC-REQ-004）、tier-1 池 faction 覆蓋重標（DC-REQ-005）、challenge
+  run-op 三桶 gate 回鏈（DC-REQ-006）；另補 driver 逐幕觀測性與 stable ID 計數
+  （DC-REQ-007）、`BALANCE_ACT_ELIMINATION_FLAT` gate 雙實作 golden 一致性
+  （DC-REQ-008）、曲線生效快篩三層（T09）。期間並修正 tempo/synergy XP 評分退化
+  （commit `b2c7895`）與 `act_curve` 型別契約（`20db291`）。3k screening fresh gate
+  **PASS**（candidate `balance.g2.041458b08bb5`、`gate_reasons=[]`、3,000/3,000
+  terminal、150/150 replay 零 drift、`act_curve` 顯示 act1/act3 皆有淘汰即跨幕梯度已
+  生效、勝率 tempo 65.7%／economy 23.5%／synergy 84.1%）；fresh `-Suite All`（Gut
+  1,193/1,193、0 failures）與 10k ExpeditionSoak（10,000/10,000 passed）皆綠。
+  BP-SI-001／004／005 與 BP-SI-006(i)(ii) 標 RESOLVED，BP-SI-002 續 OPEN。三輪 3k
+  跑批教訓：session 需能撐過 8+ 小時單分片（16 分片並行分攤）、
+  `run-sharded-cohort.ps1` per-shard timeout 預設 12h 需視工作量另傳更大值、XP 修正
+  後單 case 時長翻倍（~159s／case）使大樣本成本估算需同步上修。詳細證據見
+  `specs/difficulty-curve/evidence-index.md`；T11 兩份獨立 review 待執行。
 - [2026-08-04] 🚢 G2 `balance-playtest` 合併 — PR #9 MERGED @ `master@24edea9`
   （16 commits、222 檔、+12,637/−489）。切片閉環；第 3.5 片 `difficulty-curve`
   自該基線開分支，計畫經使用者核可（三件套與實作概括授權）。
@@ -186,13 +203,11 @@ Phase 0~3 執行計畫見 `specs/g2-roadmap.md` §9。AC-032 維持 `PENDING_EXT
 
 ## 進行中
 
-- G2 `balance-playtest` Phase 0 審查交接：初版實作、證據與文件已收尾；等待兩位
-  fresh reviewer 逐條重審與使用者確認。未 push、未開 PR、未 merge。
+- G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
+  鎖定，停 Git gate 待使用者裁決。
 
 ## 待辦
 
-- Phase 1：`difficulty-curve` 機制切片（幕間難度縮放、三幕 Boss 差異化、trait 門檻階梯、
-  tier-1 池重整、challenge run-op 分流；對應 BP-SI-001/002/004/005/006）。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

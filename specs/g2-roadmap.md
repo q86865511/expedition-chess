@@ -173,7 +173,7 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 | `presentation-ui` | COMPLETE | T00–T15 COMPLETE; 19 AC PASS | R16 history＋merge-after-review findings closed | T13 USER APPROVED; final repair baseline Gut 1000/1000 | PR #5 MERGED @ 9362e7d；PR #6 MERGED @ 5e78ccf |
 | `content-production` | COMPLETE | T00–T27 COMPLETE；acceptance 21＋1 全 PASS | T25 三輪雙審＋T18A 全批獨立人工採納 CLOSED | 44 adopted／14 rejected retained；Gut 281/1093；10k soak；All exit 0；fully_closed=true | PR #8 MERGED @ bf818fb |
 | `balance-playtest` | COMPLETE | driver 正式鏈路／candidate／3k screening #2 gate PASS；Phase 0 收尾雙審雙 APPROVED | Phase 0 雙審閉環 CLOSED（含 BP-SI-007 修正） | AC-032 維持 PENDING_EXTERNAL；大樣本移 Phase 2（2026-08-04 裁決） | **PR #9 MERGED @ 24edea9** |
-| `difficulty-curve` | IN PROGRESS（2026-08-04 起） | NOT STARTED | NOT STARTED | — | `codex/g2-difficulty-curve` |
+| `difficulty-curve` | IN PROGRESS（2026-08-04 起） | T01–T09 COMPLETE；3k screening fresh gate PASS；All 1,193/1,193；10k soak 10,000/10,000 | T11 NOT STARTED（雙審待執行） | — | 分支 `codex/g2-difficulty-curve` |
 | `performance-release` | NOT STARTED | NOT STARTED | NOT STARTED | minimum PC＋90 games pending | not created |
 
 ## 8. 固定假設
@@ -205,6 +205,13 @@ Art／audio 可標免 TDD，但必須通過資產 inventory、尺寸／格式、
 - tier-1 池構成重整（shadow 選取率 0.16% 的結構性問題）。
 - challenge run-op 分流與 global source lifecycle 矛盾正解（BP-SI-001/002）。
 - balance runner 逐幕快照與 stable ID 可觀測性（BP-SI-006，可提前隨 Phase 0 順做）。
+
+**完成狀態（2026-08-06）**：六項工作（T01～T09）全落地，BP-SI-001／004／005 與
+BP-SI-006 (i)(ii) 已 RESOLVED；BP-SI-002 明示不做、續 OPEN。3k screening fresh gate
+PASS（candidate `balance.g2.041458b08bb5`、`gate_reasons=[]`、3,000/3,000 terminal、
+150/150 replay 零 drift；`act_curve` 顯示 act1／act3 皆有淘汰，跨幕梯度已生效）；
+fresh All（Gut 1,193/1,193）與 10k ExpeditionSoak（10,000/10,000 passed）皆綠。
+詳細證據見 `specs/difficulty-curve/evidence-index.md`；T11 雙審待執行。
 
 ### Phase 2 — 平衡迭代迴圈（Phase 1 合併後）
 

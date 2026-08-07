@@ -137,6 +137,76 @@ func test_unknown_failure_uses_localized_generic_instead_of_raw_key() -> void:
 	assert_false(view.message_text().contains("not_in_catalog"))
 
 
+func test_prepare_capacity_failures_use_specific_status_messages() -> void:
+	var host := Control.new()
+	add_child_autofree(host)
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
+	var resolver := func(key: StringName) -> String:
+		var resolved := catalog.resolve(&"zh_TW", key)
+		return resolved.value if resolved.ok else String(key)
+
+	var view := PresentationStatusView.new()
+	assert_not_null(view.attach(host))
+	var cases: Array = [
+		[
+			&"PREPARE_BOARD_FULL",
+			&"error.presentation.prepare_board_full",
+			"戰場沒有可用位置",
+		],
+		[
+			&"PREPARE_BENCH_FULL",
+			&"error.presentation.prepare_bench_full",
+			"備戰區已滿",
+		],
+		[
+			&"PREPARE_SELECTION_REQUIRED",
+			&"error.presentation.prepare_selection_required",
+			"請先選擇有效項目",
+		],
+	]
+	for value: Array in cases:
+		view.show_failure(value[0], false, &"", resolver)
+		assert_eq(view.report().get("message_key"), value[1])
+		assert_true(view.message_text().ends_with(value[2]))
+		assert_false(view.message_text().ends_with("操作失敗"))
+
+
+func test_settings_activation_fallback_uses_diagnostic_instead_of_generic() -> void:
+	var harness: Variant = Support.boot(self)
+	var screen := Support.active_screen(harness)
+	assert_not_null(screen)
+	if screen == null:
+		return
+	var host := Control.new()
+	add_child_autofree(host)
+	var resolver := func(key: StringName) -> String:
+		return screen.localized_ui_text(key)
+
+	var view := PresentationStatusView.new()
+	assert_not_null(view.attach(host))
+	view.show_failure(
+		&"ACCESSIBILITY_ROOT_SIZE_INVALID",
+		true,
+		&"error.settings.activation_diagnostic",
+		resolver
+	)
+
+	assert_eq(
+		view.report().get("message_key"),
+		&"error.settings.activation_diagnostic"
+	)
+	assert_true(
+		view.message_text().ends_with(
+			screen.localized_ui_text(&"error.settings.activation_diagnostic")
+		)
+	)
+	assert_false(
+		view.message_text().ends_with(
+			screen.localized_ui_text(&"error.presentation.failure")
+		)
+	)
+
+
 func test_settings_draft_rejection_is_visible_on_the_settings_screen() -> void:
 	var harness: Variant = Support.boot(self)
 	assert_true(Support.press(self, Support.active_screen(harness), &"menu.start"))

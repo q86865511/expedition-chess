@@ -68,6 +68,7 @@ func test_camp_settings_opens_typed_draft_and_commits_locale() -> void:
 	if draft == null:
 		return
 	draft.locale = &"en"
+	draft.reduced_flash = not draft.reduced_flash
 	assert_eq(
 		StringName(composition.call(&"replace_settings_draft", draft)),
 		&""
@@ -92,6 +93,7 @@ func test_camp_settings_opens_typed_draft_and_commits_locale() -> void:
 	assert_not_null(committed)
 	if committed != null:
 		assert_eq(committed.locale, &"en")
+		assert_eq(committed.reduced_flash, draft.reduced_flash)
 	assert_true(Support.press(self, settings, &"settings.back"))
 	assert_eq(Support.active_screen(harness).route_kind, &"CAMP_WORLD")
 	assert_eq(harness.root.app_state(), AppStateMachine.State.CAMP)

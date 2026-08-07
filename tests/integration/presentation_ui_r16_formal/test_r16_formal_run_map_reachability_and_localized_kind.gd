@@ -83,6 +83,16 @@ func test_run_map_disables_unreachable_nodes_and_localizes_kind_text() -> void:
 	assert_string_contains(selector.get_item_text(unreachable_index), "菁英戰鬥")
 	assert_false(selector.get_item_text(unreachable_index).contains("elite"))
 
+	composition.call(&"_on_node_selected", unreachable_index)
+	assert_eq(composition.selected_node_id(), "")
+	var opened: Variant = composition.open_node_selection()
+	assert_true(bool(opened.get("ok")))
+	assert_eq(
+		composition.selected_node_id(),
+		REACHABLE_NODE_ID,
+		"open-node fallback must skip unreachable nodes"
+	)
+
 
 func _fixture_snapshot() -> RunPresentationSnapshot:
 	var snapshot := RunPresentationSnapshot.new()
@@ -122,7 +132,7 @@ func _fixture_snapshot() -> RunPresentationSnapshot:
 		null,
 		false
 	)
-	var nodes: Array[MapNodeState] = [reachable_node, unreachable_node]
+	var nodes: Array[MapNodeState] = [unreachable_node, reachable_node]
 	var edges: Array[MapEdgeState] = []
 	var completed: Array[String] = []
 	snapshot.map = MapState.new(nodes, edges, null, completed)

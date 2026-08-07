@@ -65,8 +65,9 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 			(harness.root as ApplicationRoot)
 				.try_camp_view_model()
 				.challenge_monument_highest_challenge_level()
+				+ 1
 		),
-		"challenge selector must not expose a locked highest+1 level"
+		"challenge selector must expose the next domain-admissible level"
 	)
 
 	var start := Support.action_button(camp_screen, &"camp.start")

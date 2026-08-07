@@ -52,7 +52,11 @@ func select_first_node() -> String:
 		)
 		return _selected_node_id
 	for node: MapNodeState in _snapshot.map.nodes:
-		if node != null and not node.node_id.is_empty():
+		if (
+			node != null
+			and not node.node_id.is_empty()
+			and MapNodePresentation.is_reachable(_snapshot.map, node)
+		):
 			_selected_node_id = node.node_id
 			if _node_selector != null:
 				for index: int in _node_selector.item_count:

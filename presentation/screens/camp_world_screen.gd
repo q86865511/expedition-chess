@@ -111,7 +111,7 @@ func _build_expedition_controls() -> void:
 	_challenge_selector.focus_mode = Control.FOCUS_ALL
 	_challenge_selector.min_value = 0.0
 	_challenge_selector.max_value = float(
-		maxi(_bundle.highest_challenge_level(), 0)
+		maxi(_bundle.highest_challenge_level() + 1, 0)
 	)
 	_challenge_selector.step = 1.0
 	_challenge_selector.value = 0.0

@@ -33,10 +33,44 @@ const _MESSAGE_KEYS: Dictionary = {
 		&"error.settings.activation_diagnostic",
 	&"SETTINGS_ACCESSIBILITY_ACTIVATION_FAILED":
 		&"error.settings.activation_diagnostic",
+	&"SETTINGS_THEME_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_VIEWPORT_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_LOCALIZATION_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_AUDIO_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_ACCESSIBILITY_BINDING_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_SETTINGS_INPUT_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_SETTINGS_APPLY_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_ROOT_SIZE_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_DAMAGE_DENSITY_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_RUNTIME_NODE_MISSING":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_LOCALIZATION_MISSING":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_TYPOGRAPHY_APPLY_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_FONT_UNAVAILABLE":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_REQUIRED_GLYPH_MISSING":
+		&"error.settings.activation_diagnostic",
+	&"PRODUCTION_VIEWPORT_TREE_INVALID":
+		&"error.settings.activation_diagnostic",
 	&"RUN_MAP_NODE_SELECTION_UNAVAILABLE":
 		&"error.presentation.run_map_node_selection_unavailable",
 	&"RUN_PREPARE_START_NOT_READY":
 		&"error.presentation.prepare_start_not_ready",
+	&"PREPARE_BOARD_FULL": &"error.presentation.prepare_board_full",
+	&"PREPARE_BENCH_FULL": &"error.presentation.prepare_bench_full",
+	&"PREPARE_SELECTION_REQUIRED":
+		&"error.presentation.prepare_selection_required",
 	&"RESOLVE_OVERFLOW_ITEM_NOT_IN_TRAY":
 		&"error.presentation.resolve_overflow_item_not_in_tray",
 	&"RUN_COMMAND_FAILED": &"error.presentation.run_command_failed",

@@ -181,6 +181,49 @@ func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
 		assert_true(seen.has(action_id), "%s must remain reachable" % action_id)
 
 
+func test_prepare_with_node_choice_defaults_to_advance_group() -> void:
+	var action_ids: Array[StringName] = [
+		&"prepare.unit", &"prepare.refresh", &"prepare.buy", &"prepare.xp",
+		&"prepare.sell", &"prepare.forge", &"prepare.forge.confirm",
+		&"prepare.forge.cancel", &"prepare.equip", &"prepare.dismantle",
+		&"service.dismantle", &"service.exit", &"prepare.move_board",
+		&"prepare.move_bench", &"prepare.start", &"choice.begin",
+		&"choice.confirm", &"choice.cancel", &"choice.ack", &"run.menu",
+		&"prepare.group.shop", &"prepare.group.forge_equipment",
+		&"prepare.group.party", &"prepare.group.advance",
+	]
+	var snapshot := RunPresentationSnapshot.new()
+	snapshot.node_choice_overlay = NodeChoiceOverlaySnapshot.new()
+	var screen := ProductionSceneCatalog.new().instantiate(&"RUN_PREPARE")
+	assert_not_null(screen)
+	if screen == null:
+		return
+	assert_eq(
+		screen.bind(StagedScreenContext.new(
+			&"RUN_PREPARE",
+			snapshot,
+			null,
+			&"zh_TW",
+			Support.localized(action_ids)
+		)),
+		&""
+	)
+	add_child_autofree(screen)
+	var selector := screen.get_node_or_null(
+		^"Actions/PrepareActionGroupSelector"
+	) as OptionButton
+	assert_not_null(selector)
+	if selector == null:
+		return
+	assert_eq(selector.selected, 3)
+	var advance_page := screen.get_node_or_null(
+		^"Actions/PrepareActionGroupPages/GroupAdvance"
+	) as GridContainer
+	assert_not_null(advance_page)
+	if advance_page != null:
+		assert_true(advance_page.visible)
+
+
 func test_global_focus_indicator_tracks_button_focus() -> void:
 	var screen := ProductionSceneCatalog.new().instantiate(&"MENU_MAIN")
 	assert_not_null(screen)

@@ -13,6 +13,18 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-07] 🔧 UI Phase A PR #11 第一審 fixup — F1 挑戰上限恢復為
+  `highest+1`，並鎖定通關挑戰 0 後可選 1；F2 補回棋盤滿／備戰區滿／未選取的
+  專屬狀態列映射；F3 鎖定 reduced_flash 成功套用時雙狀態面清空，真實 activation
+  fallback 則顯示 `error.settings.activation_diagnostic`、不再以泛用「操作失敗」結尾；
+  同步完成建議項 F4（帶 node-choice 預設開啟推進分組）與 F5（地圖 fallback 選點
+  套用同一可達性守衛）。有效紅燈：F1 1/2（96/97 assertions）、F2/F3 5/7
+  （63/75）、F4 4/5（77/79）、F5 0/1（18/19）；修正後依序 2/2（97）、
+  7/7（75）、reduced_flash UI 2/2（31）、F4 5/5（79）、F5 1/1（19）。第一輪
+  All 揭露 same-route fixture 將 layer-2 combat node 誤當新地圖入口，未放寬守衛，
+  改為真實 layer-0 fixture 後 targeted 2/2（20）。最終 fresh ExpeditionSoak
+  10,000 seeds／0 failures，`-Suite All` exit 0：303 scripts、1204/1204 tests、
+  24893 assertions、0 failures（2026-08-07T08:37:54Z～08:57:15Z）。
 - [2026-08-07] 🩹 UI／美術／中文化整修 Phase A 可玩性止血 — 營地 compose
   預設指揮官 0／挑戰 0、`allow_reselect` 與 challenge 上限同步；RUN_PREPARE 18 個
   動作改為四組兩欄分頁，`prepare.start`／`run.menu` 固定可及；錯誤呈現改讀

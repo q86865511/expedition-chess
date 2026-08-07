@@ -46,6 +46,9 @@ func test_generate_map_atomically_refreshes_same_route_and_old_control_is_stale(
 	target.run_id = source.run_id
 	target.app_phase = &"MAP"
 	target.manifest_digest = "after-map"
+	# The same-route fixture represents a freshly generated map, so its first
+	# node must satisfy the same entry-layer reachability guard as production.
+	target.map.nodes[0].layer_index = 0
 	var fixture := _install(source, target, RunPresentationIntent.Kind.GENERATE_MAP)
 	if fixture.is_empty():
 		return

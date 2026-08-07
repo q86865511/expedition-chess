@@ -146,3 +146,46 @@ func test_camp_facilities_share_one_profile_projection_and_round_trip() -> void:
 	assert_false(bool(stale.get("ok")))
 	assert_eq(Support.error_code(stale), &"SCREEN_NOT_ACTIVE")
 	assert_eq(navigated.size(), before_stale)
+
+
+func test_camp_unlocks_challenge_one_after_clearing_challenge_zero() -> void:
+	var camp: Object = Support.instantiate_scene(
+		self,
+		Support.CAMP_SCENES[&"CAMP_WORLD"],
+		Support.CAMP_WORLD_SCREEN_PATH
+	)
+	if camp == null:
+		return
+	var registry := LiveScreenLeaseRegistry.new()
+	var lease := registry.activate(AppStateMachine.State.CAMP, 1)
+	var port := LiveScreenNavigationPort.new(
+		lease,
+		registry,
+		func(_route: StringName) -> AppActionResult:
+			return AppActionResult.success(false)
+	)
+	var profile := Support.profile_fixture()
+	profile.highest_challenge_level = 0
+	var records: Array[CommanderChallengeRecordState] = [
+		CommanderChallengeRecordState.new(&"commander.alpha", 0),
+	]
+	profile.commander_challenge_records = records
+
+	assert_eq(camp.call(&"compose", profile, port), &"")
+	var challenge := camp.get_node_or_null(^"ChallengeSelector") as SpinBox
+	assert_not_null(challenge)
+	if challenge == null:
+		return
+	assert_eq(
+		challenge.max_value,
+		1.0,
+		"clearing challenge 0 must make challenge 1 selectable"
+	)
+	challenge.value = 1.0
+	challenge.value_changed.emit(1.0)
+	var request: StartExpeditionRequest = camp.call(
+		&"selected_expedition_request"
+	) as StartExpeditionRequest
+	assert_not_null(request)
+	if request != null:
+		assert_eq(request.challenge_level, 1)

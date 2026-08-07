@@ -361,6 +361,13 @@ func _build_prepare_action_controls(
 	controls: VBoxContainer,
 	action_ids: Array[StringName]
 ) -> void:
+	var default_group_index := 0
+	var staged_snapshot := _context.snapshot_clone() as RunPresentationSnapshot
+	if staged_snapshot != null and staged_snapshot.node_choice_overlay != null:
+		for index: int in PREPARE_ACTION_GROUPS.size():
+			if StringName(PREPARE_ACTION_GROUPS[index]["id"]) == &"advance":
+				default_group_index = index
+				break
 	_prepare_action_group_pages.clear()
 	_prepare_action_group_selector = OptionButton.new()
 	_prepare_action_group_selector.name = PREPARE_ACTION_GROUP_SELECTOR
@@ -389,7 +396,7 @@ func _build_prepare_action_controls(
 		page.name = "Group%s" % String(group["id"]).to_pascal_case()
 		page.columns = 2
 		page.set_anchors_preset(Control.PRESET_FULL_RECT)
-		page.visible = group_index == 0
+		page.visible = group_index == default_group_index
 		pages.add_child(page)
 		_prepare_action_group_pages.append(page)
 		for action_value: Variant in group["actions"]:
@@ -406,7 +413,7 @@ func _build_prepare_action_controls(
 	_prepare_action_group_selector.item_selected.connect(
 		_on_prepare_action_group_selected
 	)
-	_prepare_action_group_selector.select(0)
+	_prepare_action_group_selector.select(default_group_index)
 
 
 func _on_prepare_action_group_selected(index: int) -> void:

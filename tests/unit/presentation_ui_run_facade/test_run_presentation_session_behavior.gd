@@ -80,6 +80,32 @@ func test_no_playback_is_a_named_typed_result_not_null() -> void:
 	)
 
 
+func test_command_error_prefers_diagnostic_source_code_without_wrapper_prefix() -> void:
+	var diagnostics: Array[DiagnosticValue] = [
+		DiagnosticValue.from_string(&"source_code", "EQUIP_ITEM_SLOTS_FULL"),
+	]
+	var command_error := CommandError.new(
+		CommandError.APPLY_FAILED,
+		RunState.RunPhase.PREPARE,
+		&"inventory",
+		null,
+		diagnostics
+	)
+	var mapped := RunPresentationSession.new().call(
+		&"_command_error",
+		command_error
+	) as DiagnosticError
+
+	assert_not_null(mapped)
+	if mapped == null:
+		return
+	assert_eq(
+		mapped.source_code,
+		&"EQUIP_ITEM_SLOTS_FULL",
+		"presentation must consume diagnostic_values[source_code] directly"
+	)
+
+
 func test_session_routes_every_writer_through_factory_and_controller() -> void:
 	var session_source := _source(SESSION_PATH)
 	var factory_source := _source(FACTORY_PATH)

@@ -39,28 +39,47 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 	assert_true(commander.visible)
 	assert_true(commander.focus_mode == Control.FOCUS_ALL)
 	assert_gt(commander.item_count, 0)
+	assert_true(
+		commander.allow_reselect,
+		"reselecting the visible default commander must emit item_selected"
+	)
 	var commander_id := StringName(commander.get_item_metadata(0))
 	assert_false(
 		commander_id.is_empty(),
 		"the visible option must carry its typed commander id"
 	)
-	commander.select(0)
-	commander.item_selected.emit(0)
-	challenge.value = 0.0
-	challenge.value_changed.emit(0.0)
-	await wait_process_frames(1)
 	var request := composition.selected_expedition_request()
-	assert_not_null(request)
+	assert_not_null(
+		request,
+		"fresh CAMP compose must synchronize the visible defaults without signals"
+	)
 	if request == null:
 		return
 	assert_eq(request.commander_id, commander_id)
 	assert_eq(request.challenge_level, 0)
+	assert_eq(commander.selected, 0)
+	assert_eq(challenge.value, 0.0)
+	assert_eq(
+		challenge.max_value,
+		float(
+			(harness.root as ApplicationRoot)
+				.try_camp_view_model()
+				.challenge_monument_highest_challenge_level()
+		),
+		"challenge selector must not expose a locked highest+1 level"
+	)
 
 	var start := Support.action_button(camp_screen, &"camp.start")
 	assert_not_null(start)
 	if start == null:
 		return
 	assert_false(start.disabled)
+	commander.select(0)
+	commander.item_selected.emit(0)
+	challenge.value = 0.0
+	challenge.value_changed.emit(0.0)
+	await wait_process_frames(1)
+	assert_false(start.disabled, "UI reselect signals must preserve the valid draft")
 	start.pressed.emit()
 	await wait_process_frames(2)
 	var map_screen := Support.active_screen(harness)

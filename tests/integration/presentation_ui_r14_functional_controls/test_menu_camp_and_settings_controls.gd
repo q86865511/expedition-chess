@@ -93,6 +93,16 @@ func test_camp_settings_opens_typed_draft_and_commits_locale() -> void:
 	var applied: Variant = Support.last_control_result(self, settings)
 	assert_not_null(applied)
 	assert_true(bool(applied.get("ok")) if applied != null else false)
+	assert_eq(
+		settings.status_message_text(),
+		"",
+		"successful settings apply must clear the production status surface"
+	)
+	assert_eq(
+		String(composition.call(&"status_message_text")),
+		"",
+		"successful settings apply must not leave a composition failure"
+	)
 	var committed := (
 		composition.call(&"committed_settings_snapshot") as SettingsSnapshot
 	)

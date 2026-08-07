@@ -88,6 +88,24 @@ func test_start_combat_is_the_last_action_in_the_prepare_focus_ring() -> void:
 		&""
 	)
 	add_child_autofree(screen)
+	var group_selector := screen.get_node_or_null(
+		^"Actions/PrepareActionGroupSelector"
+	) as OptionButton
+	assert_not_null(
+		group_selector,
+		"RUN_PREPARE must expose a localized action-group selector"
+	)
+	if group_selector == null:
+		return
+	assert_eq(group_selector.item_count, 4)
+	var controls: Array = screen.call(&"_ordered_focus_controls")
+	assert_false(controls.is_empty())
+	if not controls.is_empty():
+		assert_eq(
+			controls[0],
+			group_selector,
+			"the page selector must be the first prepare focus stop"
+		)
 
 	var order := Support.focus_action_order(screen)
 	assert_false(order.is_empty())
@@ -102,12 +120,92 @@ func test_start_combat_is_the_last_action_in_the_prepare_focus_ring() -> void:
 		&"prepare.start",
 		"start combat must not sit at the front of the tab ring"
 	)
-	assert_eq(
-		order[0],
-		&"prepare.unit",
-		"the first focus stop stays the harmless party editor"
-	)
 	assert_true(
 		order.find(&"prepare.start") > order.find(&"prepare.buy"),
 		"every shop action comes before start combat"
 	)
+
+
+func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
+	var action_ids: Array[StringName] = [
+		&"prepare.unit", &"prepare.refresh", &"prepare.buy", &"prepare.xp",
+		&"prepare.sell", &"prepare.forge", &"prepare.forge.confirm",
+		&"prepare.forge.cancel", &"prepare.equip", &"prepare.dismantle",
+		&"service.dismantle", &"service.exit", &"prepare.move_board",
+		&"prepare.move_bench", &"prepare.start", &"choice.begin",
+		&"choice.confirm", &"choice.cancel", &"choice.ack", &"run.menu",
+		&"prepare.group.shop", &"prepare.group.forge_equipment",
+		&"prepare.group.party", &"prepare.group.advance",
+	]
+	var screen := ProductionSceneCatalog.new().instantiate(&"RUN_PREPARE")
+	assert_not_null(screen)
+	if screen == null:
+		return
+	assert_eq(
+		screen.bind(StagedScreenContext.new(
+			&"RUN_PREPARE",
+			RunPresentationSnapshot.new(),
+			null,
+			&"zh_TW",
+			Support.localized(action_ids)
+		)),
+		&""
+	)
+	screen.size = Vector2(1280.0, 720.0)
+	add_child_autofree(screen)
+	await wait_process_frames(2)
+	var selector := screen.get_node_or_null(
+		^"Actions/PrepareActionGroupSelector"
+	) as OptionButton
+	assert_not_null(selector)
+	if selector == null:
+		return
+	var seen: Dictionary[StringName, bool] = {}
+	for group_index: int in selector.item_count:
+		selector.select(group_index)
+		selector.item_selected.emit(group_index)
+		await wait_process_frames(1)
+		for node: Node in screen.find_children("*", "Button", true, false):
+			var button := node as Button
+			if button == null or not button.is_visible_in_tree() \
+			or not button.has_meta(&"action_id"):
+				continue
+			var action_id := StringName(button.get_meta(&"action_id"))
+			seen[action_id] = true
+			var rect := button.get_global_rect()
+			assert_true(
+				Rect2(Vector2.ZERO, Vector2(1280.0, 720.0)).encloses(rect),
+				"%s must stay inside 1280x720" % String(action_id)
+			)
+	for action_id: StringName in action_ids.slice(0, 20):
+		assert_true(seen.has(action_id), "%s must remain reachable" % action_id)
+
+
+func test_global_focus_indicator_tracks_button_focus() -> void:
+	var screen := ProductionSceneCatalog.new().instantiate(&"MENU_MAIN")
+	assert_not_null(screen)
+	if screen == null:
+		return
+	assert_eq(
+		screen.bind(StagedScreenContext.new(
+			&"MENU_MAIN",
+			MainMenuSnapshot.new(),
+			null,
+			&"zh_TW",
+			Support.localized([&"menu.settings", &"menu.exit"])
+		)),
+		&""
+	)
+	add_child_autofree(screen)
+	await wait_process_frames(1)
+	var button := Support.button(screen, &"menu.settings")
+	var indicator := screen.get_node_or_null(^"FocusIndicator") as Control
+	assert_not_null(button)
+	assert_not_null(indicator, "every production screen requires a focus outline")
+	if button == null or indicator == null:
+		return
+	button.grab_focus()
+	await wait_process_frames(1)
+	assert_true(indicator.visible)
+	assert_gt(indicator.size.x, button.size.x)
+	assert_gt(indicator.size.y, button.size.y)

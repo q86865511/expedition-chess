@@ -14,6 +14,8 @@ const _MESSAGE_KEYS: Dictionary = {
 	&"APP_ACTION_NOT_AVAILABLE": &"error.presentation.action_not_available",
 	&"CAMP_EXPEDITION_SELECTION_REQUIRED":
 		&"error.presentation.camp_selection_required",
+	&"EXPEDITION_CHALLENGE_PREREQUISITE_UNMET":
+		&"error.presentation.expedition_challenge_prerequisite_unmet",
 	&"APP_RETAINED_RUN_EXISTS": &"error.presentation.retained_run_exists",
 	&"APP_PREPARED_RUN_STALE": &"error.presentation.prepared_run_stale",
 	&"EXIT_REQUEST_ALREADY_PENDING":

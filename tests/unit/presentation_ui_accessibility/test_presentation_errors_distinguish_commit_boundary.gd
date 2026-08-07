@@ -85,3 +85,11 @@ func test_postcommit_route_failure_keeps_new_commit_and_enters_retryable_fallbac
 	var preserved: Dictionary = outcome.get("authoritative_state", {})
 	assert_eq(preserved.get("serial"), 41)
 	assert_eq((preserved.get("nested", {}) as Dictionary).get("save_digest"), "new")
+
+
+func test_commander_challenge_prerequisite_has_named_player_message() -> void:
+	var mapper := PresentationErrorMapper.new()
+	assert_eq(
+		mapper.message_key_for(&"EXPEDITION_CHALLENGE_PREREQUISITE_UNMET"),
+		&"error.presentation.expedition_challenge_prerequisite_unmet"
+	)

@@ -118,9 +118,10 @@ func test_driver_rejects_out_of_phase_operations_by_name_without_committing() ->
 	var before := _lab.view().publication_serial.to_hex()
 	var error := _lab.refresh_shop()
 	assert_false(error.is_empty(), "refreshing a shop outside PREPARE must be rejected")
-	assert_true(
-		String(error).contains("/"),
-		"the rejection must carry the domain source_code, not just the generic apply code"
+	assert_eq(
+		error,
+		ShopError.INPUT_INVALID,
+		"the rejection must expose the diagnostic domain source_code directly"
 	)
 	assert_eq(
 		_lab.view().publication_serial.to_hex(), before,

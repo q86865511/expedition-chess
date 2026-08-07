@@ -18,6 +18,8 @@ const _MESSAGE_KEYS: Dictionary = {
 	&"APP_PREPARED_RUN_STALE": &"error.presentation.prepared_run_stale",
 	&"EXIT_REQUEST_ALREADY_PENDING":
 		&"error.presentation.exit_already_pending",
+	&"EQUIP_ITEM_SLOTS_FULL":
+		&"error.presentation.equip_item_slots_full",
 	&"RESULTS_ACTION_IN_PROGRESS":
 		&"error.presentation.results_action_in_progress",
 	&"APP_ROUTE_PREPARE_INVALID": &"error.presentation.route_prepare_invalid",
@@ -27,6 +29,52 @@ const _MESSAGE_KEYS: Dictionary = {
 	&"SETTINGS_FIELD_OUT_OF_RANGE": &"error.settings.field_out_of_range",
 	&"APP_SETTINGS_RUNTIME_MISSING": &"error.settings.runtime_missing",
 	&"APP_SETTINGS_REBUILD_FAILED": &"error.settings.rebuild_failed",
+	&"SETTINGS_ADAPTER_ACTIVATION_DIAGNOSTIC":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_ACCESSIBILITY_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_THEME_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_VIEWPORT_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_LOCALIZATION_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_AUDIO_ACTIVATION_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"SETTINGS_ACCESSIBILITY_BINDING_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_SETTINGS_INPUT_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_SETTINGS_APPLY_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_ROOT_SIZE_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_DAMAGE_DENSITY_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_RUNTIME_NODE_MISSING":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_LOCALIZATION_MISSING":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_TYPOGRAPHY_APPLY_FAILED":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_FONT_UNAVAILABLE":
+		&"error.settings.activation_diagnostic",
+	&"ACCESSIBILITY_REQUIRED_GLYPH_MISSING":
+		&"error.settings.activation_diagnostic",
+	&"PRODUCTION_VIEWPORT_TREE_INVALID":
+		&"error.settings.activation_diagnostic",
+	&"RUN_MAP_NODE_SELECTION_UNAVAILABLE":
+		&"error.presentation.run_map_node_selection_unavailable",
+	&"RUN_PREPARE_START_NOT_READY":
+		&"error.presentation.prepare_start_not_ready",
+	&"PREPARE_BOARD_FULL": &"error.presentation.prepare_board_full",
+	&"PREPARE_BENCH_FULL": &"error.presentation.prepare_bench_full",
+	&"PREPARE_SELECTION_REQUIRED":
+		&"error.presentation.prepare_selection_required",
+	&"RESOLVE_OVERFLOW_ITEM_NOT_IN_TRAY":
+		&"error.presentation.resolve_overflow_item_not_in_tray",
+	&"RUN_COMMAND_FAILED": &"error.presentation.run_command_failed",
+	&"RUN_TRANSITION_FAILED": &"error.presentation.run_transition_failed",
 }
 
 

@@ -6,7 +6,7 @@ const Support = preload(
 )
 
 
-func test_real_menu_start_and_typed_camp_selection_start_a_run() -> void:
+func test_real_menu_start_and_default_camp_selection_start_a_run() -> void:
 	var harness: Variant = Support.boot(self)
 	var menu := Support.active_screen(harness)
 	assert_true(Support.press(self, menu, &"menu.start"))
@@ -14,37 +14,20 @@ func test_real_menu_start_and_typed_camp_selection_start_a_run() -> void:
 	var camp := Support.active_screen(harness)
 	assert_eq(camp.route_kind, &"CAMP_WORLD")
 
-	assert_true(Support.press(self, camp, &"camp.start"))
-	var missing_selection: Variant = Support.last_control_result(self, camp)
-	if missing_selection == null:
+	var commander := camp.get_node_or_null(
+		"Composition/CommanderSelector"
+	) as OptionButton
+	var challenge := camp.get_node_or_null(
+		"Composition/ChallengeSelector"
+	) as SpinBox
+	assert_not_null(commander)
+	assert_not_null(challenge)
+	if commander == null or challenge == null:
 		return
-	assert_eq(
-		Support.error_code(missing_selection),
-		&"CAMP_EXPEDITION_SELECTION_REQUIRED",
-		"missing typed commander/challenge selection needs an exact precondition"
-	)
-	assert_ne(
-		Support.error_code(missing_selection),
-		ApplicationRoot.ERROR_ACTION_NOT_AVAILABLE
-	)
-
-	var composition := Support.composition(camp)
-	var selectable := (
-		composition != null
-		and composition.has_method(&"select_expedition")
-	)
-	assert_true(
-		selectable,
-		"CAMP_WORLD must own a consumer draft for commander/challenge selection"
-	)
-	if not selectable:
-		return
-	var commander_id := Support.first_commander(harness.root)
-	assert_ne(commander_id, &"")
-	assert_eq(
-		StringName(composition.call(&"select_expedition", commander_id, 0)),
-		&""
-	)
+	assert_eq(commander.selected, 0)
+	assert_eq(challenge.value, 0.0)
+	commander.item_selected.emit(0)
+	challenge.value_changed.emit(0.0)
 	assert_true(Support.press(self, camp, &"camp.start"))
 	assert_eq(harness.root.app_state(), AppStateMachine.State.RUN)
 	assert_eq(Support.active_screen(harness).route_kind, &"RUN_MAP")
@@ -85,6 +68,7 @@ func test_camp_settings_opens_typed_draft_and_commits_locale() -> void:
 	if draft == null:
 		return
 	draft.locale = &"en"
+	draft.reduced_flash = not draft.reduced_flash
 	assert_eq(
 		StringName(composition.call(&"replace_settings_draft", draft)),
 		&""
@@ -93,12 +77,23 @@ func test_camp_settings_opens_typed_draft_and_commits_locale() -> void:
 	var applied: Variant = Support.last_control_result(self, settings)
 	assert_not_null(applied)
 	assert_true(bool(applied.get("ok")) if applied != null else false)
+	assert_eq(
+		settings.status_message_text(),
+		"",
+		"successful settings apply must clear the production status surface"
+	)
+	assert_eq(
+		String(composition.call(&"status_message_text")),
+		"",
+		"successful settings apply must not leave a composition failure"
+	)
 	var committed := (
 		composition.call(&"committed_settings_snapshot") as SettingsSnapshot
 	)
 	assert_not_null(committed)
 	if committed != null:
 		assert_eq(committed.locale, &"en")
+		assert_eq(committed.reduced_flash, draft.reduced_flash)
 	assert_true(Support.press(self, settings, &"settings.back"))
 	assert_eq(Support.active_screen(harness).route_kind, &"CAMP_WORLD")
 	assert_eq(harness.root.app_state(), AppStateMachine.State.CAMP)

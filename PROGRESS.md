@@ -13,6 +13,29 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-07] 🔧 UI Phase A PR #11 第一審 fixup — F1 挑戰上限恢復為
+  `highest+1`，並鎖定通關挑戰 0 後可選 1；F2 補回棋盤滿／備戰區滿／未選取的
+  專屬狀態列映射；F3 鎖定 reduced_flash 成功套用時雙狀態面清空，真實 activation
+  fallback 則顯示 `error.settings.activation_diagnostic`、不再以泛用「操作失敗」結尾；
+  同步完成建議項 F4（帶 node-choice 預設開啟推進分組）與 F5（地圖 fallback 選點
+  套用同一可達性守衛）。有效紅燈：F1 1/2（96/97 assertions）、F2/F3 5/7
+  （63/75）、F4 4/5（77/79）、F5 0/1（18/19）；修正後依序 2/2（97）、
+  7/7（75）、reduced_flash UI 2/2（31）、F4 5/5（79）、F5 1/1（19）。第一輪
+  All 揭露 same-route fixture 將 layer-2 combat node 誤當新地圖入口，未放寬守衛，
+  改為真實 layer-0 fixture 後 targeted 2/2（20）。最終 fresh ExpeditionSoak
+  10,000 seeds／0 failures，`-Suite All` exit 0：303 scripts、1204/1204 tests、
+  24893 assertions、0 failures（2026-08-07T08:37:54Z～08:57:15Z）。
+- [2026-08-07] 🩹 UI／美術／中文化整修 Phase A 可玩性止血 — 營地 compose
+  預設指揮官 0／挑戰 0、`allow_reselect` 與 challenge 上限同步；RUN_PREPARE 18 個
+  動作改為四組兩欄分頁，`prepare.start`／`run.menu` 固定可及；錯誤呈現改讀
+  diagnostic `source_code`，設定成功清空雙狀態面，未知碼落在地化泛用訊息；地圖
+  `map.select`／`map.confirm` 語意修正；全 production 畫面新增高對比焦點框；CSV/raw
+  與 bootstrap SHA 同步。fresh `-Suite ExpeditionSoak` 10,000 seeds／0 failures，最終
+  `-Suite All` exit 0（303 scripts、1200/1200 tests、24857/24857 assertions、
+  failures/errors/orphans 皆 0）。隔離 APPDATA 實機以 OS 滑鼠走完主選單→營地→地圖→
+  備戰→開始戰鬥，Tab 外框可見、讀回截圖無裸 key；既有 commit-before-present 在
+  相鄰 10 ms 幀由備戰直接結算回地圖，無可見 RUN_COMBAT 幀，已如實保留前／後證據。
+  詳見 `specs/ui-art-refresh/evidence/phase-a/README.md`。
 - [2026-08-06] 🎯 G2 `difficulty-curve` Phase 1 實作完成（T01～T09） — 解除平衡迴圈
   結構性天花板六項機制：per-act 敵方成長縮放（DC-REQ-001）、三幕 Boss 決定性映射
   fail-closed（DC-REQ-002）、五個 encounter 多敵編成（DC-REQ-003）、12 trait 三階
@@ -208,10 +231,11 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 待辦
 
-- UI／美術／中文化整修（交 Codex）：審核報告與四階段修改計畫已完成於
+- UI／美術／中文化整修（交 Codex）：Phase A 止血已完成實作與自動驗收，實機
+  RUN_COMBAT 截圖受 commit-before-present 同幀結算阻塞；審核報告與四階段計畫位於
   `specs/ui-art-refresh/review-and-plan.md`（2026-08-07 實機截圖審核；含 4 個 P0
-  可玩性 bug、視覺 0% 現況盤點、中文化剩餘四缺口）。Phase A 止血 → B Theme／
-  字型 → C 資產接線 → D 中文化收尾。
+  可玩性 bug、視覺 0% 現況盤點、中文化剩餘四缺口）。後續為 Phase B Theme／
+  字型、Phase C 資產接線、Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -219,6 +243,10 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已知問題
 
+- Fresh profile 的短戰鬥 transcript 會在 RUN_COMBAT 第一個可呈現影格即 exhausted，
+  `SETTLE_BATTLE` 使畫面由備戰直接回地圖；Phase A 以 10 ms 間隔擷取 80 幀仍無可見
+  RUN_COMBAT 畫面。這不阻擋「開始戰鬥」寫操作，但阻擋戰鬥畫面實機截圖，後續 UI
+  phase 應檢查最短可見播放時間或首幀呈現契約。
 - Combat／Expedition／Build／Camp／Run／Results Lab 仍是開發用灰盒，不是正式產品 UI；正式 production 美術與音訊已由 content-production 閉環，後續產品化 UX 依 roadmap 的剩餘切片處理。
 - Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。

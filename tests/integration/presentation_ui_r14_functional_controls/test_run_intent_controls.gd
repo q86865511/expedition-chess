@@ -21,20 +21,22 @@ func test_map_buttons_generate_select_and_confirm_through_typed_intents() -> voi
 	if screen == null:
 		return
 
-	assert_true(Support.press(self, screen, &"map.confirm"))
+	assert_true(Support.press(self, screen, &"map.select"))
 	assert_eq(
 		session.dispatched_kinds,
 		[RunPresentationIntent.Kind.GENERATE_MAP],
-		"first confirm without a generated map must dispatch GENERATE_MAP"
+		"select node without a generated map must dispatch GENERATE_MAP"
 	)
-	assert_true(Support.press(self, screen, &"map.select"))
 	var composition := Support.composition(screen)
 	var selected := (
 		String(composition.call(&"selected_node_id"))
 		if composition != null and composition.has_method(&"selected_node_id")
 		else ""
 	)
-	assert_false(selected.is_empty(), "map.select must update only the consumer draft")
+	assert_false(
+		selected.is_empty(),
+		"map.select must expose a visible consumer selection after generation"
+	)
 	assert_true(Support.press(self, screen, &"map.confirm"))
 	var map_last_kind: int = (
 		-1

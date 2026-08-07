@@ -46,16 +46,19 @@ func test_generate_map_atomically_refreshes_same_route_and_old_control_is_stale(
 	target.run_id = source.run_id
 	target.app_phase = &"MAP"
 	target.manifest_digest = "after-map"
+	# The same-route fixture represents a freshly generated map, so its first
+	# node must satisfy the same entry-layer reachability guard as production.
+	target.map.nodes[0].layer_index = 0
 	var fixture := _install(source, target, RunPresentationIntent.Kind.GENERATE_MAP)
 	if fixture.is_empty():
 		return
 	var session := fixture.get("session") as RefreshingSession
 	var old_screen := fixture.get("screen") as ProductionScreen
-	var confirm := _button(old_screen, &"map.confirm")
-	assert_not_null(confirm)
-	if confirm == null:
+	var select := _button(old_screen, &"map.select")
+	assert_not_null(select)
+	if select == null:
 		return
-	confirm.pressed.emit()
+	select.pressed.emit()
 	var fresh := RouteSupport.active_screen(fixture.get("harness"))
 	assert_ne(fresh, old_screen, "same-route commit must replace the live lease/screen")
 	assert_eq(fresh.route_kind, &"RUN_MAP")
@@ -67,7 +70,7 @@ func test_generate_map_atomically_refreshes_same_route_and_old_control_is_stale(
 	)
 	if composition != null and composition.has_method(&"select_first_node"):
 		assert_ne(String(composition.call(&"select_first_node")), "")
-	confirm.pressed.emit()
+	select.pressed.emit()
 	assert_eq(
 		session.dispatch_count,
 		1,

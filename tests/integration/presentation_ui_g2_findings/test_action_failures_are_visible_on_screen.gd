@@ -21,6 +21,13 @@ func test_failed_camp_action_renders_localized_precommit_status() -> void:
 		"",
 		"a freshly staged screen must not show a stale error"
 	)
+	var commander := camp.get_node_or_null(
+		"Composition/CommanderSelector"
+	) as OptionButton
+	assert_not_null(commander)
+	if commander == null:
+		return
+	commander.item_selected.emit(-1)
 	assert_true(Support.press(self, camp, &"camp.start"))
 
 	var report := camp.status_report()
@@ -48,25 +55,18 @@ func test_successful_action_clears_the_status_surface() -> void:
 	var harness: Variant = Support.boot(self)
 	assert_true(Support.press(self, Support.active_screen(harness), &"menu.start"))
 	var camp := Support.active_screen(harness)
+	var commander := camp.get_node_or_null(
+		"Composition/CommanderSelector"
+	) as OptionButton
+	assert_not_null(commander)
+	if commander == null:
+		return
+	commander.item_selected.emit(-1)
 	assert_true(Support.press(self, camp, &"camp.start"))
 	assert_false(camp.status_message_text().is_empty())
 
-	var composition := camp.get_node_or_null("Composition") as CampWorldScreen
-	assert_not_null(composition)
-	if composition == null:
-		return
-	var commanders: Array[StringName] = (
-		(harness.root as ApplicationRoot)
-			.try_camp_view_model()
-			.commander_hall_unlocked_commander_ids()
-	)
-	assert_false(commanders.is_empty())
-	if commanders.is_empty():
-		return
-	assert_eq(
-		StringName(composition.select_expedition(commanders[0], 0)),
-		&""
-	)
+	commander.select(0)
+	commander.item_selected.emit(0)
 	assert_true(Support.press(self, camp, &"camp.start"))
 	assert_eq(
 		camp.status_message_text(),
@@ -110,6 +110,101 @@ func test_precommit_and_postcommit_failures_read_differently() -> void:
 	view.clear(resolver)
 	assert_eq(view.message_text(), "")
 	assert_true(view.report().is_empty())
+
+
+func test_unknown_failure_uses_localized_generic_instead_of_raw_key() -> void:
+	var host := Control.new()
+	add_child_autofree(host)
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
+	var resolver := func(key: StringName) -> String:
+		var resolved := catalog.resolve(&"zh_TW", key)
+		return resolved.value if resolved.ok else String(key)
+
+	var view := PresentationStatusView.new()
+	assert_not_null(view.attach(host))
+	view.show_failure(
+		&"UNKNOWN_PHASE_A_FAILURE",
+		false,
+		&"error.not_in_catalog",
+		resolver
+	)
+
+	assert_eq(
+		view.report().get("message_key"),
+		PresentationErrorMapper.DEFAULT_MESSAGE_KEY
+	)
+	assert_false(view.message_text().contains("error."))
+	assert_false(view.message_text().contains("not_in_catalog"))
+
+
+func test_prepare_capacity_failures_use_specific_status_messages() -> void:
+	var host := Control.new()
+	add_child_autofree(host)
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
+	var resolver := func(key: StringName) -> String:
+		var resolved := catalog.resolve(&"zh_TW", key)
+		return resolved.value if resolved.ok else String(key)
+
+	var view := PresentationStatusView.new()
+	assert_not_null(view.attach(host))
+	var cases: Array = [
+		[
+			&"PREPARE_BOARD_FULL",
+			&"error.presentation.prepare_board_full",
+			"戰場沒有可用位置",
+		],
+		[
+			&"PREPARE_BENCH_FULL",
+			&"error.presentation.prepare_bench_full",
+			"備戰區已滿",
+		],
+		[
+			&"PREPARE_SELECTION_REQUIRED",
+			&"error.presentation.prepare_selection_required",
+			"請先選擇有效項目",
+		],
+	]
+	for value: Array in cases:
+		view.show_failure(value[0], false, &"", resolver)
+		assert_eq(view.report().get("message_key"), value[1])
+		assert_true(view.message_text().ends_with(value[2]))
+		assert_false(view.message_text().ends_with("操作失敗"))
+
+
+func test_settings_activation_fallback_uses_diagnostic_instead_of_generic() -> void:
+	var harness: Variant = Support.boot(self)
+	var screen := Support.active_screen(harness)
+	assert_not_null(screen)
+	if screen == null:
+		return
+	var host := Control.new()
+	add_child_autofree(host)
+	var resolver := func(key: StringName) -> String:
+		return screen.localized_ui_text(key)
+
+	var view := PresentationStatusView.new()
+	assert_not_null(view.attach(host))
+	view.show_failure(
+		&"ACCESSIBILITY_ROOT_SIZE_INVALID",
+		true,
+		&"error.settings.activation_diagnostic",
+		resolver
+	)
+
+	assert_eq(
+		view.report().get("message_key"),
+		&"error.settings.activation_diagnostic"
+	)
+	assert_true(
+		view.message_text().ends_with(
+			screen.localized_ui_text(&"error.settings.activation_diagnostic")
+		)
+	)
+	assert_false(
+		view.message_text().ends_with(
+			screen.localized_ui_text(&"error.presentation.failure")
+		)
+	)
 
 
 func test_settings_draft_rejection_is_visible_on_the_settings_screen() -> void:

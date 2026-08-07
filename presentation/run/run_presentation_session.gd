@@ -733,9 +733,9 @@ func _source_code(
 ) -> StringName:
 	for diagnostic: DiagnosticValue in diagnostics:
 		if diagnostic.key == &"source_code" and diagnostic.string_value != null:
-			return StringName("%s/%s" % [
-				String(fallback), diagnostic.string_value.value
-			])
+			var source_code := StringName(diagnostic.string_value.value)
+			if not source_code.is_empty():
+				return source_code
 	return fallback
 
 

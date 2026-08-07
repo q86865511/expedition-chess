@@ -201,6 +201,7 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - [2026-07-28] ✅ G2 `presentation-ui` wave2/T06 與整波收尾 — T06 鎖定 decoded/opaque repository identity/epoch/full-file-digest token、wrong/stale/replaced CAS、archive-before-clear 全 fault preservation 與 4×4 restart residue runtime matrix；無效首跑的 parser/orphan 不列紅證據，修正後有效紅 2 tests/155 assertions，production green 2/2（300 assertions）。RetainedRunRecoveryService、SaveRepository/StoragePort restart cleanup 與 AppRoot recovery wiring 落地；opaque 無 run digest，tmp 永不升格，R12-A02 仍標 review debt。wave2 最終 All exit 0；Gut 769/769（10987 assertions、0 failures/errors/orphans）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3628 cases 全綠。
 - [2026-07-28] ✅ G2 `presentation-ui` wave2/T03、T05 — T03 完成 typed 四 bus atomic audio port/coordinator；原 test helper 與 fake public API 兩次不合格均明確撤銷舊 manifest 後重建，四項行為 assertions 不變，最終 4/4（93）。T05 完成固定 Boot→MENU、typed menu/continue/start/results/exit、repository identity/epoch、共享 Camp transaction、prepared capability 與 terminal handoff skeleton，限定 7/7（159）。修正 public Variant/Dictionary Spec failures、舊 Smoke/AppRoot boot 假設、opaque LoadResult invariant 與 discard 精確診斷後，All exit 0；Gut 767/767（10687 assertions）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3622 cases 全綠。R12 四項仍 unresolved。
 - [2026-07-28] ✅ G2 `presentation-ui` wave1/T01、T02、T04 — 五份 behavioral tests 先紅後鎖定 SHA manifest，再完成 production content bootstrap＋210-key `zh_TW|en` catalog、schema-1 原子 SettingsRepository、24-intent RunPresentationSession/RunCommandFactory 與 Run/Combat Lab 薄包裝。主迴圈重驗 T01 7/7（464 assertions）、T02 4/4（403）、T04 12/12（55），五份 hash 全一致；wave-end All exit 0，Gut 764/764（10530 assertions、0 failures/errors/orphans）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3555 cases 全綠。R12 四項仍 unresolved，未執行 Git。
+- [2026-08-07] ✅ G2 `ui-art-refresh` Phase A（可玩性止血）合併 — PR #11 → master@823869a。A1~A5（營地選擇同步／備戰四分組常駐開始戰鬥／錯誤分流／可見焦點框／缺 key 補齊與地圖語意分離）＋第一審修補 F1~F5（挑戰上限 +1 對齊 domain、備戰滿員文案接線、套用誤報移除、node-choice 預設分組、節點可達性守衛）。第一審 2 高 4 中 5 低全數裁決閉環；審方 fresh 重跑 Gut 1204/1204（24893 asserts）exit 0、10k ExpeditionSoak 0 failures、實機滑鼠全程與設定持久化驗證通過。三個追蹤項移交 Phase B（見待辦）。
 - [2026-07-28] ✅ G2 `presentation-ui` wave0/T00 — 有效 contract red 為 4 tests 中 3 個 assertion failures、parser/import 0；locked SHA `684bad…cadd13`。新增 AppActionResult、settings schema 1/port、run/session/playback、screen lease/capability 與 terminal handoff 等 35 個 compile-safe contracts；ResultInvariant Spec 契約修正後限定 GUT 4/4（276 assertions）、Spec 3481 cases、All 741 tests/9608 assertions 全綠。只完成 skeleton，無 runtime behavior。
 - [2026-07-28] ⚠️ G2 `presentation-ui` review Gate override — 使用者明確指示 R12/R13 審查先跳過並繼續下一步；只放行本地 baseline/TDD/implementation，R12 四項仍 unresolved，Git/PR 與最終完成宣稱未放行。
 - [2026-07-28] 📦 G2 `presentation-ui` R12 交接收斂 — 架構／行為雙審原文、4 項 Medium finding 與 proposed fixes 已同步 review-log、roadmap、PROGRESS、HANDOFF 及 `.pipeline`；使用者指定下一手由 Claude 修訂，fresh R13 雙審結果仍須先落檔。
@@ -231,11 +232,14 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 待辦
 
-- UI／美術／中文化整修（交 Codex）：Phase A 止血已完成實作與自動驗收，實機
-  RUN_COMBAT 截圖受 commit-before-present 同幀結算阻塞；審核報告與四階段計畫位於
-  `specs/ui-art-refresh/review-and-plan.md`（2026-08-07 實機截圖審核；含 4 個 P0
-  可玩性 bug、視覺 0% 現況盤點、中文化剩餘四缺口）。後續為 Phase B Theme／
-  字型、Phase C 資產接線、Phase D 中文化收尾。
+- UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
+  2026-08-07）；計畫位於 `specs/ui-art-refresh/review-and-plan.md`。後續為
+  Phase B Theme／字型／版面、Phase C 資產接線、Phase D 中文化收尾。
+  移交 Phase B 的追蹤項：(1) 設定套用在真實 Windows 環境每次都顯示
+  「已生效但畫面未更新」診斷（疑 activation probe 常駐回報，隔離測試環境無法重現）；
+  (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 未映射具名文案（全域
+  highest_challenge_level 與每指揮官紀錄語意差）；(3) Codex 實機測試須隔離
+  APPDATA（本輪污染真實 settings 的 locale）。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

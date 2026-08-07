@@ -2,11 +2,17 @@ key,zh_TW,en
 app.retry_route,重新載入畫面,Reload Screen
 camp.back,返回營地,Back to Camp
 camp.challenge_monument,挑戰紀念碑,Challenge Monument
+camp.challenge_selector,挑戰等級,Challenge Level
 camp.collection,圖鑑,Collection
+camp.commander_selector,指揮官,Commander
 camp.commander_hall,指揮官大廳,Commander Hall
 camp.expedition_gate,遠征之門,Expedition Gate
 camp.forge,工坊,Workshop
 camp.menu,返回主選單,Main Menu
+camp.panel.expedition,遠征資訊,Expedition
+camp.resource.challenge,最高挑戰,Highest Challenge
+camp.resource.currency,工坊貨幣,Workshop Currency
+camp.resource.discovered,已發現,Discovered
 camp.settings,設定,Settings
 camp.start,開始遠征,Start Expedition
 choice.ack,確認事件結果,Acknowledge Choice Result
@@ -52,6 +58,7 @@ error.presentation.app_action,操作失敗,The action failed
 error.presentation.camp_selection_required,請先選擇指揮官與挑戰等級,Select a commander and challenge level first
 error.presentation.exit_already_pending,離開請求已在處理中,An exit request is already pending
 error.presentation.equip_item_slots_full,該單位的裝備欄位已滿,That unit has no free equipment slot
+error.presentation.expedition_challenge_prerequisite_unmet,此指揮官尚未解鎖所選挑戰等級,The selected challenge level is not unlocked for this commander.
 error.presentation.failure,操作失敗,The action failed
 error.presentation.prepare_bench_full,備戰區已滿,The bench is full
 error.presentation.prepare_board_full,戰場沒有可用位置,No board cell is available
@@ -818,6 +825,13 @@ prepare.group.advance,推進,Advance
 prepare.group.forge_equipment,鍛造裝備,Forge and Equipment
 prepare.group.party,隊伍調整,Party Setup
 prepare.group.shop,商店,Shop
+prepare.panel.board,戰場,Board
+prepare.panel.inventory,裝備庫,Inventory
+prepare.panel.issues,部署問題,Deployment Issues
+prepare.panel.overflow,待處理裝備,Overflow
+prepare.panel.party,隊伍,Party
+prepare.panel.shop,商店,Shop
+prepare.panel.units,單位,Units
 prepare.move_bench,移至備戰區,Move to Bench
 prepare.move_board,移至戰場,Move to Board
 prepare.refresh,重新整理商店,Refresh Shop
@@ -825,6 +839,10 @@ prepare.sell,出售所選單位,Sell Selected Unit
 prepare.start,開始戰鬥,Start Combat
 prepare.unit,調整隊伍,Manage Party
 prepare.xp,購買經驗值,Buy XP
+prepare.resource.capacity,人口,Capacity
+prepare.resource.gold,金幣,Gold
+prepare.resource.hp,遠征生命,Expedition HP
+prepare.resource.level_xp,等級／經驗,Level / XP
 results.camp,返回營地,Return to Camp
 results.menu,返回主選單,Return to Menu
 results.outcome.abandoned,已放棄遠征,Expedition Abandoned

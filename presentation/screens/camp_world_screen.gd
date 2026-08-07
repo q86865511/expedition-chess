@@ -19,6 +19,7 @@ var _selected_commander_id: StringName = &""
 var _selected_challenge_level: int = -1
 var _commander_selector: OptionButton
 var _challenge_selector: SpinBox
+var _layout_root: Control
 
 
 func compose(
@@ -82,12 +83,54 @@ func selected_expedition_request() -> StartExpeditionRequest:
 
 
 func _build_expedition_controls() -> void:
-	_remove_control(^"CommanderSelector")
-	_remove_control(^"ChallengeSelector")
+	_remove_control(&"CampContent")
+	_layout_root = Control.new()
+	_layout_root.name = "CampContent"
+	_layout_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_layout_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_layout_root)
+	var metrics := HBoxContainer.new()
+	metrics.name = "CampMetrics"
+	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
+	metrics_rect.position.x += 380.0
+	metrics_rect.size.x -= 380.0
+	metrics.position = metrics_rect.position
+	metrics.size = metrics_rect.size
+	metrics.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layout_root.add_child(metrics)
+	metrics.add_child(_metric_label(
+		&"camp.resource.currency",
+		str(_bundle.workshop_currency())
+	))
+	metrics.add_child(_metric_label(
+		&"camp.resource.challenge",
+		str(_bundle.highest_challenge_level())
+	))
+	metrics.add_child(_metric_label(
+		&"camp.resource.discovered",
+		str(_bundle.discovered_ids().size())
+	))
+	var expedition_panel := VBoxContainer.new()
+	expedition_panel.name = "ExpeditionPanelContent"
+	var expedition_rect := _region_content_rect(
+		ProductionLayoutShell.REGION_RIGHT
+	)
+	expedition_panel.position = expedition_rect.position
+	expedition_panel.size = expedition_rect.size
+	expedition_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layout_root.add_child(expedition_panel)
+	var heading := Label.new()
+	heading.text = _localized_ui_text(&"camp.panel.expedition")
+	heading.theme_type_variation = &"ExpeditionHeading"
+	expedition_panel.add_child(heading)
+	var commander_label := Label.new()
+	commander_label.text = _localized_ui_text(&"camp.commander_selector")
+	commander_label.theme_type_variation = &"ExpeditionAuxiliary"
+	expedition_panel.add_child(commander_label)
 	_commander_selector = OptionButton.new()
 	_commander_selector.name = "CommanderSelector"
-	_commander_selector.position = Vector2(72.0, 112.0)
-	_commander_selector.custom_minimum_size = Vector2(320.0, 48.0)
+	_commander_selector.custom_minimum_size = Vector2(0.0, 48.0)
+	_commander_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_commander_selector.focus_mode = Control.FOCUS_ALL
 	_commander_selector.allow_reselect = true
 	_commander_selector.set_meta(&"typed_choice_kind", &"commander")
@@ -102,12 +145,16 @@ func _build_expedition_controls() -> void:
 		var index := _commander_selector.item_count - 1
 		_commander_selector.set_item_metadata(index, commander_id)
 	_commander_selector.item_selected.connect(_on_commander_selected)
-	add_child(_commander_selector)
+	expedition_panel.add_child(_commander_selector)
 
+	var challenge_label := Label.new()
+	challenge_label.text = _localized_ui_text(&"camp.challenge_selector")
+	challenge_label.theme_type_variation = &"ExpeditionAuxiliary"
+	expedition_panel.add_child(challenge_label)
 	_challenge_selector = SpinBox.new()
 	_challenge_selector.name = "ChallengeSelector"
-	_challenge_selector.position = Vector2(72.0, 176.0)
-	_challenge_selector.custom_minimum_size = Vector2(240.0, 48.0)
+	_challenge_selector.custom_minimum_size = Vector2(0.0, 48.0)
+	_challenge_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_challenge_selector.focus_mode = Control.FOCUS_ALL
 	_challenge_selector.min_value = 0.0
 	_challenge_selector.max_value = float(
@@ -121,7 +168,25 @@ func _build_expedition_controls() -> void:
 		&"camp.challenge_selector"
 	)
 	_challenge_selector.value_changed.connect(_on_challenge_selected)
-	add_child(_challenge_selector)
+	expedition_panel.add_child(_challenge_selector)
+
+
+func _metric_label(key: StringName, value: String) -> Label:
+	var label := Label.new()
+	label.text = "%s  %s" % [_localized_ui_text(key), value]
+	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return label
+
+
+func _region_content_rect(region: StringName) -> Rect2:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.layout_region_content_rect(region)
+		if parent_screen != null
+		else Rect2()
+	)
 
 
 func _on_commander_selected(index: int) -> void:
@@ -158,8 +223,17 @@ func _localized_content_text(content_id: StringName) -> String:
 	)
 
 
-func _remove_control(path: NodePath) -> void:
-	var existing := get_node_or_null(path)
+func _localized_ui_text(key: StringName) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.localized_ui_text(key)
+		if parent_screen != null
+		else String(key)
+	)
+
+
+func _remove_control(node_name: StringName) -> void:
+	var existing := find_child(String(node_name), true, false)
 	if existing != null:
-		remove_child(existing)
+		existing.get_parent().remove_child(existing)
 		existing.queue_free()

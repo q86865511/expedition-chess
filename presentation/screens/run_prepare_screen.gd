@@ -208,7 +208,7 @@ func select_first_node_choice() -> StringName:
 	if snapshot == null or snapshot.node_choice_overlay == null:
 		_selected_node_choice_id = &""
 		return &""
-	var selector := get_node_or_null(^"ChoiceSelector") as ItemList
+	var selector := _control(&"ChoiceSelector") as ItemList
 	if selector == null or selector.item_count == 0:
 		_selected_node_choice_id = &""
 		return &""
@@ -429,78 +429,133 @@ func move_selected_to_bench() -> AppActionResult:
 
 
 func _build_prepare_controls() -> void:
-	for path: NodePath in [
-		^"CapacityValue",
-		^"OverflowSelector",
-		^"DeploymentIssues",
-		^"BoardSelector",
-		^"BenchSelector",
-		^"ShopSelector",
-		^"InventorySelector",
-		^"BuildUnitSelector",
-		^"ChoiceSelector",
-	]:
-		var existing := get_node_or_null(path)
-		if existing != null:
-			remove_child(existing)
-			existing.queue_free()
+	var existing := find_child("PrepareContent", true, false)
+	if existing != null:
+		existing.get_parent().remove_child(existing)
+		existing.queue_free()
+	var layout := Control.new()
+	layout.name = "PrepareContent"
+	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layout.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(layout)
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	var metrics := HBoxContainer.new()
+	metrics.name = "PrepareMetrics"
+	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
+	metrics_rect.position.x += 320.0
+	metrics_rect.size.x -= 320.0
+	metrics.position = metrics_rect.position
+	metrics.size = metrics_rect.size
+	metrics.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layout.add_child(metrics)
+	metrics.add_child(_metric_label(
+		&"prepare.resource.hp",
+		str(snapshot.view.expedition_hp) if snapshot != null and snapshot.view != null else "-"
+	))
+	metrics.add_child(_metric_label(
+		&"prepare.resource.gold",
+		str(snapshot.economy.gold) if snapshot != null and snapshot.economy != null else "-"
+	))
+	metrics.add_child(_metric_label(
+		&"prepare.resource.level_xp",
+		"%s / %s" % [snapshot.economy.level, snapshot.economy.xp] if snapshot != null and snapshot.economy != null else "-"
+	))
 	var capacity := Label.new()
 	capacity.name = "CapacityValue"
-	capacity.position = Vector2(72.0, 112.0)
-	capacity.text = str(displayed_capacity())
+	capacity.text = "%s  %s" % [
+		_localized_ui_text(&"prepare.resource.capacity"),
+		str(displayed_capacity()),
+	]
+	capacity.theme_type_variation = &"ExpeditionAuxiliary"
+	capacity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	capacity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	capacity.set_meta(&"typed_data_kind", &"population_capacity")
 	capacity.set_meta(&"accessible_text", capacity.text)
-	add_child(capacity)
+	metrics.add_child(capacity)
 
+	var left := VBoxContainer.new()
+	left.name = "PrepareLeftContent"
+	var left_rect := _region_content_rect(ProductionLayoutShell.REGION_LEFT)
+	left.position = left_rect.position
+	left.size = left_rect.size
+	layout.add_child(left)
+	left.add_child(_heading(&"prepare.panel.party"))
 	_add_selector(
-		&"BoardSelector",
-		Vector2(72.0, 152.0),
-		Vector2(260.0, 160.0),
-		&"board_draft"
-	)
-	_add_selector(
+		left,
 		&"BenchSelector",
-		Vector2(348.0, 152.0),
-		Vector2(260.0, 160.0),
+		Vector2(0.0, 112.0),
 		&"bench_draft"
 	)
+	left.add_child(_heading(&"prepare.panel.shop"))
 	_add_selector(
+		left,
 		&"ShopSelector",
-		Vector2(624.0, 152.0),
-		Vector2(260.0, 160.0),
+		Vector2(0.0, 112.0),
 		&"shop_offer"
 	)
+
+	var center := VBoxContainer.new()
+	center.name = "PrepareCenterContent"
+	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
+	center.position = center_rect.position
+	center.size = center_rect.size
+	layout.add_child(center)
+	center.add_child(_heading(&"prepare.panel.board"))
 	_add_selector(
+		center,
+		&"BoardSelector",
+		Vector2(0.0, 112.0),
+		&"board_draft"
+	)
+	var build_row := HBoxContainer.new()
+	build_row.name = "BuildRow"
+	build_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	center.add_child(build_row)
+	var inventory_column := VBoxContainer.new()
+	inventory_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	build_row.add_child(inventory_column)
+	inventory_column.add_child(_heading(&"prepare.panel.inventory"))
+	_add_selector(
+		inventory_column,
 		&"InventorySelector",
-		Vector2(72.0, 328.0),
-		Vector2(396.0, 160.0),
+		Vector2(0.0, 104.0),
 		&"item_instance",
 		true
 	)
+	var units_column := VBoxContainer.new()
+	units_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	build_row.add_child(units_column)
+	units_column.add_child(_heading(&"prepare.panel.units"))
 	_add_selector(
+		units_column,
 		&"BuildUnitSelector",
-		Vector2(488.0, 328.0),
-		Vector2(396.0, 160.0),
+		Vector2(0.0, 104.0),
 		&"unit_instance"
 	)
 
-	var snapshot := _model.snapshot_clone() if _model != null else null
-
+	var right := VBoxContainer.new()
+	right.name = "PrepareRightContent"
+	var right_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
+	right.position = right_rect.position
+	right.size = right_rect.size
+	layout.add_child(right)
+	right.add_child(_heading(&"prepare.panel.overflow"))
 	var overflow := ItemList.new()
 	overflow.name = "OverflowSelector"
-	overflow.position = Vector2(72.0, 504.0)
-	overflow.custom_minimum_size = Vector2(396.0, 120.0)
+	overflow.custom_minimum_size = Vector2(0.0, 92.0)
+	overflow.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	overflow.focus_mode = Control.FOCUS_ALL
 	overflow.set_meta(&"typed_data_kind", &"item_overflow")
 	for item_id: String in overflow_ids():
 		overflow.add_item(_item_display_name(item_id, snapshot))
 		overflow.set_item_metadata(overflow.item_count - 1, item_id)
-	add_child(overflow)
+	right.add_child(overflow)
 
+	right.add_child(_heading(&"prepare.panel.issues"))
 	var issues := ItemList.new()
 	issues.name = "DeploymentIssues"
-	issues.position = Vector2(488.0, 504.0)
-	issues.custom_minimum_size = Vector2(396.0, 120.0)
+	issues.custom_minimum_size = Vector2(0.0, 92.0)
+	issues.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	issues.focus_mode = Control.FOCUS_ALL
 	issues.set_meta(&"typed_data_kind", &"deployment_issue")
 	var issue_codes := deployment_issue_codes()
@@ -508,20 +563,48 @@ func _build_prepare_controls() -> void:
 	for index: int in issue_codes.size():
 		issues.add_item(_localized_ui_text(issue_message_keys[index]))
 		issues.set_item_metadata(issues.item_count - 1, issue_codes[index])
-	add_child(issues)
-	_build_node_choice_overlay(snapshot)
+	right.add_child(issues)
+	_build_node_choice_overlay(snapshot, right)
 	_refresh_draft_selectors()
 
 
-func _build_node_choice_overlay(snapshot: RunPresentationSnapshot) -> void:
+func _heading(key: StringName) -> Label:
+	var label := Label.new()
+	label.text = _localized_ui_text(key)
+	label.theme_type_variation = &"ExpeditionAuxiliary"
+	return label
+
+
+func _region_content_rect(region: StringName) -> Rect2:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.layout_region_content_rect(region)
+		if parent_screen != null
+		else Rect2()
+	)
+
+
+func _metric_label(key: StringName, value: String) -> Label:
+	var label := Label.new()
+	label.text = "%s  %s" % [_localized_ui_text(key), value]
+	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return label
+
+
+func _build_node_choice_overlay(
+	snapshot: RunPresentationSnapshot,
+	parent: VBoxContainer
+) -> void:
 	_selected_node_choice_id = &""
 	_pending_node_choice_confirmation = null
 	if snapshot == null or snapshot.node_choice_overlay == null:
 		return
 	var selector := ItemList.new()
 	selector.name = "ChoiceSelector"
-	selector.position = Vector2(904.0, 152.0)
-	selector.custom_minimum_size = Vector2(360.0, 336.0)
+	selector.custom_minimum_size = Vector2(248.0, 120.0)
+	selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	selector.focus_mode = Control.FOCUS_ALL
 	selector.select_mode = ItemList.SELECT_SINGLE
 	selector.set_meta(&"typed_data_kind", &"node_choice")
@@ -541,12 +624,12 @@ func _build_node_choice_overlay(snapshot: RunPresentationSnapshot) -> void:
 			String(option.choice_id)
 		)
 	selector.item_selected.connect(_on_node_choice_selected)
-	add_child(selector)
+	parent.add_child(selector)
 	select_first_node_choice()
 
 
 func _on_node_choice_selected(index: int) -> void:
-	var selector := get_node_or_null(^"ChoiceSelector") as ItemList
+	var selector := _control(&"ChoiceSelector") as ItemList
 	if selector == null or index < 0 or index >= selector.item_count:
 		_selected_node_choice_id = &""
 	else:
@@ -563,16 +646,17 @@ func _update_parent_action_state() -> void:
 
 
 func _add_selector(
+	parent: Container,
 	control_name: StringName,
-	position_value: Vector2,
 	minimum_size: Vector2,
 	data_kind: StringName,
 	multi_select: bool = false
 ) -> void:
 	var selector := ItemList.new()
 	selector.name = String(control_name)
-	selector.position = position_value
 	selector.custom_minimum_size = minimum_size
+	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	selector.focus_mode = Control.FOCUS_ALL
 	selector.select_mode = (
 		ItemList.SELECT_MULTI
@@ -581,7 +665,7 @@ func _add_selector(
 	)
 	selector.set_meta(&"typed_data_kind", data_kind)
 	selector.set_meta(&"accessible_text", String(control_name))
-	add_child(selector)
+	parent.add_child(selector)
 
 
 func _refresh_draft_selectors() -> void:
@@ -592,11 +676,11 @@ func _refresh_draft_selectors() -> void:
 	)
 	if snapshot == null or snapshot.roster == null:
 		return
-	var board := get_node_or_null(^"BoardSelector") as ItemList
-	var bench := get_node_or_null(^"BenchSelector") as ItemList
-	var shop := get_node_or_null(^"ShopSelector") as ItemList
-	var inventory := get_node_or_null(^"InventorySelector") as ItemList
-	var units := get_node_or_null(^"BuildUnitSelector") as ItemList
+	var board := _control(&"BoardSelector") as ItemList
+	var bench := _control(&"BenchSelector") as ItemList
+	var shop := _control(&"ShopSelector") as ItemList
+	var inventory := _control(&"InventorySelector") as ItemList
+	var units := _control(&"BuildUnitSelector") as ItemList
 	if board != null:
 		board.clear()
 		for placement: BoardPlacementState in _draft_board.placements:
@@ -681,7 +765,7 @@ func _reset_consumer_draft(snapshot: RunPresentationSnapshot) -> void:
 
 func _selected_metadata(selector_name: StringName) -> Array[String]:
 	var result: Array[String] = []
-	var selector := get_node_or_null(NodePath(String(selector_name))) as ItemList
+	var selector := _control(selector_name) as ItemList
 	if selector == null:
 		return result
 	for index: int in selector.get_selected_items():
@@ -692,6 +776,10 @@ func _selected_metadata(selector_name: StringName) -> Array[String]:
 func _single_selected_metadata(selector_name: StringName) -> String:
 	var selected := _selected_metadata(selector_name)
 	return selected[0] if not selected.is_empty() else ""
+
+
+func _control(control_name: StringName) -> Control:
+	return find_child(String(control_name), true, false) as Control
 
 
 func _remove_from_board(unit_id: String) -> void:

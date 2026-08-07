@@ -88,6 +88,7 @@ var _modal_background_disabled: Dictionary[int, bool] = {}
 var _modal_background_focus: Dictionary[int, int] = {}
 var _prepare_action_group_selector: OptionButton
 var _prepare_action_group_pages: Array[GridContainer] = []
+var _layout_shell: ProductionLayoutShell
 
 
 func _ready() -> void:
@@ -274,6 +275,18 @@ func localized_ui_text(text_key: StringName) -> String:
 	return _context.resolve_text(text_key)
 
 
+func layout_content(region: StringName) -> Control:
+	return _layout_shell.content(region) if _layout_shell != null else null
+
+
+func layout_region_content_rect(region: StringName) -> Rect2:
+	return (
+		_layout_shell.current_content_rect(region)
+		if _layout_shell != null
+		else Rect2()
+	)
+
+
 func content_tooltip_text(
 	label_key: StringName,
 	numeric_value: int,
@@ -320,12 +333,18 @@ func live_binding_report() -> Dictionary:
 
 
 func _bind_localized_controls() -> void:
-	var label := get_node_or_null("Label") as Label
+	_install_b1_layout()
+	var label := find_child("Label", true, false) as Label
 	if label != null:
 		label.text = _context.resolve_text(_route_title_key())
 	# G2 H3：常駐錯誤呈現面。每個 staged route 都要有，才不會出現「某些畫面
 	# 操作失敗完全沒回饋」的死角。
-	_status_view.attach(self)
+	var status_rect := (
+		_layout_shell.current_region_rect(ProductionLayoutShell.REGION_STATUS)
+		if _layout_shell != null
+		else Rect2()
+	)
+	_status_view.attach(self, 0, status_rect)
 	_status_view.clear(_text_resolver())
 	var action_ids := _required_action_ids()
 	if action_ids.is_empty():
@@ -337,15 +356,68 @@ func _bind_localized_controls() -> void:
 		result_label.name = NODE_CHOICE_RESULT_NODE
 		result_label.visible = false
 		add_child(result_label)
-	var controls := VBoxContainer.new()
-	controls.name = "Actions"
-	controls.set_anchors_preset(Control.PRESET_CENTER)
-	add_child(controls)
-	if route_kind == &"RUN_PREPARE":
+	if route_kind == &"CAMP_WORLD" and _layout_shell != null:
+		_build_camp_action_controls(action_ids)
+	elif route_kind == &"RUN_PREPARE" and _layout_shell != null:
+		var controls := HBoxContainer.new()
+		controls.name = "Actions"
+		controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		controls.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(controls)
 		_build_prepare_action_controls(controls, action_ids)
 	else:
+		var controls := VBoxContainer.new()
+		controls.name = "Actions"
+		controls.set_anchors_preset(Control.PRESET_CENTER)
+		add_child(controls)
 		for action_id: StringName in action_ids:
 			controls.add_child(_new_action_button(action_id))
+
+
+func _install_b1_layout() -> void:
+	if route_kind not in [&"CAMP_WORLD", &"RUN_PREPARE"]:
+		return
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_layout_shell = ProductionLayoutShell.new()
+	_layout_shell.name = "B1Layout"
+	add_child(_layout_shell)
+	move_child(_layout_shell, 0)
+	_layout_shell.build(route_kind)
+	var title := get_node_or_null(^"Label") as Label
+	if title != null:
+		var title_rect := _layout_shell.current_content_rect(
+			ProductionLayoutShell.REGION_TOP
+		)
+		title_rect.position.x += 8.0
+		title_rect.size.x = 300.0
+		title.position = title_rect.position
+		title.size = title_rect.size
+		title.theme_type_variation = &"ExpeditionTitle"
+		title.custom_minimum_size = Vector2(300.0, 0.0)
+		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		composition.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		composition.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
+	var facilities := VBoxContainer.new()
+	facilities.name = "Actions"
+	facilities.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	facilities.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout_content(ProductionLayoutShell.REGION_LEFT).add_child(facilities)
+	for action_id: StringName in action_ids.slice(0, 5):
+		facilities.add_child(_new_action_button(action_id))
+	var primary := HBoxContainer.new()
+	primary.name = "CampPrimaryActions"
+	primary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	primary.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(primary)
+	for action_id: StringName in action_ids.slice(5):
+		var button := _new_action_button(action_id)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		primary.add_child(button)
 
 
 func _new_action_button(action_id: StringName) -> Button:
@@ -358,7 +430,7 @@ func _new_action_button(action_id: StringName) -> Button:
 
 
 func _build_prepare_action_controls(
-	controls: VBoxContainer,
+	controls: HBoxContainer,
 	action_ids: Array[StringName]
 ) -> void:
 	var default_group_index := 0
@@ -373,6 +445,8 @@ func _build_prepare_action_controls(
 	_prepare_action_group_selector.name = PREPARE_ACTION_GROUP_SELECTOR
 	_prepare_action_group_selector.focus_mode = Control.FOCUS_ALL
 	_prepare_action_group_selector.allow_reselect = true
+	_prepare_action_group_selector.custom_minimum_size = Vector2(180.0, 48.0)
+	_prepare_action_group_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_prepare_action_group_selector.set_meta(
 		&"accessible_text",
 		&"prepare.action_group_selector"
@@ -388,7 +462,9 @@ func _build_prepare_action_controls(
 
 	var pages := Control.new()
 	pages.name = "PrepareActionGroupPages"
-	pages.custom_minimum_size = Vector2(496.0, 224.0)
+	pages.custom_minimum_size = Vector2(600.0, 144.0)
+	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(pages)
 	for group_index: int in PREPARE_ACTION_GROUPS.size():
 		var group: Dictionary = PREPARE_ACTION_GROUPS[group_index]
@@ -404,8 +480,11 @@ func _build_prepare_action_controls(
 			if action_ids.has(action_id):
 				page.add_child(_new_action_button(action_id))
 
-	var pinned := HBoxContainer.new()
+	var pinned := GridContainer.new()
 	pinned.name = "PinnedActions"
+	pinned.columns = 2
+	pinned.custom_minimum_size = Vector2(330.0, 72.0)
+	pinned.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	controls.add_child(pinned)
 	for action_id: StringName in PREPARE_PINNED_ACTIONS:
 		if action_ids.has(action_id):
@@ -1035,7 +1114,7 @@ func _close_confirmation_modal() -> void:
 func _disable_modal_background() -> void:
 	_modal_background_disabled.clear()
 	_modal_background_focus.clear()
-	var actions := get_node_or_null("Actions")
+	var actions := find_child("Actions", true, false)
 	if actions == null:
 		return
 	for node: Node in actions.find_children("*", "Button", true, false):
@@ -1050,7 +1129,7 @@ func _disable_modal_background() -> void:
 
 
 func _restore_modal_background() -> void:
-	var actions := get_node_or_null("Actions")
+	var actions := find_child("Actions", true, false)
 	if actions != null:
 		for node: Node in actions.find_children(
 			"*",

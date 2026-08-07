@@ -39,13 +39,17 @@ var _report: Dictionary = {}
 
 ## 掛上（或接回）常駐狀態列。回傳 null 代表沒有可掛載的父節點。
 ## `row` 讓同一畫面的第二條狀態列往上疊一格（見 BAR_ROW_STRIDE）。
-func attach(parent: Control, row: int = 0) -> Label:
+func attach(
+	parent: Control,
+	row: int = 0,
+	layout_rect: Rect2 = Rect2()
+) -> Label:
 	if parent == null:
 		return null
 	var existing := parent.get_node_or_null(NODE_NAME) as Label
 	if existing != null:
 		_label = existing
-		_apply_layout(_label, row)
+		_apply_layout(_label, row, layout_rect)
 		return _label
 	var label := Label.new()
 	label.name = NODE_NAME
@@ -53,14 +57,21 @@ func attach(parent: Control, row: int = 0) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.text = ""
-	_apply_layout(label, row)
+	_apply_layout(label, row, layout_rect)
 	parent.add_child(label)
 	_label = label
 	return label
 
 
 ## 版面是這條狀態列「玩家看得到」的唯一保證，因此不論新建或接回都重新套用。
-func _apply_layout(label: Label, row: int) -> void:
+func _apply_layout(label: Label, row: int, layout_rect: Rect2) -> void:
+	if layout_rect.size.x > 0.0 and layout_rect.size.y > 0.0:
+		label.position = layout_rect.position
+		label.custom_minimum_size = layout_rect.size
+		label.size = layout_rect.size
+		label.z_index = BAR_Z_INDEX
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		return
 	label.position = Vector2(
 		BAR_ORIGIN.x,
 		BAR_ORIGIN.y - BAR_ROW_STRIDE * float(maxi(row, 0))

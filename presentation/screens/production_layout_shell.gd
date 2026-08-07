@@ -1,0 +1,125 @@
+class_name ProductionLayoutShell
+extends Control
+
+const REFERENCE_SIZE: Vector2 = Vector2(1280.0, 720.0)
+const SAFE_MARGIN: float = 24.0
+const GUTTER: float = 16.0
+const TOP_HEIGHT: float = 72.0
+const BOTTOM_HEIGHT: float = 136.0
+const PREPARE_BOTTOM_HEIGHT: float = 196.0
+const SIDE_WIDTH: float = 280.0
+const PANEL_CONTENT_MARGIN: Vector2 = Vector2(16.0, 12.0)
+
+const REGION_TOP: StringName = &"top"
+const REGION_LEFT: StringName = &"left"
+const REGION_CENTER: StringName = &"center"
+const REGION_RIGHT: StringName = &"right"
+const REGION_BOTTOM: StringName = &"bottom"
+const REGION_OVERLAY: StringName = &"overlay"
+const REGION_STATUS: StringName = &"status"
+
+var _contents: Dictionary = {}
+var _bottom_height: float = BOTTOM_HEIGHT
+
+
+func build(route_kind: StringName = &"") -> void:
+	_bottom_height = (
+		PREPARE_BOTTOM_HEIGHT
+		if route_kind == &"RUN_PREPARE"
+		else BOTTOM_HEIGHT
+	)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var background := Panel.new()
+	background.name = "Background"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.theme_type_variation = &"ExpeditionBackground"
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(background)
+	_add_panel(REGION_TOP, "TopRegion", current_region_rect(REGION_TOP), &"ExpeditionTopBar", HBoxContainer.new())
+	_add_panel(REGION_LEFT, "LeftRegion", current_region_rect(REGION_LEFT), &"ExpeditionPanel", VBoxContainer.new())
+	_add_panel(REGION_CENTER, "CenterRegion", current_region_rect(REGION_CENTER), &"ExpeditionPanel", VBoxContainer.new())
+	_add_panel(REGION_RIGHT, "RightRegion", current_region_rect(REGION_RIGHT), &"ExpeditionPanel", VBoxContainer.new())
+	_add_panel(REGION_BOTTOM, "BottomRegion", current_region_rect(REGION_BOTTOM), &"ExpeditionActionBar", HBoxContainer.new())
+	_add_control_region(REGION_OVERLAY, "OverlayRegion", Rect2(Vector2.ZERO, REFERENCE_SIZE))
+	_add_control_region(REGION_STATUS, "StatusRegion", current_region_rect(REGION_STATUS))
+
+
+func content(region: StringName) -> Control:
+	return _contents.get(region) as Control
+
+
+static func region_rect(region: StringName) -> Rect2:
+	return region_rect_for(region, BOTTOM_HEIGHT)
+
+
+static func region_rect_for(region: StringName, bottom_height: float) -> Rect2:
+	var content_top := SAFE_MARGIN + TOP_HEIGHT + GUTTER
+	var content_bottom := REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height - GUTTER
+	var content_height := content_bottom - content_top
+	match region:
+		REGION_TOP:
+			return Rect2(SAFE_MARGIN, SAFE_MARGIN, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, TOP_HEIGHT)
+		REGION_LEFT:
+			return Rect2(SAFE_MARGIN, content_top, SIDE_WIDTH, content_height)
+		REGION_RIGHT:
+			return Rect2(REFERENCE_SIZE.x - SAFE_MARGIN - SIDE_WIDTH, content_top, SIDE_WIDTH, content_height)
+		REGION_CENTER:
+			var center_x := SAFE_MARGIN + SIDE_WIDTH + GUTTER
+			return Rect2(center_x, content_top, REFERENCE_SIZE.x - center_x - SAFE_MARGIN - SIDE_WIDTH - GUTTER, content_height)
+		REGION_BOTTOM:
+			return Rect2(SAFE_MARGIN, REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, bottom_height)
+		REGION_STATUS:
+			return Rect2(320.0, content_bottom - 40.0, 640.0, 40.0)
+	return Rect2(Vector2.ZERO, REFERENCE_SIZE)
+
+
+func current_region_rect(region: StringName) -> Rect2:
+	return region_rect_for(region, _bottom_height)
+
+
+func current_content_rect(region: StringName) -> Rect2:
+	var rect := current_region_rect(region)
+	if region in [REGION_TOP, REGION_LEFT, REGION_CENTER, REGION_RIGHT, REGION_BOTTOM]:
+		return Rect2(
+			rect.position + PANEL_CONTENT_MARGIN,
+			rect.size - PANEL_CONTENT_MARGIN * 2.0
+		)
+	return rect
+
+
+func _add_panel(
+	region: StringName,
+	node_name: String,
+	rect: Rect2,
+	variation: StringName,
+	content_control: Control
+) -> void:
+	var panel := PanelContainer.new()
+	panel.name = node_name
+	panel.position = rect.position
+	panel.size = rect.size
+	panel.custom_minimum_size = rect.size
+	panel.theme_type_variation = variation
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content_control.name = "Content"
+	content_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content_control.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_control.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(content_control)
+	add_child(panel)
+	_contents[region] = content_control
+
+
+func _add_control_region(
+	region: StringName,
+	node_name: String,
+	rect: Rect2
+) -> void:
+	var control := Control.new()
+	control.name = node_name
+	control.position = rect.position
+	control.size = rect.size
+	control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(control)
+	_contents[region] = control

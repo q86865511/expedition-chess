@@ -19,11 +19,11 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 		camp_screen.get_node_or_null(^"Composition") as CampWorldScreen
 	)
 	var commander := (
-		camp_screen.get_node_or_null(^"Composition/CommanderSelector")
+		camp_screen.find_child("CommanderSelector", true, false)
 		as OptionButton
 	)
 	var challenge := (
-		camp_screen.get_node_or_null(^"Composition/ChallengeSelector")
+		camp_screen.find_child("ChallengeSelector", true, false)
 		as SpinBox
 	)
 	assert_not_null(

@@ -156,7 +156,7 @@ func test_service_dismantle_and_exit_dispatch_node_service_intents() -> void:
 		return
 
 	var composition := Support.composition(prepare)
-	var inventory := composition.get_node_or_null(^"InventorySelector") as ItemList
+	var inventory := composition.find_child("InventorySelector", true, false) as ItemList
 	assert_not_null(inventory)
 	if inventory == null:
 		return

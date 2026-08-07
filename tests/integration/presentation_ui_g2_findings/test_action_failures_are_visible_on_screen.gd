@@ -21,8 +21,8 @@ func test_failed_camp_action_renders_localized_precommit_status() -> void:
 		"",
 		"a freshly staged screen must not show a stale error"
 	)
-	var commander := camp.get_node_or_null(
-		"Composition/CommanderSelector"
+	var commander := camp.find_child(
+		"CommanderSelector", true, false
 	) as OptionButton
 	assert_not_null(commander)
 	if commander == null:
@@ -55,8 +55,8 @@ func test_successful_action_clears_the_status_surface() -> void:
 	var harness: Variant = Support.boot(self)
 	assert_true(Support.press(self, Support.active_screen(harness), &"menu.start"))
 	var camp := Support.active_screen(harness)
-	var commander := camp.get_node_or_null(
-		"Composition/CommanderSelector"
+	var commander := camp.find_child(
+		"CommanderSelector", true, false
 	) as OptionButton
 	assert_not_null(commander)
 	if commander == null:

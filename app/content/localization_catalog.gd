@@ -147,6 +147,12 @@ func _register_fixed_keys() -> void:
 	_register(&"camp.expedition_gate", "遠征之門", "Expedition Gate")
 	_register(&"camp.commander_hall", "指揮官大廳", "Commander Hall")
 	_register(&"camp.challenge_monument", "挑戰紀念碑", "Challenge Monument")
+	_register(&"camp.commander_selector", "指揮官", "Commander")
+	_register(&"camp.challenge_selector", "挑戰等級", "Challenge Level")
+	_register(&"camp.panel.expedition", "遠征資訊", "Expedition")
+	_register(&"camp.resource.currency", "工坊貨幣", "Workshop Currency")
+	_register(&"camp.resource.challenge", "最高挑戰", "Highest Challenge")
+	_register(&"camp.resource.discovered", "已發現", "Discovered")
 	_register(&"run.retry_route", "重試畫面", "Retry Screen")
 	_register(&"app.retry_route", "重新載入畫面", "Reload Screen")
 	_register(&"camp.settings", "設定", "Settings")
@@ -170,6 +176,17 @@ func _register_fixed_keys() -> void:
 	_register(&"prepare.move_board", "移至戰場", "Move to Board")
 	_register(&"prepare.move_bench", "移至備戰區", "Move to Bench")
 	_register(&"prepare.start", "開始戰鬥", "Start Combat")
+	_register(&"prepare.panel.board", "戰場", "Board")
+	_register(&"prepare.panel.inventory", "裝備庫", "Inventory")
+	_register(&"prepare.panel.issues", "部署問題", "Deployment Issues")
+	_register(&"prepare.panel.overflow", "待處理裝備", "Overflow")
+	_register(&"prepare.panel.party", "隊伍", "Party")
+	_register(&"prepare.panel.shop", "商店", "Shop")
+	_register(&"prepare.panel.units", "單位", "Units")
+	_register(&"prepare.resource.capacity", "人口", "Capacity")
+	_register(&"prepare.resource.gold", "金幣", "Gold")
+	_register(&"prepare.resource.hp", "遠征生命", "Expedition HP")
+	_register(&"prepare.resource.level_xp", "等級／經驗", "Level / XP")
 	_register(&"choice.begin", "確認所選事件", "Confirm Selected Choice")
 	_register(&"choice.confirm", "確認選擇", "Confirm Choice")
 	_register(&"choice.cancel", "取消選擇", "Cancel Choice")
@@ -330,6 +347,11 @@ func _register_fixed_keys() -> void:
 		&"error.presentation.camp_selection_required",
 		"請先選擇指揮官與挑戰等級",
 		"Select a commander and challenge level first"
+	)
+	_register(
+		&"error.presentation.expedition_challenge_prerequisite_unmet",
+		"此指揮官尚未解鎖所選挑戰等級",
+		"The selected challenge level is not unlocked for this commander."
 	)
 	_register(
 		&"error.presentation.retained_run_exists",

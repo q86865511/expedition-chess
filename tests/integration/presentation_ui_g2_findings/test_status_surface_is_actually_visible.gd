@@ -26,8 +26,8 @@ func test_failed_action_status_bar_has_a_readable_rect_inside_the_design_space()
 	assert_true(Support.press(self, Support.active_screen(harness), &"menu.start"))
 	var camp := Support.active_screen(harness)
 	assert_eq(camp.route_kind, &"CAMP_WORLD")
-	var commander := camp.get_node_or_null(
-		"Composition/CommanderSelector"
+	var commander := camp.find_child(
+		"CommanderSelector", true, false
 	) as OptionButton
 	assert_not_null(commander)
 	if commander == null:

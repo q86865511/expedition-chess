@@ -204,6 +204,9 @@ func runtime_accessibility_report() -> AccessibilityRuntimeReport:
 	report.cjk_font_source = StringName(
 		_last_cjk_report.get("font_source", &"")
 	)
+	report.cjk_fallback_used = bool(
+		_last_cjk_report.get("fallback_used", false)
+	)
 	report.cjk_readable = bool(
 		_last_cjk_report.get("readable", false)
 	)

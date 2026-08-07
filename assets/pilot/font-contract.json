@@ -1,9 +1,13 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "tokens": {
     "font.cjk": {
-      "runtime_source": "godot.system_font.cjk_fallback",
-      "bundled_font_asset": null,
+      "runtime_source": "res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf",
+      "bundled_font_asset": "res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf",
+      "bundled_font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+      "license": "SIL Open Font License 1.1",
+      "license_asset": "res://assets/fonts/noto-sans-tc/OFL.txt",
+      "source_url": "https://github.com/google/fonts/tree/main/ofl/notosanstc",
       "preferred_system_families": [
         "Microsoft JhengHei UI",
         "Microsoft JhengHei",
@@ -19,19 +23,31 @@
         "U+4E00-U+9FFF",
         "U+F900-U+FAFF"
       ],
-      "verification": "runtime has_char probe plus rendered screenshot",
-      "provenance": "OS-managed system font selected through Godot SystemFont; no third-party font file added"
+      "verification": "bundled-font-first runtime has_char probe plus rendered screenshot",
+      "provenance": "Google Fonts Noto Sans TC variable font, distributed under OFL-1.1"
     },
     "font.latin": {
-      "runtime_source": "godot.theme_db.fallback_font",
-      "bundled_font_asset": null,
-      "verification": "runtime measured bounds",
-      "provenance": "Engine-managed Godot ThemeDB fallback; no third-party font file added"
+      "runtime_source": "res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf",
+      "bundled_font_asset": "res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf",
+      "bundled_font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+      "license": "SIL Open Font License 1.1",
+      "license_asset": "res://assets/fonts/noto-sans-tc/OFL.txt",
+      "system_fallback_families": [
+        "Microsoft JhengHei UI",
+        "Microsoft JhengHei",
+        "Noto Sans CJK TC",
+        "Noto Sans TC",
+        "PingFang TC",
+        "Arial Unicode MS",
+        "sans-serif"
+      ],
+      "verification": "locale-aware runtime coverage probe plus measured bounds",
+      "provenance": "Same bundled OFL font as font.cjk; SystemFont and ThemeDB remain fallbacks"
     }
   },
   "limitations": [
-    "ThemeDB.fallback_font alone lacked at least one required zh_TW probe glyph in the pinned headless run.",
-    "The concrete SystemFont fallback face can vary with the pinned OS and platform.",
-    "Release evidence must retain the zh_TW required-glyph report and screenshot."
+    "SystemFont is a runtime fallback only; its concrete face can vary by OS and platform.",
+    "Locale-aware probes validate the actual visible text and require CJK coverage only for zh_TW.",
+    "Release evidence must retain zh_TW and en font-source reports plus rendered screenshots."
   ]
 }

@@ -56,5 +56,8 @@ func test_zh_tw_probe_has_engine_font_fallback_and_all_required_glyphs() -> void
 	)
 	assert_true(Support.ok(applied))
 	assert_eq(label.text, REQUIRED_ZH_TW_PROBE)
-	assert_true(label.has_theme_font_override(&"font"))
+	assert_false(
+		label.has_theme_font_override(&"font"),
+		"bundled Noto Sans TC must come from Theme; overrides are fallback-only"
+	)
 	assert_not_null(label.get_theme_font(&"font"))

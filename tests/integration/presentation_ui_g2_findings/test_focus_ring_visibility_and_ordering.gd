@@ -88,8 +88,8 @@ func test_start_combat_is_the_last_action_in_the_prepare_focus_ring() -> void:
 		&""
 	)
 	add_child_autofree(screen)
-	var group_selector := screen.get_node_or_null(
-		^"Actions/PrepareActionGroupSelector"
+	var group_selector := screen.find_child(
+		"PrepareActionGroupSelector", true, false
 	) as OptionButton
 	assert_not_null(
 		group_selector,
@@ -151,11 +151,12 @@ func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
 		)),
 		&""
 	)
+	screen.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	screen.size = Vector2(1280.0, 720.0)
 	add_child_autofree(screen)
 	await wait_process_frames(2)
-	var selector := screen.get_node_or_null(
-		^"Actions/PrepareActionGroupSelector"
+	var selector := screen.find_child(
+		"PrepareActionGroupSelector", true, false
 	) as OptionButton
 	assert_not_null(selector)
 	if selector == null:
@@ -175,7 +176,7 @@ func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
 			var rect := button.get_global_rect()
 			assert_true(
 				Rect2(Vector2.ZERO, Vector2(1280.0, 720.0)).encloses(rect),
-				"%s must stay inside 1280x720" % String(action_id)
+				"%s must stay inside 1280x720; rect=%s" % [String(action_id), rect]
 			)
 	for action_id: StringName in action_ids.slice(0, 20):
 		assert_true(seen.has(action_id), "%s must remain reachable" % action_id)
@@ -209,15 +210,15 @@ func test_prepare_with_node_choice_defaults_to_advance_group() -> void:
 		&""
 	)
 	add_child_autofree(screen)
-	var selector := screen.get_node_or_null(
-		^"Actions/PrepareActionGroupSelector"
+	var selector := screen.find_child(
+		"PrepareActionGroupSelector", true, false
 	) as OptionButton
 	assert_not_null(selector)
 	if selector == null:
 		return
 	assert_eq(selector.selected, 3)
-	var advance_page := screen.get_node_or_null(
-		^"Actions/PrepareActionGroupPages/GroupAdvance"
+	var advance_page := screen.find_child(
+		"GroupAdvance", true, false
 	) as GridContainer
 	assert_not_null(advance_page)
 	if advance_page != null:

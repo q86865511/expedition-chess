@@ -1,0 +1,191 @@
+[gd_resource type="Theme" load_steps=13 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf" id="1_font"]
+[ext_resource type="Texture2D" path="res://theme/ui-panel-frame.svg" id="2_panel"]
+[ext_resource type="Texture2D" path="res://theme/ui-focus-frame.svg" id="3_focus"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+texture = ExtResource("2_panel")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+content_margin_left = 16.0
+content_margin_top = 12.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_focus"]
+texture = ExtResource("3_focus")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
+expand_margin_left = 4.0
+expand_margin_top = 4.0
+expand_margin_right = 4.0
+expand_margin_bottom = 4.0
+draw_center = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.843137, 0.764706, 0.603922, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.184314, 0.603922, 0.588235, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.843137, 0.607843, 0.227451, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 7.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.72)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_field"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+content_margin_left = 10.0
+content_margin_top = 7.0
+content_margin_right = 10.0
+content_margin_bottom = 7.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected"]
+bg_color = Color(0.184314, 0.603922, 0.588235, 0.72)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_background"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+
+[resource]
+default_font = ExtResource("1_font")
+default_font_size = 18
+Button/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+Button/colors/font_hover_color = Color(0.960784, 0.941176, 0.87451, 1)
+Button/colors/font_pressed_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+Button/colors/font_disabled_color = Color(0.411765, 0.443137, 0.482353, 1)
+Button/styles/normal = SubResource("StyleBoxFlat_button_normal")
+Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
+Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+Button/styles/focus = SubResource("StyleBoxTexture_focus")
+CheckButton/styles/focus = SubResource("StyleBoxTexture_focus")
+Label/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+LineEdit/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+LineEdit/styles/normal = SubResource("StyleBoxFlat_field")
+LineEdit/styles/focus = SubResource("StyleBoxTexture_focus")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_button_normal")
+OptionButton/styles/hover = SubResource("StyleBoxFlat_button_hover")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+OptionButton/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+OptionButton/styles/focus = SubResource("StyleBoxTexture_focus")
+ItemList/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+ItemList/colors/font_selected_color = Color(0.960784, 0.941176, 0.87451, 1)
+ItemList/styles/panel = SubResource("StyleBoxFlat_field")
+ItemList/styles/focus = SubResource("StyleBoxTexture_focus")
+ItemList/styles/selected = SubResource("StyleBoxFlat_selected")
+Panel/styles/panel = SubResource("StyleBoxTexture_panel")
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_panel")
+HBoxContainer/constants/separation = 16
+VBoxContainer/constants/separation = 12
+GridContainer/constants/h_separation = 12
+GridContainer/constants/v_separation = 8
+ExpeditionBackground/base_type = &"Panel"
+ExpeditionBackground/styles/panel = SubResource("StyleBoxFlat_background")
+ExpeditionPanel/base_type = &"PanelContainer"
+ExpeditionPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionTopBar/base_type = &"PanelContainer"
+ExpeditionTopBar/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionActionBar/base_type = &"PanelContainer"
+ExpeditionActionBar/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionTitle/base_type = &"Label"
+ExpeditionTitle/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionTitle/font_sizes/font_size = 32
+ExpeditionHeading/base_type = &"Label"
+ExpeditionHeading/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionHeading/font_sizes/font_size = 24
+ExpeditionAuxiliary/base_type = &"Label"
+ExpeditionAuxiliary/colors/font_color = Color(0.411765, 0.443137, 0.482353, 1)
+ExpeditionAuxiliary/font_sizes/font_size = 16
+ExpeditionFocus/base_type = &"Panel"
+ExpeditionFocus/styles/panel = SubResource("StyleBoxTexture_focus")
+ExpeditionPalette/colors/navy_950 = Color(0.0313726, 0.0588235, 0.0980392, 1)
+ExpeditionPalette/colors/navy_800 = Color(0.0784314, 0.14902, 0.227451, 1)
+ExpeditionPalette/colors/parchment_300 = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionPalette/colors/off_white = Color(0.929412, 0.894118, 0.815686, 1)
+ExpeditionPalette/colors/amber_500 = Color(0.843137, 0.607843, 0.227451, 1)
+ExpeditionPalette/colors/teal_500 = Color(0.184314, 0.603922, 0.588235, 1)
+ExpeditionPalette/colors/crimson_500 = Color(0.662745, 0.301961, 0.345098, 1)
+ExpeditionPalette/colors/violet_500 = Color(0.462745, 0.32549, 0.607843, 1)
+ExpeditionPalette/colors/stone_500 = Color(0.411765, 0.443137, 0.482353, 1)
+ExpeditionPalette/colors/focus_high = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionTypeScale/font_sizes/title = 32
+ExpeditionTypeScale/font_sizes/heading = 24
+ExpeditionTypeScale/font_sizes/body = 18
+ExpeditionTypeScale/font_sizes/auxiliary = 16
+ExpeditionSpacing/constants/space_1 = 4
+ExpeditionSpacing/constants/space_2 = 8
+ExpeditionSpacing/constants/space_3 = 12
+ExpeditionSpacing/constants/space_4 = 16
+ExpeditionSpacing/constants/space_6 = 24
+ExpeditionSpacing/constants/space_8 = 32
+ExpeditionSpacing/constants/safe_margin = 24
+ExpeditionSpacing/constants/gutter = 16
+ExpeditionSpacing/constants/min_button_height = 48

@@ -2,8 +2,6 @@ class_name ProductionFocusIndicator
 extends Panel
 
 const PADDING: float = 5.0
-const BORDER_WIDTH: int = 4
-const BORDER_COLOR: Color = Color(1.0, 0.9, 0.2, 1.0)
 
 var _owner_screen: Control
 
@@ -17,17 +15,20 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = 1000
 	visible = false
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
-	style.border_color = BORDER_COLOR
-	style.set_border_width_all(BORDER_WIDTH)
-	style.set_corner_radius_all(3)
-	add_theme_stylebox_override(&"panel", style)
+	theme_type_variation = &"ExpeditionFocus"
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var viewport := get_viewport()
 	if viewport != null and not viewport.gui_focus_changed.is_connected(
 		_on_gui_focus_changed
 	):
 		viewport.gui_focus_changed.connect(_on_gui_focus_changed)
+	if viewport != null:
+		_on_gui_focus_changed(viewport.gui_get_focus_owner())
+	set_process(true)
+
+
+func _process(_delta: float) -> void:
+	var viewport := get_viewport()
 	if viewport != null:
 		_on_gui_focus_changed(viewport.gui_get_focus_owner())
 

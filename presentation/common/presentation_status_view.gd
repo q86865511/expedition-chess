@@ -93,17 +93,13 @@ func show_result(result: Variant, resolver: Callable) -> void:
 func show_failure(
 	source_code: StringName,
 	committed: bool,
-	message_key: StringName,
+	_message_key: StringName,
 	resolver: Callable
 ) -> void:
 	var mapper := PresentationErrorMapper.new()
 	_report = mapper.map_failure(source_code, committed, {})
-	# 具名碼優先（mapper 認得就用它的專屬訊息），其次才是 DiagnosticError 自帶的鍵，
-	# 最後才落到泛用訊息——否則 AppRoot 一律帶 error.presentation.app_action，
-	# 每種失敗在畫面上都會長得一模一樣。
-	var mapped := mapper.message_key_for(source_code)
-	if mapped.is_empty() and not message_key.is_empty():
-		_report["message_key"] = message_key
+	# 只有明確登錄的 source code 才使用專屬文案。未知碼固定落到 catalog
+	# 中的泛用訊息，不能把 DiagnosticError 自帶但 catalog 未收錄的 key 裸露給玩家。
 	_render(resolver)
 
 

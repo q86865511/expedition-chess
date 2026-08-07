@@ -914,13 +914,17 @@ func _apply_settings_from_active_screen() -> AppActionResult:
 		if applied.error != null
 		else &""
 	)
-	composition.set_control_status_code(source_code)
 	if applied.ok:
+		composition.set_control_status_code(&"")
 		screen.relocalize(
 			applied.snapshot.locale,
 			_localized_text_map(applied.snapshot.locale)
 		)
 		return AppActionResult.success(true)
+	# Settings draft validation owns the composition-local status surface. The
+	# application result is rendered once by ProductionScreen with its complete
+	# DiagnosticError, preserving the source-specific localization key.
+	composition.set_control_status_code(&"")
 	if applied.committed:
 		if applied.snapshot != null:
 			screen.relocalize(

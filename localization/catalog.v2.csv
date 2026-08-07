@@ -51,10 +51,13 @@ error.presentation.action_not_available,目前無法執行這個操作,That acti
 error.presentation.app_action,操作失敗,The action failed
 error.presentation.camp_selection_required,請先選擇指揮官與挑戰等級,Select a commander and challenge level first
 error.presentation.exit_already_pending,離開請求已在處理中,An exit request is already pending
+error.presentation.equip_item_slots_full,該單位的裝備欄位已滿,That unit has no free equipment slot
 error.presentation.failure,操作失敗,The action failed
 error.presentation.prepare_bench_full,備戰區已滿,The bench is full
 error.presentation.prepare_board_full,戰場沒有可用位置,No board cell is available
 error.presentation.prepare_selection_required,請先選擇有效項目,Select a valid item first
+error.presentation.prepare_start_not_ready,隊伍尚未符合開戰條件,The party is not ready to start combat
+error.presentation.resolve_overflow_item_not_in_tray,找不到待處理的溢出裝備,The overflow equipment is no longer in the tray
 error.presentation.prepared_run_stale,遠征存檔已過期，請重新載入,The saved run is stale; reload it
 error.presentation.recovery_postcommit,保留遠征已處理，但畫面未能更新,"The retained run was handled, but the screen could not follow"
 error.presentation.render_failed,畫面繪製失敗,Rendering failed
@@ -65,10 +68,13 @@ error.presentation.route_bind_failed,畫面繫結失敗,The screen could not be 
 error.presentation.route_commit_failed,畫面切換失敗,The screen could not be switched
 error.presentation.route_prepare_invalid,無法準備下一個畫面,The next screen could not be prepared
 error.presentation.run_incompatible,保留的遠征與目前版本不相容,The retained run is incompatible with this version
+error.presentation.run_command_failed,遠征操作失敗，請檢查目前狀態後再試,The expedition action failed; check the current state and try again
+error.presentation.run_map_node_selection_unavailable,目前沒有可前往的節點,No selectable map node is available
 error.presentation.run_recovery,有一個無法載入的遠征待處理,A run that cannot be loaded is waiting
 error.presentation.run_route_fallback,遠征畫面已退回備援顯示,The run screen fell back to the recovery screen
 error.presentation.run_session_unavailable,目前沒有可用的遠征,No expedition session is available
 error.presentation.run_unavailable,遠征資料無法讀取,The run data could not be read
+error.presentation.run_transition_failed,遠征狀態切換失敗,The expedition state could not transition
 error.presentation.save_unavailable,存檔無法讀取,The save file could not be read
 error.presentation.scene_bind_failed,場景繫結失敗,The scene could not be bound
 error.presentation.screen_not_active,畫面尚未啟用，請稍候再試,The screen is not active yet
@@ -76,6 +82,7 @@ error.presentation.start_postcommit,遠征已開始，但畫面未能切換,"The
 error.presentation.terminal_handoff,結算交接失敗,The results handoff failed
 error.save.io_failure,存檔寫入失敗,Saving failed
 error.settings.application_failed,設定套用失敗,The settings could not be applied
+error.settings.activation_diagnostic,設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定,"Settings were saved, but part of the interface could not update immediately; the saved settings were reloaded"
 error.settings.application_invalid_result,設定套用回應無效,The settings application returned an invalid result
 error.settings.apply_failed,設定套用失敗,The settings could not be applied
 error.settings.draft_invalid,設定草稿無效,The settings draft is invalid
@@ -806,6 +813,11 @@ prepare.equip,裝備所選物品,Equip Selected Item
 prepare.forge,鍛造所選物品,Forge Selected Items
 prepare.forge.cancel,取消鍛造,Cancel Forge
 prepare.forge.confirm,確認鍛造,Confirm Forge
+prepare.action_group_selector,備戰動作分類,Prepare Action Category
+prepare.group.advance,推進,Advance
+prepare.group.forge_equipment,鍛造裝備,Forge and Equipment
+prepare.group.party,隊伍調整,Party Setup
+prepare.group.shop,商店,Shop
 prepare.move_bench,移至備戰區,Move to Bench
 prepare.move_board,移至戰場,Move to Board
 prepare.refresh,重新整理商店,Refresh Shop

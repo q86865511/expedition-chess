@@ -88,9 +88,9 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 		return
 	assert_eq(map_screen.route_kind, &"RUN_MAP")
 
-	# The first confirm is an explicit player action that generates the map. The
+	# The select action explicitly generates and opens the map. The
 	# replacement RUN_MAP scene must then render the committed selectable nodes.
-	var generate := Support.action_button(map_screen, &"map.confirm")
+	var generate := Support.action_button(map_screen, &"map.select")
 	assert_not_null(generate)
 	if generate == null:
 		return

@@ -90,6 +90,21 @@ func accept_visible_node_result() -> AppActionResult:
 	return AppActionResult.success(false)
 
 
+func open_node_selection() -> Variant:
+	if (
+		_snapshot == null
+		or _snapshot.map == null
+		or _snapshot.map.nodes.is_empty()
+	):
+		_map_generation_requested = true
+		return request(RunPresentationIntent.new(
+			RunPresentationIntent.Kind.GENERATE_MAP
+		))
+	if _selected_node_id.is_empty():
+		return select_first_node_result()
+	return AppActionResult.success(false)
+
+
 ## review N1：APPLY_AND_COMPLETE 出口把 run_phase 切成 MAP（design :206），
 ## 未 ack 的 receipt 因此會落在本畫面重播；ack 命令帶的是該 receipt 自己的 digest。
 func pending_node_choice_result() -> NodeChoiceResultSnapshot:
@@ -110,11 +125,14 @@ func acknowledge_node_choice_result() -> RunPresentationResult:
 
 func confirm_selection() -> RunPresentationResult:
 	if _selected_node_id.is_empty():
-		_map_generation_requested = true
+		return RunPresentationResult.failure(
+			DiagnosticError.new(
+				&"RUN_MAP_NODE_SELECTION_UNAVAILABLE",
+				&"error.presentation.run_map_node_selection_unavailable"
+			)
+		)
 	var intent := RunPresentationIntent.new(
-		RunPresentationIntent.Kind.GENERATE_MAP
-		if _selected_node_id.is_empty()
-		else RunPresentationIntent.Kind.ENTER_NODE
+		RunPresentationIntent.Kind.ENTER_NODE
 	)
 	intent.target_node_id = _selected_node_id
 	return request(intent)

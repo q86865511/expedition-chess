@@ -30,8 +30,13 @@ func compose(
 	_bundle = CampFacilityBundle.new(profile)
 	_navigation_port = navigation_port
 	_selected_commander_id = &""
-	_selected_challenge_level = -1
+	_selected_challenge_level = 0
 	_build_expedition_controls()
+	if _commander_selector.item_count > 0:
+		_commander_selector.select(0)
+		_selected_commander_id = StringName(
+			_commander_selector.get_item_metadata(0)
+		)
 	return &""
 
 
@@ -84,6 +89,7 @@ func _build_expedition_controls() -> void:
 	_commander_selector.position = Vector2(72.0, 112.0)
 	_commander_selector.custom_minimum_size = Vector2(320.0, 48.0)
 	_commander_selector.focus_mode = Control.FOCUS_ALL
+	_commander_selector.allow_reselect = true
 	_commander_selector.set_meta(&"typed_choice_kind", &"commander")
 	_commander_selector.set_meta(
 		&"accessible_text",
@@ -105,7 +111,7 @@ func _build_expedition_controls() -> void:
 	_challenge_selector.focus_mode = Control.FOCUS_ALL
 	_challenge_selector.min_value = 0.0
 	_challenge_selector.max_value = float(
-		maxi(_bundle.highest_challenge_level() + 1, 0)
+		maxi(_bundle.highest_challenge_level(), 0)
 	)
 	_challenge_selector.step = 1.0
 	_challenge_selector.value = 0.0

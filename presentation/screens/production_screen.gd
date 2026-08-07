@@ -13,6 +13,42 @@ const SCREEN_COMPOSITION_TYPE_INVALID: StringName = \
 const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
 ## design :201「UI 只由 unacknowledged committed receipt 顯示 result」的顯示端節點名。
 const NODE_CHOICE_RESULT_NODE: String = "NodeChoiceResult"
+const PREPARE_ACTION_GROUP_SELECTOR: StringName = &"PrepareActionGroupSelector"
+const PREPARE_ACTION_GROUPS: Array[Dictionary] = [
+	{
+		"id": &"shop",
+		"label_key": &"prepare.group.shop",
+		"actions": [
+			&"prepare.refresh", &"prepare.buy", &"prepare.xp", &"prepare.sell",
+		],
+	},
+	{
+		"id": &"forge_equipment",
+		"label_key": &"prepare.group.forge_equipment",
+		"actions": [
+			&"prepare.forge", &"prepare.forge.confirm", &"prepare.forge.cancel",
+			&"prepare.equip", &"prepare.dismantle", &"service.dismantle",
+			&"service.exit",
+		],
+	},
+	{
+		"id": &"party",
+		"label_key": &"prepare.group.party",
+		"actions": [
+			&"prepare.unit", &"prepare.move_board", &"prepare.move_bench",
+		],
+	},
+	{
+		"id": &"advance",
+		"label_key": &"prepare.group.advance",
+		"actions": [
+			&"choice.begin", &"choice.confirm", &"choice.cancel", &"choice.ack",
+		],
+	},
+]
+const PREPARE_PINNED_ACTIONS: Array[StringName] = [
+	&"run.menu", &"prepare.start",
+]
 
 ## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
 ## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
@@ -50,6 +86,8 @@ var _modal_status_key: StringName = &""
 var _modal_trigger: Button
 var _modal_background_disabled: Dictionary[int, bool] = {}
 var _modal_background_focus: Dictionary[int, int] = {}
+var _prepare_action_group_selector: OptionButton
+var _prepare_action_group_pages: Array[GridContainer] = []
 
 
 func _ready() -> void:
@@ -79,6 +117,7 @@ func bind(context: StagedScreenContext) -> StringName:
 		if not settings_error.is_empty():
 			return settings_error
 	_bind_localized_controls()
+	_attach_focus_indicator()
 	return &""
 
 
@@ -302,13 +341,89 @@ func _bind_localized_controls() -> void:
 	controls.name = "Actions"
 	controls.set_anchors_preset(Control.PRESET_CENTER)
 	add_child(controls)
-	for action_id: StringName in action_ids:
-		var button := Button.new()
-		button.name = _button_name(action_id)
-		button.text = _context.resolve_text(action_id)
-		button.focus_mode = Control.FOCUS_ALL
-		button.set_meta(&"action_id", action_id)
-		controls.add_child(button)
+	if route_kind == &"RUN_PREPARE":
+		_build_prepare_action_controls(controls, action_ids)
+	else:
+		for action_id: StringName in action_ids:
+			controls.add_child(_new_action_button(action_id))
+
+
+func _new_action_button(action_id: StringName) -> Button:
+	var button := Button.new()
+	button.name = _button_name(action_id)
+	button.text = _context.resolve_text(action_id)
+	button.focus_mode = Control.FOCUS_ALL
+	button.set_meta(&"action_id", action_id)
+	return button
+
+
+func _build_prepare_action_controls(
+	controls: VBoxContainer,
+	action_ids: Array[StringName]
+) -> void:
+	_prepare_action_group_pages.clear()
+	_prepare_action_group_selector = OptionButton.new()
+	_prepare_action_group_selector.name = PREPARE_ACTION_GROUP_SELECTOR
+	_prepare_action_group_selector.focus_mode = Control.FOCUS_ALL
+	_prepare_action_group_selector.allow_reselect = true
+	_prepare_action_group_selector.set_meta(
+		&"accessible_text",
+		&"prepare.action_group_selector"
+	)
+	for group: Dictionary in PREPARE_ACTION_GROUPS:
+		var label_key := StringName(group["label_key"])
+		_prepare_action_group_selector.add_item(
+			_context.resolve_text(label_key)
+		)
+		var group_index := _prepare_action_group_selector.item_count - 1
+		_prepare_action_group_selector.set_item_metadata(group_index, label_key)
+	controls.add_child(_prepare_action_group_selector)
+
+	var pages := Control.new()
+	pages.name = "PrepareActionGroupPages"
+	pages.custom_minimum_size = Vector2(496.0, 224.0)
+	controls.add_child(pages)
+	for group_index: int in PREPARE_ACTION_GROUPS.size():
+		var group: Dictionary = PREPARE_ACTION_GROUPS[group_index]
+		var page := GridContainer.new()
+		page.name = "Group%s" % String(group["id"]).to_pascal_case()
+		page.columns = 2
+		page.set_anchors_preset(Control.PRESET_FULL_RECT)
+		page.visible = group_index == 0
+		pages.add_child(page)
+		_prepare_action_group_pages.append(page)
+		for action_value: Variant in group["actions"]:
+			var action_id := StringName(action_value)
+			if action_ids.has(action_id):
+				page.add_child(_new_action_button(action_id))
+
+	var pinned := HBoxContainer.new()
+	pinned.name = "PinnedActions"
+	controls.add_child(pinned)
+	for action_id: StringName in PREPARE_PINNED_ACTIONS:
+		if action_ids.has(action_id):
+			pinned.add_child(_new_action_button(action_id))
+	_prepare_action_group_selector.item_selected.connect(
+		_on_prepare_action_group_selected
+	)
+	_prepare_action_group_selector.select(0)
+
+
+func _on_prepare_action_group_selected(index: int) -> void:
+	if index < 0 or index >= _prepare_action_group_pages.size():
+		return
+	for page_index: int in _prepare_action_group_pages.size():
+		_prepare_action_group_pages[page_index].visible = page_index == index
+	_apply_keyboard_focus_graph()
+
+
+func _attach_focus_indicator() -> void:
+	if get_node_or_null(^"FocusIndicator") != null:
+		return
+	var indicator := ProductionFocusIndicator.new()
+	indicator.name = "FocusIndicator"
+	indicator.bind_owner(self)
+	add_child(indicator)
 
 
 func _compose_production_child(
@@ -498,7 +613,7 @@ func _invoke_local_control(action_id: StringName) -> Variant:
 	match action_id:
 		&"map.select":
 			return (
-				(composition as RunMapScreen).accept_visible_node_result()
+				(composition as RunMapScreen).open_node_selection()
 				if composition is RunMapScreen
 				else null
 			)
@@ -671,6 +786,15 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 		if button.has_meta(&"action_id"):
 			button.text = _context.resolve_text(
 				StringName(button.get_meta(&"action_id"))
+			)
+	if _prepare_action_group_selector != null:
+		for index: int in _prepare_action_group_selector.item_count:
+			var label_key := StringName(
+				_prepare_action_group_selector.get_item_metadata(index)
+			)
+			_prepare_action_group_selector.set_item_text(
+				index,
+				_context.resolve_text(label_key)
 			)
 	if not _modal_node_name.is_empty():
 		var status := get_node_or_null(
@@ -973,6 +1097,11 @@ func _apply_keyboard_focus_graph() -> void:
 
 func _ordered_focus_controls() -> Array[Control]:
 	var result: Array[Control] = []
+	if (
+		route_kind == &"RUN_PREPARE"
+		and _control_is_focusable(_prepare_action_group_selector)
+	):
+		result.append(_prepare_action_group_selector)
 	var settings := (
 		get_node_or_null("Composition") as SettingsScreenComposition
 	)

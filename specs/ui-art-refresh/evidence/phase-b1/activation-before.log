@@ -1,0 +1,4 @@
+locale=en
+source_code=ACCESSIBILITY_REQUIRED_GLYPH_MISSING
+required_glyph_count=0
+visible_message=已生效但畫面未更新（顯示已回退）：設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定

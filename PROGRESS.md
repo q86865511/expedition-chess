@@ -13,6 +13,17 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-07] 🎨 UI／美術／中文化整修 Phase B1 視覺樣板待核可 — 單一
+  `expedition_theme.tres` 收斂 T13 十色 palette、32/24/18/16 type scale、spacing、
+  9-slice panel、按鈕四態與 `focus_high` 缺角焦點；內嵌 Noto Sans TC OFL 並改為
+  Theme 優先、SystemFont／ThemeDB 後備。營地／備戰改讀共用 top／left／center／right／
+  bottom shell，在 720p／1080p、100%／125%／150% 共 12 張 zh_TW 實機矩陣無跨區
+  重疊。英文 CJK 空 required-set 的常駐 activation 偽陽性已修，fault injection 證明
+  真回退訊息仍保留；`EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已補 zh_TW/en 具名
+  文案。全程以 repo 內隔離 APPDATA 驗證；最終 `-Suite All` exit 0（304 scripts、
+  1211/1211 tests、25010 assertions、0 failures/errors）。證據見
+  `specs/ui-art-refresh/evidence/phase-b1/README.md`；依 B1 gate 停下等待使用者核可，
+  未開始 B2。
 - [2026-08-07] 🔧 UI Phase A PR #11 第一審 fixup — F1 挑戰上限恢復為
   `highest+1`，並鎖定通關挑戰 0 後可選 1；F2 補回棋盤滿／備戰區滿／未選取的
   專屬狀態列映射；F3 鎖定 reduced_flash 成功套用時雙狀態面清空，真實 activation
@@ -229,17 +240,17 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
+- UI `ui-art-refresh` Phase B：B1 Theme／字型／營地與備戰樣板已完成驗收，等待
+  使用者視覺核可；核可前禁止開始 B2 鋪開。
 
 ## 待辦
 
 - UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；計畫位於 `specs/ui-art-refresh/review-and-plan.md`。後續為
-  Phase B Theme／字型／版面、Phase C 資產接線、Phase D 中文化收尾。
-  移交 Phase B 的追蹤項：(1) 設定套用在真實 Windows 環境每次都顯示
-  「已生效但畫面未更新」診斷（疑 activation probe 常駐回報，隔離測試環境無法重現）；
-  (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 未映射具名文案（全域
-  highest_challenge_level 與每指揮官紀錄語意差）；(3) Codex 實機測試須隔離
-  APPDATA（本輪污染真實 settings 的 locale）。
+  2026-08-07）；Phase B1 已完成並停視覺核可。Phase A 三項移交追蹤均已關閉：
+  (1) locale-unaware CJK 空 required-set 偽陽性已修並留 before/after／fault evidence；
+  (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
+  (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
+  核可後才進 Phase B2；其後仍為 Phase C 資產接線、Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

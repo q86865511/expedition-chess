@@ -23,6 +23,8 @@ Thumbs.db
 artifacts/test/*
 !artifacts/test/.gitkeep
 /artifacts/rc/**
+/artifacts/ui-art-refresh/**
+/specs/ui-art-refresh/evidence/**/*.png.import
 *.tmp
 
 # pipeline 狀態(本機)

@@ -242,14 +242,15 @@ func _validate_prepare_content_regions(screen: Control, case_name: String) -> vo
 		if control == null:
 			_issues.append("prepare_region_control_missing:%s:%s" % [case_name, node_name])
 			continue
+		# B1R3 T13：狀態帶可見與否都要守——先前「is_status_visible 即跳過」
+		# 讓 P6（面板不回縮、狀態帶壓內容）從守門下溜走。
 		var control_rect := control.get_global_rect()
-		if not shell.is_status_visible() and not center_rect.encloses(control_rect):
+		if not center_rect.encloses(control_rect):
 			_issues.append("prepare_center_overflow:%s:%s:%s" % [case_name, node_name, control_rect])
-		if (
-			not shell.is_status_visible()
-			and control_rect.intersects(bottom_rect)
-		):
+		if control_rect.intersects(bottom_rect):
 			_issues.append("prepare_center_cross_region:%s:%s" % [case_name, node_name])
+		if shell.is_status_visible() and control_rect.intersects(status_rect):
+			_issues.append("prepare_center_under_status:%s:%s" % [case_name, node_name])
 	var bottom_panel := screen.find_child("BottomRegion", true, false) as Control
 	var safe_rect := Rect2(Vector2(24.0, 24.0), Vector2(1232.0, 672.0))
 	if bottom_panel == null or not safe_rect.encloses(bottom_panel.get_global_rect()):
@@ -278,7 +279,11 @@ func _validate_action_buttons(screen: Control, case_name: String) -> void:
 				rect.size.x,
 				text_width,
 			])
-		if _ancestor_scroll_container(button) == null and not canvas.encloses(rect):
+		# B1R3 T13：捲動祖先只有在 follow_focus（鍵盤可捲達）時才豁免
+		# 出畫面檢查；否則「藏在捲動視窗外」與「出畫面」同罪（P1 逃逸路徑）。
+		var scroll := _ancestor_scroll_container(button)
+		var scroll_exempts := scroll != null and scroll.follow_focus
+		if not scroll_exempts and not canvas.encloses(rect):
 			_issues.append("action_outside_canvas:%s:%s:%s" % [
 				case_name, button.get_meta(&"action_id"), rect,
 			])
@@ -288,14 +293,14 @@ func _validate_settings_layout(screen: Control, case_name: String) -> void:
 	var title := screen.get_node_or_null(^"Label") as Label
 	var locale_row := screen.find_child("LocaleRow", true, false) as Control
 	var locale_editor := screen.find_child("Locale", true, false) as Control
-	var action_gap := screen.get_node_or_null(^"SettingsActionGap") as Control
 	var actions := screen.get_node_or_null(^"Actions") as Control
+	var composition := screen.get_node_or_null(^"Composition") as Control
 	if (
 		title == null
 		or locale_row == null
 		or locale_editor == null
-		or action_gap == null
 		or actions == null
+		or composition == null
 	):
 		_issues.append("settings_layout_nodes_missing:%s" % case_name)
 		return
@@ -303,11 +308,19 @@ func _validate_settings_layout(screen: Control, case_name: String) -> void:
 		_issues.append("settings_title_locale_overlap:%s" % case_name)
 	if not locale_editor.tooltip_text.is_empty():
 		_issues.append("settings_duplicate_hover_text:%s" % case_name)
-	if not is_equal_approx(
-		action_gap.get_global_rect().end.y,
-		actions.get_global_rect().position.y
-	):
-		_issues.append("settings_action_gap_not_reserved:%s" % case_name)
+	# B1R3 T13：改為對安全區與獨立期望值斷言（先前 gap.end==actions.y 恆真）。
+	var safe_bottom := 720.0 - ProductionLayoutShell.SAFE_MARGIN
+	var actions_rect := actions.get_global_rect()
+	if actions_rect.end.y > safe_bottom + 0.5:
+		_issues.append("settings_actions_below_safe_area:%s:%s" % [
+			case_name, actions_rect,
+		])
+	var composition_rect := composition.get_global_rect()
+	if composition_rect.intersects(actions_rect):
+		_issues.append("settings_composition_actions_overlap:%s" % case_name)
+	var status := screen.get_node_or_null(^"StatusMessage") as Control
+	if status != null and status.get_global_rect().intersects(actions_rect):
+		_issues.append("settings_status_actions_overlap:%s" % case_name)
 
 
 func _button_text_width(button: Button) -> float:

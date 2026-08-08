@@ -23,19 +23,23 @@ func test_menu_camp_settings_geometry_across_scales() -> void:
 		assert_not_null(menu)
 		if menu == null:
 			return
-		await _apply_scale(menu, percent)
-		_audit_screen(menu, percent)
-
 		assert_true(FunctionalSupport.press(self, menu, &"menu.start"))
 		var camp := FunctionalSupport.active_screen(harness)
-		await _apply_scale(camp, percent)
-		_audit_screen(camp, percent)
-
 		assert_true(FunctionalSupport.press(self, camp, &"camp.settings"))
 		var settings := FunctionalSupport.active_screen(harness)
-		await _apply_scale(settings, percent)
+		await _apply_scale_via_settings(settings, percent)
 		_audit_screen(settings, percent)
 		_audit_settings_actions_bottom(settings, percent)
+
+		assert_true(FunctionalSupport.press(self, settings, &"settings.back"))
+		var camp_scaled := FunctionalSupport.active_screen(harness)
+		await wait_process_frames(2)
+		_audit_screen(camp_scaled, percent)
+
+		assert_true(FunctionalSupport.press(self, camp_scaled, &"camp.menu"))
+		var menu_scaled := FunctionalSupport.active_screen(harness)
+		await wait_process_frames(2)
+		_audit_screen(menu_scaled, percent)
 
 
 func test_run_prepare_geometry_across_scales() -> void:
@@ -46,7 +50,15 @@ func test_run_prepare_geometry_across_scales() -> void:
 		if menu == null:
 			return
 		assert_true(FunctionalSupport.press(self, menu, &"menu.start"))
+		var pre_settings_camp := FunctionalSupport.active_screen(harness)
+		assert_true(
+			FunctionalSupport.press(self, pre_settings_camp, &"camp.settings")
+		)
+		var settings := FunctionalSupport.active_screen(harness)
+		await _apply_scale_via_settings(settings, percent)
+		assert_true(FunctionalSupport.press(self, settings, &"settings.back"))
 		var camp := FunctionalSupport.active_screen(harness)
+		await wait_process_frames(2)
 		var commander := camp.find_child(
 			"CommanderSelector", true, false
 		) as OptionButton
@@ -75,9 +87,24 @@ func test_run_prepare_geometry_across_scales() -> void:
 		)
 		if prepare.route_kind != &"RUN_PREPARE":
 			return
-		await _apply_scale(prepare, percent)
+		await wait_process_frames(6)
+		# autowrap 夾制回歸鎖（見 run_prepare_screen.refresh_layout_rects）：
+		# 左欄必須收斂到縮放後的區域高度，不得停在暴漲的過渡 min。
+		var left_probe := prepare.find_child(
+			"PrepareLeftContent", true, false
+		) as Control
+		if percent == 150 and left_probe != null:
+			assert_almost_eq(
+				left_probe.size.y,
+				280.0,
+				2.0,
+				"left content must settle at the scaled region height"
+			)
 		_audit_screen(prepare, percent)
 		_audit_prepare_group_pages(prepare, percent)
+		_audit_shop_cards_in_focus_ring(prepare, percent)
+		if percent == 100:
+			await _audit_modal_centering(prepare)
 
 
 ## --- 稽核規則 -------------------------------------------------------------
@@ -94,12 +121,28 @@ func _boot_sized() -> Variant:
 	return harness
 
 
-func _apply_scale(screen: ProductionScreen, percent: int) -> void:
-	assert_true(
-		ExpeditionThemeRuntime.new().apply(screen, percent),
-		"theme runtime must accept ui%d" % percent
+## 縮放一律走真實設定套用管線（draft → settings.apply → consumer 套用），
+## 而不是直接呼叫 theme runtime——app 的 settings consumer 會以它記住的
+## 縮放值延遲重套，直接呼叫會被蓋回。
+func _apply_scale_via_settings(
+	settings: ProductionScreen,
+	percent: int
+) -> void:
+	var composition: Node = FunctionalSupport.composition(settings)
+	assert_not_null(composition)
+	if composition == null:
+		return
+	var draft := composition.call(&"settings_draft") as SettingsSnapshot
+	assert_not_null(draft)
+	if draft == null:
+		return
+	draft.ui_scale_percent = percent
+	assert_eq(
+		StringName(composition.call(&"replace_settings_draft", draft)),
+		&""
 	)
-	await wait_process_frames(2)
+	assert_true(FunctionalSupport.press(self, settings, &"settings.apply"))
+	await wait_process_frames(3)
 
 
 func _audit_screen(screen: ProductionScreen, percent: int) -> void:
@@ -149,7 +192,10 @@ func _audit_button_text_fits(screen: ProductionScreen, context: String) -> void:
 			or not button.is_visible_in_tree()
 			or button.text.is_empty()
 			or button.has_meta(&"expedition_allow_text_clip")
+			or button.autowrap_mode != TextServer.AUTOWRAP_OFF
 		):
+			# autowrap 按鈕以換行吸收長文字，寬度規則不適用；
+			# 垂直溢出由安全區/區域規則把關。
 			continue
 		var font := button.get_theme_font(&"font")
 		var font_size := button.get_theme_font_size(&"font_size")
@@ -188,13 +234,28 @@ func _audit_safe_area(screen: ProductionScreen, context: String) -> void:
 			if _has_focus_following_scroll_ancestor(control, screen):
 				continue
 			var rect := control.get_global_rect()
+			# grow(1)：多層 ceil 換算允許 1px 容差。
+			var parent_control := control.get_parent() as Control
+			var sibling_dump := ""
+			if parent_control != null and not SAFE_RECT.grow(1.0).encloses(rect):
+				for sibling: Node in parent_control.get_children():
+					var sib := sibling as Control
+					if sib != null:
+						sibling_dump += "%s min=%s flags=%d | " % [
+							sib.name,
+							sib.get_combined_minimum_size(),
+							sib.size_flags_vertical,
+						]
 			assert_true(
-				SAFE_RECT.encloses(rect),
-				"%s: %s (%s) escapes the safe area (%s)" % [
+				SAFE_RECT.grow(1.0).encloses(rect),
+				"%s: %s (%s) escapes the safe area (%s; parent %s %s; sibs: %s)" % [
 					context,
 					control.name,
 					class_hint,
 					rect,
+					parent_control.name if parent_control != null else "?",
+					parent_control.get_global_rect() if parent_control != null else Rect2(),
+					sibling_dump,
 				]
 			)
 
@@ -241,6 +302,60 @@ func _audit_settings_actions_bottom(
 			percent, bottom, SAFE_RECT.end.y,
 		]
 	)
+
+
+## P2：商店卡必須在鍵盤焦點環內（Tab 可達、Enter 可購買）。
+func _audit_shop_cards_in_focus_ring(
+	screen: ProductionScreen,
+	percent: int
+) -> void:
+	var cards: Array[Button] = []
+	for node: Node in screen.find_children("ShopCard*", "Button", true, false):
+		var card := node as Button
+		if card != null and card.has_meta(&"shop_offer_id") \
+			and card.is_visible_in_tree() and not card.disabled:
+			cards.append(card)
+	assert_true(
+		cards.size() > 0,
+		"ui%d: the live prepare screen must offer shop cards" % percent
+	)
+	var ring: Array = screen.call(&"_ordered_focus_controls")
+	for card: Button in cards:
+		assert_true(
+			ring.has(card),
+			"ui%d: shop card %s must be reachable by keyboard" % [
+				percent, card.name,
+			]
+		)
+
+
+## P10：確認 modal 必須置中於畫面（非左上角落在中心）。
+func _audit_modal_centering(screen: ProductionScreen) -> void:
+	if not FunctionalSupport.press(self, screen, &"run.menu"):
+		return
+	await wait_process_frames(1)
+	var dialog: Control = null
+	for node: Node in screen.find_children("*", "PanelContainer", true, false):
+		var candidate := node as Control
+		if candidate != null and candidate.z_index >= 100 \
+			and candidate.is_visible_in_tree():
+			dialog = candidate
+			break
+	assert_not_null(dialog, "run.menu during a live run must open a modal")
+	if dialog == null:
+		return
+	var center := dialog.get_global_rect().get_center()
+	assert_almost_eq(center.x, 640.0, 4.0, "modal must center horizontally")
+	assert_almost_eq(center.y, 360.0, 4.0, "modal must center vertically")
+	# 取消鈕在 confirm 之後建立——取 dialog 內最後一顆按鈕關閉 modal。
+	var cancel: Button = null
+	for node: Node in dialog.find_children("*", "Button", true, false):
+		var candidate_button := node as Button
+		if candidate_button != null:
+			cancel = candidate_button
+	if cancel != null:
+		cancel.pressed.emit()
+		await wait_process_frames(1)
 
 
 func _has_focus_following_scroll_ancestor(

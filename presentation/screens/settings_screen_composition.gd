@@ -32,6 +32,18 @@ var _editors: Dictionary[StringName, Control] = {}
 var _labels: Dictionary[StringName, Label] = {}
 var _value_labels: Dictionary[StringName, Label] = {}
 var _localized_text: Dictionary[StringName, String] = {}
+var _status_rect := Rect2()
+
+
+## SETTINGS 版面權威（ProductionScreen._apply_settings_layout）指定 draft
+## 驗證狀態列在 Composition 內的 rect；同步把捲動區的底部讓出來，
+## 確保訊息不被 clip_contents 剪掉、也不與內容疊字。
+func apply_status_rect(rect: Rect2) -> void:
+	_status_rect = rect
+	_status_view.attach(self, 1, rect)
+	var scroll := get_node_or_null(^"SettingsScroll") as ScrollContainer
+	if scroll != null and rect.size.y > 0.0:
+		scroll.offset_bottom = -rect.size.y
 
 
 func stage(
@@ -158,13 +170,18 @@ func _build_editors() -> void:
 	_labels.clear()
 	_value_labels.clear()
 	# row 1：SETTINGS 的 ProductionScreen 自己已經在 row 0 掛了一條狀態列
-	# （動作失敗用），draft 驗證訊息往上疊一格才不會兩句話互相蓋住（G2 F1）。
-	_status_view.attach(self, 1)
+	# （動作失敗用），draft 驗證訊息獨立一列；實際 rect 由
+	# `apply_status_rect()`（ProductionScreen 的設定版面權威）指定，
+	# 確保它落在 Composition 可見高度內、不被 clip_contents 剪掉（P4）。
+	_status_view.attach(self, 1, _status_rect)
 	var scroll := ScrollContainer.new()
 	scroll.name = "SettingsScroll"
 	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	scroll.follow_focus = true
+	if _status_rect.size.y > 0.0:
+		scroll.offset_bottom = -_status_rect.size.y
 	add_child(scroll)
 	var rows := VBoxContainer.new()
 	rows.name = "SettingEditors"

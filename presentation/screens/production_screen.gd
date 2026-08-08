@@ -372,18 +372,24 @@ func _bind_localized_controls() -> void:
 		)
 		controls.name = "Actions"
 		if route_kind == &"SETTINGS":
-			controls.position = Vector2(72.0, 648.0)
-			controls.size = Vector2(1136.0, 48.0)
 			controls.z_index = 6
+			add_child(controls)
 		else:
-			controls.set_anchors_preset(Control.PRESET_CENTER)
-		add_child(controls)
+			# 動作欄真置中：CenterContainer 承擔錨定，欄位大小變動
+			# （縮放、文案）時仍保持水平垂直置中。
+			var center := CenterContainer.new()
+			center.name = "ActionsHost"
+			center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			add_child(center)
+			center.add_child(controls)
 		for action_id: StringName in action_ids:
 			var action := _new_action_button(action_id)
 			if route_kind == &"SETTINGS":
 				action.theme_type_variation = &"ExpeditionBottomAction"
 				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
+		_apply_settings_layout(100)
 
 
 func _install_b1_layout() -> void:
@@ -400,12 +406,14 @@ func _install_b1_layout() -> void:
 		var title_rect := _layout_shell.current_content_rect(
 			ProductionLayoutShell.REGION_TOP
 		)
-		title_rect.position.x += 8.0
-		title_rect.size.x = 300.0
+		title_rect.position.x += ProductionLayoutShell.TITLE_INSET
+		title_rect.size.x = ProductionLayoutShell.TITLE_WIDTH
 		title.position = title_rect.position
 		title.size = title_rect.size
 		title.theme_type_variation = &"ExpeditionTitle"
-		title.custom_minimum_size = Vector2(300.0, 0.0)
+		title.custom_minimum_size = Vector2(
+			ProductionLayoutShell.TITLE_WIDTH, 0.0
+		)
 		title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var composition := get_node_or_null(^"Composition") as Control
@@ -438,32 +446,65 @@ func _configure_non_b1_layout(title: Label) -> void:
 		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if route_kind != &"SETTINGS":
 		return
-	var composition := get_node_or_null(^"Composition") as Control
-	if composition != null:
-		composition.position = Vector2(72.0, 100.0)
-		composition.custom_minimum_size = Vector2(1136.0, 496.0)
-		composition.size = Vector2(1136.0, 496.0)
-		composition.clip_contents = true
-	var action_gap := Panel.new()
-	action_gap.name = "SettingsActionGap"
-	action_gap.position = Vector2(0.0, 592.0)
-	action_gap.size = Vector2(1280.0, 56.0)
-	action_gap.theme_type_variation = &"ExpeditionBackground"
-	action_gap.mouse_filter = Control.MOUSE_FILTER_STOP
-	action_gap.z_index = 5
-	add_child(action_gap)
+	_apply_settings_layout(100)
 
 
 func apply_theme_scale_layout(scale_percent: int) -> void:
+	_apply_settings_layout(scale_percent)
+	if _layout_shell != null:
+		_layout_shell.set_scale_factor(float(scale_percent) / 100.0)
+		var title := get_node_or_null(^"Label") as Label
+		if title != null:
+			var title_rect := _layout_shell.current_content_rect(
+				ProductionLayoutShell.REGION_TOP
+			)
+			title_rect.position.x += ProductionLayoutShell.TITLE_INSET
+			title_rect.size.x = ProductionLayoutShell.TITLE_WIDTH
+			title.position = title_rect.position
+			title.size = title_rect.size
+		_sync_status_band_visibility()
+
+
+## SETTINGS 版面的單一權威（P3/P4/P5）：由下往上排——動作列貼安全區底、
+## 其上為畫面狀態帶、其上為 Composition（draft 驗證列保留在 Composition
+## 可見高度內）。所有高度隨 UI 縮放 ×factor，任何縮放下不出安全區。
+func _apply_settings_layout(scale_percent: int) -> void:
 	if route_kind != &"SETTINGS":
 		return
-	var action_gap := get_node_or_null(^"SettingsActionGap") as Control
-	if action_gap == null:
-		return
 	var factor := float(scale_percent) / 100.0
-	var gap_top := 584.0 + float(roundi(8.0 * factor))
-	action_gap.position.y = gap_top
-	action_gap.size.y = 648.0 - gap_top
+	var safe_bottom := 720.0 - ProductionLayoutShell.SAFE_MARGIN
+	var actions_height := ceilf(48.0 * factor)
+	var actions_top := safe_bottom - actions_height
+	var status_height := ceilf(44.0 * factor)
+	var gap := ceilf(8.0 * factor)
+	var status_top := actions_top - gap - status_height
+	var composition_top := 100.0
+	var composition_height := status_top - gap - composition_top
+	var actions := get_node_or_null(^"Actions") as Control
+	if actions != null:
+		actions.position = Vector2(72.0, actions_top)
+		actions.size = Vector2(1136.0, actions_height)
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		composition.position = Vector2(72.0, composition_top)
+		composition.custom_minimum_size = Vector2(1136.0, composition_height)
+		composition.size = Vector2(1136.0, composition_height)
+		composition.clip_contents = true
+		if composition.has_method(&"apply_status_rect"):
+			composition.call(
+				&"apply_status_rect",
+				Rect2(
+					0.0,
+					composition_height - status_height,
+					1136.0,
+					status_height
+				)
+			)
+	_status_view.attach(
+		self,
+		0,
+		Rect2(72.0, status_top, 1136.0, status_height)
+	)
 
 
 func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
@@ -471,6 +512,8 @@ func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
 	facilities.name = "Actions"
 	facilities.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	facilities.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# 設施鈕在左欄垂直置中，不留「上滿下空」的殘缺觀感。
+	facilities.alignment = BoxContainer.ALIGNMENT_CENTER
 	layout_content(ProductionLayoutShell.REGION_LEFT).add_child(facilities)
 	for action_id: StringName in action_ids.slice(0, 5):
 		var facility := _new_action_button(action_id)
@@ -512,7 +555,7 @@ func _build_prepare_action_controls(
 
 	var secondary := VBoxContainer.new()
 	secondary.name = "PrepareSecondaryActions"
-	secondary.custom_minimum_size = Vector2(230.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(secondary, 206.0, 0.0)
 	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(secondary)
 	_prepare_action_group_selector = OptionButton.new()
@@ -520,8 +563,9 @@ func _build_prepare_action_controls(
 	_prepare_action_group_selector.focus_mode = Control.FOCUS_ALL
 	_prepare_action_group_selector.theme_type_variation = &"ExpeditionBottomAction"
 	_prepare_action_group_selector.allow_reselect = true
-	_prepare_action_group_selector.custom_minimum_size = Vector2(0.0, 48.0)
-	_prepare_action_group_selector.set_meta(&"expedition_theme_fixed_minimum", true)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		_prepare_action_group_selector, 0.0, 48.0
+	)
 	_prepare_action_group_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_prepare_action_group_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_prepare_action_group_selector.set_meta(
@@ -541,11 +585,12 @@ func _build_prepare_action_controls(
 	page_scroll.name = "PrepareActionGroupScroll"
 	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	page_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	page_scroll.follow_focus = true
 	page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	secondary.add_child(page_scroll)
 	var pages := Control.new()
 	pages.name = "PrepareActionGroupPages"
-	pages.custom_minimum_size = Vector2(206.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(pages, 206.0, 0.0)
 	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page_scroll.add_child(pages)
@@ -568,7 +613,7 @@ func _build_prepare_action_controls(
 
 	var pinned := VBoxContainer.new()
 	pinned.name = "PinnedActions"
-	pinned.custom_minimum_size = Vector2(180.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(pinned, 180.0, 0.0)
 	pinned.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(pinned)
 	for action_id: StringName in PREPARE_PINNED_ACTIONS:
@@ -581,6 +626,9 @@ func _build_prepare_action_controls(
 		_on_prepare_action_group_selected
 	)
 	_prepare_action_group_selector.select(default_group_index)
+	# select() 不發 item_selected（P1）：初始分組頁的高度與可見性
+	# 必須顯式初始化，否則預設組只露出第一顆動作。
+	_on_prepare_action_group_selected(default_group_index)
 
 
 func _build_prepare_shop_controls(
@@ -591,7 +639,7 @@ func _build_prepare_shop_controls(
 	var shop_shell := HBoxContainer.new()
 	shop_shell.name = "PrepareShopBand"
 	shop_shell.theme_type_variation = &"ExpeditionPrepareShopBand"
-	shop_shell.custom_minimum_size = Vector2(660.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(shop_shell, 660.0, 0.0)
 	shop_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shop_shell.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(shop_shell)
@@ -606,26 +654,12 @@ func _build_prepare_shop_controls(
 	var heading := Label.new()
 	heading.text = _context.resolve_text(&"prepare.panel.shop")
 	heading.theme_type_variation = &"ExpeditionSection"
-	heading.custom_minimum_size = Vector2(120.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(heading, 120.0, 0.0)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.clip_text = true
 	heading.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	shop_header.add_child(heading)
-	for metric: Array in _prepare_shop_metrics(snapshot):
-		var label := Label.new()
-		label.text = "%s %s" % [
-			_context.resolve_text(StringName(metric[0])),
-			String(metric[1]),
-		]
-		label.theme_type_variation = &"ExpeditionMetric"
-		label.custom_minimum_size = Vector2(
-			150.0 if StringName(metric[0]) == &"prepare.resource.level_xp" else 86.0,
-			0.0
-		)
-		label.clip_text = true
-		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		shop_header.add_child(label)
+	# 金幣/等級已由頂部資源列常駐顯示，商店帶不再重複（B1R2 審查風格項）。
 	var cards := HBoxContainer.new()
 	cards.name = "PrepareShopCards"
 	cards.theme_type_variation = &"ExpeditionShopCardsRow"
@@ -642,17 +676,16 @@ func _build_prepare_shop_controls(
 				offer.cost,
 			]
 			card.theme_type_variation = &"ExpeditionShopCard"
-			card.custom_minimum_size = Vector2(96.0, 72.0)
+			# 寬度預算（1200 內容寬扣兩側欄與縮放後的分隔）允許 112；
+			# 長內容名靠 autowrap 換行，卡片高度由帶區吸收，不截字。
+			ExpeditionLayoutMetrics.set_fixed_min(card, 112.0, 72.0)
 			card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			card.focus_mode = Control.FOCUS_ALL
-			card.clip_text = true
-			card.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 			card.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 			card.toggle_mode = false
 			card.set_meta(&"shop_offer_id", offer.offer_id)
 			card.set_meta(&"accessible_text", card.text)
-			card.set_meta(&"expedition_theme_fixed_minimum", true)
 			card.pressed.connect(
 				_on_prepare_shop_card_pressed.bind(offer.offer_id)
 			)
@@ -660,16 +693,15 @@ func _build_prepare_shop_controls(
 	if cards.get_child_count() == 0 and action_ids.has(&"prepare.buy"):
 		var empty_buy := _new_action_button(&"prepare.buy")
 		empty_buy.theme_type_variation = &"ExpeditionShopCard"
-		empty_buy.custom_minimum_size = Vector2(96.0, 72.0)
+		ExpeditionLayoutMetrics.set_fixed_min(empty_buy, 112.0, 72.0)
 		empty_buy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		empty_buy.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		empty_buy.set_meta(&"expedition_theme_fixed_minimum", true)
 		empty_buy.disabled = true
 		cards.add_child(empty_buy)
 	var shop_actions := GridContainer.new()
 	shop_actions.name = "PrepareShopActions"
 	shop_actions.columns = 1
-	shop_actions.custom_minimum_size = Vector2(140.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(shop_actions, 140.0, 0.0)
 	shop_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	shop_shell.add_child(shop_actions)
 	for action_id: StringName in [
@@ -678,22 +710,8 @@ func _build_prepare_shop_controls(
 		if action_ids.has(action_id):
 			var action := _new_action_button(action_id)
 			action.theme_type_variation = &"ExpeditionBottomAction"
-			action.custom_minimum_size = Vector2(140.0, 48.0)
-			action.set_meta(&"expedition_theme_fixed_minimum", true)
+			ExpeditionLayoutMetrics.set_fixed_min(action, 140.0, 48.0)
 			shop_actions.add_child(action)
-
-
-func _prepare_shop_metrics(snapshot: RunPresentationSnapshot) -> Array[Array]:
-	var gold := "-"
-	var level_xp := "-"
-	if snapshot != null:
-		if snapshot.economy != null:
-			gold = str(snapshot.economy.gold)
-			level_xp = "%s/%s" % [snapshot.economy.level, snapshot.economy.xp]
-	return [
-		[&"prepare.resource.gold", gold],
-		[&"prepare.resource.level_xp", level_xp],
-	]
 
 
 func _on_prepare_shop_card_pressed(offer_id: StringName) -> void:
@@ -719,7 +737,13 @@ func _on_prepare_action_group_selected(index: int) -> void:
 		_prepare_action_group_pages[page_index].visible = page_index == index
 	var pages := find_child("PrepareActionGroupPages", true, false) as Control
 	if pages != null:
-		pages.custom_minimum_size.y = _prepare_action_group_pages[index].get_combined_minimum_size().y
+		# 用 helper 寫回 base meta，否則 theme runtime 下次 apply 會把
+		# 高度重設回登記值 0（P1 回歸的第二種路徑）。
+		ExpeditionLayoutMetrics.set_fixed_min(
+			pages,
+			206.0,
+			_prepare_action_group_pages[index].get_combined_minimum_size().y
+		)
 	_apply_keyboard_focus_graph()
 
 
@@ -1290,8 +1314,12 @@ func _show_confirmation_modal(
 	_disable_modal_background()
 	var dialog := PanelContainer.new()
 	dialog.name = node_name
+	# P10：PRESET_CENTER 的錨點在中心，但預設 grow 會讓左上角落在畫面中心；
+	# grow BOTH 才是真置中。
 	dialog.set_anchors_preset(Control.PRESET_CENTER)
-	dialog.custom_minimum_size = Vector2(560.0, 220.0)
+	dialog.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	dialog.grow_vertical = Control.GROW_DIRECTION_BOTH
+	ExpeditionLayoutMetrics.set_fixed_min(dialog, 560.0, 220.0)
 	dialog.theme_type_variation = &"ExpeditionModalPanel"
 	dialog.z_index = 100
 	add_child(dialog)
@@ -1479,6 +1507,18 @@ func _ordered_focus_controls() -> Array[Control]:
 		var button := _action_button(action_id)
 		if _control_is_focusable(button) and not result.has(button):
 			result.append(button)
+	# P2：商店卡帶 pressed handler 而無 action_id meta，必須顯式納入焦點環，
+	# 鍵盤玩家才能 Tab 到卡片按 Enter 購買。排在一般動作之後、
+	# 誤觸代價高的 deferred 動作之前。
+	for node: Node in find_children("ShopCard*", "Button", true, false):
+		var card := node as Button
+		if (
+			card != null
+			and card.has_meta(&"shop_offer_id")
+			and _control_is_focusable(card)
+			and not result.has(card)
+		):
+			result.append(card)
 	# 誤觸代價高的動作排在所有同畫面「動作按鈕」之後（下面的 selector 仍排在它後面；
 	# 焦點環涵蓋它，只是不在按鈕段的前面）。
 	for action_id: StringName in deferred:

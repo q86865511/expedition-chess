@@ -149,10 +149,18 @@ func test_button_text_contributes_to_combined_minimum_width() -> void:
 
 func test_production_viewport_paths_have_resolving_defaults() -> void:
 	var scene_source := FileAccess.get_file_as_string("res://app/main.tscn")
-	assert_false(
-		scene_source.contains("node_paths=PackedStringArray"),
-		"Godot 4.7 silently discards the five relative scene assignments"
-	)
+	# B1R3 P11：只禁止「ViewportCoordinator 節點區塊」帶 node_paths
+	#（原始違規情境：相對路徑賦值被 Godot 4.7 靜默丟棄）；其他節點日後
+	# 合法使用 node_paths 不在此限。
+	for block: String in scene_source.split("[node"):
+		if (
+			block.contains("ViewportCoordinator")
+			and block.contains("node_paths=PackedStringArray")
+		):
+			assert_true(
+				false,
+				"Godot 4.7 silently discards the coordinator's relative scene assignments"
+			)
 	for dead_assignment: String in [
 		"world_container_path = NodePath",
 		"world_viewport_path = NodePath",

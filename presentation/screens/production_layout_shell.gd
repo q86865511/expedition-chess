@@ -11,6 +11,11 @@ const SIDE_WIDTH: float = 280.0
 const PANEL_CONTENT_MARGIN: Vector2 = Vector2(16.0, 12.0)
 const STATUS_HEIGHT: float = 44.0
 const STATUS_GUTTER: float = 8.0
+## 頂欄標題保留欄：內縮 8 ＋ 標題 300 ＋ 與 metrics 的間隔 32。
+## camp/prepare 的頂欄 metrics 一律從這裡起排，基線與間距才會一致。
+const TITLE_INSET: float = 8.0
+const TITLE_WIDTH: float = 300.0
+const TITLE_COLUMN_WIDTH: float = TITLE_INSET + TITLE_WIDTH + 32.0
 
 const REGION_TOP: StringName = &"top"
 const REGION_LEFT: StringName = &"left"
@@ -24,6 +29,9 @@ var _contents: Dictionary = {}
 var _panels: Dictionary = {}
 var _bottom_height: float = BOTTOM_HEIGHT
 var _status_visible: bool = false
+## UI 縮放（REQ-UX-003）：頂欄/底部帶/狀態帶「高度」隨字級放大，
+## 中央內容區吃剩餘高度（內部由 follow_focus 捲動吸收）；寬度維持 reference。
+var _scale_factor: float = 1.0
 
 
 func build(route_kind: StringName = &"") -> void:
@@ -68,11 +76,15 @@ static func region_rect_for(region: StringName, bottom_height: float) -> Rect2:
 static func _region_rect_for_state(
 	region: StringName,
 	bottom_height: float,
-	status_visible: bool
+	status_visible: bool,
+	factor: float = 1.0
 ) -> Rect2:
-	var content_top := SAFE_MARGIN + TOP_HEIGHT + GUTTER
-	var footer_top := REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height
-	var status_top := footer_top - STATUS_GUTTER - STATUS_HEIGHT
+	var top_height := ceilf(TOP_HEIGHT * factor)
+	var scaled_bottom := ceilf(bottom_height * factor)
+	var status_height := ceilf(STATUS_HEIGHT * factor)
+	var content_top := SAFE_MARGIN + top_height + GUTTER
+	var footer_top := REFERENCE_SIZE.y - SAFE_MARGIN - scaled_bottom
+	var status_top := footer_top - STATUS_GUTTER - status_height
 	var content_bottom := (
 		status_top - STATUS_GUTTER
 		if status_visible
@@ -81,7 +93,7 @@ static func _region_rect_for_state(
 	var content_height := content_bottom - content_top
 	match region:
 		REGION_TOP:
-			return Rect2(SAFE_MARGIN, SAFE_MARGIN, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, TOP_HEIGHT)
+			return Rect2(SAFE_MARGIN, SAFE_MARGIN, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, top_height)
 		REGION_LEFT:
 			return Rect2(SAFE_MARGIN, content_top, SIDE_WIDTH, content_height)
 		REGION_RIGHT:
@@ -90,14 +102,32 @@ static func _region_rect_for_state(
 			var center_x := SAFE_MARGIN + SIDE_WIDTH + GUTTER
 			return Rect2(center_x, content_top, REFERENCE_SIZE.x - center_x - SAFE_MARGIN - SIDE_WIDTH - GUTTER, content_height)
 		REGION_BOTTOM:
-			return Rect2(SAFE_MARGIN, REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, bottom_height)
+			return Rect2(SAFE_MARGIN, footer_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, scaled_bottom)
 		REGION_STATUS:
-			return Rect2(SAFE_MARGIN, status_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, STATUS_HEIGHT)
+			return Rect2(SAFE_MARGIN, status_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, status_height)
 	return Rect2(Vector2.ZERO, REFERENCE_SIZE)
 
 
 func current_region_rect(region: StringName) -> Rect2:
-	return _region_rect_for_state(region, _bottom_height, _status_visible)
+	return _region_rect_for_state(
+		region, _bottom_height, _status_visible, _scale_factor
+	)
+
+
+func set_scale_factor(factor: float) -> void:
+	_scale_factor = maxf(factor, 0.01)
+	_relayout_regions()
+
+
+func _relayout_regions() -> void:
+	for region: StringName in _panels:
+		var panel := _panels.get(region) as Control
+		if panel == null:
+			continue
+		var rect := current_region_rect(region)
+		panel.position = rect.position
+		panel.custom_minimum_size = rect.size
+		panel.size = rect.size
 
 
 func set_status_visible(value: bool) -> void:
@@ -107,9 +137,11 @@ func set_status_visible(value: bool) -> void:
 		if panel == null:
 			continue
 		var rect := current_region_rect(region)
+		# P6：先更新 minimum 再設 size——順序相反時縮小會被舊 minimum 夾住，
+		# 面板不回縮、狀態帶壓在內容上。
 		panel.position = rect.position
-		panel.size = rect.size
 		panel.custom_minimum_size = rect.size
+		panel.size = rect.size
 	var status_panel := _panels.get(REGION_STATUS) as Control
 	if status_panel != null:
 		status_panel.visible = value
@@ -139,8 +171,8 @@ func _add_panel(
 	var panel := PanelContainer.new()
 	panel.name = node_name
 	panel.position = rect.position
-	panel.size = rect.size
 	panel.custom_minimum_size = rect.size
+	panel.size = rect.size
 	panel.theme_type_variation = variation
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content_control.name = "Content"

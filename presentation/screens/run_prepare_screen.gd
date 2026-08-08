@@ -446,8 +446,8 @@ func _build_prepare_controls() -> void:
 	var metrics := Control.new()
 	metrics.name = "PrepareMetrics"
 	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
-	metrics_rect.position.x += 320.0
-	metrics_rect.size.x -= 320.0
+	metrics_rect.position.x += ProductionLayoutShell.TITLE_COLUMN_WIDTH
+	metrics_rect.size.x -= ProductionLayoutShell.TITLE_COLUMN_WIDTH
 	metrics.position = metrics_rect.position
 	metrics.size = metrics_rect.size
 	metrics.clip_contents = true
@@ -511,7 +511,9 @@ func _build_prepare_controls() -> void:
 	_add_selector(
 		left,
 		&"BuildUnitSelector",
-		Vector2(0.0, 116.0),
+		# min 72：清單內部可捲動、EXPAND 會吃滿剩餘高；min 過大會在 150%
+		# 讓左欄 combined min 超出區域預算（見 refresh_layout_rects 註解）。
+		Vector2(0.0, 72.0),
 		&"unit_instance"
 	)
 	left.add_child(_heading(&"prepare.panel.synergies"))
@@ -524,6 +526,7 @@ func _build_prepare_controls() -> void:
 	center_scroll.size = center_rect.size
 	center_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	center_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	center_scroll.follow_focus = true
 	layout.add_child(center_scroll)
 	var center := VBoxContainer.new()
 	center.name = "PrepareCenterContent"
@@ -551,6 +554,7 @@ func _build_prepare_controls() -> void:
 	right_scroll.size = right_rect.size
 	right_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	right_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	right_scroll.follow_focus = true
 	layout.add_child(right_scroll)
 	var right := VBoxContainer.new()
 	right.name = "PrepareRightContent"
@@ -592,6 +596,10 @@ func _build_prepare_controls() -> void:
 		right.add_child(_empty_label(&"prepare.empty.expedition"))
 	_build_node_choice_overlay(snapshot, right)
 	_refresh_draft_selectors()
+	# 建構期間 shell 可能尚未套用目前 UI 縮放（consumer 的 apply 是
+	# deferred）；建構完成後補一次 deferred 重排，收斂到最終 rect，
+	# 避免停在「建構時 factor」與「套用後 factor」混合的過渡版面。
+	call_deferred(&"refresh_layout_rects")
 
 
 func _build_board_grid(parent: VBoxContainer) -> void:
@@ -606,17 +614,17 @@ func _build_board_grid(parent: VBoxContainer) -> void:
 		for logical_x: int in range(8):
 			var cell := Button.new()
 			cell.name = "BoardCell_%d_%d" % [logical_y, logical_x]
-			cell.custom_minimum_size = Vector2(56.0, 48.0)
+			# 棋格是 Phase C sprite 佔位：reference 固定尺寸、文字省略號截斷
+			# （幾何稽核以 meta 明示豁免文字寬規則）。
+			ExpeditionLayoutMetrics.set_fixed_cell(cell, 56.0, 48.0)
 			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			cell.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			cell.focus_mode = Control.FOCUS_ALL
 			cell.theme_type_variation = &"ExpeditionGridCell"
 			cell.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-			cell.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 			cell.set_meta(&"board_x", logical_x)
 			cell.set_meta(&"board_y", logical_y)
 			cell.set_meta(&"unit_instance_id", "")
-			cell.set_meta(&"expedition_theme_fixed_minimum", true)
 			cell.pressed.connect(_on_board_cell_pressed.bind(cell))
 			grid.add_child(cell)
 
@@ -630,14 +638,12 @@ func _build_bench_row(parent: VBoxContainer) -> void:
 	for index: int in range(9):
 		var cell := Button.new()
 		cell.name = "BenchCell%d" % index
-		cell.custom_minimum_size = Vector2(56.0, 48.0)
+		ExpeditionLayoutMetrics.set_fixed_cell(cell, 56.0, 48.0)
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cell.focus_mode = Control.FOCUS_ALL
 		cell.theme_type_variation = &"ExpeditionGridCell"
 		cell.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-		cell.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 		cell.set_meta(&"unit_instance_id", "")
-		cell.set_meta(&"expedition_theme_fixed_minimum", true)
 		cell.pressed.connect(_on_bench_cell_pressed.bind(cell))
 		row.add_child(cell)
 
@@ -670,15 +676,19 @@ func refresh_layout_rects() -> void:
 	var metrics := find_child("PrepareMetrics", true, false) as Control
 	if metrics != null:
 		var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
-		metrics_rect.position.x += 320.0
-		metrics_rect.size.x -= 320.0
+		metrics_rect.position.x += ProductionLayoutShell.TITLE_COLUMN_WIDTH
+		metrics_rect.size.x -= ProductionLayoutShell.TITLE_COLUMN_WIDTH
 		metrics.position = metrics_rect.position
 		metrics.size = metrics_rect.size
 	var left := find_child("PrepareLeftContent", true, false) as Control
 	if left != null:
 		var left_rect := _region_content_rect(ProductionLayoutShell.REGION_LEFT)
 		left.position = left_rect.position
+		# autowrap 子 Label 在 reflow 前寬度可能只有 1px，使 VBox 的
+		# combined min 短暫暴漲、size 指派被向上夾制且不會自動縮回；
+		# deferred 再指派一次，等子節點取得實際寬度後讓目標尺寸生效。
 		left.size = left_rect.size
+		left.set_deferred(&"size", left_rect.size)
 	var center_scroll := find_child("PrepareCenterScroll", true, false) as Control
 	if center_scroll != null:
 		var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)

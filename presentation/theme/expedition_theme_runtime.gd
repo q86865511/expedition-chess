@@ -39,6 +39,10 @@ func apply(host: Control, scale_percent: int) -> bool:
 	host.theme = runtime_theme
 	_apply_control_metrics(host, factor, base_metrics)
 	host.set_meta(&"effective_theme_scale_percent", scale_percent)
+	# host 自身不在 find_children 的結果裡；畫面級 relayout
+	#（如 SETTINGS 的 _apply_settings_layout）必須一併通知。
+	if host.has_method(&"apply_theme_scale_layout"):
+		host.call(&"apply_theme_scale_layout", scale_percent)
 	for node: Node in host.find_children("*", "", true, false):
 		if node.has_method(&"apply_theme_scale_layout"):
 			node.call(&"apply_theme_scale_layout", scale_percent)

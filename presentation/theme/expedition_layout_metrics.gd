@@ -22,6 +22,13 @@ static func set_min(control: Control, width: float, height: float) -> void:
 	control.custom_minimum_size = Vector2(width, height)
 
 
+## reference 空間固定尺寸（兩軸皆不隨縮放）：底部帶/棋盤等骨架內的控制項，
+## 縮放感由字級與內距呈現，尺寸由版面預算持有。
+static func set_fixed_min(control: Control, width: float, height: float) -> void:
+	set_min(control, width, height)
+	control.set_meta(META_FIXED_MINIMUM, true)
+
+
 static func set_fixed_cell(button: Button, width: float, height: float) -> void:
 	if button == null:
 		return

@@ -95,8 +95,8 @@ func _build_expedition_controls() -> void:
 	var metrics := HBoxContainer.new()
 	metrics.name = "CampMetrics"
 	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
-	metrics_rect.position.x += 380.0
-	metrics_rect.size.x -= 380.0
+	metrics_rect.position.x += ProductionLayoutShell.TITLE_COLUMN_WIDTH
+	metrics_rect.size.x -= ProductionLayoutShell.TITLE_COLUMN_WIDTH
 	metrics.position = metrics_rect.position
 	metrics.size = metrics_rect.size
 	metrics.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -257,8 +257,8 @@ func refresh_layout_rects() -> void:
 	var metrics := find_child("CampMetrics", true, false) as Control
 	if metrics != null:
 		var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
-		metrics_rect.position.x += 380.0
-		metrics_rect.size.x -= 380.0
+		metrics_rect.position.x += ProductionLayoutShell.TITLE_COLUMN_WIDTH
+		metrics_rect.size.x -= ProductionLayoutShell.TITLE_COLUMN_WIDTH
 		metrics.position = metrics_rect.position
 		metrics.size = metrics_rect.size
 	var center := find_child("CampCenterSummary", true, false) as Control

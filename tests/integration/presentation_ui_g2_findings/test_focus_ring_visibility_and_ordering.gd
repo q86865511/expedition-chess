@@ -173,6 +173,28 @@ func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
 	assert_not_null(selector)
 	if selector == null:
 		return
+	# B1R3 T13：先驗初始狀態——未做任何手動切組前，預設分組頁必須已有
+	# 高度且露出可用動作（P1 的可失敗斷言；下方逐組 emit 驗不到這件事）。
+	var pages := screen.find_child(
+		"PrepareActionGroupPages", true, false
+	) as Control
+	assert_not_null(pages)
+	if pages != null:
+		assert_gt(
+			pages.get_combined_minimum_size().y,
+			0.0,
+			"default group page must reserve height before any manual switch"
+		)
+		var initially_visible := 0
+		for node: Node in pages.find_children("*", "Button", true, false):
+			var initial_button := node as Control
+			if initial_button != null and initial_button.is_visible_in_tree():
+				initially_visible += 1
+		assert_gt(
+			initially_visible,
+			0,
+			"default group must expose usable actions on load"
+		)
 	var seen: Dictionary[StringName, bool] = {}
 	for group_index: int in selector.item_count:
 		selector.select(group_index)

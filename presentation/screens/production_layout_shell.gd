@@ -21,7 +21,9 @@ const REGION_OVERLAY: StringName = &"overlay"
 const REGION_STATUS: StringName = &"status"
 
 var _contents: Dictionary = {}
+var _panels: Dictionary = {}
 var _bottom_height: float = BOTTOM_HEIGHT
+var _status_visible: bool = false
 
 
 func build(route_kind: StringName = &"") -> void:
@@ -30,6 +32,7 @@ func build(route_kind: StringName = &"") -> void:
 		if route_kind == &"RUN_PREPARE"
 		else BOTTOM_HEIGHT
 	)
+	_status_visible = false
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var background := Panel.new()
@@ -46,6 +49,7 @@ func build(route_kind: StringName = &"") -> void:
 	_add_panel(REGION_RIGHT, "RightRegion", current_region_rect(REGION_RIGHT), &"ExpeditionSecondaryPanel", VBoxContainer.new())
 	_add_panel(REGION_BOTTOM, "BottomRegion", current_region_rect(REGION_BOTTOM), &"ExpeditionActionBar", HBoxContainer.new())
 	_add_panel(REGION_STATUS, "StatusRegion", current_region_rect(REGION_STATUS), &"ExpeditionStatusPanel", HBoxContainer.new())
+	set_status_visible(false)
 	_add_control_region(REGION_OVERLAY, "OverlayRegion", Rect2(Vector2.ZERO, REFERENCE_SIZE))
 
 
@@ -58,10 +62,22 @@ static func region_rect(region: StringName) -> Rect2:
 
 
 static func region_rect_for(region: StringName, bottom_height: float) -> Rect2:
+	return _region_rect_for_state(region, bottom_height, true)
+
+
+static func _region_rect_for_state(
+	region: StringName,
+	bottom_height: float,
+	status_visible: bool
+) -> Rect2:
 	var content_top := SAFE_MARGIN + TOP_HEIGHT + GUTTER
 	var footer_top := REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height
 	var status_top := footer_top - STATUS_GUTTER - STATUS_HEIGHT
-	var content_bottom := status_top - STATUS_GUTTER
+	var content_bottom := (
+		status_top - STATUS_GUTTER
+		if status_visible
+		else footer_top - GUTTER
+	)
 	var content_height := content_bottom - content_top
 	match region:
 		REGION_TOP:
@@ -81,7 +97,26 @@ static func region_rect_for(region: StringName, bottom_height: float) -> Rect2:
 
 
 func current_region_rect(region: StringName) -> Rect2:
-	return region_rect_for(region, _bottom_height)
+	return _region_rect_for_state(region, _bottom_height, _status_visible)
+
+
+func set_status_visible(value: bool) -> void:
+	_status_visible = value
+	for region: StringName in [REGION_LEFT, REGION_CENTER, REGION_RIGHT]:
+		var panel := _panels.get(region) as Control
+		if panel == null:
+			continue
+		var rect := current_region_rect(region)
+		panel.position = rect.position
+		panel.size = rect.size
+		panel.custom_minimum_size = rect.size
+	var status_panel := _panels.get(REGION_STATUS) as Control
+	if status_panel != null:
+		status_panel.visible = value
+
+
+func is_status_visible() -> bool:
+	return _status_visible
 
 
 func current_content_rect(region: StringName) -> Rect2:
@@ -115,6 +150,7 @@ func _add_panel(
 	panel.add_child(content_control)
 	add_child(panel)
 	_contents[region] = content_control
+	_panels[region] = panel
 
 
 func _add_control_region(

@@ -55,6 +55,9 @@ func apply(host: Control, scale_percent: int) -> bool:
 	host.theme = runtime_theme
 	_apply_control_metrics(host, factor, base_metrics)
 	host.set_meta(&"effective_theme_scale_percent", scale_percent)
+	for node: Node in host.find_children("*", "", true, false):
+		if node.has_method(&"apply_theme_scale_layout"):
+			node.call(&"apply_theme_scale_layout", scale_percent)
 	return true
 
 

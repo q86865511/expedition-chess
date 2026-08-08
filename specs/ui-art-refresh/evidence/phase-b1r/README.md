@@ -1,5 +1,9 @@
 # Phase B1R 視覺樣板修訂證據
 
+> 本輪已被 `../phase-b1r2/` 取代。第二審確認本 README 原先的 150%「均未裁切」
+> 結論與截圖不符；B1R2 已補強為直接量測按鈕本體、文字寬與安全區，本檔不再作為
+> 最新核可依據。
+
 ## 結論與核可閘門
 
 本目錄是第一審退回後的 B1R 修訂證據。營地與備戰已在 zh_TW、720p／1080p、
@@ -43,8 +47,9 @@ wrapper 只接受 `-GodotPath` 或 `$env:GODOT_BIN`，不含本機硬編碼搜�
 - `prepare-720p-ui100.png`、`prepare-720p-ui125.png`、`prepare-720p-ui150.png`
 - `prepare-1080p-ui100.png`、`prepare-1080p-ui125.png`、`prepare-1080p-ui150.png`
 
-人工讀回結論：150% 下標題與資源列互斥；棋盤、bench、狀態帶、商店及右下固定
-按鈕均未跨區或裁切。備戰以 8×4 可見格線棋盤為中央主體，bench 為正下方單排，
+第二審讀回結論：此輪 125%／150% 的底部面板曾越過 720p 安全區，且 action button
+因 `clip_text=true` 塌成無字空框；這些問題已移交並在 B1R2 修正。備戰以 8×4 可見
+格線棋盤為中央主體，bench 為正下方單排，
 五張商店卡與金幣／等級／經驗、刷新／購買經驗值成組；左右欄分別為隊伍／羈絆與
 可捲動遠征待辦。營地五個設施按鈕為主，遠征資訊降為次要面板。
 
@@ -65,10 +70,13 @@ wrapper 只接受 `-GodotPath` 或 `$env:GODOT_BIN`，不含本機硬編碼搜�
 第一審後在 Windows display server、非 headless、zh_TW、fresh process、單一
 `reduced_motion` 開關穩定重現。修正前
 `activation-present-real-machine.json/png` 的常駐來源是
-`PRODUCTION_VIEWPORT_TREE_INVALID`：以程式建立的 coordinator 沒有預設 NodePath，
-五條 production viewport/UI 路徑皆為空，並非字型 glyph probe。
+`PRODUCTION_VIEWPORT_TREE_INVALID`。真實機制是 `app/main.tscn` 的 coordinator 節點
+帶 `node_paths=PackedStringArray(...)` 時，五條往上跳的相對 NodePath 賦值會被
+Godot 4.7 靜默丟棄；正式流程並不是以程式 `.new()` 建立 coordinator。常駐 probe
+並非字型 glyph probe。
 
-`ProductionViewportCoordinator` 現在提供相對 NodePath 預設值；若 640×360 viewport
+`ProductionViewportCoordinator` 的腳本預設值才是真正生效來源；B1R2 已刪除
+`main.tscn` 五條死賦值與 `node_paths` 標頭。若 640×360 viewport
 尺寸需要校正，會先暫停 container stretch，避免 Godot 警告。最終
 `activation-absent-real-machine.json/png` 記錄 `display_server=Windows`、
 `headless=false`、`fresh_process=true`、`locale=zh_TW`、單一開關、五條路徑全可解析、
@@ -114,9 +122,7 @@ ActEliminationGate、Spec 皆 exit 0。摘要見 `all-tests-summary.json`，原�
 主要真實設定 `Godot/app_userdata/遠征棋/settings-v1.json` 的開工與收尾長度、建立
 時間、修改時間、SHA-256 完全相同；數值見 `real-appdata-integrity.json`。
 
-另有一項無法歸因的旁支異常：開工盤點存在的
-`Godot/app_userdata/遠征棋.bak/settings-v1.json` 在收尾讀回時不存在。本次唯一遞迴
-刪除位於 wrapper 的 `-FreshProfile`，其 resolved-path guard 限定在 repo artifacts，
-所有執行命令也都透過該 wrapper；因此沒有證據顯示 B1R 流程觸及該旁支，但也不把
-「所有真實 APPDATA 項目完全未變」寫成已證實。主要使用者 settings 則可由相同
-timestamp 與 hash 直接自證未被本次流程寫入。
+第二審所稱 `.bak` 消失源自路徑盤點錯誤：實際備份位於
+`Godot/app_userdata/遠征棋/遠征棋.bak/settings-v1.json`，不是與 `遠征棋` 同層。
+B1R2 已改為對 `%APPDATA%/Godot/app_userdata/**` 全目錄遞迴列檔、時間戳與 SHA-256，
+並明確包含這個巢狀備份；前後 inventory hash 一致，見 `../phase-b1r2/`。

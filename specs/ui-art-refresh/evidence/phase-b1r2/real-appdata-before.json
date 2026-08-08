@@ -1,0 +1,1734 @@
+{
+    "schema_version":  2,
+    "captured_at_utc":  "2026-08-08T10:29:30.4523190Z",
+    "root":  "%APPDATA%/Godot/app_userdata",
+    "directory_count":  241,
+    "file_count":  73,
+    "total_bytes":  2338766,
+    "inventory_sha256":  "7d1c0553ea2142425d4b4a48ba56b1d43b571b29e8ef0c3c2e44cb3a1d5b280a",
+    "expected_paths":  {
+                           "game_directory":  true,
+                           "nested_backup_directory":  true,
+                           "nested_backup_settings":  true
+                       },
+    "directories":  [
+                        {
+                            "path":  "[unnamed project]",
+                            "creation_time_utc":  "2026-06-12T10:21:47.5720602Z",
+                            "last_write_time_utc":  "2026-07-31T12:06:34.8408921Z"
+                        },
+                        {
+                            "path":  "[unnamed project]/logs",
+                            "creation_time_utc":  "2026-07-31T12:06:34.8408921Z",
+                            "last_write_time_utc":  "2026-07-31T12:12:28.7551956Z"
+                        },
+                        {
+                            "path":  "nulcheck",
+                            "creation_time_utc":  "2026-07-31T12:59:01.9897633Z",
+                            "last_write_time_utc":  "2026-07-31T12:59:01.9907620Z"
+                        },
+                        {
+                            "path":  "nulcheck/logs",
+                            "creation_time_utc":  "2026-07-31T12:59:01.9907620Z",
+                            "last_write_time_utc":  "2026-07-31T12:59:01.9907620Z"
+                        },
+                        {
+                            "path":  "repro",
+                            "creation_time_utc":  "2026-07-22T14:12:03.5075592Z",
+                            "last_write_time_utc":  "2026-07-22T14:12:03.5095584Z"
+                        },
+                        {
+                            "path":  "repro/logs",
+                            "creation_time_utc":  "2026-07-22T14:12:03.5095584Z",
+                            "last_write_time_utc":  "2026-07-22T14:12:03.5095584Z"
+                        },
+                        {
+                            "path":  "幻匠紀元Arcanaforge",
+                            "creation_time_utc":  "2026-06-13T08:51:01.9054770Z",
+                            "last_write_time_utc":  "2026-06-13T08:51:06.9422260Z"
+                        },
+                        {
+                            "path":  "幻匠紀元Arcanaforge/objectdb_snapshots",
+                            "creation_time_utc":  "2026-06-13T08:51:06.9422260Z",
+                            "last_write_time_utc":  "2026-06-13T08:51:06.9422260Z"
+                        },
+                        {
+                            "path":  "幻匠紀元Arcanaforge/vulkan",
+                            "creation_time_utc":  "2026-06-13T08:51:02.1458312Z",
+                            "last_write_time_utc":  "2026-06-13T08:51:02.1458312Z"
+                        },
+                        {
+                            "path":  "遠征棋",
+                            "creation_time_utc":  "2026-07-31T12:09:35.6378073Z",
+                            "last_write_time_utc":  "2026-08-08T08:45:09.0533567Z"
+                        },
+                        {
+                            "path":  "遠征棋/artifacts",
+                            "creation_time_utc":  "2026-08-02T09:15:41.8022599Z",
+                            "last_write_time_utc":  "2026-08-02T09:15:41.8022599Z"
+                        },
+                        {
+                            "path":  "遠征棋/artifacts/test",
+                            "creation_time_utc":  "2026-08-02T09:15:41.8022599Z",
+                            "last_write_time_utc":  "2026-08-02T09:15:41.8022599Z"
+                        },
+                        {
+                            "path":  "遠征棋/balance-candidate-archive-test",
+                            "creation_time_utc":  "2026-08-02T08:07:38.7738269Z",
+                            "last_write_time_utc":  "2026-08-08T08:31:28.1550359Z"
+                        },
+                        {
+                            "path":  "遠征棋/balance-candidate-manifest-revision-test",
+                            "creation_time_utc":  "2026-08-03T06:09:38.7759816Z",
+                            "last_write_time_utc":  "2026-08-08T08:31:28.1676334Z"
+                        },
+                        {
+                            "path":  "遠征棋/balance-candidate-manifest-revision-test/revisions",
+                            "creation_time_utc":  "2026-08-03T06:12:13.1345800Z",
+                            "last_write_time_utc":  "2026-08-03T06:12:13.1345800Z"
+                        },
+                        {
+                            "path":  "遠征棋/balance-candidate-manifest-revision-test/revisions/balance.g2.876e9818fcae",
+                            "creation_time_utc":  "2026-08-03T06:12:13.1345800Z",
+                            "last_write_time_utc":  "2026-08-08T08:31:28.1676334Z"
+                        },
+                        {
+                            "path":  "遠征棋/logs",
+                            "creation_time_utc":  "2026-07-31T12:09:35.6398128Z",
+                            "last_write_time_utc":  "2026-08-08T08:36:54.2149082Z"
+                        },
+                        {
+                            "path":  "遠征棋/objectdb_snapshots",
+                            "creation_time_utc":  "2026-07-31T12:10:50.4707150Z",
+                            "last_write_time_utc":  "2026-07-31T12:10:50.4707150Z"
+                        },
+                        {
+                            "path":  "遠征棋/playtest_reports",
+                            "creation_time_utc":  "2026-08-01T13:31:41.8696919Z",
+                            "last_write_time_utc":  "2026-08-08T08:44:52.2047975Z"
+                        },
+                        {
+                            "path":  "遠征棋/playtest_session",
+                            "creation_time_utc":  "2026-08-04T11:51:56.7023579Z",
+                            "last_write_time_utc":  "2026-08-08T08:44:54.3703224Z"
+                        },
+                        {
+                            "path":  "遠征棋/saves",
+                            "creation_time_utc":  "2026-08-07T07:32:24.5085136Z",
+                            "last_write_time_utc":  "2026-08-07T11:48:11.5531923Z"
+                        },
+                        {
+                            "path":  "遠征棋/saves/recovery",
+                            "creation_time_utc":  "2026-08-07T07:32:24.5085136Z",
+                            "last_write_time_utc":  "2026-08-07T07:32:24.5085136Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1874634Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.8174651Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CanvasOcclusionShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3153370Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3163372Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CanvasOcclusionShaderGLES3/3391890d917b6505d089d87f9711d15d7126c6ad5c76874f7d8f229b26ac1505",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3163372Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3163372Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CanvasSdfShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1937583Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1937583Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CanvasSdfShaderGLES3/a20de73c5e2350773cda1e02668b6311557d331d190f6c710b4d438dae3e057b",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1937583Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1937583Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CanvasShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3153370Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3153370Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CanvasShaderGLES3/8c75bfd6674276f0cfc0473f20f73cbe5021e08c53369f21dd6d519ba9ce4ea4",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3153370Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:36.6624958Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CopyShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1977581Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1977581Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CopyShaderGLES3/ede08428a85f2f51bc74e3afd2eaca276aac0e0424d1072ac653f73dd1eade06",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1977581Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.2943177Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CubemapFilterShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.2963183Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.2963183Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/CubemapFilterShaderGLES3/bf846f9b16c8880a4967c8cc76966add53acfe0ede28bfef709a50f72828accf",
+                            "creation_time_utc":  "2026-08-01T18:37:34.2963183Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.2963183Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/FeedShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3108273Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3108273Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/FeedShaderGLES3/8bedc1ce84218daa41f8208e741f508dde7debedbfa0b21da18ca21f4222b69f",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3108273Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3133339Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/GlowShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.2963183Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.2973187Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/GlowShaderGLES3/293f2b5057c0433f38962ceb5e45ee8a7739dabc2a411795f4c3caa4b0986da9",
+                            "creation_time_utc":  "2026-08-01T18:37:34.2973187Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.2973187Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/ParticlesCopyShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1977581Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1977581Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/ParticlesCopyShaderGLES3/14e7fa2bb483f3c423a6511d59f9ae71c157366d8e260860805b6ddc972a198a",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1977581Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1977581Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/ParticlesShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1957570Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1967571Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/ParticlesShaderGLES3/7299ecc7cc0b9addcdaa10426b255d3943fd461afd2eac91fa36406c98619f90",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1967571Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1967571Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/PostShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.2973187Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.2973187Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/PostShaderGLES3/ee8c026d68c6118376bb6cb9907f43c50fe22f28ef1077f666b2d555d410a288",
+                            "creation_time_utc":  "2026-08-01T18:37:34.2973187Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3098271Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/SceneShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3183370Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.3183370Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/SceneShaderGLES3/12449b158ae166211d48c0cb88ebbfae442cd613f113f4458293589d0b00e2b3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.3183370Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.8134689Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/SkeletonShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1957570Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1957570Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/SkeletonShaderGLES3/d6f824771f34dc73416fc138978c43987701a163d36037fc444426262dd64e72",
+                            "creation_time_utc":  "2026-08-01T18:37:34.1957570Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.1957570Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/SkyShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.8164663Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.8164663Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/SkyShaderGLES3/7156f8dcdfb1b91634ef4486839b649d762de6b88f712a4ad1d43b07b976bafb",
+                            "creation_time_utc":  "2026-08-01T18:37:34.8164663Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.8164663Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/TexBlitShaderGLES3",
+                            "creation_time_utc":  "2026-08-01T18:37:34.8174651Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.8174651Z"
+                        },
+                        {
+                            "path":  "遠征棋/shader_cache/TexBlitShaderGLES3/2b44179dcddac8dc630042d8f836d4228063010204e8d1562b1ef763ee91d0c5",
+                            "creation_time_utc":  "2026-08-01T18:37:34.8174651Z",
+                            "last_write_time_utc":  "2026-08-01T18:37:34.8174651Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak",
+                            "creation_time_utc":  "2026-07-13T12:39:19.1812829Z",
+                            "last_write_time_utc":  "2026-07-31T12:09:35.5849580Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/.pipeline",
+                            "creation_time_utc":  "2026-07-29T10:09:08.8281186Z",
+                            "last_write_time_utc":  "2026-07-29T10:09:08.8281186Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/.pipeline/visual",
+                            "creation_time_utc":  "2026-07-29T10:09:08.8281186Z",
+                            "last_write_time_utc":  "2026-07-29T10:09:08.8291173Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/.pipeline/visual/runtime",
+                            "creation_time_utc":  "2026-07-29T10:09:08.8291173Z",
+                            "last_write_time_utc":  "2026-07-29T10:09:08.8291173Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/artifacts",
+                            "creation_time_utc":  "2026-07-13T12:53:40.1617079Z",
+                            "last_write_time_utc":  "2026-07-13T12:53:40.1617079Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/artifacts/test",
+                            "creation_time_utc":  "2026-07-13T12:53:40.1617079Z",
+                            "last_write_time_utc":  "2026-07-13T12:53:40.1617079Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/logs",
+                            "creation_time_utc":  "2026-07-22T14:13:50.8372045Z",
+                            "last_write_time_utc":  "2026-07-31T12:09:22.0838094Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/objectdb_snapshots",
+                            "creation_time_utc":  "2026-07-13T12:39:21.2917378Z",
+                            "last_write_time_utc":  "2026-07-13T12:39:21.2917378Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/saves",
+                            "creation_time_utc":  "2026-07-25T09:47:19.0446182Z",
+                            "last_write_time_utc":  "2026-07-29T11:15:29.6792430Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/saves/recovery",
+                            "creation_time_utc":  "2026-07-29T11:15:29.6792430Z",
+                            "last_write_time_utc":  "2026-07-29T11:15:29.6792430Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9335953Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0102724Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasOcclusionShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9987575Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9987575Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasOcclusionShaderGLES3/3391890d917b6505d089d87f9711d15d7126c6ad5c76874f7d8f229b26ac1505",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9987575Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9987575Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasSdfShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9370809Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9370809Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasSdfShaderGLES3/a20de73c5e2350773cda1e02668b6311557d331d190f6c710b4d438dae3e057b",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9370809Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9370809Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9987575Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9987575Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasShaderGLES3/8c75bfd6674276f0cfc0473f20f73cbe5021e08c53369f21dd6d519ba9ce4ea4",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9987575Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.9154033Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CopyShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9400808Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9410810Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CopyShaderGLES3/ede08428a85f2f51bc74e3afd2eaca276aac0e0424d1072ac653f73dd1eade06",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9410810Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9587070Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CubemapFilterShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9597076Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9597076Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/CubemapFilterShaderGLES3/bf846f9b16c8880a4967c8cc76966add53acfe0ede28bfef709a50f72828accf",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9597076Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9597076Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/FeedShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9617074Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9617074Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/FeedShaderGLES3/8bedc1ce84218daa41f8208e741f508dde7debedbfa0b21da18ca21f4222b69f",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9617074Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9967591Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/GlowShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9597076Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9597076Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/GlowShaderGLES3/293f2b5057c0433f38962ceb5e45ee8a7739dabc2a411795f4c3caa4b0986da9",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9597076Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9597076Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/ParticlesCopyShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9400808Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9400808Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/ParticlesCopyShaderGLES3/14e7fa2bb483f3c423a6511d59f9ae71c157366d8e260860805b6ddc972a198a",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9400808Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9400808Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/ParticlesShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9390801Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9390801Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/ParticlesShaderGLES3/7299ecc7cc0b9addcdaa10426b255d3943fd461afd2eac91fa36406c98619f90",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9390801Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9390801Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/PostShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9607072Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9607072Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/PostShaderGLES3/ee8c026d68c6118376bb6cb9907f43c50fe22f28ef1077f666b2d555d410a288",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9607072Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9617074Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/SceneShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:15.0017582Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0017582Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/SceneShaderGLES3/12449b158ae166211d48c0cb88ebbfae442cd613f113f4458293589d0b00e2b3",
+                            "creation_time_utc":  "2026-07-29T10:11:15.0017582Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0082722Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/SkeletonShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9380802Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9390801Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/SkeletonShaderGLES3/d6f824771f34dc73416fc138978c43987701a163d36037fc444426262dd64e72",
+                            "creation_time_utc":  "2026-07-29T10:11:14.9390801Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:14.9390801Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/SkyShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:15.0102724Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0102724Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/SkyShaderGLES3/7156f8dcdfb1b91634ef4486839b649d762de6b88f712a4ad1d43b07b976bafb",
+                            "creation_time_utc":  "2026-07-29T10:11:15.0102724Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0102724Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/TexBlitShaderGLES3",
+                            "creation_time_utc":  "2026-07-29T10:11:15.0102724Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0102724Z"
+                        },
+                        {
+                            "path":  "遠征棋/遠征棋.bak/shader_cache/TexBlitShaderGLES3/2b44179dcddac8dc630042d8f836d4228063010204e8d1562b1ef763ee91d0c5",
+                            "creation_time_utc":  "2026-07-29T10:11:15.0102724Z",
+                            "last_write_time_utc":  "2026-07-29T10:11:15.0102724Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact",
+                            "creation_time_utc":  "2026-06-13T09:18:10.0767220Z",
+                            "last_write_time_utc":  "2026-07-06T16:52:18.8859013Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/logs",
+                            "creation_time_utc":  "2026-06-16T16:10:02.3126972Z",
+                            "last_write_time_utc":  "2026-08-06T09:36:47.0479620Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/objectdb_snapshots",
+                            "creation_time_utc":  "2026-06-13T09:18:13.1692622Z",
+                            "last_write_time_utc":  "2026-06-13T09:18:13.1692622Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache",
+                            "creation_time_utc":  "2026-06-16T16:10:02.6772709Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.3354799Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/BestFitNormalShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0196159Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0196159Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/BestFitNormalShaderRD/ff55ede486711a617cfa6eca8952f824e1de5c6fd727c4514cd603e8e7c9264e",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0196159Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0196159Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/BlitShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.3354799Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.3364793Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/BlitShaderRD/cff12a2b56a5c7d70f6de186c786c80ec84b1844045fdaf13152862c6a82baf6",
+                            "creation_time_utc":  "2026-06-16T16:10:03.3364793Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.3364793Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/BokehDofShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2175832Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2185841Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/BokehDofShaderRD/3d294ab0ec5302046ff36ecad7f72d70d1c4b3efbc3ca1bb29fe6a80be9abb65",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2185841Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2185841Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CanvasOcclusionShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8633529Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8643513Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CanvasOcclusionShaderRD/e397c50e1a9e03519ccb486acfdaddf8be9986511a5738dd0fa77e62980f0ad0",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8643513Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8643513Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CanvasSdfShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.6812707Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.6823676Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CanvasSdfShaderRD/f5163131ffbf6578b3e403ae4a2e93b16c3b4d4f74b7d313965240c9159ca4a3",
+                            "creation_time_utc":  "2026-06-16T16:10:02.6823676Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.6823676Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CanvasShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8598293Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8613358Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CanvasShaderRD/f30a5b440b1341c6eaa19af108108f7adb605232e31fd6aeac74e4825e07ec28",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8613358Z",
+                            "last_write_time_utc":  "2026-06-17T07:59:44.3175305Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ClusterDebugShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.9365150Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.9365150Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ClusterDebugShaderRD/2775e502fff54bad7c5a36ee96cb93f9bb26a0835936a36809e0142a020d1da5",
+                            "creation_time_utc":  "2026-06-16T16:10:02.9365150Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.9365150Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ClusterRenderShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.9013997Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.9024041Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ClusterRenderShaderRD/d7d33a009d89531a62355652a94a4bbbcb6ecafd4849629a6a81ebc41fb55f82",
+                            "creation_time_utc":  "2026-06-16T16:10:02.9024041Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.9024041Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ClusterStoreShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.9254874Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.9264851Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ClusterStoreShaderRD/04f77ac6fc3ac39e10dba3d8b90afbac54f16ae6134a60264841ff0154dd1be9",
+                            "creation_time_utc":  "2026-06-16T16:10:02.9264851Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.9264851Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CopyShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2210913Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2210913Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CopyShaderRD/bef3ebc581956c1e4cad1b19a4c57b168d4fd3a373a0481f33e26003ca1fa6c6",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2210913Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2210913Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CopyToFbShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2236348Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2246340Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CopyToFbShaderRD/d2ff28d6e27943750d2e72da5da60d486f9b37ab66241467d62296b893eb4cd0",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2246340Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2246340Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CubeToDpShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2266333Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2266333Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CubeToDpShaderRD/a1c0c9b7619044d7ba83959f645735ee8e1d34ad23904a6ac0af8e55d7ba00db",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2266333Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2266333Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CubeToOctmapShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2286333Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2296337Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/CubeToOctmapShaderRD/c8b61d04732bfd2b54191babf0cd12bfae13c795c34c47b484abdf9f06f00205",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2296337Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2296337Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2AccumulatePassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1297880Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1297880Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2AccumulatePassShaderRD/59eaf5aa5dab2091f9920fd2cd38d17b2ebcab91baa70d1238410844bbecbb5b",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1297880Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1297880Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2AutogenReactivePassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1333061Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1333061Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2AutogenReactivePassShaderRD/ec5d678440f2691e5fbe9f077b20a0af3ac3b7c57459658136fe928187f8dc45",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1333061Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1333061Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2ComputeLuminancePyramidPassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1322991Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1322991Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2ComputeLuminancePyramidPassShaderRD/fcbae19c9e34620536c2ff16b1c22459d168d05f8f04ee0408268eac446353db",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1322991Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1322991Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2DepthClipPassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1267931Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1267931Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2DepthClipPassShaderRD/6b9a59f55a7acc18aef6c6065544923fc586af3364f631a64dd6335e5a1f5085",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1267931Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1267931Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2LockPassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1287890Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1287890Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2LockPassShaderRD/6ba09946c77cf589f8525522562375ceabd82a1bd0e28cdaa6da7d5afe48777a",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1287890Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1287890Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2RcasPassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1312942Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1312942Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2RcasPassShaderRD/b2b9c2dbcf61b422fa22aadbfefd75dcf73120ffcc9b6d6b3ae251a1c3b091a7",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1312942Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1312942Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2ReconstructPreviousDepthPassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1277875Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1287890Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2ReconstructPreviousDepthPassShaderRD/696549826dfa212243f6aaca43553fe1b4e35f3b0f848a30cac71af75c979104",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1287890Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1287890Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2TcrAutogenPassShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1343053Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1343053Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/Fsr2TcrAutogenPassShaderRD/1ddf023abd1d246190d528e8d06b38da222148c759ca42852bd25aa4d9dc48cb",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1343053Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1343053Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/FsrUpscaleShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2958611Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2968612Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/FsrUpscaleShaderRD/d659c02701a99861f3054fa8c67cabb79f0491aa3388020f008051107cf1fec5",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2968612Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2968612Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/GiShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1944807Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1964782Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/GiShaderRD/0a1109506856e7902e872dda83faa67adac822d90e694417c64c101b2b904810",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1954805Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1954805Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/GiShaderRD/9e900b11fb1fd59f00f233f459e572b3bff5d0c8f622f0ddf9ee855771977bab",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1964782Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1964782Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/IntegrateDfgShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0502136Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0502136Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/IntegrateDfgShaderRD/6d20d114a76402f30530dc6983c20cd78a5bdebe815ba021289a607f6c4541f5",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0502136Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0502136Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/LuminanceReduceShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2457402Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2467375Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/LuminanceReduceShaderRD/3484522051e094e151b4a7cbd88cfc9eb2721ea1d26cd66d6ebdd36e30657cc2",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2467375Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2467375Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/MotionVectorsShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2437435Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2437435Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/MotionVectorsShaderRD/00e39c95d2d9272edadd9be2db6dbe65b3460f21d2341c92a77371c843cf4d00",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2437435Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2437435Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/OctmapDownsamplerShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2311395Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2311395Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/OctmapDownsamplerShaderRD/ffe6788f20aa023afaf7e888e2cf33c840f3084c8fbb309ed784918a44ebcf23",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2311395Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2311395Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/OctmapFilterShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2336846Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2336846Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/OctmapFilterShaderRD/5fc5fea9e3fe54191ff165540faa285b099e7909be69e7349c971f7ab0a609cc",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2336846Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2336846Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/OctmapRoughnessShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2356845Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2366832Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/OctmapRoughnessShaderRD/15e894f5c1a4917d83d34012ecf1ede2bee251fefc7b887b728834d4d817ad55",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2366832Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2366832Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ParticlesCopyShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8568300Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8568300Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ParticlesCopyShaderRD/bcec80ba01e935ed0dc85d792ce6064d3b9920ff6f4ad7f021c39739c998092c",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8568300Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8568300Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ParticlesShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8548303Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8548303Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ParticlesShaderRD/527b8e067ac0ad8d5ca4af3230efbc7edb63fc49fd10c48dd765f7d4134c2606",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8548303Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8548303Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ResolveShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2988610Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2998603Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ResolveShaderRD/27dd92d92212d9fee97e14b2c5e5e102610e3124706ce6710bb99bb01c1723a2",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2998603Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2998603Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SceneForwardClusteredShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0126098Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0156184Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SceneForwardClusteredShaderRD/4a7f175f195e498d54512dc7a67639a3d15bd9ea5194743007a58b5b22b4b699",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0156184Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0156184Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SceneForwardClusteredShaderRD/72441e69a5110c34824334c2d7284287eeb225010e6fb8c9f80ad241154df663",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0136177Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0136177Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SceneForwardClusteredShaderRD/8ab1aa3c06e5871372c06699ba414dca9059b8eb313a79a1ec17202d4c8f34d9",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0156184Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0156184Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SceneForwardClusteredShaderRD/cb9170726728c08dc698861873bcf2c044b0f42ba767496a6fb9315fd7d62b58",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0146161Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0146161Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionDownsampleShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1603423Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1618463Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionDownsampleShaderRD/e2b08e2f67ca3648565b1054827dd95ce07c1b31c4deeb5c87adb959b48c3662",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1618463Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1618463Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionFilterShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1698579Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1698579Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionFilterShaderRD/3e7cbd9d8999cd16cf5e5b03b2bc462b40767703140a0757280c95895703123d",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1698579Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1698579Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionHizShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1648580Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1658566Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionHizShaderRD/baf8f4bfe602462ece1270390433485b1e3018fbbd45bae7c8bbedf320c26cd6",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1658566Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1658566Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionResolveShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1728966Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1728966Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionResolveShaderRD/e628cc87f903d3043b8b7a44bb5d54638465b46e0ab7bb37b1ddb9b91f4f1b3a",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1728966Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1728966Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1678569Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1678569Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ScreenSpaceReflectionShaderRD/4ec3777007532ddcd638ae82ef6adc97739054897ed48a2ef8401e7a025ee2da",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1678569Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1678569Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiDebugProbesShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2025229Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2035350Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiDebugProbesShaderRD/5e74420cdc840f19f82244b066217b3888799930df17d31ff133420b1a916076",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2035350Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2035350Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiDebugShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1994799Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1994799Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiDebugShaderRD/4597a244d5202b1178081479b348d60a48501cb16fc54b1fea4c8395c5e68675",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1994799Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1994799Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiDirectLightShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1894239Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1894239Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiDirectLightShaderRD/16f822b671cd6f4a687e51e33b1c8c2148121c1c091f7ff39f76127556ff3ec3",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1894239Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1894239Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiIntegrateShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1909295Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1924706Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiIntegrateShaderRD/c5e82715048eb54d931afaa6dadaca3cb48a98f8c3376dd7913485bd1ce2989f",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1924706Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1924706Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiPreprocessShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1864247Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1874247Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SdfgiPreprocessShaderRD/f3ef78a3d2f1c9d4496e3afe61867e94fb32829809548b265a8a1154b66aec33",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1874247Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1874247Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ShadowFrustumShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2411928Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2411928Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/ShadowFrustumShaderRD/b56bc1e62633ec9304336b7e957397468d55950f317fcf5a6473439810432caa",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2411928Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2411928Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SkeletonShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.7672202Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.7682178Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SkeletonShaderRD/54e50a68f8252031f493dd1ea6200e9ef718d5bd8693e28030efe1b120eb7905",
+                            "creation_time_utc":  "2026-06-16T16:10:02.7682178Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.7682178Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SkyShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1779025Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1779025Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SkyShaderRD/21f924306eb18caac3ace30e495c78ba40ae7b2f490d5e4f3b13a79479216b9c",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1779025Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1779025Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SmaaBlendingShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2813229Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2823343Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SmaaBlendingShaderRD/3d0a167a9f66fe724550ee422e5f78e94ee25cd28f8d2dd9770c61d98fee5f61",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2823343Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2823343Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SmaaEdgeDetectionShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2768160Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2768160Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SmaaEdgeDetectionShaderRD/d5021a9d8471f798a9fea1996ea85751035ea859c7fdd21721cc24e149d1e4fe",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2768160Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2768160Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SmaaWeightCalculationShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2788176Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2798164Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SmaaWeightCalculationShaderRD/96902d6fbf74206adb55a50fd070fc6de4aaf8dc634f04f92751ac8b307948c7",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2798164Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2798164Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SortShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8327905Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8327905Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SortShaderRD/967234006fae085a9579b3ffd489cee602c4f145dc18ff2bf240e4d8c13498cd",
+                            "creation_time_utc":  "2026-06-16T16:10:02.8327905Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:02.8327905Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SpecularMergeShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2386850Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2386850Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SpecularMergeShaderRD/d91816cf1f28c63908a9133ffc50683b675ef9859b0616c7436f475405b22c27",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2386850Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2386850Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoBlurShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1553458Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1563414Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoBlurShaderRD/9821a28f9d156aaaed0a7fab3de6738b2c4022738da0a9b7cb77ffb499f40e38",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1563414Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1563414Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoImportanceMapShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1513286Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1523361Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoImportanceMapShaderRD/09886b051a7294522d484a6b5de82ee75778fa16804f3f4f13d1605e7f39b69d",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1523361Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1523361Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoInterleaveShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1583418Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1583418Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoInterleaveShaderRD/5762f4757375a26f8fda6d1bcb2a452f1c2c429e857969bb128d7270760b56f7",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1583418Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1583418Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1478221Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1488241Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsaoShaderRD/6e8f8fd45ceab920597432cb2a5447c53291203857121f3a3b38a4b9b27c2c50",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1488241Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1488241Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsEffectsDownsampleShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1363033Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1363033Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsEffectsDownsampleShaderRD/bd37175ba48fdd02099abbbeee5452079e89a3727fd5fe1de649551c99081c36",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1363033Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1363033Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilBlurShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1438237Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1438237Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilBlurShaderRD/e74ed13ec93f83efa28f3bba922e68d5e345173ff5670ca6f557df8d614a782f",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1438237Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1438237Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilImportanceMapShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1403043Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1413044Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilImportanceMapShaderRD/a4219fd46be62ae37b0e06fd10ebbd2798ad85088678db4c0b425f823042d4be",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1413044Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1413044Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilInterleaveShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1458223Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1468245Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilInterleaveShaderRD/88e29bdd44daa6cf920ee2050e7a7237fd88bfa9c8880c62168f4b0a4502f4d0",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1468245Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1468245Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1383040Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1383040Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SsilShaderRD/af35f1233e4d0591e9dad8d6301cf258931ca4d79c210c67076cd8fb624c6da0",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1383040Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1383040Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SubsurfaceScatteringShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1749029Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1759029Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/SubsurfaceScatteringShaderRD/69df93a2334ebca4dc3af3f7aef99cad7870b6623865bd4671963fae81796b41",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1759029Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1759029Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/TaaResolveShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0745795Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0755815Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/TaaResolveShaderRD/21a8f8e3a65237efe11f4640388d4d1a1fac34dfb3102a6aa4c5b6bf6c85e8ea",
+                            "creation_time_utc":  "2026-06-16T16:10:03.0755815Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.0755815Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/TonemapShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2863406Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2873410Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/TonemapShaderRD/c3f5c8110f44921262b756899cc7d2c51c74e9333ffe1f8450a95bbd12872516",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2873410Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2873410Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogProcessShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2110367Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2155848Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogProcessShaderRD/5a983dd19d944f10c1d3634e2ec4509c330fc708754b14d4216b9f5704a71a62",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2155848Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2155848Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogProcessShaderRD/c323a941682e364f2ac33c4d96c03f043ff01d2d1a8ec923fb6520953aed2e93",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2110367Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2110367Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogProcessShaderRD/d263a12d61ecbbe0abb0e8af30814fc94808c4c8674479fab02d545dff96f7e1",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2135839Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2135839Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogProcessShaderRD/e0e2495360f4e94ec75835ceb7dd861bc7bc3723cd957e130405596c82b92def",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2125751Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2125751Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2045338Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2085312Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogShaderRD/212858dee8b411c576ca1a8745c401347c3dbbf88f247ca2270e8ff0b1093507",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2075310Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2075310Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogShaderRD/37d5a85d63465587de4d65fe8624123b742fbec2de5ee217d24a400c1d1c8087",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2085312Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2085312Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogShaderRD/48422ca2db267dec13a7aa41ba356cdfc7cbfa667e28e02e98b968145e4cc2f5",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2055322Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2055322Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VolumetricFogShaderRD/98adc80de8af184c1c906595dc32e59c8336c9e57624854a778398ac7b65a69e",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2065330Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2065330Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VoxelGiDebugShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1844255Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1854249Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VoxelGiDebugShaderRD/4e91a9ddbecad298ed67c31222afae9756053363f06befd837e376dd85b639aa",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1854249Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1854249Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VoxelGiShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1814095Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1824185Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VoxelGiShaderRD/44b979a30a4cc4de0f731a25d26286e14abc01718fe9a838d597bd153538c665",
+                            "creation_time_utc":  "2026-06-16T16:10:03.1824185Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.1824185Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VrsShaderRD",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2893412Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2903409Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/shader_cache/VrsShaderRD/900dc530b25815516060f98919c8651e2b716465016e38bbda45a386b7edd921",
+                            "creation_time_utc":  "2026-06-16T16:10:03.2903409Z",
+                            "last_write_time_utc":  "2026-06-16T16:10:03.2903409Z"
+                        },
+                        {
+                            "path":  "輪迴盟約Cyclepact/vulkan",
+                            "creation_time_utc":  "2026-06-13T09:18:10.2881443Z",
+                            "last_write_time_utc":  "2026-06-13T09:18:10.2881443Z"
+                        }
+                    ],
+    "files":  [
+                  {
+                      "path":  "[unnamed project]/logs/godot.log",
+                      "length":  659,
+                      "creation_time_utc":  "2026-07-31T12:06:34.8418936Z",
+                      "last_write_time_utc":  "2026-07-31T12:12:28.9396530Z",
+                      "sha256":  "da5fbf9bde6d1790632741fdc91045916f8cb98eac8baf7eb715cebb48227007"
+                  },
+                  {
+                      "path":  "[unnamed project]/logs/godot2026-07-31T20.12.28.log",
+                      "length":  64,
+                      "creation_time_utc":  "2026-07-31T12:12:28.7551956Z",
+                      "last_write_time_utc":  "2026-07-31T12:12:28.7561964Z",
+                      "sha256":  "c11d265992f3305ded6dd6d9934ca291fab78ea84934b687ca6f65fb378dcff2"
+                  },
+                  {
+                      "path":  "nulcheck/logs/godot.log",
+                      "length":  213,
+                      "creation_time_utc":  "2026-07-31T12:59:01.9907620Z",
+                      "last_write_time_utc":  "2026-07-31T12:59:02.1523588Z",
+                      "sha256":  "1ad8fb9724e2c15d7f35235f116e475c315cb864764f3b46e942239cb58ee585"
+                  },
+                  {
+                      "path":  "repro/logs/godot.log",
+                      "length":  487,
+                      "creation_time_utc":  "2026-07-22T14:12:03.5095584Z",
+                      "last_write_time_utc":  "2026-07-22T14:12:03.5847055Z",
+                      "sha256":  "135d96b102a6a7f473f25a7de2c17db8efd7b9234d8155b77b57ab326b32f194"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-07-31T12:09:35.6398128Z",
+                      "last_write_time_utc":  "2026-08-08T08:36:54.6213753Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-07T19.44.21.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-07T11:44:21.9451972Z",
+                      "last_write_time_utc":  "2026-08-07T11:44:21.9451972Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-07T19.46.41.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-07T11:46:41.1665548Z",
+                      "last_write_time_utc":  "2026-08-07T11:46:41.1665548Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-08T16.30.11.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-08T08:30:11.9589578Z",
+                      "last_write_time_utc":  "2026-08-08T08:30:11.9589578Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-08T16.36.54.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-08T08:36:54.2149082Z",
+                      "last_write_time_utc":  "2026-08-08T08:36:54.2149082Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/.pending-session.json",
+                      "length":  304,
+                      "creation_time_utc":  "2026-08-04T11:32:17.2996693Z",
+                      "last_write_time_utc":  "2026-08-04T11:39:47.3343058Z",
+                      "sha256":  "b09ec74746878cddbb0a027b84dc6cd5d03cbee283c046acd7d75eaf51d2167b"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-03df83cb17eb91edfef932b51eca5fdf.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T17:04:49.6286123Z",
+                      "last_write_time_utc":  "2026-08-04T17:04:49.6296121Z",
+                      "sha256":  "2a19ca3fe2937bc6d91b00a839df3f8d38b5a426eb332e369d517bff8f52a4e2"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-0f7a22eb6c5187e71097e5df140c5b3e.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T16:07:07.0269661Z",
+                      "last_write_time_utc":  "2026-08-04T16:07:07.0269661Z",
+                      "sha256":  "c68d85fc3de3a0f7d37c7ece1df55b3f31c389f18bf224b2287bbda2f3af85d9"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-12b0b740655dd7bd148ff7add5f58ce3.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-06T10:45:25.6580424Z",
+                      "last_write_time_utc":  "2026-08-06T10:45:25.6580424Z",
+                      "sha256":  "e011544dc02ea200d02171896cb0dc23ef65c9f195a47d5952d81b160e364b86"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-19c7647df918ad57b7bb11e0b3a47bbf.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T10:16:59.5665364Z",
+                      "last_write_time_utc":  "2026-08-04T10:16:59.5665364Z",
+                      "sha256":  "77d402dc09839687a16c4ad43eeadc05d7e6c18953a174aeae660b530ae86251"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-26a8b4e7ada3d2bec7f93f1cb921d08c.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T08:39:09.7937286Z",
+                      "last_write_time_utc":  "2026-08-07T08:39:09.7937286Z",
+                      "sha256":  "0983435271ce4272b47096bdc6e0f5d29546b319a757a8fc281e0bab1097479a"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-3e7218271741c61d6df4b5b99400b5ec.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T07:30:43.2277933Z",
+                      "last_write_time_utc":  "2026-08-07T07:30:43.2277933Z",
+                      "sha256":  "c1c36f6344c949cd0fcc77ab06192aae70225fe6b2ba966a1fee0d072abbf94c"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-459ff1369374cee662a8827c0bd1d12e.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T09:14:36.5623773Z",
+                      "last_write_time_utc":  "2026-08-07T09:14:36.5623773Z",
+                      "sha256":  "0e0eb9877c395208d5999d34225a25013c4f7a8d6e6184c474d5df02b58f84c5"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-4650e3e482736bba9255130c85c6aad9.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-06T12:40:06.8331419Z",
+                      "last_write_time_utc":  "2026-08-06T12:40:06.8331419Z",
+                      "sha256":  "2bd1c1213a7a302ad80df50b58c8e6ad56ee71b461ebcf4b4ccc7a58e034ea23"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-5379ed35ee2a0ef58afeb9af6d6236f5.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T14:51:24.9324114Z",
+                      "last_write_time_utc":  "2026-08-04T14:51:24.9324114Z",
+                      "sha256":  "f09432e1ab451ef906d57656b9e020886c248f0872807b72b24b0103b0aebdb0"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-72b797ea61ec2b29a767e89015a37818.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T11:31:16.9932479Z",
+                      "last_write_time_utc":  "2026-08-04T11:31:16.9932479Z",
+                      "sha256":  "5c2464b25b4d630e1dc586b218878e74d413552675b648c04f38fe912bb8f61c"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-7816b726a4760112708e928f85f94916.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T14:34:04.6996881Z",
+                      "last_write_time_utc":  "2026-08-04T14:34:04.6996881Z",
+                      "sha256":  "b4d0b9594f80e0c30a5061593350e58de7f40fa315f488a4c7a2290a8f01cbee"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-79b17b7bd07a33b58772b3bfc66c2053.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T06:18:52.8684938Z",
+                      "last_write_time_utc":  "2026-08-07T06:18:52.8694938Z",
+                      "sha256":  "c9b0398879b03f81f768968d2f12448f397f452467ab828a6b1b0a3ba563e382"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-7bc1e66a58d1cf576d87d8461bc9fc71.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T09:28:23.6647576Z",
+                      "last_write_time_utc":  "2026-08-07T09:28:23.6647576Z",
+                      "sha256":  "d7912fd422c8d1d06289b6d17ab489890852073cf33e15ecc458b0383215769d"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-7ff3f16f94434b41aff6baacd59797fa.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T07:44:12.4288534Z",
+                      "last_write_time_utc":  "2026-08-07T07:44:12.4288534Z",
+                      "sha256":  "9fcacd18a9907b3522257cbc1e3b1bba6756b77da22008638868eb992efdc8c3"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-84cb2d0bbd382850d94bfeda6e654ebb.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T08:55:16.2931857Z",
+                      "last_write_time_utc":  "2026-08-07T08:55:16.2931857Z",
+                      "sha256":  "bc3c8f2d41011d5db0263bf6ef82944d6950f59bdafb16c3d1b674c64fbe480c"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-93abc390dadca457f6588c3b77d76c25.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T10:36:27.1547706Z",
+                      "last_write_time_utc":  "2026-08-04T10:36:27.1547706Z",
+                      "sha256":  "73d814f0dce141ac383fe50857210113108a97784912b388829fb6f2cb41656f"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-957bf7b3a932a84cf841b706c7eac004.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T08:31:48.4340015Z",
+                      "last_write_time_utc":  "2026-08-07T08:31:48.4340015Z",
+                      "sha256":  "73f6834af69b34b75e509880d4d62a6f3b3e0d35012bf0793c76d3eb82b68b81"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-9804c978e54d26fed621e6ecba5d8a0c.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-08T08:31:17.5823746Z",
+                      "last_write_time_utc":  "2026-08-08T08:31:17.5823746Z",
+                      "sha256":  "6dccd8b4f63d7edb5f66820e74dded509c74c1f18d620638a8a18cb69424cd66"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-a9ff98395ada5eacf3f16b8752ff5ee5.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T11:07:30.1769845Z",
+                      "last_write_time_utc":  "2026-08-04T11:07:30.1769845Z",
+                      "sha256":  "5d578322d44e5f8a913a2d82a8df4cbcca6c42e637461567b07fba9d1eb28185"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-aa69138e1111b6d2c083500cdff58eba.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T11:58:55.2718649Z",
+                      "last_write_time_utc":  "2026-08-04T11:58:55.2718649Z",
+                      "sha256":  "ba3a56a5ce059c96916c9d6607c3abacefc9ca5c25d05caee11b54d35383e372"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-ae71107c29762284b546c813402ee8b6.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-06T11:00:51.6727052Z",
+                      "last_write_time_utc":  "2026-08-06T11:00:51.6727052Z",
+                      "sha256":  "0ed0d57b977e3b2d4aa3cdcb60868894e56d28f42ac4d83a0a17aa28d07a78ba"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-b069c437c21fb87cd25a6a2f3583823f.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T06:40:58.9394145Z",
+                      "last_write_time_utc":  "2026-08-07T06:40:58.9394145Z",
+                      "sha256":  "57b66ad44f7e5f94829049d3ed32f1f69dbcb15cd2bab55b2f4b73350edaa086"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-b492e381af26414bf58d9b984b42fd12.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-08T08:44:52.1977929Z",
+                      "last_write_time_utc":  "2026-08-08T08:44:52.1987956Z",
+                      "sha256":  "ace9502aae85bb4ac051bae99aaf310a99368ae9cfdd65319ed85a825686294f"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-ba998b8de3b557997caf93c713441643.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T08:15:54.4036903Z",
+                      "last_write_time_utc":  "2026-08-07T08:15:54.4036903Z",
+                      "sha256":  "3a23faa0f75aac6053d7b0e559237829a63048999590bad02b51b8da83185a91"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-bc08bda9debff308683f355f8fdd4afe.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T09:49:42.2351806Z",
+                      "last_write_time_utc":  "2026-08-04T09:49:42.2361810Z",
+                      "sha256":  "30e70554a791175b99440e5a8842142cb479208185e8eef76190631be4c3fb1f"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-c241c0bfbaf9289d7e781dc706e15324.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-06T11:32:34.9468513Z",
+                      "last_write_time_utc":  "2026-08-06T11:32:34.9468513Z",
+                      "sha256":  "3fdca09e70aec1c523b22fd901116dcb5d8cb6deddc84a3bf0a31f8ecd5ad858"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-c437eb2eb0d98276f457c314cfc4dbf8.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T06:24:00.6449931Z",
+                      "last_write_time_utc":  "2026-08-07T06:24:00.6449931Z",
+                      "sha256":  "3ed0e503d5f816f1ecd619ff32dd903dcdb5c01b05c2e109fc686a485c480c2d"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-dff8aab64627b193f292cb593b7ca10d.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T14:06:29.0392524Z",
+                      "last_write_time_utc":  "2026-08-04T14:06:29.0392524Z",
+                      "sha256":  "ee7681ccaa32ed818b7787ce5dfeb0dc14d4cf1fbdf1a7d06e867818b5718f50"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-e4057f1e632d7455e7a90c017d27f9d3.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T06:35:39.4719996Z",
+                      "last_write_time_utc":  "2026-08-07T06:35:39.4719996Z",
+                      "sha256":  "ace59cf6d52291d301d18efff4ef8ecf457cfaefd80441bbc5e60d7859b0812e"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-f324efed3ee4618d72779d1f4effa2bc.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-07T06:07:10.5874394Z",
+                      "last_write_time_utc":  "2026-08-07T06:07:10.5874394Z",
+                      "sha256":  "040814402a907f7852267cfe0c94f92b14db323ef0e0eec18053a8aef0ea182f"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-f4e9d8c185459a9343eb63c9e3fa9989.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T16:30:57.4094113Z",
+                      "last_write_time_utc":  "2026-08-04T16:30:57.4104133Z",
+                      "sha256":  "35a7b26c8033404327b3370d980a5a6bd29ecf47ddbe087e32689762268e7ffe"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-f689105587dc3060f9e2f11e0415a87f.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-07T06:52:01.7791405Z",
+                      "last_write_time_utc":  "2026-08-07T06:52:01.7791405Z",
+                      "sha256":  "722659c284873dcad0c9f89435801018b330bcfeeb30364f35985c3d10920aee"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-f7e293f78cdcc91888179f44c44eb3c0.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-04T10:54:28.1758067Z",
+                      "last_write_time_utc":  "2026-08-04T10:54:28.1768064Z",
+                      "sha256":  "dcf0b9e4170c3e8b71c7e55a4158f8f358f53a67708f5756ebb0b8e0f6c45edf"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_session/.pending-session.json",
+                      "length":  304,
+                      "creation_time_utc":  "2026-08-08T08:32:13.0755213Z",
+                      "last_write_time_utc":  "2026-08-08T08:45:44.6306242Z",
+                      "sha256":  "6979b3dd015aac563b5f6dc4f4b998f63f2c067f02123b2bdc72a90fe29a629c"
+                  },
+                  {
+                      "path":  "遠征棋/saves/save.backup.json",
+                      "length":  50708,
+                      "creation_time_utc":  "2026-08-07T07:32:24.5105208Z",
+                      "last_write_time_utc":  "2026-08-07T11:48:09.8562239Z",
+                      "sha256":  "a38d75d810c4f5672e2da768c093c42209c8ed2ab2faaeb329e9769babdd7944"
+                  },
+                  {
+                      "path":  "遠征棋/saves/save.json",
+                      "length":  59195,
+                      "creation_time_utc":  "2026-08-07T07:32:24.5105208Z",
+                      "last_write_time_utc":  "2026-08-07T11:48:11.4248612Z",
+                      "sha256":  "0de9e7063f9b7518339a8b5701eb6614d503c27bc10f7baa8a6d3e3e66938539"
+                  },
+                  {
+                      "path":  "遠征棋/settings-v1.backup",
+                      "length":  362,
+                      "creation_time_utc":  "2026-07-31T12:21:27.8965305Z",
+                      "last_write_time_utc":  "2026-08-08T08:45:09.0523542Z",
+                      "sha256":  "086eb37c6e5b9a85c87a13bc6d43356660f911062d332a72226783d23ab56be4"
+                  },
+                  {
+                      "path":  "遠征棋/settings-v1.json",
+                      "length":  358,
+                      "creation_time_utc":  "2026-08-07T07:33:19.8991766Z",
+                      "last_write_time_utc":  "2026-08-08T08:45:09.0442810Z",
+                      "sha256":  "fe6ac163dc27667fd9ec8d981f683655de951a1b3e5ad20323cd0d58fcc3c302"
+                  },
+                  {
+                      "path":  "遠征棋/shader_cache/CanvasShaderGLES3/8c75bfd6674276f0cfc0473f20f73cbe5021e08c53369f21dd6d519ba9ce4ea4/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  73457,
+                      "creation_time_utc":  "2026-08-01T18:37:36.6624958Z",
+                      "last_write_time_utc":  "2026-08-07T11:45:31.9773557Z",
+                      "sha256":  "2be655fd8a8a71b0bfdc6cb1f106d8c74b6f14384afd4e0dbc180749fb74535c"
+                  },
+                  {
+                      "path":  "遠征棋/shader_cache/CopyShaderGLES3/ede08428a85f2f51bc74e3afd2eaca276aac0e0424d1072ac653f73dd1eade06/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  118055,
+                      "creation_time_utc":  "2026-08-01T18:37:34.2943177Z",
+                      "last_write_time_utc":  "2026-08-01T18:37:34.2953180Z",
+                      "sha256":  "bd57318d07dc29207e475577be3078d26b43502663058f9aa3994add6c2127db"
+                  },
+                  {
+                      "path":  "遠征棋/shader_cache/FeedShaderGLES3/8bedc1ce84218daa41f8208e741f508dde7debedbfa0b21da18ca21f4222b69f/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  8261,
+                      "creation_time_utc":  "2026-08-01T18:37:34.3133339Z",
+                      "last_write_time_utc":  "2026-08-01T18:37:34.3133339Z",
+                      "sha256":  "4d1a089f9e7204a06c727889ed90420ad76d9ed8321e578a2693218ad8a07896"
+                  },
+                  {
+                      "path":  "遠征棋/shader_cache/PostShaderGLES3/ee8c026d68c6118376bb6cb9907f43c50fe22f28ef1077f666b2d555d410a288/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  13656,
+                      "creation_time_utc":  "2026-08-01T18:37:34.3098271Z",
+                      "last_write_time_utc":  "2026-08-01T18:37:34.3098271Z",
+                      "sha256":  "73692ffed97852fff604e97dba5633f0b20c05c47313f5b90b14909f00760ab7"
+                  },
+                  {
+                      "path":  "遠征棋/shader_cache/SceneShaderGLES3/12449b158ae166211d48c0cb88ebbfae442cd613f113f4458293589d0b00e2b3/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  800909,
+                      "creation_time_utc":  "2026-08-01T18:37:34.8134689Z",
+                      "last_write_time_utc":  "2026-08-01T18:37:34.8144670Z",
+                      "sha256":  "c56dad22da9eced576cdf8fed567572230c4568126bf8b07e3b40fb40f440e51"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/logs/godot.log",
+                      "length":  1041,
+                      "creation_time_utc":  "2026-07-22T14:13:50.8372045Z",
+                      "last_write_time_utc":  "2026-07-31T12:09:24.0853465Z",
+                      "sha256":  "590e7bb170b682c4a22d681c35c49c4f2af8889e4cadf9244c58210664efe945"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/logs/godot2026-07-31T20.08.17.log",
+                      "length":  2588,
+                      "creation_time_utc":  "2026-07-31T12:08:17.7827512Z",
+                      "last_write_time_utc":  "2026-07-31T12:08:17.7837510Z",
+                      "sha256":  "69823120fb5db724c1f7ab93afdb3162bf78d31c1f18f6376397dbb44c14a7a9"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/logs/godot2026-07-31T20.08.21.log",
+                      "length":  2128,
+                      "creation_time_utc":  "2026-07-31T12:08:21.7537216Z",
+                      "last_write_time_utc":  "2026-07-31T12:08:21.7537216Z",
+                      "sha256":  "e9c5a5726df2fefd93f833278a4298fdd000aa485da529fbc0b477b0d4a90a8a"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/logs/godot2026-07-31T20.08.24.log",
+                      "length":  1484,
+                      "creation_time_utc":  "2026-07-31T12:08:24.1238530Z",
+                      "last_write_time_utc":  "2026-07-31T12:08:24.1238530Z",
+                      "sha256":  "7e7876838a8f499371abf311c4063e662cd9a8146f580ec2d02987b5319e1f65"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/logs/godot2026-07-31T20.09.22.log",
+                      "length":  1041,
+                      "creation_time_utc":  "2026-07-31T12:09:22.0838094Z",
+                      "last_write_time_utc":  "2026-07-31T12:09:22.0838094Z",
+                      "sha256":  "590e7bb170b682c4a22d681c35c49c4f2af8889e4cadf9244c58210664efe945"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/saves/save.json",
+                      "length":  560,
+                      "creation_time_utc":  "2026-07-25T13:02:59.7003277Z",
+                      "last_write_time_utc":  "2026-07-25T13:02:59.7013319Z",
+                      "sha256":  "1495c5fe152bedead8f9be821b00576e5ef8e6ebb0d4b102737c2ba90cb40ff8"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/settings-v1.backup",
+                      "length":  361,
+                      "creation_time_utc":  "2026-07-29T14:17:45.3013144Z",
+                      "last_write_time_utc":  "2026-07-31T12:00:36.7369251Z",
+                      "sha256":  "8dcafdd40a6715119077a5bd4ac78576f6abce89ebbd04a63284c63c46efb88c"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/settings-v1.json",
+                      "length":  361,
+                      "creation_time_utc":  "2026-07-29T14:09:39.0963339Z",
+                      "last_write_time_utc":  "2026-07-31T12:00:36.7339065Z",
+                      "sha256":  "8dcafdd40a6715119077a5bd4ac78576f6abce89ebbd04a63284c63c46efb88c"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/shader_cache/CanvasShaderGLES3/8c75bfd6674276f0cfc0473f20f73cbe5021e08c53369f21dd6d519ba9ce4ea4/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  51066,
+                      "creation_time_utc":  "2026-07-29T10:11:15.9154033Z",
+                      "last_write_time_utc":  "2026-07-29T10:55:28.8758982Z",
+                      "sha256":  "a1130e63e224bd139fd4ca84cc29a6e5a0b67dae2de47a74cca044374043eb15"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/shader_cache/CopyShaderGLES3/ede08428a85f2f51bc74e3afd2eaca276aac0e0424d1072ac653f73dd1eade06/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  118055,
+                      "creation_time_utc":  "2026-07-29T10:11:14.9587070Z",
+                      "last_write_time_utc":  "2026-07-29T10:11:14.9587070Z",
+                      "sha256":  "e200ef035984729e3beff590ceeac87221ea1ef1ec440ad9a30dcb88de1c3f7f"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/shader_cache/FeedShaderGLES3/8bedc1ce84218daa41f8208e741f508dde7debedbfa0b21da18ca21f4222b69f/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  8261,
+                      "creation_time_utc":  "2026-07-29T10:11:14.9967591Z",
+                      "last_write_time_utc":  "2026-07-29T10:11:14.9967591Z",
+                      "sha256":  "ce75210a3aae762024f3320084f761ba7e46883498867924a974e60fe456f142"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/shader_cache/PostShaderGLES3/ee8c026d68c6118376bb6cb9907f43c50fe22f28ef1077f666b2d555d410a288/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  13656,
+                      "creation_time_utc":  "2026-07-29T10:11:14.9617074Z",
+                      "last_write_time_utc":  "2026-07-29T10:11:14.9617074Z",
+                      "sha256":  "971991b9b4099a73b6c9ce6029eadf5cd77f5e4f62fa06bb3d572ee231d73fdb"
+                  },
+                  {
+                      "path":  "遠征棋/遠征棋.bak/shader_cache/SceneShaderGLES3/12449b158ae166211d48c0cb88ebbfae442cd613f113f4458293589d0b00e2b3/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",
+                      "length":  800909,
+                      "creation_time_utc":  "2026-07-29T10:11:15.0082722Z",
+                      "last_write_time_utc":  "2026-07-29T10:11:15.0092722Z",
+                      "sha256":  "3e4fbfd3c6c6967638c29b56245a33707a3a939737451499a518b86c119ec647"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/logs/godot.log",
+                      "length":  321,
+                      "creation_time_utc":  "2026-06-16T16:10:02.3137003Z",
+                      "last_write_time_utc":  "2026-08-06T09:36:47.2819808Z",
+                      "sha256":  "a2ae157e063e39aeb9dfad12e6dbfc73691d88d696c6bf6d66a34cd7993abced"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/logs/godot2026-08-06T01.02.50.log",
+                      "length":  321,
+                      "creation_time_utc":  "2026-08-05T17:02:50.4275264Z",
+                      "last_write_time_utc":  "2026-08-05T17:02:50.4275264Z",
+                      "sha256":  "a2ae157e063e39aeb9dfad12e6dbfc73691d88d696c6bf6d66a34cd7993abced"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/logs/godot2026-08-06T01.05.58.log",
+                      "length":  321,
+                      "creation_time_utc":  "2026-08-05T17:05:58.3716813Z",
+                      "last_write_time_utc":  "2026-08-05T17:05:58.3716813Z",
+                      "sha256":  "a2ae157e063e39aeb9dfad12e6dbfc73691d88d696c6bf6d66a34cd7993abced"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/logs/godot2026-08-06T17.30.57.log",
+                      "length":  321,
+                      "creation_time_utc":  "2026-08-06T09:30:58.0048523Z",
+                      "last_write_time_utc":  "2026-08-06T09:30:58.0048523Z",
+                      "sha256":  "a2ae157e063e39aeb9dfad12e6dbfc73691d88d696c6bf6d66a34cd7993abced"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/logs/godot2026-08-06T17.36.47.log",
+                      "length":  321,
+                      "creation_time_utc":  "2026-08-06T09:36:47.0469624Z",
+                      "last_write_time_utc":  "2026-08-06T09:36:47.0469624Z",
+                      "sha256":  "a2ae157e063e39aeb9dfad12e6dbfc73691d88d696c6bf6d66a34cd7993abced"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/shader_cache/CanvasShaderRD/f30a5b440b1341c6eaa19af108108f7adb605232e31fd6aeac74e4825e07ec28/4157fb38c7caed0a42021d23172ce31d1644a1a9.d3d12.cache",
+                      "length":  98292,
+                      "creation_time_utc":  "2026-06-17T07:59:44.3175305Z",
+                      "last_write_time_utc":  "2026-06-17T07:59:44.3185280Z",
+                      "sha256":  "c2469eec55abc3c8eb677b86410adef9ee9e510cfa86bbfc8087dfeb46f3ecd7"
+                  },
+                  {
+                      "path":  "輪迴盟約Cyclepact/shader_cache/CanvasShaderRD/f30a5b440b1341c6eaa19af108108f7adb605232e31fd6aeac74e4825e07ec28/d586348b17fdb1cd31d672a15997fddeaeb46a94.d3d12.cache",
+                      "length":  95724,
+                      "creation_time_utc":  "2026-06-16T16:13:04.4247386Z",
+                      "last_write_time_utc":  "2026-06-16T16:13:04.4247386Z",
+                      "sha256":  "343b1c3c43ce2fcaebc8931e236e817fba173c038a928f171e96cea867bd61ef"
+                  }
+              ]
+}

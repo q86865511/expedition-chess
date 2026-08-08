@@ -29,15 +29,24 @@ func test_failed_action_status_bar_has_a_readable_rect_inside_the_design_space()
 	var commander := camp.find_child(
 		"CommanderSelector", true, false
 	) as OptionButton
+	var status_panel := camp.find_child(
+		"StatusRegion", true, false
+	) as PanelContainer
 	assert_not_null(commander)
-	if commander == null:
+	assert_not_null(status_panel)
+	if commander == null or status_panel == null:
 		return
+	assert_false(
+		status_panel.visible,
+		"an empty status band must collapse instead of drawing a 44px strip"
+	)
 	commander.item_selected.emit(-1)
 	assert_true(Support.press(self, camp, &"camp.start"))
 	assert_false(
 		camp.status_message_text().is_empty(),
 		"precondition: the failure must have reached the surface"
 	)
+	assert_true(status_panel.visible)
 
 	var bar := camp.status_message_control()
 	assert_not_null(bar, "the status surface must be a real node on the screen")

@@ -13,14 +13,27 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
-- [2026-08-08] 🎨 UI／美術／中文化整修 Phase B1R 修訂樣板待核可 — 依第一審
+- [2026-08-08] 🎨 UI／美術／中文化整修 Phase B1R2 修訂樣板待核可 — 依第二審
+  N1～N16 修復 action button `clip_text` 最小寬回歸、中央裝備庫死路、150% bottom
+  安全區溢出、棋盤／bench 裁切、空狀態帶、營地空中央、設定標題／列／tooltip 重疊、
+  modal 透明底、首張商店雙 dispatch 與 node-choice 僅停首卡。F1 測試改用獨立 100%
+  基準，焦點測試直接驗按鈕自身 rect 與文字寬；`main.tscn` 清除 Godot 4.7 靜默丟棄的
+  五條 NodePath 死賦值。隔離 wrapper 改等待非 headless 子程序真正結束，對真實
+  `%APPDATA%/Godot/app_userdata/**` 全遞迴前後雜湊（含巢狀 `遠征棋.bak`），inventory
+  SHA 完全一致。41 張 zh_TW 實機證據（含 12 張營地／備戰矩陣、主選單、設定套用後、
+  三分組、node-choice、兩種 modal、狀態、縮放重建、焦點）runner `issues=[]`；fresh
+  `-Suite All` exit 0（304 scripts、1216/1216 tests、25185 assertions、0 failures/errors）。
+  證據見 `specs/ui-art-refresh/evidence/phase-b1r2/README.md`；停在修訂版視覺核可閘門，
+  未開始 B2。
+- [2026-08-08] ⚠️ UI／美術／中文化整修 Phase B1R 首次修訂（已由 B1R2 取代） — 依第一審
   F1～F16 與 TFT 類版面要求重排：備戰中央 8×4 可見格線棋盤、下方單排 bench、
   卡片式商店與經濟操作成組，左右欄收斂為隊伍／羈絆及可捲動遠征待辦；營地提高
   設施操作階層。Theme 改用 Noto Sans TC `wght=400/600`、質感主／次面板與高對比
   決策數值；修正 150% 新畫面 base meta 污染、node-choice 溢出、狀態列重疊、
   GODOT_BIN 契約、palette 綁回、真字型斷言、evidence import 與 shallow Theme copy。
-  真實 Windows 偽回退的其餘根因確認為 coordinator NodePath 預設缺失所造成的
-  `PRODUCTION_VIEWPORT_TREE_INVALID`；fresh process 單一開關重驗已無診斷。720p／
+  真實 Windows 偽回退的根因後續更正為 `main.tscn` 的 `node_paths` 相對 NodePath
+  賦值被 Godot 4.7 靜默丟棄；腳本預設值才是有效來源，fresh process 單一開關重驗
+  已無診斷。720p／
   1080p × 100%／125%／150% 共 12 張 zh_TW 矩陣與四種特殊情境皆通過；fresh
   `-Suite All` exit 0（304 scripts、1213/1213 tests、25122 assertions、0 failures）。
   主要真實 settings 的時間戳與 SHA 開工／收尾一致；旁支 `.bak` 基線存在但收尾缺失，
@@ -242,13 +255,13 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase B：B1R Theme／字型／營地與備戰修訂樣板已完成驗收，
+- UI `ui-art-refresh` Phase B：B1R2 Theme／字型／營地與備戰修訂樣板已完成驗收，
   等待使用者重新視覺核可；核可前禁止開始 B2 鋪開。
 
 ## 待辦
 
 - UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；Phase B1 第一審未核可，B1R 修訂已完成並停重新視覺核可。Phase A
+  2026-08-07）；Phase B1、B1R 均未核可，B1R2 修訂已完成並停重新視覺核可。Phase A
   三項移交追蹤均已關閉：(1) locale-aware glyph probe 與實機常駐 viewport probe
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；

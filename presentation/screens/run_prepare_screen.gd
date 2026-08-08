@@ -500,13 +500,6 @@ func _build_prepare_controls() -> void:
 	_add_selector(contracts, &"BoardSelector", Vector2.ZERO, &"board_draft")
 	_add_selector(contracts, &"BenchSelector", Vector2.ZERO, &"bench_draft")
 	_add_selector(contracts, &"ShopSelector", Vector2.ZERO, &"shop_offer")
-	_add_selector(
-		contracts,
-		&"InventorySelector",
-		Vector2.ZERO,
-		&"item_instance",
-		true
-	)
 
 	var left := VBoxContainer.new()
 	left.name = "PrepareLeftContent"
@@ -524,17 +517,32 @@ func _build_prepare_controls() -> void:
 	left.add_child(_heading(&"prepare.panel.synergies"))
 	left.add_child(_empty_label(&"prepare.empty.synergies"))
 
+	var center_scroll := ScrollContainer.new()
+	center_scroll.name = "PrepareCenterScroll"
+	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
+	center_scroll.position = center_rect.position
+	center_scroll.size = center_rect.size
+	center_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	center_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	layout.add_child(center_scroll)
 	var center := VBoxContainer.new()
 	center.name = "PrepareCenterContent"
 	center.theme_type_variation = &"ExpeditionBoardStack"
-	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
-	center.position = center_rect.position
-	center.size = center_rect.size
-	layout.add_child(center)
+	center.custom_minimum_size = Vector2(maxf(560.0, center_rect.size.x - 20.0), 0.0)
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center_scroll.add_child(center)
 	center.add_child(_heading(&"prepare.panel.board"))
 	_build_board_grid(center)
 	center.add_child(_heading(&"prepare.panel.bench"))
 	_build_bench_row(center)
+	center.add_child(_heading(&"prepare.panel.inventory"))
+	_add_selector(
+		center,
+		&"InventorySelector",
+		Vector2(0.0, 48.0),
+		&"item_instance",
+		true
+	)
 
 	var right_scroll := ScrollContainer.new()
 	right_scroll.name = "PrepareRightScroll"
@@ -590,6 +598,7 @@ func _build_board_grid(parent: VBoxContainer) -> void:
 	var grid := GridContainer.new()
 	grid.name = "BoardGrid"
 	grid.columns = 8
+	grid.theme_type_variation = &"ExpeditionBoardGrid"
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	parent.add_child(grid)
@@ -597,11 +606,13 @@ func _build_board_grid(parent: VBoxContainer) -> void:
 		for logical_x: int in range(8):
 			var cell := Button.new()
 			cell.name = "BoardCell_%d_%d" % [logical_y, logical_x]
-			cell.custom_minimum_size = Vector2(56.0, 40.0)
+			cell.custom_minimum_size = Vector2(56.0, 48.0)
 			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			cell.size_flags_vertical = Control.SIZE_EXPAND_FILL
 			cell.focus_mode = Control.FOCUS_ALL
-			cell.clip_text = true
+			cell.theme_type_variation = &"ExpeditionGridCell"
+			cell.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+			cell.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 			cell.set_meta(&"board_x", logical_x)
 			cell.set_meta(&"board_y", logical_y)
 			cell.set_meta(&"unit_instance_id", "")
@@ -613,15 +624,18 @@ func _build_board_grid(parent: VBoxContainer) -> void:
 func _build_bench_row(parent: VBoxContainer) -> void:
 	var row := HBoxContainer.new()
 	row.name = "BenchRow"
+	row.theme_type_variation = &"ExpeditionBenchRow"
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(row)
 	for index: int in range(9):
 		var cell := Button.new()
 		cell.name = "BenchCell%d" % index
-		cell.custom_minimum_size = Vector2(48.0, 44.0)
+		cell.custom_minimum_size = Vector2(56.0, 48.0)
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cell.focus_mode = Control.FOCUS_ALL
-		cell.clip_text = true
+		cell.theme_type_variation = &"ExpeditionGridCell"
+		cell.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+		cell.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 		cell.set_meta(&"unit_instance_id", "")
 		cell.set_meta(&"expedition_theme_fixed_minimum", true)
 		cell.pressed.connect(_on_bench_cell_pressed.bind(cell))
@@ -650,6 +664,31 @@ func _region_content_rect(region: StringName) -> Rect2:
 		if parent_screen != null
 		else Rect2()
 	)
+
+
+func refresh_layout_rects() -> void:
+	var metrics := find_child("PrepareMetrics", true, false) as Control
+	if metrics != null:
+		var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
+		metrics_rect.position.x += 320.0
+		metrics_rect.size.x -= 320.0
+		metrics.position = metrics_rect.position
+		metrics.size = metrics_rect.size
+	var left := find_child("PrepareLeftContent", true, false) as Control
+	if left != null:
+		var left_rect := _region_content_rect(ProductionLayoutShell.REGION_LEFT)
+		left.position = left_rect.position
+		left.size = left_rect.size
+	var center_scroll := find_child("PrepareCenterScroll", true, false) as Control
+	if center_scroll != null:
+		var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
+		center_scroll.position = center_rect.position
+		center_scroll.size = center_rect.size
+	var right_scroll := find_child("PrepareRightScroll", true, false) as Control
+	if right_scroll != null:
+		var right_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
+		right_scroll.position = right_rect.position
+		right_scroll.size = right_rect.size
 
 
 func _metric_label(key: StringName, value: String) -> Label:

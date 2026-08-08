@@ -28,16 +28,28 @@ func test_hidden_row_removes_its_editor_from_the_focus_ring() -> void:
 		&""
 	)
 	add_child_autofree(screen)
+	await wait_process_frames(2)
 	var row := screen.get_node_or_null(
-		^"Composition/SettingEditors/LocaleRow"
+		^"Composition/SettingsScroll/SettingEditors/LocaleRow"
 	) as Control
 	var editor := screen.get_node_or_null(
-		^"Composition/SettingEditors/LocaleRow/Locale"
+		^"Composition/SettingsScroll/SettingEditors/LocaleRow/Locale"
 	) as Control
 	assert_not_null(row)
 	assert_not_null(editor)
 	if row == null or editor == null:
 		return
+	var title := screen.get_node_or_null(^"Label") as Label
+	assert_not_null(title)
+	if title != null:
+		assert_false(
+			title.get_global_rect().intersects(row.get_global_rect()),
+			"settings title must not overlap the locale row"
+		)
+	assert_true(
+		editor.tooltip_text.is_empty(),
+		"hover text must not duplicate the visible row label"
+	)
 
 	var before: Array = screen.call(&"_ordered_focus_controls")
 	assert_true(before.has(editor), "a visible editor belongs to the focus ring")
@@ -173,12 +185,19 @@ func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
 				continue
 			var action_id := StringName(button.get_meta(&"action_id"))
 			seen[action_id] = true
-			var rect := button.get_global_rect()
 			var scroll := _ancestor_scroll_container(button)
-			var visible_rect := scroll.get_global_rect() if scroll != null else rect
+			if scroll != null:
+				scroll.ensure_control_visible(button)
+				await wait_process_frames(1)
+			var rect := button.get_global_rect()
 			assert_true(
-				Rect2(Vector2.ZERO, Vector2(1280.0, 720.0)).encloses(visible_rect),
-				"%s visible surface must stay inside 1280x720; rect=%s" % [String(action_id), visible_rect]
+				Rect2(Vector2.ZERO, Vector2(1280.0, 720.0)).encloses(rect),
+				"%s button itself must stay inside 1280x720; rect=%s" % [String(action_id), rect]
+			)
+			assert_gte(
+				button.get_combined_minimum_size().x,
+				_button_text_minimum_width(button),
+				"%s width must include its complete text" % String(action_id)
 			)
 	for action_id: StringName in action_ids.slice(0, 20):
 		assert_true(seen.has(action_id), "%s must remain reachable" % action_id)
@@ -191,6 +210,22 @@ func _ancestor_scroll_container(control: Control) -> ScrollContainer:
 			return ancestor as ScrollContainer
 		ancestor = ancestor.get_parent()
 	return null
+
+
+func _button_text_minimum_width(button: Button) -> float:
+	if button == null or button.text.is_empty():
+		return 0.0
+	var font := button.get_theme_font(&"font")
+	var font_size := button.get_theme_font_size(&"font_size")
+	var widest_line := 0.0
+	for line: String in button.text.split("\n"):
+		widest_line = maxf(
+			widest_line,
+			font.get_string_size(
+				line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size
+			).x
+		)
+	return widest_line
 
 
 func test_prepare_with_node_choice_defaults_to_advance_group() -> void:

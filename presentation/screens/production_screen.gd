@@ -223,6 +223,7 @@ func status_message_control() -> Label:
 ## 只寫狀態列，不動 `_last_control_result`——那是按鈕 dispatch 的結果欄位。
 func report_composition_result(result: Variant) -> void:
 	_status_view.show_result(result, _text_resolver())
+	_sync_status_band_visibility()
 
 
 func is_confirmation_modal_open() -> bool:
@@ -328,9 +329,11 @@ func live_binding_report() -> Dictionary:
 
 func _bind_localized_controls() -> void:
 	_install_b1_layout()
+	_install_fullscreen_ui_background()
 	var label := find_child("Label", true, false) as Label
 	if label != null:
 		label.text = _context.resolve_text(_route_title_key())
+	_configure_non_b1_layout(label)
 	# G2 H3：常駐錯誤呈現面。每個 staged route 都要有，才不會出現「某些畫面
 	# 操作失敗完全沒回饋」的死角。
 	var status_rect := (
@@ -340,6 +343,7 @@ func _bind_localized_controls() -> void:
 	)
 	_status_view.attach(self, 0, status_rect)
 	_status_view.clear(_text_resolver())
+	_sync_status_band_visibility()
 	var action_ids := _required_action_ids()
 	if action_ids.is_empty():
 		return
@@ -355,17 +359,31 @@ func _bind_localized_controls() -> void:
 	elif route_kind == &"RUN_PREPARE" and _layout_shell != null:
 		var controls := HBoxContainer.new()
 		controls.name = "Actions"
+		controls.theme_type_variation = &"ExpeditionPrepareBottomBand"
 		controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		controls.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(controls)
 		_build_prepare_action_controls(controls, action_ids)
 	else:
-		var controls := VBoxContainer.new()
+		var controls: BoxContainer = (
+			HBoxContainer.new()
+			if route_kind == &"SETTINGS"
+			else VBoxContainer.new()
+		)
 		controls.name = "Actions"
-		controls.set_anchors_preset(Control.PRESET_CENTER)
+		if route_kind == &"SETTINGS":
+			controls.position = Vector2(72.0, 648.0)
+			controls.size = Vector2(1136.0, 48.0)
+			controls.z_index = 6
+		else:
+			controls.set_anchors_preset(Control.PRESET_CENTER)
 		add_child(controls)
 		for action_id: StringName in action_ids:
-			controls.add_child(_new_action_button(action_id))
+			var action := _new_action_button(action_id)
+			if route_kind == &"SETTINGS":
+				action.theme_type_variation = &"ExpeditionBottomAction"
+				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			controls.add_child(action)
 
 
 func _install_b1_layout() -> void:
@@ -396,6 +414,58 @@ func _install_b1_layout() -> void:
 		composition.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+func _install_fullscreen_ui_background() -> void:
+	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
+		return
+	var background := Panel.new()
+	background.name = "FullscreenBackground"
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.theme_type_variation = &"ExpeditionBackground"
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(background)
+	move_child(background, 0)
+
+
+func _configure_non_b1_layout(title: Label) -> void:
+	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
+		return
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if title != null:
+		title.position = Vector2(72.0, 28.0)
+		title.size = Vector2(1136.0, 56.0)
+		title.custom_minimum_size = Vector2(0.0, 56.0)
+		title.theme_type_variation = &"ExpeditionTitle"
+		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if route_kind != &"SETTINGS":
+		return
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		composition.position = Vector2(72.0, 100.0)
+		composition.custom_minimum_size = Vector2(1136.0, 496.0)
+		composition.size = Vector2(1136.0, 496.0)
+		composition.clip_contents = true
+	var action_gap := Panel.new()
+	action_gap.name = "SettingsActionGap"
+	action_gap.position = Vector2(0.0, 592.0)
+	action_gap.size = Vector2(1280.0, 56.0)
+	action_gap.theme_type_variation = &"ExpeditionBackground"
+	action_gap.mouse_filter = Control.MOUSE_FILTER_STOP
+	action_gap.z_index = 5
+	add_child(action_gap)
+
+
+func apply_theme_scale_layout(scale_percent: int) -> void:
+	if route_kind != &"SETTINGS":
+		return
+	var action_gap := get_node_or_null(^"SettingsActionGap") as Control
+	if action_gap == null:
+		return
+	var factor := float(scale_percent) / 100.0
+	var gap_top := 584.0 + float(roundi(8.0 * factor))
+	action_gap.position.y = gap_top
+	action_gap.size.y = 648.0 - gap_top
+
+
 func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
 	var facilities := VBoxContainer.new()
 	facilities.name = "Actions"
@@ -422,7 +492,6 @@ func _new_action_button(action_id: StringName) -> Button:
 	button.name = _button_name(action_id)
 	button.text = _context.resolve_text(action_id)
 	button.focus_mode = Control.FOCUS_ALL
-	button.clip_text = true
 	button.set_meta(&"action_id", action_id)
 	return button
 
@@ -443,15 +512,16 @@ func _build_prepare_action_controls(
 
 	var secondary := VBoxContainer.new()
 	secondary.name = "PrepareSecondaryActions"
-	secondary.custom_minimum_size = Vector2(180.0, 0.0)
+	secondary.custom_minimum_size = Vector2(230.0, 0.0)
 	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(secondary)
 	_prepare_action_group_selector = OptionButton.new()
 	_prepare_action_group_selector.name = PREPARE_ACTION_GROUP_SELECTOR
 	_prepare_action_group_selector.focus_mode = Control.FOCUS_ALL
-	_prepare_action_group_selector.clip_text = true
+	_prepare_action_group_selector.theme_type_variation = &"ExpeditionBottomAction"
 	_prepare_action_group_selector.allow_reselect = true
 	_prepare_action_group_selector.custom_minimum_size = Vector2(0.0, 48.0)
+	_prepare_action_group_selector.set_meta(&"expedition_theme_fixed_minimum", true)
 	_prepare_action_group_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_prepare_action_group_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_prepare_action_group_selector.set_meta(
@@ -475,7 +545,7 @@ func _build_prepare_action_controls(
 	secondary.add_child(page_scroll)
 	var pages := Control.new()
 	pages.name = "PrepareActionGroupPages"
-	pages.custom_minimum_size = Vector2(156.0, 0.0)
+	pages.custom_minimum_size = Vector2(206.0, 0.0)
 	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page_scroll.add_child(pages)
@@ -491,16 +561,20 @@ func _build_prepare_action_controls(
 		for action_value: Variant in group["actions"]:
 			var action_id := StringName(action_value)
 			if action_ids.has(action_id):
-				page.add_child(_new_action_button(action_id))
+				var action := _new_action_button(action_id)
+				action.theme_type_variation = &"ExpeditionBottomAction"
+				action.set_meta(&"expedition_theme_fixed_minimum", true)
+				page.add_child(action)
 
 	var pinned := VBoxContainer.new()
 	pinned.name = "PinnedActions"
-	pinned.custom_minimum_size = Vector2(220.0, 0.0)
+	pinned.custom_minimum_size = Vector2(180.0, 0.0)
 	pinned.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(pinned)
 	for action_id: StringName in PREPARE_PINNED_ACTIONS:
 		if action_ids.has(action_id):
 			var action := _new_action_button(action_id)
+			action.theme_type_variation = &"ExpeditionBottomAction"
 			action.set_meta(&"expedition_theme_fixed_minimum", true)
 			pinned.add_child(action)
 	_prepare_action_group_selector.item_selected.connect(
@@ -516,10 +590,10 @@ func _build_prepare_shop_controls(
 ) -> void:
 	var shop_shell := HBoxContainer.new()
 	shop_shell.name = "PrepareShopBand"
-	shop_shell.custom_minimum_size = Vector2(740.0, 0.0)
+	shop_shell.theme_type_variation = &"ExpeditionPrepareShopBand"
+	shop_shell.custom_minimum_size = Vector2(660.0, 0.0)
 	shop_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shop_shell.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	shop_shell.clip_contents = true
 	controls.add_child(shop_shell)
 	var cards_column := VBoxContainer.new()
 	cards_column.name = "PrepareShopCardsColumn"
@@ -531,7 +605,7 @@ func _build_prepare_shop_controls(
 	cards_column.add_child(shop_header)
 	var heading := Label.new()
 	heading.text = _context.resolve_text(&"prepare.panel.shop")
-	heading.theme_type_variation = &"ExpeditionHeading"
+	heading.theme_type_variation = &"ExpeditionSection"
 	heading.custom_minimum_size = Vector2(120.0, 0.0)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.clip_text = true
@@ -554,6 +628,7 @@ func _build_prepare_shop_controls(
 		shop_header.add_child(label)
 	var cards := HBoxContainer.new()
 	cards.name = "PrepareShopCards"
+	cards.theme_type_variation = &"ExpeditionShopCardsRow"
 	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cards_column.add_child(cards)
@@ -578,8 +653,6 @@ func _build_prepare_shop_controls(
 			card.set_meta(&"shop_offer_id", offer.offer_id)
 			card.set_meta(&"accessible_text", card.text)
 			card.set_meta(&"expedition_theme_fixed_minimum", true)
-			if cards.get_child_count() == 0:
-				card.set_meta(&"action_id", &"prepare.buy")
 			card.pressed.connect(
 				_on_prepare_shop_card_pressed.bind(offer.offer_id)
 			)
@@ -596,7 +669,7 @@ func _build_prepare_shop_controls(
 	var shop_actions := GridContainer.new()
 	shop_actions.name = "PrepareShopActions"
 	shop_actions.columns = 1
-	shop_actions.custom_minimum_size = Vector2(170.0, 0.0)
+	shop_actions.custom_minimum_size = Vector2(140.0, 0.0)
 	shop_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	shop_shell.add_child(shop_actions)
 	for action_id: StringName in [
@@ -604,7 +677,8 @@ func _build_prepare_shop_controls(
 	]:
 		if action_ids.has(action_id):
 			var action := _new_action_button(action_id)
-			action.custom_minimum_size = Vector2(170.0, 48.0)
+			action.theme_type_variation = &"ExpeditionBottomAction"
+			action.custom_minimum_size = Vector2(140.0, 48.0)
 			action.set_meta(&"expedition_theme_fixed_minimum", true)
 			shop_actions.add_child(action)
 
@@ -643,6 +717,9 @@ func _on_prepare_action_group_selected(index: int) -> void:
 		return
 	for page_index: int in _prepare_action_group_pages.size():
 		_prepare_action_group_pages[page_index].visible = page_index == index
+	var pages := find_child("PrepareActionGroupPages", true, false) as Control
+	if pages != null:
+		pages.custom_minimum_size.y = _prepare_action_group_pages[index].get_combined_minimum_size().y
 	_apply_keyboard_focus_graph()
 
 
@@ -804,6 +881,7 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		else _live_context.action_port.invoke(action_id)
 	)
 	_status_view.show_result(_last_control_result, _text_resolver())
+	_sync_status_band_visibility()
 	if (
 		String(action_id).begins_with("prepare.")
 		or String(action_id).begins_with("service.")
@@ -1027,7 +1105,7 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 			)
 	if not _modal_node_name.is_empty():
 		var status := get_node_or_null(
-			"%s/Status" % _modal_node_name
+			"%s/Content/Status" % _modal_node_name
 		) as Label
 		if status != null:
 			status.text = _context.resolve_text(_modal_status_key)
@@ -1075,6 +1153,10 @@ func refresh_interaction_state() -> void:
 		var choice_confirm := _action_button(&"choice.confirm")
 		var choice_cancel := _action_button(&"choice.cancel")
 		var has_choice := prepare_screen.has_node_choice_overlay()
+		for node: Node in find_children("ShopCard*", "Button", true, false):
+			var shop_card := node as Button
+			if shop_card != null and shop_card.has_meta(&"shop_offer_id"):
+				shop_card.disabled = has_choice
 		var has_choice_confirmation := (
 			prepare_screen.has_pending_node_choice_confirmation()
 		)
@@ -1206,29 +1288,56 @@ func _show_confirmation_modal(
 	_modal_deferred_action = deferred_action
 	_modal_trigger = trigger
 	_disable_modal_background()
-	var dialog := VBoxContainer.new()
+	var dialog := PanelContainer.new()
 	dialog.name = node_name
 	dialog.set_anchors_preset(Control.PRESET_CENTER)
+	dialog.custom_minimum_size = Vector2(560.0, 220.0)
+	dialog.theme_type_variation = &"ExpeditionModalPanel"
+	dialog.z_index = 100
 	add_child(dialog)
+	var content := VBoxContainer.new()
+	content.name = "Content"
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	dialog.add_child(content)
 	var status := Label.new()
 	status.name = "Status"
 	status.text = _context.resolve_text(status_key)
-	dialog.add_child(status)
+	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_child(status)
 	for action_id: StringName in [confirm_action, cancel_action]:
 		var button := Button.new()
 		button.name = _button_name(action_id)
 		button.text = _context.resolve_text(action_id)
 		button.focus_mode = Control.FOCUS_ALL
 		button.set_meta(&"action_id", action_id)
-		dialog.add_child(button)
+		content.add_child(button)
 		button.pressed.connect(_on_action_pressed.bind(button))
-	var confirm := dialog.get_child(1) as Button
-	var cancel := dialog.get_child(2) as Button
+	var confirm := content.get_child(1) as Button
+	var cancel := content.get_child(2) as Button
 	if confirm != null and cancel != null:
 		var dialog_controls: Array[Control] = [confirm, cancel]
 		_link_focus_cycle(dialog_controls)
 	if confirm != null:
 		call_deferred(&"_grab_focus_deferred", confirm)
+
+
+func _sync_status_band_visibility() -> void:
+	if _layout_shell == null:
+		return
+	var visible := not _status_view.message_text().is_empty()
+	_layout_shell.set_status_visible(visible)
+	_status_view.attach(
+		self,
+		0,
+		_layout_shell.current_content_rect(
+			ProductionLayoutShell.REGION_STATUS
+		)
+	)
+	var composition := get_node_or_null(^"Composition")
+	if composition != null and composition.has_method(&"refresh_layout_rects"):
+		composition.call(&"refresh_layout_rects")
 
 
 func _close_confirmation_modal() -> void:

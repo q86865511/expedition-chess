@@ -115,6 +115,92 @@ func test_prepare_and_reward_controls_dispatch_route_specific_intents() -> void:
 	)
 
 
+func test_prepare_inventory_is_visible_focusable_and_shop_dispatches_once() -> void:
+	var session := Support.CompositionSupport.SpyRunPresentationSession.new()
+	session.current_snapshot = _prepare_snapshot_with_shop()
+	var prepare := Support.live_run_screen(
+		self,
+		&"RUN_PREPARE",
+		session.current_snapshot,
+		session
+	)
+	if prepare == null:
+		return
+	await wait_process_frames(2)
+	var inventory := prepare.find_child(
+		"InventorySelector", true, false
+	) as ItemList
+	assert_not_null(inventory)
+	if inventory != null:
+		assert_true(inventory.is_visible_in_tree())
+		assert_eq(inventory.focus_mode, Control.FOCUS_ALL)
+		assert_true(
+			(prepare.call(&"_ordered_focus_controls") as Array).has(inventory),
+			"the central inventory must be keyboard reachable"
+		)
+	var cards := prepare.find_children("ShopCard*", "Button", true, false)
+	assert_eq(cards.size(), 5)
+	if cards.is_empty():
+		return
+	var before := session.dispatched_kinds.size()
+	(cards[0] as Button).pressed.emit()
+	assert_eq(
+		session.dispatched_kinds.size(),
+		before + 1,
+		"one shop-card click must dispatch BUY_UNIT exactly once"
+	)
+	assert_eq(
+		int(session.dispatched_kinds.back()),
+		RunPresentationIntent.Kind.BUY_UNIT
+	)
+
+
+func test_node_choice_disables_every_shop_card() -> void:
+	var session := Support.CompositionSupport.SpyRunPresentationSession.new()
+	var snapshot := _prepare_snapshot_with_shop()
+	var overlay := NodeChoiceOverlaySnapshot.new()
+	overlay.choice_set_id = &"choice_set.r14.shop_lock"
+	overlay.display_name_key = &"prepare.panel.expedition"
+	snapshot.node_choice_overlay = overlay
+	session.current_snapshot = snapshot
+	var prepare := Support.live_run_screen(
+		self, &"RUN_PREPARE", snapshot, session
+	)
+	if prepare == null:
+		return
+	var cards := prepare.find_children("ShopCard*", "Button", true, false)
+	assert_eq(cards.size(), 5)
+	for node: Node in cards:
+		assert_true(
+			(node as Button).disabled,
+			"node-choice must disable every shop card, not only the first"
+		)
+
+
+func _prepare_snapshot_with_shop() -> RunPresentationSnapshot:
+	var snapshot := Support.CompositionSupport.prepare_snapshot()
+	var owner := ReservationOwnerKeyState.create(
+		&"run.r14.functional.shop",
+		&"node.prepare",
+		&"shop",
+		&"refresh.1",
+		0,
+		&"owner.shop"
+	)
+	var offers: Array[ShopOffer] = []
+	for index: int in 5:
+		offers.append(ShopOffer.new(
+			index,
+			"offer.%d" % index,
+			StringName("unit.shop.%d" % index),
+			3,
+			1,
+			owner
+		))
+	snapshot.economy = EconomyState.new(10, 9, 0, 0, 0, 1, offers)
+	return snapshot
+
+
 func test_route_preconditions_never_collapse_to_generic_action_not_available() -> void:
 	var session := Support.CompositionSupport.SpyRunPresentationSession.new()
 	session.current_snapshot = Support.CompositionSupport.prepare_snapshot()

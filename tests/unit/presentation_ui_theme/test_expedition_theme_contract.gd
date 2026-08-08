@@ -82,6 +82,14 @@ func test_runtime_scaling_is_centralized_on_a_theme_copy() -> void:
 
 
 func test_scale_rebuild_does_not_capture_scaled_combined_minimum() -> void:
+	var base_theme := load(THEME_PATH) as Theme
+	var recorded_100 := Button.new()
+	autofree(recorded_100)
+	recorded_100.text = "開始遊戲"
+	recorded_100.theme = base_theme
+	var recorded_100_minimum := recorded_100.get_combined_minimum_size()
+	recorded_100_minimum.y = maxf(recorded_100_minimum.y, 48.0)
+	assert_gt(recorded_100_minimum.x, 8.0)
 	var host := Control.new()
 	autofree(host)
 	var runtime := ExpeditionThemeRuntime.new()
@@ -101,23 +109,56 @@ func test_scale_rebuild_does_not_capture_scaled_combined_minimum() -> void:
 	inherited_button.text = "開始遊戲"
 	host.add_child(inherited_button)
 	assert_true(runtime.apply(host, 150))
-	var inherited_base: Vector2 = inherited_button.get_meta(
-		&"expedition_theme_base_minimum"
+	assert_eq(
+		inherited_button.get_meta(&"expedition_theme_base_minimum"),
+		recorded_100_minimum,
+		"the expected baseline must come from an independent 100% control"
 	)
-	assert_gt(inherited_base.x, 0.0)
 	assert_eq(
 		inherited_button.custom_minimum_size.x,
-		ceilf(inherited_base.x * 1.5)
+		ceilf(recorded_100_minimum.x * 1.5)
 	)
 	assert_true(runtime.apply(host, 100))
 	assert_eq(
 		inherited_button.custom_minimum_size,
-		Vector2(inherited_base.x, 48.0),
+		recorded_100_minimum,
 		"an un-authored child inherited at 150% must not pollute its 100% base"
 	)
 
 
+func test_button_text_contributes_to_combined_minimum_width() -> void:
+	var button := Button.new()
+	autofree(button)
+	button.text = "鍛造所選物品"
+	button.theme = load(THEME_PATH) as Theme
+	button.clip_text = false
+	var text_width := button.get_theme_font(&"font").get_string_size(
+		button.text,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1,
+		button.get_theme_font_size(&"font_size")
+	).x
+	assert_gte(
+		button.get_combined_minimum_size().x,
+		text_width,
+		"clip_text must not collapse an action below its rendered text width"
+	)
+
+
 func test_production_viewport_paths_have_resolving_defaults() -> void:
+	var scene_source := FileAccess.get_file_as_string("res://app/main.tscn")
+	assert_false(
+		scene_source.contains("node_paths=PackedStringArray"),
+		"Godot 4.7 silently discards the five relative scene assignments"
+	)
+	for dead_assignment: String in [
+		"world_container_path = NodePath",
+		"world_viewport_path = NodePath",
+		"ui_layer_path = NodePath",
+		"ui_root_path = NodePath",
+		"presentation_host_path = NodePath",
+	]:
+		assert_false(scene_source.contains(dead_assignment))
 	var packed := load("res://app/main.tscn") as PackedScene
 	assert_not_null(packed)
 	if packed == null:

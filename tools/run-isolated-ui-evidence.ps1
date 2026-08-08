@@ -17,11 +17,127 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $profileRoot = [System.IO.Path]::GetFullPath(
-    (Join-Path $repoRoot 'artifacts\ui-art-refresh\phase-b1r\profile')
+    (Join-Path $repoRoot 'artifacts\ui-art-refresh\phase-b1r2\profile')
 )
 $allowedRoot = [System.IO.Path]::GetFullPath(
-    (Join-Path $repoRoot 'artifacts\ui-art-refresh\phase-b1r')
+    (Join-Path $repoRoot 'artifacts\ui-art-refresh\phase-b1r2')
 )
+$evidenceRoot = [System.IO.Path]::GetFullPath(
+    (Join-Path $repoRoot 'specs\ui-art-refresh\evidence\phase-b1r2')
+)
+$realAppDataRoot = [System.IO.Path]::GetFullPath(
+    (Join-Path $env:APPDATA 'Godot\app_userdata')
+)
+
+function Get-AppDataSnapshot {
+    param([Parameter(Mandatory = $true)][string]$Root)
+
+    $directories = @()
+    $files = @()
+    if (Test-Path -LiteralPath $Root -PathType Container) {
+        $directories = @(
+            Get-ChildItem -LiteralPath $Root -Recurse -Directory -Force |
+                Sort-Object FullName |
+                ForEach-Object {
+                    [ordered]@{
+                        path = $_.FullName.Substring($Root.Length).TrimStart('\').Replace('\', '/')
+                        creation_time_utc = $_.CreationTimeUtc.ToString('o')
+                        last_write_time_utc = $_.LastWriteTimeUtc.ToString('o')
+                    }
+                }
+        )
+        $files = @(
+            Get-ChildItem -LiteralPath $Root -Recurse -File -Force |
+                Sort-Object FullName |
+                ForEach-Object {
+                    [ordered]@{
+                        path = $_.FullName.Substring($Root.Length).TrimStart('\').Replace('\', '/')
+                        length = $_.Length
+                        creation_time_utc = $_.CreationTimeUtc.ToString('o')
+                        last_write_time_utc = $_.LastWriteTimeUtc.ToString('o')
+                        sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                    }
+                }
+        )
+    }
+    $inventoryJson = ConvertTo-Json -Compress -Depth 8 -InputObject ([ordered]@{
+        directories = $directories
+        files = $files
+    })
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $inventoryHash = [System.BitConverter]::ToString(
+            $sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($inventoryJson))
+        ).Replace('-', '').ToLowerInvariant()
+    }
+    finally {
+        $sha.Dispose()
+    }
+    $gameDirectoryName = -join [char[]](0x9060, 0x5f81, 0x68cb)
+    $backupDirectoryName = $gameDirectoryName + '.bak'
+    $totalBytes = 0L
+    foreach ($fileEntry in $files) {
+        $totalBytes += [long]$fileEntry['length']
+    }
+    return [ordered]@{
+        schema_version = 2
+        captured_at_utc = [DateTime]::UtcNow.ToString('o')
+        root = '%APPDATA%/Godot/app_userdata'
+        directory_count = $directories.Count
+        file_count = $files.Count
+        total_bytes = $totalBytes
+        inventory_sha256 = $inventoryHash
+        expected_paths = [ordered]@{
+            game_directory = Test-Path -LiteralPath (Join-Path $Root $gameDirectoryName)
+            nested_backup_directory = Test-Path -LiteralPath (Join-Path (Join-Path $Root $gameDirectoryName) $backupDirectoryName)
+            nested_backup_settings = Test-Path -LiteralPath (Join-Path (Join-Path (Join-Path $Root $gameDirectoryName) $backupDirectoryName) 'settings-v1.json')
+        }
+        directories = $directories
+        files = $files
+    }
+}
+
+function Write-JsonFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)]$Value
+    )
+    $json = ($Value | ConvertTo-Json -Depth 8).Replace("`r`n", "`n") + "`n"
+    [System.IO.File]::WriteAllText(
+        $Path,
+        $json,
+        (New-Object System.Text.UTF8Encoding($false))
+    )
+}
+
+function Invoke-GodotProcess {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Arguments,
+        [switch]$Visible
+    )
+    $startParameters = @{
+        FilePath = $GodotPath
+        ArgumentList = $Arguments
+        Wait = $true
+        PassThru = $true
+    }
+    if (-not $Visible) {
+        $startParameters.WindowStyle = 'Hidden'
+    }
+    $process = Start-Process @startParameters
+    return $process.ExitCode
+}
+
+New-Item -ItemType Directory -Force -Path $evidenceRoot | Out-Null
+$beforePath = Join-Path $evidenceRoot 'real-appdata-before.json'
+$before = $null
+if (Test-Path -LiteralPath $beforePath -PathType Leaf) {
+    $before = Get-Content -LiteralPath $beforePath -Raw -Encoding UTF8 | ConvertFrom-Json
+}
+if ($null -eq $before -or [string]::IsNullOrWhiteSpace([string]$before.inventory_sha256)) {
+    $before = Get-AppDataSnapshot -Root $realAppDataRoot
+    Write-JsonFile -Path $beforePath -Value $before
+}
 if (-not $profileRoot.StartsWith($allowedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Isolated profile escaped the allowed root: $profileRoot"
 }
@@ -59,34 +175,50 @@ $env:GODOT_BIN = $GodotPath
 Write-Host "Isolated APPDATA: $appData"
 Write-Host "Isolated LOCALAPPDATA: $localAppData"
 
+$runExitCode = 0
 switch ($Mode) {
     'Import' {
-        & $GodotPath --headless --path $repoRoot --editor --quit
-        exit $LASTEXITCODE
+        $runExitCode = Invoke-GodotProcess -Arguments @('--headless', '--path', $repoRoot, '--editor', '--quit')
     }
     'Localization' {
-        & $GodotPath --headless --path $repoRoot --script 'res://tools/content-production/export-localization-catalog.gd'
-        exit $LASTEXITCODE
+        $runExitCode = Invoke-GodotProcess -Arguments @('--headless', '--path', $repoRoot, '--script', 'res://tools/content-production/export-localization-catalog.gd')
     }
     'AllTests' {
-        & (Join-Path $repoRoot 'tools\run-tests.ps1') -Suite All
-        exit $LASTEXITCODE
+        & (Join-Path $repoRoot 'tools\run-tests.ps1') -Suite All -GodotPath $GodotPath
+        $runExitCode = $LASTEXITCODE
     }
     'Gut' {
         & (Join-Path $repoRoot 'tools\run-tests.ps1') -Suite Gut -TestPath $TestPath -GodotPath $GodotPath -TimeoutSeconds 300
-        exit $LASTEXITCODE
+        $runExitCode = $LASTEXITCODE
     }
     'Evidence' {
-        & $GodotPath --path $repoRoot --script 'res://tests/runners/presentation_phase_b1_evidence_runner.gd' -- '--output-dir=res://specs/ui-art-refresh/evidence/phase-b1r'
-        exit $LASTEXITCODE
+        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--script', 'res://tests/runners/presentation_phase_b1_evidence_runner.gd', '--', '--output-dir=res://specs/ui-art-refresh/evidence/phase-b1r2')
     }
     'Activation' {
         $expected = $ExpectedDiagnostic.ToLowerInvariant()
-        & $GodotPath --path $repoRoot --script 'res://tests/runners/presentation_phase_b1r_activation_runner.gd' -- '--output-dir=res://specs/ui-art-refresh/evidence/phase-b1r' "--expected-diagnostic=$expected"
-        exit $LASTEXITCODE
+        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--script', 'res://tests/runners/presentation_phase_b1r_activation_runner.gd', '--', '--output-dir=res://specs/ui-art-refresh/evidence/phase-b1r2', "--expected-diagnostic=$expected")
     }
     'Run' {
-        & $GodotPath --path $repoRoot --resolution $WindowSize
-        exit $LASTEXITCODE
+        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--resolution', $WindowSize) -Visible
     }
 }
+
+$after = Get-AppDataSnapshot -Root $realAppDataRoot
+$afterPath = Join-Path $evidenceRoot 'real-appdata-after.json'
+Write-JsonFile -Path $afterPath -Value $after
+$unchanged = [string]$before.inventory_sha256 -eq [string]$after.inventory_sha256
+Write-JsonFile -Path (Join-Path $evidenceRoot 'real-appdata-integrity.json') -Value ([ordered]@{
+    ok = $unchanged
+    compared_scope = '%APPDATA%/Godot/app_userdata/**'
+    includes_nested_backup = $true
+    before_inventory_sha256 = [string]$before.inventory_sha256
+    after_inventory_sha256 = [string]$after.inventory_sha256
+    before_file_count = [int]$before.file_count
+    after_file_count = [int]$after.file_count
+    before_directory_count = [int]$before.directory_count
+    after_directory_count = [int]$after.directory_count
+})
+if (-not $unchanged) {
+    throw 'Real APPDATA changed during an isolated Godot launch; see phase-b1r2 snapshots.'
+}
+exit $runExitCode

@@ -20,6 +20,8 @@ var _selected_challenge_level: int = -1
 var _commander_selector: OptionButton
 var _challenge_selector: SpinBox
 var _layout_root: Control
+var _commander_summary: Label
+var _challenge_summary: Label
 
 
 func compose(
@@ -38,6 +40,7 @@ func compose(
 		_selected_commander_id = StringName(
 			_commander_selector.get_item_metadata(0)
 		)
+	_refresh_center_summary()
 	return &""
 
 
@@ -107,6 +110,32 @@ func _build_expedition_controls() -> void:
 		str(_bundle.highest_challenge_level())
 	))
 	metrics.add_child(_metric_label(
+		&"camp.resource.discovered",
+		str(_bundle.discovered_ids().size())
+	))
+	var center := VBoxContainer.new()
+	center.name = "CampCenterSummary"
+	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
+	center.position = center_rect.position
+	center.size = center_rect.size
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layout_root.add_child(center)
+	var center_heading := Label.new()
+	center_heading.text = _localized_ui_text(&"camp.commander_selector")
+	center_heading.theme_type_variation = &"ExpeditionHeading"
+	center.add_child(center_heading)
+	_commander_summary = Label.new()
+	_commander_summary.name = "CommanderSummary"
+	_commander_summary.theme_type_variation = &"ExpeditionTitle"
+	_commander_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_commander_summary.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_commander_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	center.add_child(_commander_summary)
+	_challenge_summary = Label.new()
+	_challenge_summary.name = "ChallengeSummary"
+	_challenge_summary.theme_type_variation = &"ExpeditionMetric"
+	center.add_child(_challenge_summary)
+	center.add_child(_metric_label(
 		&"camp.resource.discovered",
 		str(_bundle.discovered_ids().size())
 	))
@@ -200,12 +229,48 @@ func _on_commander_selected(index: int) -> void:
 		_selected_commander_id = StringName(
 			_commander_selector.get_item_metadata(index)
 		)
+	_refresh_center_summary()
 	_update_parent_action_state()
 
 
 func _on_challenge_selected(value: float) -> void:
 	_selected_challenge_level = roundi(value)
+	_refresh_center_summary()
 	_update_parent_action_state()
+
+
+func _refresh_center_summary() -> void:
+	if _commander_summary != null:
+		_commander_summary.text = (
+			_localized_content_text(_selected_commander_id)
+			if not _selected_commander_id.is_empty()
+			else _localized_ui_text(&"camp.commander_selector")
+		)
+	if _challenge_summary != null:
+		_challenge_summary.text = "%s  %d" % [
+			_localized_ui_text(&"camp.challenge_selector"),
+			maxi(_selected_challenge_level, 0),
+		]
+
+
+func refresh_layout_rects() -> void:
+	var metrics := find_child("CampMetrics", true, false) as Control
+	if metrics != null:
+		var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
+		metrics_rect.position.x += 380.0
+		metrics_rect.size.x -= 380.0
+		metrics.position = metrics_rect.position
+		metrics.size = metrics_rect.size
+	var center := find_child("CampCenterSummary", true, false) as Control
+	if center != null:
+		var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
+		center.position = center_rect.position
+		center.size = center_rect.size
+	var expedition := find_child("ExpeditionPanelContent", true, false) as Control
+	if expedition != null:
+		var expedition_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
+		expedition.position = expedition_rect.position
+		expedition.size = expedition_rect.size
 
 
 func _update_parent_action_state() -> void:

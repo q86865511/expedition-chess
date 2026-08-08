@@ -135,9 +135,9 @@ func relocalize(localized_text: Dictionary) -> void:
 		label.text = _text(_label_key(setting_id))
 		var editor := _editors.get(setting_id) as Control
 		if editor != null:
-			editor.tooltip_text = label.text
+			editor.set_meta(&"accessible_text", label.text)
 		if editor is CheckButton:
-			(editor as CheckButton).text = label.text
+			(editor as CheckButton).text = ""
 		elif editor is OptionButton:
 			var options := editor as OptionButton
 			for index: int in options.item_count:
@@ -160,9 +160,18 @@ func _build_editors() -> void:
 	# row 1：SETTINGS 的 ProductionScreen 自己已經在 row 0 掛了一條狀態列
 	# （動作失敗用），draft 驗證訊息往上疊一格才不會兩句話互相蓋住（G2 F1）。
 	_status_view.attach(self, 1)
+	var scroll := ScrollContainer.new()
+	scroll.name = "SettingsScroll"
+	scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	add_child(scroll)
 	var rows := VBoxContainer.new()
 	rows.name = "SettingEditors"
-	add_child(rows)
+	rows.theme_type_variation = &"ExpeditionSettingsRows"
+	rows.custom_minimum_size = Vector2(1116.0, 0.0)
+	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(rows)
 	_add_option(rows, &"locale", ["zh_TW", "en"], String(_draft.locale))
 	_add_option(rows, &"ui_scale_percent", ["100", "125", "150"], str(_draft.ui_scale_percent))
 	_add_option(
@@ -198,6 +207,7 @@ func _add_option(
 ) -> void:
 	var row := _add_labeled_row(parent, setting_id)
 	var editor := OptionButton.new()
+	editor.theme_type_variation = &"ExpeditionSettingsOption"
 	_prepare_editor(editor, setting_id)
 	for value: String in values:
 		editor.add_item(_option_text(setting_id, value))
@@ -215,8 +225,9 @@ func _add_toggle(
 ) -> void:
 	var row := _add_labeled_row(parent, setting_id)
 	var editor := CheckButton.new()
+	editor.theme_type_variation = &"ExpeditionSettingsToggle"
 	_prepare_editor(editor, setting_id)
-	editor.text = _text(_label_key(setting_id))
+	editor.text = ""
 	editor.button_pressed = current
 	editor.toggled.connect(_on_toggle_changed.bind(setting_id))
 	row.add_child(editor)
@@ -247,7 +258,10 @@ func _prepare_editor(editor: Control, setting_id: StringName) -> void:
 	editor.name = String(setting_id).replace(".", "_").to_pascal_case()
 	editor.focus_mode = Control.FOCUS_ALL
 	editor.set_meta(&"setting_id", setting_id)
-	editor.tooltip_text = _text(_label_key(setting_id))
+	if editor is BaseButton:
+		editor.set_meta(&"expedition_theme_fixed_minimum", true)
+	editor.set_meta(&"accessible_text", _text(_label_key(setting_id)))
+	editor.tooltip_text = ""
 	_editors[setting_id] = editor
 
 
@@ -260,6 +274,7 @@ func _add_labeled_row(
 	parent.add_child(row)
 	var label := Label.new()
 	label.text = _text(_label_key(setting_id))
+	label.theme_type_variation = &"ExpeditionSettingsLabel"
 	label.custom_minimum_size.x = 190.0
 	row.add_child(label)
 	_labels[setting_id] = label

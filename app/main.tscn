@@ -60,10 +60,5 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="ViewportCoordinator" type="Node" parent="AppRoot" node_paths=PackedStringArray("world_container_path", "world_viewport_path", "ui_layer_path", "ui_root_path", "presentation_host_path")]
+[node name="ViewportCoordinator" type="Node" parent="AppRoot"]
 script = ExtResource("2_viewport")
-world_container_path = NodePath("../WorldViewportContainer")
-world_viewport_path = NodePath("../WorldViewportContainer/WorldViewport")
-ui_layer_path = NodePath("../UiLayer")
-ui_root_path = NodePath("../UiLayer/UiRoot")
-presentation_host_path = NodePath("../UiLayer/UiRoot/PresentationHost")

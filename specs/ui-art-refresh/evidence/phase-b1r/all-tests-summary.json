@@ -1,0 +1,30 @@
+{
+	"suite": "All",
+	"exit_code": 0,
+	"started_at_utc": "2026-08-08T07:01:43Z",
+	"finished_at_utc": "2026-08-08T07:15:35Z",
+	"godot_version": "4.7.stable.official",
+	"gut": {
+		"scripts": 304,
+		"tests": 1213,
+		"passing_tests": 1213,
+		"assertions": 25122,
+		"failures": 0
+	},
+	"suite_exit_codes": {
+		"Import": 0,
+		"Smoke": 0,
+		"Gut": 0,
+		"Content": 0,
+		"Canonical": 0,
+		"Combat": 0,
+		"Expedition": 0,
+		"ActEliminationGate": 0,
+		"Spec": 0
+	},
+	"source_reports": [
+		"artifacts/test/runner-execution.json",
+		"artifacts/test/gut.godot.log",
+		"artifacts/test/gut.xml"
+	]
+}

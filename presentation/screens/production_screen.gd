@@ -16,13 +16,6 @@ const NODE_CHOICE_RESULT_NODE: String = "NodeChoiceResult"
 const PREPARE_ACTION_GROUP_SELECTOR: StringName = &"PrepareActionGroupSelector"
 const PREPARE_ACTION_GROUPS: Array[Dictionary] = [
 	{
-		"id": &"shop",
-		"label_key": &"prepare.group.shop",
-		"actions": [
-			&"prepare.refresh", &"prepare.buy", &"prepare.xp", &"prepare.sell",
-		],
-	},
-	{
 		"id": &"forge_equipment",
 		"label_key": &"prepare.group.forge_equipment",
 		"actions": [
@@ -36,6 +29,7 @@ const PREPARE_ACTION_GROUPS: Array[Dictionary] = [
 		"label_key": &"prepare.group.party",
 		"actions": [
 			&"prepare.unit", &"prepare.move_board", &"prepare.move_bench",
+			&"prepare.sell",
 		],
 	},
 	{
@@ -340,7 +334,7 @@ func _bind_localized_controls() -> void:
 	# G2 H3：常駐錯誤呈現面。每個 staged route 都要有，才不會出現「某些畫面
 	# 操作失敗完全沒回饋」的死角。
 	var status_rect := (
-		_layout_shell.current_region_rect(ProductionLayoutShell.REGION_STATUS)
+		_layout_shell.current_content_rect(ProductionLayoutShell.REGION_STATUS)
 		if _layout_shell != null
 		else Rect2()
 	)
@@ -394,6 +388,7 @@ func _install_b1_layout() -> void:
 		title.size = title_rect.size
 		title.theme_type_variation = &"ExpeditionTitle"
 		title.custom_minimum_size = Vector2(300.0, 0.0)
+		title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var composition := get_node_or_null(^"Composition") as Control
 	if composition != null:
@@ -408,7 +403,9 @@ func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
 	facilities.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout_content(ProductionLayoutShell.REGION_LEFT).add_child(facilities)
 	for action_id: StringName in action_ids.slice(0, 5):
-		facilities.add_child(_new_action_button(action_id))
+		var facility := _new_action_button(action_id)
+		facility.set_meta(&"expedition_theme_fixed_minimum", true)
+		facilities.add_child(facility)
 	var primary := HBoxContainer.new()
 	primary.name = "CampPrimaryActions"
 	primary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -425,6 +422,7 @@ func _new_action_button(action_id: StringName) -> Button:
 	button.name = _button_name(action_id)
 	button.text = _context.resolve_text(action_id)
 	button.focus_mode = Control.FOCUS_ALL
+	button.clip_text = true
 	button.set_meta(&"action_id", action_id)
 	return button
 
@@ -441,11 +439,20 @@ func _build_prepare_action_controls(
 				default_group_index = index
 				break
 	_prepare_action_group_pages.clear()
+	_build_prepare_shop_controls(controls, action_ids, staged_snapshot)
+
+	var secondary := VBoxContainer.new()
+	secondary.name = "PrepareSecondaryActions"
+	secondary.custom_minimum_size = Vector2(180.0, 0.0)
+	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	controls.add_child(secondary)
 	_prepare_action_group_selector = OptionButton.new()
 	_prepare_action_group_selector.name = PREPARE_ACTION_GROUP_SELECTOR
 	_prepare_action_group_selector.focus_mode = Control.FOCUS_ALL
+	_prepare_action_group_selector.clip_text = true
 	_prepare_action_group_selector.allow_reselect = true
-	_prepare_action_group_selector.custom_minimum_size = Vector2(180.0, 48.0)
+	_prepare_action_group_selector.custom_minimum_size = Vector2(0.0, 48.0)
+	_prepare_action_group_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_prepare_action_group_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_prepare_action_group_selector.set_meta(
 		&"accessible_text",
@@ -458,19 +465,25 @@ func _build_prepare_action_controls(
 		)
 		var group_index := _prepare_action_group_selector.item_count - 1
 		_prepare_action_group_selector.set_item_metadata(group_index, label_key)
-	controls.add_child(_prepare_action_group_selector)
+	secondary.add_child(_prepare_action_group_selector)
 
+	var page_scroll := ScrollContainer.new()
+	page_scroll.name = "PrepareActionGroupScroll"
+	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	page_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	secondary.add_child(page_scroll)
 	var pages := Control.new()
 	pages.name = "PrepareActionGroupPages"
-	pages.custom_minimum_size = Vector2(600.0, 144.0)
+	pages.custom_minimum_size = Vector2(156.0, 0.0)
 	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	controls.add_child(pages)
+	page_scroll.add_child(pages)
 	for group_index: int in PREPARE_ACTION_GROUPS.size():
 		var group: Dictionary = PREPARE_ACTION_GROUPS[group_index]
 		var page := GridContainer.new()
 		page.name = "Group%s" % String(group["id"]).to_pascal_case()
-		page.columns = 2
+		page.columns = 1
 		page.set_anchors_preset(Control.PRESET_FULL_RECT)
 		page.visible = group_index == default_group_index
 		pages.add_child(page)
@@ -480,19 +493,149 @@ func _build_prepare_action_controls(
 			if action_ids.has(action_id):
 				page.add_child(_new_action_button(action_id))
 
-	var pinned := GridContainer.new()
+	var pinned := VBoxContainer.new()
 	pinned.name = "PinnedActions"
-	pinned.columns = 2
-	pinned.custom_minimum_size = Vector2(330.0, 72.0)
-	pinned.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	pinned.custom_minimum_size = Vector2(220.0, 0.0)
+	pinned.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(pinned)
 	for action_id: StringName in PREPARE_PINNED_ACTIONS:
 		if action_ids.has(action_id):
-			pinned.add_child(_new_action_button(action_id))
+			var action := _new_action_button(action_id)
+			action.set_meta(&"expedition_theme_fixed_minimum", true)
+			pinned.add_child(action)
 	_prepare_action_group_selector.item_selected.connect(
 		_on_prepare_action_group_selected
 	)
 	_prepare_action_group_selector.select(default_group_index)
+
+
+func _build_prepare_shop_controls(
+	controls: HBoxContainer,
+	action_ids: Array[StringName],
+	snapshot: RunPresentationSnapshot
+) -> void:
+	var shop_shell := HBoxContainer.new()
+	shop_shell.name = "PrepareShopBand"
+	shop_shell.custom_minimum_size = Vector2(740.0, 0.0)
+	shop_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_shell.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	shop_shell.clip_contents = true
+	controls.add_child(shop_shell)
+	var cards_column := VBoxContainer.new()
+	cards_column.name = "PrepareShopCardsColumn"
+	cards_column.theme_type_variation = &"ExpeditionShopColumn"
+	cards_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_shell.add_child(cards_column)
+	var shop_header := HBoxContainer.new()
+	shop_header.name = "PrepareShopHeader"
+	cards_column.add_child(shop_header)
+	var heading := Label.new()
+	heading.text = _context.resolve_text(&"prepare.panel.shop")
+	heading.theme_type_variation = &"ExpeditionHeading"
+	heading.custom_minimum_size = Vector2(120.0, 0.0)
+	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading.clip_text = true
+	heading.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	shop_header.add_child(heading)
+	for metric: Array in _prepare_shop_metrics(snapshot):
+		var label := Label.new()
+		label.text = "%s %s" % [
+			_context.resolve_text(StringName(metric[0])),
+			String(metric[1]),
+		]
+		label.theme_type_variation = &"ExpeditionMetric"
+		label.custom_minimum_size = Vector2(
+			150.0 if StringName(metric[0]) == &"prepare.resource.level_xp" else 86.0,
+			0.0
+		)
+		label.clip_text = true
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		shop_header.add_child(label)
+	var cards := HBoxContainer.new()
+	cards.name = "PrepareShopCards"
+	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	cards_column.add_child(cards)
+	if snapshot != null and snapshot.economy != null:
+		for offer: ShopOffer in snapshot.economy.shop_offers:
+			var card := Button.new()
+			card.name = "ShopCard%s" % String(offer.offer_id).to_pascal_case()
+			card.text = "%s\n%s %d  ·  ★1" % [
+				localized_content_text(offer.unit_def_id),
+				_context.resolve_text(&"prepare.resource.gold"),
+				offer.cost,
+			]
+			card.theme_type_variation = &"ExpeditionShopCard"
+			card.custom_minimum_size = Vector2(96.0, 72.0)
+			card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			card.focus_mode = Control.FOCUS_ALL
+			card.clip_text = true
+			card.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			card.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+			card.toggle_mode = false
+			card.set_meta(&"shop_offer_id", offer.offer_id)
+			card.set_meta(&"accessible_text", card.text)
+			card.set_meta(&"expedition_theme_fixed_minimum", true)
+			if cards.get_child_count() == 0:
+				card.set_meta(&"action_id", &"prepare.buy")
+			card.pressed.connect(
+				_on_prepare_shop_card_pressed.bind(offer.offer_id)
+			)
+			cards.add_child(card)
+	if cards.get_child_count() == 0 and action_ids.has(&"prepare.buy"):
+		var empty_buy := _new_action_button(&"prepare.buy")
+		empty_buy.theme_type_variation = &"ExpeditionShopCard"
+		empty_buy.custom_minimum_size = Vector2(96.0, 72.0)
+		empty_buy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		empty_buy.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		empty_buy.set_meta(&"expedition_theme_fixed_minimum", true)
+		empty_buy.disabled = true
+		cards.add_child(empty_buy)
+	var shop_actions := GridContainer.new()
+	shop_actions.name = "PrepareShopActions"
+	shop_actions.columns = 1
+	shop_actions.custom_minimum_size = Vector2(170.0, 0.0)
+	shop_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	shop_shell.add_child(shop_actions)
+	for action_id: StringName in [
+		&"prepare.refresh", &"prepare.xp",
+	]:
+		if action_ids.has(action_id):
+			var action := _new_action_button(action_id)
+			action.custom_minimum_size = Vector2(170.0, 48.0)
+			action.set_meta(&"expedition_theme_fixed_minimum", true)
+			shop_actions.add_child(action)
+
+
+func _prepare_shop_metrics(snapshot: RunPresentationSnapshot) -> Array[Array]:
+	var gold := "-"
+	var level_xp := "-"
+	if snapshot != null:
+		if snapshot.economy != null:
+			gold = str(snapshot.economy.gold)
+			level_xp = "%s/%s" % [snapshot.economy.level, snapshot.economy.xp]
+	return [
+		[&"prepare.resource.gold", gold],
+		[&"prepare.resource.level_xp", level_xp],
+	]
+
+
+func _on_prepare_shop_card_pressed(offer_id: StringName) -> void:
+	var composition := get_node_or_null(^"Composition") as RunPrepareScreen
+	if composition != null:
+		composition.select_shop_offer(offer_id)
+	var trigger: Button
+	for node: Node in find_children("ShopCard*", "Button", true, false):
+		var card := node as Button
+		if card != null and StringName(
+			card.get_meta(&"shop_offer_id", &"")
+		) == offer_id:
+			trigger = card
+			break
+	if trigger != null:
+		_dispatch_action(&"prepare.buy", trigger)
 
 
 func _on_prepare_action_group_selected(index: int) -> void:

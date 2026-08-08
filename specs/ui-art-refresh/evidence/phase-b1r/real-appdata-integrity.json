@@ -1,0 +1,37 @@
+{
+	"primary_settings": {
+		"relative_path": "Godot/app_userdata/遠征棋/settings-v1.json",
+		"before": {
+			"length": 361,
+			"creation_time_utc": "2026-08-07T07:33:19.8991766Z",
+			"last_write_time_utc": "2026-08-07T11:47:30.9682292Z",
+			"sha256": "ae956ca13eaf888b64de24e7c24b25bd0a0e48c63b4a6ec0df4dcad1b10f15f5"
+		},
+		"after": {
+			"length": 361,
+			"creation_time_utc": "2026-08-07T07:33:19.8991766Z",
+			"last_write_time_utc": "2026-08-07T11:47:30.9682292Z",
+			"sha256": "ae956ca13eaf888b64de24e7c24b25bd0a0e48c63b4a6ec0df4dcad1b10f15f5"
+		},
+		"unchanged": true
+	},
+	"auxiliary_baseline_anomaly": {
+		"relative_path": "Godot/app_userdata/遠征棋.bak/settings-v1.json",
+		"before": {
+			"exists": true,
+			"length": 361,
+			"creation_time_utc": "2026-07-29T14:09:39.0963339Z",
+			"last_write_time_utc": "2026-07-31T12:00:36.7339065Z",
+			"sha256": "8dcafdd40a6715119077a5bd4ac78576f6abce89ebbd04a63284c63c46efb88c"
+		},
+		"after": {
+			"exists": false
+		},
+		"attribution": "unknown; no B1R command targets this path"
+	},
+	"isolation": {
+		"appdata": "artifacts/ui-art-refresh/phase-b1r/profile/AppData/Roaming",
+		"localappdata": "artifacts/ui-art-refresh/phase-b1r/profile/AppData/Local",
+		"fresh_profile_delete_guard": "resolved target must remain under artifacts/ui-art-refresh/phase-b1r"
+	}
+}

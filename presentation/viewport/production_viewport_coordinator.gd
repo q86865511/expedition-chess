@@ -3,11 +3,11 @@ extends Node
 
 const INVALID_TREE: StringName = &"PRODUCTION_VIEWPORT_TREE_INVALID"
 
-@export var world_container_path: NodePath
-@export var world_viewport_path: NodePath
-@export var ui_layer_path: NodePath
-@export var ui_root_path: NodePath
-@export var presentation_host_path: NodePath
+@export var world_container_path: NodePath = ^"../WorldViewportContainer"
+@export var world_viewport_path: NodePath = ^"../WorldViewportContainer/WorldViewport"
+@export var ui_layer_path: NodePath = ^"../UiLayer"
+@export var ui_root_path: NodePath = ^"../UiLayer/UiRoot"
+@export var presentation_host_path: NodePath = ^"../UiLayer/UiRoot/PresentationHost"
 
 var _world_policy := WorldViewportPolicy.new()
 var _ui_policy := UiScaleRoot.new()
@@ -71,7 +71,14 @@ func synchronize(window_size: Vector2i) -> StringName:
 	if not mapper_error.is_empty():
 		return mapper_error
 	var world_rect: Rect2 = world_layout["world_rect"]
-	world_viewport.size = _world_policy.world_size()
+	var authored_world_size := _world_policy.world_size()
+	if world_viewport.size != authored_world_size:
+		var restores_stretch := world_container.stretch
+		if restores_stretch:
+			world_container.stretch = false
+		world_viewport.size = authored_world_size
+		if restores_stretch:
+			world_container.stretch = true
 	world_viewport.canvas_item_default_texture_filter = (
 		Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	)

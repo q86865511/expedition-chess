@@ -174,7 +174,7 @@ func _build_expedition_controls() -> void:
 func _metric_label(key: StringName, value: String) -> Label:
 	var label := Label.new()
 	label.text = "%s  %s" % [_localized_ui_text(key), value]
-	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.theme_type_variation = &"ExpeditionMetric"
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return label

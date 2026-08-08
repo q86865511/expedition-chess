@@ -48,6 +48,8 @@ func test_zh_tw_probe_has_engine_font_fallback_and_all_required_glyphs() -> void
 	)
 
 	var label := fixture.get_node(^"CjkProbe") as Label
+	fixture.theme = load("res://theme/expedition_theme.tres") as Theme
+	add_child(fixture)
 	var applied: Variant = typography.call(
 		&"apply_to",
 		label,
@@ -60,4 +62,20 @@ func test_zh_tw_probe_has_engine_font_fallback_and_all_required_glyphs() -> void
 		label.has_theme_font_override(&"font"),
 		"bundled Noto Sans TC must come from Theme; overrides are fallback-only"
 	)
-	assert_not_null(label.get_theme_font(&"font"))
+	var effective_font := label.get_theme_font(&"font")
+	assert_not_null(effective_font)
+	assert_true(
+		effective_font is FontVariation,
+		"the rendered Label must resolve the bundled Theme FontVariation"
+	)
+	if effective_font is FontVariation:
+		var effective_variation := effective_font as FontVariation
+		assert_eq(
+			effective_variation.base_font.resource_path,
+			"res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf"
+		)
+		for index: int in REQUIRED_ZH_TW_PROBE.length():
+			assert_true(
+				effective_font.has_char(REQUIRED_ZH_TW_PROBE.unicode_at(index)),
+				"effective Label font must render the probe glyph"
+			)

@@ -4,11 +4,13 @@ extends Control
 const REFERENCE_SIZE: Vector2 = Vector2(1280.0, 720.0)
 const SAFE_MARGIN: float = 24.0
 const GUTTER: float = 16.0
-const TOP_HEIGHT: float = 72.0
+const TOP_HEIGHT: float = 84.0
 const BOTTOM_HEIGHT: float = 136.0
-const PREPARE_BOTTOM_HEIGHT: float = 196.0
+const PREPARE_BOTTOM_HEIGHT: float = 140.0
 const SIDE_WIDTH: float = 280.0
 const PANEL_CONTENT_MARGIN: Vector2 = Vector2(16.0, 12.0)
+const STATUS_HEIGHT: float = 44.0
+const STATUS_GUTTER: float = 8.0
 
 const REGION_TOP: StringName = &"top"
 const REGION_LEFT: StringName = &"left"
@@ -37,12 +39,14 @@ func build(route_kind: StringName = &"") -> void:
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
 	_add_panel(REGION_TOP, "TopRegion", current_region_rect(REGION_TOP), &"ExpeditionTopBar", HBoxContainer.new())
-	_add_panel(REGION_LEFT, "LeftRegion", current_region_rect(REGION_LEFT), &"ExpeditionPanel", VBoxContainer.new())
-	_add_panel(REGION_CENTER, "CenterRegion", current_region_rect(REGION_CENTER), &"ExpeditionPanel", VBoxContainer.new())
-	_add_panel(REGION_RIGHT, "RightRegion", current_region_rect(REGION_RIGHT), &"ExpeditionPanel", VBoxContainer.new())
+	var left_variation := &"ExpeditionPrimaryPanel" if route_kind == &"CAMP_WORLD" else &"ExpeditionSecondaryPanel"
+	var center_variation := &"ExpeditionBoardPanel" if route_kind == &"RUN_PREPARE" else &"ExpeditionSecondaryPanel"
+	_add_panel(REGION_LEFT, "LeftRegion", current_region_rect(REGION_LEFT), left_variation, VBoxContainer.new())
+	_add_panel(REGION_CENTER, "CenterRegion", current_region_rect(REGION_CENTER), center_variation, VBoxContainer.new())
+	_add_panel(REGION_RIGHT, "RightRegion", current_region_rect(REGION_RIGHT), &"ExpeditionSecondaryPanel", VBoxContainer.new())
 	_add_panel(REGION_BOTTOM, "BottomRegion", current_region_rect(REGION_BOTTOM), &"ExpeditionActionBar", HBoxContainer.new())
+	_add_panel(REGION_STATUS, "StatusRegion", current_region_rect(REGION_STATUS), &"ExpeditionStatusPanel", HBoxContainer.new())
 	_add_control_region(REGION_OVERLAY, "OverlayRegion", Rect2(Vector2.ZERO, REFERENCE_SIZE))
-	_add_control_region(REGION_STATUS, "StatusRegion", current_region_rect(REGION_STATUS))
 
 
 func content(region: StringName) -> Control:
@@ -55,7 +59,9 @@ static func region_rect(region: StringName) -> Rect2:
 
 static func region_rect_for(region: StringName, bottom_height: float) -> Rect2:
 	var content_top := SAFE_MARGIN + TOP_HEIGHT + GUTTER
-	var content_bottom := REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height - GUTTER
+	var footer_top := REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height
+	var status_top := footer_top - STATUS_GUTTER - STATUS_HEIGHT
+	var content_bottom := status_top - STATUS_GUTTER
 	var content_height := content_bottom - content_top
 	match region:
 		REGION_TOP:
@@ -70,7 +76,7 @@ static func region_rect_for(region: StringName, bottom_height: float) -> Rect2:
 		REGION_BOTTOM:
 			return Rect2(SAFE_MARGIN, REFERENCE_SIZE.y - SAFE_MARGIN - bottom_height, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, bottom_height)
 		REGION_STATUS:
-			return Rect2(320.0, content_bottom - 40.0, 640.0, 40.0)
+			return Rect2(SAFE_MARGIN, status_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, STATUS_HEIGHT)
 	return Rect2(Vector2.ZERO, REFERENCE_SIZE)
 
 
@@ -80,7 +86,7 @@ func current_region_rect(region: StringName) -> Rect2:
 
 func current_content_rect(region: StringName) -> Rect2:
 	var rect := current_region_rect(region)
-	if region in [REGION_TOP, REGION_LEFT, REGION_CENTER, REGION_RIGHT, REGION_BOTTOM]:
+	if region in [REGION_TOP, REGION_LEFT, REGION_CENTER, REGION_RIGHT, REGION_BOTTOM, REGION_STATUS]:
 		return Rect2(
 			rect.position + PANEL_CONTENT_MARGIN,
 			rect.size - PANEL_CONTENT_MARGIN * 2.0

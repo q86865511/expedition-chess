@@ -97,7 +97,7 @@ func test_start_combat_is_the_last_action_in_the_prepare_focus_ring() -> void:
 	)
 	if group_selector == null:
 		return
-	assert_eq(group_selector.item_count, 4)
+	assert_eq(group_selector.item_count, 3)
 	var controls: Array = screen.call(&"_ordered_focus_controls")
 	assert_false(controls.is_empty())
 	if not controls.is_empty():
@@ -174,12 +174,23 @@ func test_prepare_groups_keep_every_action_reachable_inside_720p() -> void:
 			var action_id := StringName(button.get_meta(&"action_id"))
 			seen[action_id] = true
 			var rect := button.get_global_rect()
+			var scroll := _ancestor_scroll_container(button)
+			var visible_rect := scroll.get_global_rect() if scroll != null else rect
 			assert_true(
-				Rect2(Vector2.ZERO, Vector2(1280.0, 720.0)).encloses(rect),
-				"%s must stay inside 1280x720; rect=%s" % [String(action_id), rect]
+				Rect2(Vector2.ZERO, Vector2(1280.0, 720.0)).encloses(visible_rect),
+				"%s visible surface must stay inside 1280x720; rect=%s" % [String(action_id), visible_rect]
 			)
 	for action_id: StringName in action_ids.slice(0, 20):
 		assert_true(seen.has(action_id), "%s must remain reachable" % action_id)
+
+
+func _ancestor_scroll_container(control: Control) -> ScrollContainer:
+	var ancestor := control.get_parent()
+	while ancestor != null:
+		if ancestor is ScrollContainer:
+			return ancestor as ScrollContainer
+		ancestor = ancestor.get_parent()
+	return null
 
 
 func test_prepare_with_node_choice_defaults_to_advance_group() -> void:
@@ -216,7 +227,7 @@ func test_prepare_with_node_choice_defaults_to_advance_group() -> void:
 	assert_not_null(selector)
 	if selector == null:
 		return
-	assert_eq(selector.selected, 3)
+	assert_eq(selector.selected, 2)
 	var advance_page := screen.find_child(
 		"GroupAdvance", true, false
 	) as GridContainer

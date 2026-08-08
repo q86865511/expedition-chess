@@ -1,15 +1,23 @@
-[gd_resource type="Theme" load_steps=13 format=3]
+[gd_resource type="Theme" load_steps=17 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf" id="1_font"]
 [ext_resource type="Texture2D" path="res://theme/ui-panel-frame.svg" id="2_panel"]
 [ext_resource type="Texture2D" path="res://theme/ui-focus-frame.svg" id="3_focus"]
 
+[sub_resource type="FontVariation" id="FontVariation_regular"]
+base_font = ExtResource("1_font")
+variation_opentype = {"wght": 400.0}
+
+[sub_resource type="FontVariation" id="FontVariation_heading"]
+base_font = ExtResource("1_font")
+variation_opentype = {"wght": 600.0}
+
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
 texture = ExtResource("2_panel")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
 content_margin_left = 16.0
 content_margin_top = 12.0
 content_margin_right = 16.0
@@ -29,11 +37,11 @@ draw_center = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
 bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
 border_width_bottom = 2
-border_color = Color(0.843137, 0.764706, 0.603922, 1)
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
 corner_radius_top_left = 2
 corner_radius_top_right = 2
 corner_radius_bottom_right = 2
@@ -77,10 +85,10 @@ content_margin_bottom = 7.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
 bg_color = Color(0.0784314, 0.14902, 0.227451, 0.72)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
 border_color = Color(0.411765, 0.443137, 0.482353, 1)
 corner_radius_top_left = 2
 corner_radius_top_right = 2
@@ -114,8 +122,41 @@ border_color = Color(0.960784, 0.941176, 0.87451, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_background"]
 bg_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_secondary_panel"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 0.65)
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_status"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.98)
+border_width_left = 3
+border_color = Color(0.184314, 0.603922, 0.588235, 1)
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.184314, 0.603922, 0.588235, 1)
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+
 [resource]
-default_font = ExtResource("1_font")
+default_font = SubResource("FontVariation_regular")
 default_font_size = 18
 Button/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
 Button/colors/font_hover_color = Color(0.960784, 0.941176, 0.87451, 1)
@@ -151,19 +192,48 @@ ExpeditionBackground/base_type = &"Panel"
 ExpeditionBackground/styles/panel = SubResource("StyleBoxFlat_background")
 ExpeditionPanel/base_type = &"PanelContainer"
 ExpeditionPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionPrimaryPanel/base_type = &"PanelContainer"
+ExpeditionPrimaryPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionSecondaryPanel/base_type = &"PanelContainer"
+ExpeditionSecondaryPanel/styles/panel = SubResource("StyleBoxFlat_secondary_panel")
+ExpeditionBoardPanel/base_type = &"PanelContainer"
+ExpeditionBoardPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionBoardStack/base_type = &"VBoxContainer"
+ExpeditionBoardStack/constants/separation = 8
+ExpeditionStatusPanel/base_type = &"PanelContainer"
+ExpeditionStatusPanel/styles/panel = SubResource("StyleBoxFlat_status")
+ExpeditionShopCard/base_type = &"Button"
+ExpeditionShopCard/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCard/font_sizes/font_size = 14
+ExpeditionShopCard/styles/normal = SubResource("StyleBoxFlat_shop_card")
+ExpeditionShopCard/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCard/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCard/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopColumn/base_type = &"VBoxContainer"
+ExpeditionShopColumn/constants/separation = 8
 ExpeditionTopBar/base_type = &"PanelContainer"
 ExpeditionTopBar/styles/panel = SubResource("StyleBoxTexture_panel")
 ExpeditionActionBar/base_type = &"PanelContainer"
 ExpeditionActionBar/styles/panel = SubResource("StyleBoxTexture_panel")
 ExpeditionTitle/base_type = &"Label"
 ExpeditionTitle/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionTitle/fonts/font = SubResource("FontVariation_heading")
 ExpeditionTitle/font_sizes/font_size = 32
 ExpeditionHeading/base_type = &"Label"
 ExpeditionHeading/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionHeading/fonts/font = SubResource("FontVariation_heading")
 ExpeditionHeading/font_sizes/font_size = 24
 ExpeditionAuxiliary/base_type = &"Label"
 ExpeditionAuxiliary/colors/font_color = Color(0.411765, 0.443137, 0.482353, 1)
 ExpeditionAuxiliary/font_sizes/font_size = 16
+ExpeditionSection/base_type = &"Label"
+ExpeditionSection/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionSection/fonts/font = SubResource("FontVariation_heading")
+ExpeditionSection/font_sizes/font_size = 16
+ExpeditionMetric/base_type = &"Label"
+ExpeditionMetric/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+ExpeditionMetric/fonts/font = SubResource("FontVariation_regular")
+ExpeditionMetric/font_sizes/font_size = 18
 ExpeditionFocus/base_type = &"Panel"
 ExpeditionFocus/styles/panel = SubResource("StyleBoxTexture_focus")
 ExpeditionPalette/colors/navy_950 = Color(0.0313726, 0.0588235, 0.0980392, 1)

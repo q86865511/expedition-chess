@@ -150,6 +150,10 @@ func buy_selected_offer() -> RunPresentationResult:
 	return request(intent)
 
 
+func select_shop_offer(offer_id: StringName) -> bool:
+	return _select_item_by_metadata(&"ShopSelector", String(offer_id))
+
+
 func buy_xp() -> RunPresentationResult:
 	return request(RunPresentationIntent.new(
 		RunPresentationIntent.Kind.BUY_XP
@@ -439,24 +443,26 @@ func _build_prepare_controls() -> void:
 	layout.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(layout)
 	var snapshot := _model.snapshot_clone() if _model != null else null
-	var metrics := HBoxContainer.new()
+	var metrics := Control.new()
 	metrics.name = "PrepareMetrics"
 	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
 	metrics_rect.position.x += 320.0
 	metrics_rect.size.x -= 320.0
 	metrics.position = metrics_rect.position
 	metrics.size = metrics_rect.size
+	metrics.clip_contents = true
 	metrics.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layout.add_child(metrics)
-	metrics.add_child(_metric_label(
+	var metric_labels: Array[Label] = []
+	metric_labels.append(_metric_label(
 		&"prepare.resource.hp",
 		str(snapshot.view.expedition_hp) if snapshot != null and snapshot.view != null else "-"
 	))
-	metrics.add_child(_metric_label(
+	metric_labels.append(_metric_label(
 		&"prepare.resource.gold",
 		str(snapshot.economy.gold) if snapshot != null and snapshot.economy != null else "-"
 	))
-	metrics.add_child(_metric_label(
+	metric_labels.append(_metric_label(
 		&"prepare.resource.level_xp",
 		"%s / %s" % [snapshot.economy.level, snapshot.economy.xp] if snapshot != null and snapshot.economy != null else "-"
 	))
@@ -466,12 +472,41 @@ func _build_prepare_controls() -> void:
 		_localized_ui_text(&"prepare.resource.capacity"),
 		str(displayed_capacity()),
 	]
-	capacity.theme_type_variation = &"ExpeditionAuxiliary"
+	capacity.theme_type_variation = &"ExpeditionMetric"
+	capacity.custom_minimum_size = Vector2(88.0, 0.0)
+	capacity.clip_text = true
+	capacity.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	capacity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	capacity.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	capacity.set_meta(&"typed_data_kind", &"population_capacity")
 	capacity.set_meta(&"accessible_text", capacity.text)
-	metrics.add_child(capacity)
+	metric_labels.append(capacity)
+	for index: int in metric_labels.size():
+		var metric := metric_labels[index]
+		metric.anchor_left = float(index) / float(metric_labels.size())
+		metric.anchor_right = float(index + 1) / float(metric_labels.size())
+		metric.anchor_top = 0.0
+		metric.anchor_bottom = 1.0
+		metric.offset_left = 8.0
+		metric.offset_right = -8.0
+		metric.offset_top = 0.0
+		metric.offset_bottom = 0.0
+		metrics.add_child(metric)
+
+	var contracts := VBoxContainer.new()
+	contracts.name = "PrepareContractSelectors"
+	contracts.visible = false
+	layout.add_child(contracts)
+	_add_selector(contracts, &"BoardSelector", Vector2.ZERO, &"board_draft")
+	_add_selector(contracts, &"BenchSelector", Vector2.ZERO, &"bench_draft")
+	_add_selector(contracts, &"ShopSelector", Vector2.ZERO, &"shop_offer")
+	_add_selector(
+		contracts,
+		&"InventorySelector",
+		Vector2.ZERO,
+		&"item_instance",
+		true
+	)
 
 	var left := VBoxContainer.new()
 	left.name = "PrepareLeftContent"
@@ -482,96 +517,129 @@ func _build_prepare_controls() -> void:
 	left.add_child(_heading(&"prepare.panel.party"))
 	_add_selector(
 		left,
-		&"BenchSelector",
-		Vector2(0.0, 112.0),
-		&"bench_draft"
+		&"BuildUnitSelector",
+		Vector2(0.0, 116.0),
+		&"unit_instance"
 	)
-	left.add_child(_heading(&"prepare.panel.shop"))
-	_add_selector(
-		left,
-		&"ShopSelector",
-		Vector2(0.0, 112.0),
-		&"shop_offer"
-	)
+	left.add_child(_heading(&"prepare.panel.synergies"))
+	left.add_child(_empty_label(&"prepare.empty.synergies"))
 
 	var center := VBoxContainer.new()
 	center.name = "PrepareCenterContent"
+	center.theme_type_variation = &"ExpeditionBoardStack"
 	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
 	center.position = center_rect.position
 	center.size = center_rect.size
 	layout.add_child(center)
 	center.add_child(_heading(&"prepare.panel.board"))
-	_add_selector(
-		center,
-		&"BoardSelector",
-		Vector2(0.0, 112.0),
-		&"board_draft"
-	)
-	var build_row := HBoxContainer.new()
-	build_row.name = "BuildRow"
-	build_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	center.add_child(build_row)
-	var inventory_column := VBoxContainer.new()
-	inventory_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	build_row.add_child(inventory_column)
-	inventory_column.add_child(_heading(&"prepare.panel.inventory"))
-	_add_selector(
-		inventory_column,
-		&"InventorySelector",
-		Vector2(0.0, 104.0),
-		&"item_instance",
-		true
-	)
-	var units_column := VBoxContainer.new()
-	units_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	build_row.add_child(units_column)
-	units_column.add_child(_heading(&"prepare.panel.units"))
-	_add_selector(
-		units_column,
-		&"BuildUnitSelector",
-		Vector2(0.0, 104.0),
-		&"unit_instance"
-	)
+	_build_board_grid(center)
+	center.add_child(_heading(&"prepare.panel.bench"))
+	_build_bench_row(center)
 
+	var right_scroll := ScrollContainer.new()
+	right_scroll.name = "PrepareRightScroll"
+	var right_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
+	right_scroll.position = right_rect.position
+	right_scroll.size = right_rect.size
+	right_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	right_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	layout.add_child(right_scroll)
 	var right := VBoxContainer.new()
 	right.name = "PrepareRightContent"
-	var right_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
-	right.position = right_rect.position
-	right.size = right_rect.size
-	layout.add_child(right)
+	right.custom_minimum_size = Vector2(maxf(220.0, right_rect.size.x - 20.0), 0.0)
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right_scroll.add_child(right)
 	right.add_child(_heading(&"prepare.panel.overflow"))
-	var overflow := ItemList.new()
-	overflow.name = "OverflowSelector"
-	overflow.custom_minimum_size = Vector2(0.0, 92.0)
-	overflow.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	overflow.focus_mode = Control.FOCUS_ALL
-	overflow.set_meta(&"typed_data_kind", &"item_overflow")
-	for item_id: String in overflow_ids():
-		overflow.add_item(_item_display_name(item_id, snapshot))
-		overflow.set_item_metadata(overflow.item_count - 1, item_id)
-	right.add_child(overflow)
+	var overflow_values := overflow_ids()
+	if overflow_values.is_empty():
+		right.add_child(_empty_label(&"prepare.empty.overflow"))
+	else:
+		var overflow := ItemList.new()
+		overflow.name = "OverflowSelector"
+		overflow.custom_minimum_size = Vector2(0.0, 84.0)
+		overflow.focus_mode = Control.FOCUS_ALL
+		overflow.set_meta(&"typed_data_kind", &"item_overflow")
+		for item_id: String in overflow_values:
+			overflow.add_item(_item_display_name(item_id, snapshot))
+			overflow.set_item_metadata(overflow.item_count - 1, item_id)
+		right.add_child(overflow)
 
 	right.add_child(_heading(&"prepare.panel.issues"))
-	var issues := ItemList.new()
-	issues.name = "DeploymentIssues"
-	issues.custom_minimum_size = Vector2(0.0, 92.0)
-	issues.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	issues.focus_mode = Control.FOCUS_ALL
-	issues.set_meta(&"typed_data_kind", &"deployment_issue")
 	var issue_codes := deployment_issue_codes()
 	var issue_message_keys := deployment_issue_message_keys()
-	for index: int in issue_codes.size():
-		issues.add_item(_localized_ui_text(issue_message_keys[index]))
-		issues.set_item_metadata(issues.item_count - 1, issue_codes[index])
-	right.add_child(issues)
+	if issue_codes.is_empty():
+		right.add_child(_empty_label(&"prepare.empty.issues"))
+	else:
+		var issues := ItemList.new()
+		issues.name = "DeploymentIssues"
+		issues.custom_minimum_size = Vector2(0.0, 84.0)
+		issues.focus_mode = Control.FOCUS_ALL
+		issues.set_meta(&"typed_data_kind", &"deployment_issue")
+		for index: int in issue_codes.size():
+			issues.add_item(_localized_ui_text(issue_message_keys[index]))
+			issues.set_item_metadata(issues.item_count - 1, issue_codes[index])
+		right.add_child(issues)
+	if snapshot == null or snapshot.node_choice_overlay == null:
+		right.add_child(_heading(&"prepare.panel.expedition"))
+		right.add_child(_empty_label(&"prepare.empty.expedition"))
 	_build_node_choice_overlay(snapshot, right)
 	_refresh_draft_selectors()
+
+
+func _build_board_grid(parent: VBoxContainer) -> void:
+	var grid := GridContainer.new()
+	grid.name = "BoardGrid"
+	grid.columns = 8
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	parent.add_child(grid)
+	for logical_y: int in range(4):
+		for logical_x: int in range(8):
+			var cell := Button.new()
+			cell.name = "BoardCell_%d_%d" % [logical_y, logical_x]
+			cell.custom_minimum_size = Vector2(56.0, 40.0)
+			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			cell.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			cell.focus_mode = Control.FOCUS_ALL
+			cell.clip_text = true
+			cell.set_meta(&"board_x", logical_x)
+			cell.set_meta(&"board_y", logical_y)
+			cell.set_meta(&"unit_instance_id", "")
+			cell.set_meta(&"expedition_theme_fixed_minimum", true)
+			cell.pressed.connect(_on_board_cell_pressed.bind(cell))
+			grid.add_child(cell)
+
+
+func _build_bench_row(parent: VBoxContainer) -> void:
+	var row := HBoxContainer.new()
+	row.name = "BenchRow"
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	parent.add_child(row)
+	for index: int in range(9):
+		var cell := Button.new()
+		cell.name = "BenchCell%d" % index
+		cell.custom_minimum_size = Vector2(48.0, 44.0)
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cell.focus_mode = Control.FOCUS_ALL
+		cell.clip_text = true
+		cell.set_meta(&"unit_instance_id", "")
+		cell.set_meta(&"expedition_theme_fixed_minimum", true)
+		cell.pressed.connect(_on_bench_cell_pressed.bind(cell))
+		row.add_child(cell)
+
+
+func _empty_label(key: StringName) -> Label:
+	var label := Label.new()
+	label.text = _localized_ui_text(key)
+	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return label
 
 
 func _heading(key: StringName) -> Label:
 	var label := Label.new()
 	label.text = _localized_ui_text(key)
-	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.theme_type_variation = &"ExpeditionSection"
 	return label
 
 
@@ -587,7 +655,10 @@ func _region_content_rect(region: StringName) -> Rect2:
 func _metric_label(key: StringName, value: String) -> Label:
 	var label := Label.new()
 	label.text = "%s  %s" % [_localized_ui_text(key), value]
-	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.theme_type_variation = &"ExpeditionMetric"
+	label.custom_minimum_size = Vector2(108.0, 0.0)
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	return label
@@ -734,6 +805,74 @@ func _refresh_draft_selectors() -> void:
 				unit.instance_id,
 				_tooltip_text(&"tooltip.star", unit.star)
 			)
+	_refresh_board_grid(snapshot)
+	_refresh_bench_row(snapshot)
+
+
+func _refresh_board_grid(snapshot: RunPresentationSnapshot) -> void:
+	var occupants: Dictionary = {}
+	if _draft_board != null:
+		for placement: BoardPlacementState in _draft_board.placements:
+			occupants[Vector2i(placement.logical_x, placement.logical_y)] = placement.unit_instance_id
+	var grid := _control(&"BoardGrid") as GridContainer
+	if grid == null:
+		return
+	for node: Node in grid.get_children():
+		var cell := node as Button
+		if cell == null:
+			continue
+		var coordinate := Vector2i(
+			int(cell.get_meta(&"board_x", -1)),
+			int(cell.get_meta(&"board_y", -1))
+		)
+		var unit_id := String(occupants.get(coordinate, ""))
+		cell.set_meta(&"unit_instance_id", unit_id)
+		cell.text = _unit_display_name(unit_id, snapshot) if not unit_id.is_empty() else ""
+		cell.tooltip_text = cell.text
+
+
+func _refresh_bench_row(snapshot: RunPresentationSnapshot) -> void:
+	var row := _control(&"BenchRow") as HBoxContainer
+	if row == null:
+		return
+	for index: int in row.get_child_count():
+		var cell := row.get_child(index) as Button
+		if cell == null:
+			continue
+		var unit_id := (
+			_draft_bench_unit_instance_ids[index]
+			if index < _draft_bench_unit_instance_ids.size()
+			else ""
+		)
+		cell.set_meta(&"unit_instance_id", unit_id)
+		cell.text = _unit_display_name(unit_id, snapshot) if not unit_id.is_empty() else ""
+		cell.tooltip_text = cell.text
+
+
+func _on_board_cell_pressed(cell: Button) -> void:
+	var unit_id := String(cell.get_meta(&"unit_instance_id", "")) if cell != null else ""
+	if not unit_id.is_empty():
+		_select_item_by_metadata(&"BoardSelector", unit_id)
+		_select_item_by_metadata(&"BuildUnitSelector", unit_id)
+
+
+func _on_bench_cell_pressed(cell: Button) -> void:
+	var unit_id := String(cell.get_meta(&"unit_instance_id", "")) if cell != null else ""
+	if not unit_id.is_empty():
+		_select_item_by_metadata(&"BenchSelector", unit_id)
+		_select_item_by_metadata(&"BuildUnitSelector", unit_id)
+
+
+func _select_item_by_metadata(selector_name: StringName, identity: String) -> bool:
+	var selector := _control(selector_name) as ItemList
+	if selector == null or identity.is_empty():
+		return false
+	selector.deselect_all()
+	for index: int in selector.item_count:
+		if String(selector.get_item_metadata(index)) == identity:
+			selector.select(index)
+			return true
+	return false
 
 
 func _append_typed_item(

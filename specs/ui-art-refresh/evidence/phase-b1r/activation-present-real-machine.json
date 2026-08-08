@@ -1,0 +1,47 @@
+{
+	"app_booted": true,
+	"audio_buses": [
+		"Master",
+		"Music",
+		"SFX",
+		"UI"
+	],
+	"diagnostic_visible": true,
+	"display_server": "Windows",
+	"expected_diagnostic": "present",
+	"fresh_process": true,
+	"headless": false,
+	"issues": [],
+	"locale": "zh_TW",
+	"ok": true,
+	"screenshot": "res://specs/ui-art-refresh/evidence/phase-b1r/activation-present-real-machine.png",
+	"screenshot_sha256": "2d6dc085b3124103968e6c540b9248a75d5b854b1fab9a378eab1bb8a3a17bcd",
+	"single_toggle": "reduced_motion",
+	"source_code": "PRODUCTION_VIEWPORT_TREE_INVALID",
+	"status_report": {
+		"authoritative_state": {},
+		"committed": true,
+		"fallback_active": true,
+		"message_key": "error.settings.activation_diagnostic",
+		"presentation_ok": false,
+		"retryable": true,
+		"source_code": "PRODUCTION_VIEWPORT_TREE_INVALID"
+	},
+	"viewport_runtime": {
+		"direct_probe": "PRODUCTION_VIEWPORT_TREE_INVALID",
+		"inside_tree": true,
+		"presentation_host_path": "",
+		"presentation_host_path_resolves": false,
+		"runtime_present": true,
+		"ui_layer_path": "",
+		"ui_layer_path_resolves": false,
+		"ui_root_path": "",
+		"ui_root_path_resolves": false,
+		"window_size": "(0, 0)",
+		"world_container_path": "",
+		"world_container_path_resolves": false,
+		"world_viewport_path": "",
+		"world_viewport_path_resolves": false
+	},
+	"visible_message": "已生效但畫面未更新（顯示已回退）：設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定"
+}

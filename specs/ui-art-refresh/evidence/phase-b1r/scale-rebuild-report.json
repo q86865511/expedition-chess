@@ -1,0 +1,10 @@
+{
+	"effective_scale": 100,
+	"ok": true,
+	"sequence": [
+		150,
+		"rebuild",
+		100
+	],
+	"start_button_minimum": "(24.0, 48.0)"
+}

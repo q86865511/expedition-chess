@@ -62,8 +62,10 @@ func _run() -> void:
 	await process_frame
 	for case: Dictionary in CASES:
 		await _capture(output_dir, &"RUN_PREPARE", "prepare", case)
+	await _capture_scale_rebuild(output_dir)
+	await _capture_node_choice(output_dir)
+	await _capture_status_band(output_dir)
 	await _capture_focus(output_dir)
-	await _capture_activation_probe(output_dir)
 	await _finish(output_dir)
 
 
@@ -87,8 +89,53 @@ func _capture(
 	if screen == null or screen.route_kind != expected_route:
 		_issues.append("route_mismatch:%s:%s" % [prefix, case["name"]])
 		return
+	if prefix == "prepare":
+		_validate_prepare_top_bar(screen, String(case["name"]))
+		_validate_prepare_content_regions(screen, String(case["name"]))
 	var path := "%s/%s-%s.png" % [output_dir, prefix, case["name"]]
 	_reports.append(_save_viewport(path, prefix, case))
+
+
+func _validate_prepare_top_bar(screen: Control, case_name: String) -> void:
+	var title := screen.get_node_or_null(^"Label") as Label
+	var metrics := screen.get_node_or_null(^"Composition/PrepareContent/PrepareMetrics") as Control
+	if title == null or metrics == null:
+		_issues.append("prepare_top_bar_missing:%s" % case_name)
+		return
+	var title_rect := title.get_global_rect()
+	var metrics_rect := metrics.get_global_rect()
+	if title_rect.intersects(metrics_rect):
+		_issues.append("prepare_top_bar_overlap:%s" % case_name)
+	var viewport_rect := get_root().get_visible_rect()
+	for node: Node in metrics.get_children():
+		var label := node as Label
+		if label == null:
+			continue
+		if not viewport_rect.encloses(label.get_global_rect()):
+			_issues.append("prepare_metric_overflow:%s:%s" % [case_name, label.name])
+
+
+func _validate_prepare_content_regions(screen: Control, case_name: String) -> void:
+	var shell := screen.get("_layout_shell") as ProductionLayoutShell
+	if shell == null:
+		_issues.append("prepare_layout_shell_missing:%s" % case_name)
+		return
+	var center_rect := shell.current_region_rect(ProductionLayoutShell.REGION_CENTER)
+	var status_rect := shell.current_region_rect(ProductionLayoutShell.REGION_STATUS)
+	var bottom_rect := shell.current_region_rect(ProductionLayoutShell.REGION_BOTTOM)
+	for node_path: NodePath in [
+		^"Composition/PrepareContent/PrepareCenterContent/BoardGrid",
+		^"Composition/PrepareContent/PrepareCenterContent/BenchRow",
+	]:
+		var control := screen.get_node_or_null(node_path) as Control
+		if control == null:
+			_issues.append("prepare_region_control_missing:%s:%s" % [case_name, node_path])
+			continue
+		var control_rect := control.get_global_rect()
+		if not center_rect.encloses(control_rect):
+			_issues.append("prepare_center_overflow:%s:%s" % [case_name, node_path])
+		if control_rect.intersects(status_rect) or control_rect.intersects(bottom_rect):
+			_issues.append("prepare_center_cross_region:%s:%s" % [case_name, node_path])
 
 
 func _capture_focus(output_dir: String) -> void:
@@ -118,148 +165,154 @@ func _capture_focus(output_dir: String) -> void:
 	))
 
 
-func _capture_activation_probe(output_dir: String) -> void:
-	var before := _legacy_english_probe()
-	var before_screen := Support.active_screen(_harness)
-	var injected := SettingsApplicationResult.committed_presentation_failure(
-		Support.candidate(100, &"default"),
+func _capture_scale_rebuild(output_dir: String) -> void:
+	_configure_window(Vector2i(1280, 720))
+	var scaled := Support.candidate(150, &"default")
+	scaled.locale = &"zh_TW"
+	var applied := _harness.root.settings_application_port().apply(scaled)
+	if not applied.ok:
+		_issues.append("scale_rebuild_150_apply_failed")
+		return
+	await process_frame
+	await process_frame
+	var reload_error := Support.reload_current_route(_harness)
+	if not reload_error.is_empty():
+		_issues.append("scale_rebuild_route_failed:%s" % reload_error)
+		return
+	await process_frame
+	await process_frame
+	var baseline := Support.candidate(100, &"default")
+	baseline.locale = &"zh_TW"
+	var restored := _harness.root.settings_application_port().apply(baseline)
+	await process_frame
+	await process_frame
+	var screen := Support.active_screen(_harness)
+	var start := _action_button(screen, &"prepare.start")
+	var report := {
+		"ok": restored.ok and start != null and start.custom_minimum_size.y == 48.0,
+		"sequence": [150, "rebuild", 100],
+		"start_button_minimum": start.custom_minimum_size if start != null else Vector2.ZERO,
+		"effective_scale": (
+			_harness.root.presentation_host.get_meta(
+				&"effective_theme_scale_percent", 0
+			)
+			if _harness.root.presentation_host != null
+			else 0
+		),
+	}
+	if not bool(report["ok"]):
+		_issues.append("scale_rebuild_baseline_not_restored")
+	_write_json("%s/scale-rebuild-report.json" % output_dir, report)
+	_reports.append(_save_viewport(
+		"%s/prepare-scale-rebuild-150-rebuild-100.png" % output_dir,
+		"prepare-scale-rebuild",
+		{"name": "150-rebuild-100", "size": Vector2i(1280, 720), "ui": 100}
+	))
+
+
+func _capture_node_choice(output_dir: String) -> void:
+	var screen := Support.active_screen(_harness)
+	var composition := screen.get_node_or_null(^"Composition") as RunPrepareScreen if screen != null else null
+	var context := screen.get("_context") as StagedScreenContext if screen != null else null
+	var live_context := screen.get("_live_context") as ProductionLiveScreenContext if screen != null else null
+	var snapshot := context.snapshot_clone() as RunPresentationSnapshot if context != null else null
+	if composition == null or live_context == null or snapshot == null:
+		_issues.append("node_choice_prepare_context_missing")
+		return
+	var overlay := NodeChoiceOverlaySnapshot.new()
+	overlay.choice_set_id = &"evidence.choice_set"
+	overlay.display_name_key = &"prepare.panel.expedition"
+	overlay.options = [
+		NodeChoiceOptionSnapshot.new(
+			&"choice_a", &"prepare.panel.party", &"prepare.panel.party",
+			&"prepare.empty.synergies", true
+		),
+		NodeChoiceOptionSnapshot.new(
+			&"choice_b", &"prepare.panel.inventory", &"prepare.panel.inventory",
+			&"prepare.empty.overflow", true
+		),
+		NodeChoiceOptionSnapshot.new(
+			&"choice_c", &"prepare.panel.shop", &"prepare.panel.shop",
+			&"prepare.empty.issues", true
+		),
+	]
+	snapshot.node_choice_overlay = overlay
+	var report := screen.call(&"_snapshot_board_validation_report", snapshot) as BoardValidationReport
+	var compose_error := composition.compose(snapshot, report, live_context.intent_port)
+	screen.refresh_interaction_state()
+	await process_frame
+	await process_frame
+	var scroll := screen.find_child("PrepareRightScroll", true, false) as ScrollContainer
+	var start := _action_button(screen, &"prepare.start")
+	var choice := screen.find_child("ChoiceSelector", true, false) as ItemList
+	var canvas := Rect2(Vector2.ZERO, Vector2(1280.0, 720.0))
+	var start_rect := start.get_global_rect() if start != null else Rect2()
+	var right_rect := scroll.get_global_rect() if scroll != null else Rect2()
+	var scenario := {
+		"ok": (
+			compose_error.is_empty()
+			and scroll != null
+			and choice != null
+			and start != null
+			and canvas.encloses(start_rect)
+			and not right_rect.intersects(start_rect)
+		),
+		"right_scroll_present": scroll != null,
+		"choice_count": choice.item_count if choice != null else 0,
+		"start_button_rect": start_rect,
+		"right_panel_rect": right_rect,
+	}
+	if not bool(scenario["ok"]):
+		_issues.append("node_choice_layout_failed:%s" % compose_error)
+	_write_json("%s/node-choice-layout-report.json" % output_dir, scenario)
+	_reports.append(_save_viewport(
+		"%s/prepare-node-choice-720p-ui100.png" % output_dir,
+		"prepare-node-choice",
+		{"name": "node-choice-720p-ui100", "size": Vector2i(1280, 720), "ui": 100}
+	))
+
+
+func _capture_status_band(output_dir: String) -> void:
+	var screen := Support.active_screen(_harness)
+	if screen == null:
+		_issues.append("status_screen_missing")
+		return
+	var injected := AppActionResult.failure(
 		DiagnosticError.new(
-			&"ACCESSIBILITY_REQUIRED_GLYPH_MISSING",
-			&"error.settings.activation_diagnostic"
+			&"PREPARE_SELECTION_REQUIRED",
+			&"error.presentation.prepare_selection_required"
 		)
 	)
-	if before_screen != null:
-		before_screen.report_composition_result(injected)
+	screen.report_composition_result(injected)
 	await process_frame
 	await process_frame
-	var before_status := (
-		before_screen.status_report()
-		if before_screen != null
-		else {}
-	)
-	before["fault_injection_status"] = before_status
-	before["visible_message"] = (
-		before_screen.status_message_text()
-		if before_screen != null
-		else ""
-	)
-	if before_screen == null or String(before["visible_message"]).is_empty():
-		_issues.append("activation_fault_injection_not_visible")
-	var before_case := {
-		"name": "activation-before-fault-injection",
-		"size": Vector2i(1280, 720),
-		"ui": 100,
+	var shell := screen.get("_layout_shell") as ProductionLayoutShell
+	var status_rect := shell.current_region_rect(ProductionLayoutShell.REGION_STATUS)
+	var center_rect := shell.current_region_rect(ProductionLayoutShell.REGION_CENTER)
+	var report := {
+		"ok": not screen.status_message_text().is_empty() and not status_rect.intersects(center_rect),
+		"message": screen.status_message_text(),
+		"status_rect": status_rect,
+		"content_rect": center_rect,
 	}
+	if not bool(report["ok"]):
+		_issues.append("status_band_not_reserved")
+	_write_json("%s/status-band-report.json" % output_dir, report)
 	_reports.append(_save_viewport(
-		"%s/activation-before-fault-injection.png" % output_dir,
-		"activation-before",
-		before_case
+		"%s/prepare-status-message-720p-ui100.png" % output_dir,
+		"prepare-status",
+		{"name": "status-720p-ui100", "size": Vector2i(1280, 720), "ui": 100}
 	))
-	_write_text(
-		"%s/activation-before.log" % output_dir,
-		"locale=%s\nsource_code=%s\nrequired_glyph_count=%s\nvisible_message=%s\n" % [
-			before.get("locale", ""),
-			before.get("source_code", ""),
-			before.get("required_glyph_count", 0),
-			before.get("visible_message", ""),
-		]
-	)
-	var seed_error := Support.seed_committed_combat_phase(_harness)
-	if not seed_error.is_empty():
-		_issues.append("combat_seed_failed:%s" % seed_error)
-		_write_json("%s/activation-before-after.json" % output_dir, {"before": before})
-		return
-	var gameplay_storage := _harness.gameplay_storage
-	var settings_storage := _harness.settings_storage
-	_harness.dispose()
-	await process_frame
-	await process_frame
-	await process_frame
-	_harness = Support.boot_runtime(self, gameplay_storage, settings_storage)
-	await process_frame
-	await process_frame
-	var continued := Support.continue_to_run_combat(_harness)
-	if not bool(continued.get("ok", false)):
-		_issues.append("combat_continue_failed:%s" % continued.get("error", &""))
-		_write_json("%s/activation-before-after.json" % output_dir, {"before": before})
-		return
-	await process_frame
-	await process_frame
-	var settings := Support.candidate(125, &"default")
-	settings.locale = &"en"
-	var applied := _harness.root.settings_application_port().apply(settings)
-	await process_frame
-	await process_frame
-	var runtime := Support.accessibility_host(_harness)
-	var runtime_report := runtime.runtime_accessibility_report() if runtime != null else null
-	var after := {
-		"ok": applied.ok,
-		"committed": applied.committed,
-		"presentation_ok": applied.presentation_ok,
-		"source_code": (
-			String(applied.error.source_code)
-			if applied.error != null
-			else ""
-		),
-		"locale": String(runtime_report.cjk_locale) if runtime_report != null else "",
-		"font_source": String(runtime_report.cjk_font_source) if runtime_report != null else "",
-		"fallback_used": runtime_report.cjk_fallback_used if runtime_report != null else true,
-		"readable": runtime_report.cjk_readable if runtime_report != null else false,
-		"missing_glyphs": runtime_report.cjk_missing_glyphs if runtime_report != null else [],
-	}
-	if not applied.ok or not applied.presentation_ok or runtime_report == null or not runtime_report.ok:
-		_issues.append("english_activation_still_falls_back")
-	var after_case := {
-		"name": "activation-after-real-apply",
-		"size": Vector2i(1280, 720),
-		"ui": 125,
-	}
-	_reports.append(_save_viewport(
-		"%s/activation-after-real-apply.png" % output_dir,
-		"activation-after",
-		after_case
-	))
-	_write_text(
-		"%s/activation-after.log" % output_dir,
-		"locale=%s\nsource_code=%s\nfont_source=%s\nfallback_used=%s\nreadable=%s\npresentation_ok=%s\n" % [
-			after.get("locale", ""),
-			after.get("source_code", ""),
-			after.get("font_source", ""),
-			after.get("fallback_used", true),
-			after.get("readable", false),
-			after.get("presentation_ok", false),
-		]
-	)
-	_write_json("%s/activation-before-after.json" % output_dir, {
-		"before": before,
-		"after": after,
-	})
 
 
-func _legacy_english_probe() -> Dictionary:
-	var text := "Combat rules remain visible while effects are reduced."
-	var font := SystemFont.new()
-	font.font_names = PackedStringArray(LocalizedTypographyPolicy.SYSTEM_FONT_NAMES)
-	font.allow_system_fallback = true
-	var required_cjk: Array[int] = []
-	for index: int in text.length():
-		var codepoint := text.unicode_at(index)
-		if (
-			(codepoint >= 0x3400 and codepoint <= 0x4DBF)
-			or (codepoint >= 0x4E00 and codepoint <= 0x9FFF)
-			or (codepoint >= 0xF900 and codepoint <= 0xFAFF)
-		):
-			required_cjk.append(codepoint)
-	var measured := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 24)
-	return {
-		"algorithm": "legacy_cjk_only_required_set",
-		"locale": "en",
-		"required_glyph_count": required_cjk.size(),
-		"measured_width": measured.x,
-		"measured_height": measured.y,
-		"would_report_ok": not required_cjk.is_empty() and measured.x > 0.0 and measured.y > 0.0,
-		"source_code": "ACCESSIBILITY_REQUIRED_GLYPH_MISSING",
-	}
+func _action_button(screen: ProductionScreen, action_id: StringName) -> Button:
+	if screen == null:
+		return null
+	for node: Node in screen.find_children("*", "Button", true, false):
+		var button := node as Button
+		if button != null and StringName(button.get_meta(&"action_id", &"")) == action_id:
+			return button
+	return null
 
 
 func _configure_window(size: Vector2i) -> void:
@@ -315,15 +368,6 @@ func _write_json(path: String, value: Dictionary) -> void:
 		_issues.append("report_write_failed:%s" % path)
 		return
 	file.store_string(JSON.stringify(value, "\t"))
-	file.close()
-
-
-func _write_text(path: String, value: String) -> void:
-	var file := FileAccess.open(ProjectSettings.globalize_path(path), FileAccess.WRITE)
-	if file == null:
-		_issues.append("log_write_failed:%s" % path)
-		return
-	file.store_string(value)
 	file.close()
 
 

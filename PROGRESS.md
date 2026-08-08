@@ -13,17 +13,19 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
-- [2026-08-07] 🎨 UI／美術／中文化整修 Phase B1 視覺樣板待核可 — 單一
-  `expedition_theme.tres` 收斂 T13 十色 palette、32/24/18/16 type scale、spacing、
-  9-slice panel、按鈕四態與 `focus_high` 缺角焦點；內嵌 Noto Sans TC OFL 並改為
-  Theme 優先、SystemFont／ThemeDB 後備。營地／備戰改讀共用 top／left／center／right／
-  bottom shell，在 720p／1080p、100%／125%／150% 共 12 張 zh_TW 實機矩陣無跨區
-  重疊。英文 CJK 空 required-set 的常駐 activation 偽陽性已修，fault injection 證明
-  真回退訊息仍保留；`EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已補 zh_TW/en 具名
-  文案。全程以 repo 內隔離 APPDATA 驗證；最終 `-Suite All` exit 0（304 scripts、
-  1211/1211 tests、25010 assertions、0 failures/errors）。證據見
-  `specs/ui-art-refresh/evidence/phase-b1/README.md`；依 B1 gate 停下等待使用者核可，
-  未開始 B2。
+- [2026-08-08] 🎨 UI／美術／中文化整修 Phase B1R 修訂樣板待核可 — 依第一審
+  F1～F16 與 TFT 類版面要求重排：備戰中央 8×4 可見格線棋盤、下方單排 bench、
+  卡片式商店與經濟操作成組，左右欄收斂為隊伍／羈絆及可捲動遠征待辦；營地提高
+  設施操作階層。Theme 改用 Noto Sans TC `wght=400/600`、質感主／次面板與高對比
+  決策數值；修正 150% 新畫面 base meta 污染、node-choice 溢出、狀態列重疊、
+  GODOT_BIN 契約、palette 綁回、真字型斷言、evidence import 與 shallow Theme copy。
+  真實 Windows 偽回退的其餘根因確認為 coordinator NodePath 預設缺失所造成的
+  `PRODUCTION_VIEWPORT_TREE_INVALID`；fresh process 單一開關重驗已無診斷。720p／
+  1080p × 100%／125%／150% 共 12 張 zh_TW 矩陣與四種特殊情境皆通過；fresh
+  `-Suite All` exit 0（304 scripts、1213/1213 tests、25122 assertions、0 failures）。
+  主要真實 settings 的時間戳與 SHA 開工／收尾一致；旁支 `.bak` 基線存在但收尾缺失，
+  已於 evidence 如實列為無法歸因異常。證據見
+  `specs/ui-art-refresh/evidence/phase-b1r/README.md`；停在修訂版視覺核可閘門，未開始 B2。
 - [2026-08-07] 🔧 UI Phase A PR #11 第一審 fixup — F1 挑戰上限恢復為
   `highest+1`，並鎖定通關挑戰 0 後可選 1；F2 補回棋盤滿／備戰區滿／未選取的
   專屬狀態列映射；F3 鎖定 reduced_flash 成功套用時雙狀態面清空，真實 activation
@@ -240,14 +242,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase B：B1 Theme／字型／營地與備戰樣板已完成驗收，等待
-  使用者視覺核可；核可前禁止開始 B2 鋪開。
+- UI `ui-art-refresh` Phase B：B1R Theme／字型／營地與備戰修訂樣板已完成驗收，
+  等待使用者重新視覺核可；核可前禁止開始 B2 鋪開。
 
 ## 待辦
 
 - UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；Phase B1 已完成並停視覺核可。Phase A 三項移交追蹤均已關閉：
-  (1) locale-unaware CJK 空 required-set 偽陽性已修並留 before/after／fault evidence；
+  2026-08-07）；Phase B1 第一審未核可，B1R 修訂已完成並停重新視覺核可。Phase A
+  三項移交追蹤均已關閉：(1) locale-aware glyph probe 與實機常駐 viewport probe
+  均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
   核可後才進 Phase B2；其後仍為 Phase C 資產接線、Phase D 中文化收尾。

@@ -176,13 +176,33 @@ func _register_fixed_keys() -> void:
 	_register(&"prepare.move_board", "移至戰場", "Move to Board")
 	_register(&"prepare.move_bench", "移至備戰區", "Move to Bench")
 	_register(&"prepare.start", "開始戰鬥", "Start Combat")
+	_register(&"prepare.action_group_selector", "備戰動作分類", "Prepare Action Category")
+	_register(&"prepare.group.advance", "推進", "Advance")
+	_register(&"prepare.group.forge_equipment", "鍛造裝備", "Forge and Equipment")
+	_register(&"prepare.group.party", "隊伍調整", "Party Setup")
+	_register(&"prepare.group.shop", "商店", "Shop")
 	_register(&"prepare.panel.board", "戰場", "Board")
+	_register(&"prepare.panel.bench", "備戰區", "Bench")
+	_register(&"prepare.panel.expedition", "遠征資訊", "Expedition")
 	_register(&"prepare.panel.inventory", "裝備庫", "Inventory")
 	_register(&"prepare.panel.issues", "部署問題", "Deployment Issues")
 	_register(&"prepare.panel.overflow", "待處理裝備", "Overflow")
 	_register(&"prepare.panel.party", "隊伍", "Party")
 	_register(&"prepare.panel.shop", "商店", "Shop")
+	_register(&"prepare.panel.synergies", "羈絆", "Synergies")
 	_register(&"prepare.panel.units", "單位", "Units")
+	_register(
+		&"prepare.empty.expedition",
+		"目前沒有待處理的遠征事件",
+		"No expedition event is pending."
+	)
+	_register(&"prepare.empty.issues", "目前沒有部署問題", "No deployment issue.")
+	_register(&"prepare.empty.overflow", "目前沒有待處理裝備", "No equipment overflow.")
+	_register(
+		&"prepare.empty.synergies",
+		"部署單位後顯示羈絆摘要",
+		"Deploy units to show synergy details."
+	)
 	_register(&"prepare.resource.capacity", "人口", "Capacity")
 	_register(&"prepare.resource.gold", "金幣", "Gold")
 	_register(&"prepare.resource.hp", "遠征生命", "Expedition HP")
@@ -339,6 +359,36 @@ func _register_fixed_keys() -> void:
 		"That action is not available right now"
 	)
 	_register(
+		&"error.presentation.equip_item_slots_full",
+		"該單位的裝備欄位已滿",
+		"That unit has no free equipment slot"
+	)
+	_register(
+		&"error.presentation.prepare_start_not_ready",
+		"隊伍尚未符合開戰條件",
+		"The party is not ready to start combat"
+	)
+	_register(
+		&"error.presentation.resolve_overflow_item_not_in_tray",
+		"找不到待處理的溢出裝備",
+		"The overflow equipment is no longer in the tray"
+	)
+	_register(
+		&"error.presentation.run_command_failed",
+		"遠征操作失敗，請檢查目前狀態後再試",
+		"The expedition action failed; check the current state and try again"
+	)
+	_register(
+		&"error.presentation.run_map_node_selection_unavailable",
+		"目前沒有可前往的節點",
+		"No selectable map node is available"
+	)
+	_register(
+		&"error.presentation.run_transition_failed",
+		"遠征狀態切換失敗",
+		"The expedition state could not transition"
+	)
+	_register(
 		&"error.presentation.screen_not_active",
 		"畫面尚未啟用，請稍候再試",
 		"The screen is not active yet"
@@ -481,6 +531,11 @@ func _register_fixed_keys() -> void:
 		&"error.settings.application_failed",
 		"設定套用失敗",
 		"The settings could not be applied"
+	)
+	_register(
+		&"error.settings.activation_diagnostic",
+		"設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定",
+		"Settings were saved, but part of the interface could not update immediately; the saved settings were reloaded"
 	)
 	_register(
 		&"run.menu.status",
@@ -682,7 +737,10 @@ func _register_named_family(
 	)
 	# difficulty-curve T04：trait 門檻階梯化新增的 tier2/tier3 分段 effect loc key
 	# （命名對齊 localization/catalog.v2.csv 的 _t2/_t3 慣例）。
-	for tier_suffix: Array in [["t2", "二階", "Tier 2"], ["t3", "三階", "Tier 3"]]:
+	for tier_suffix: Array in [
+		["t2", "二階", "Tier 2", "tier-2"],
+		["t3", "三階", "Tier 3", "tier-3"],
+	]:
 		_register(
 			StringName("loc.effect_trait_%s_%s_%s" % [family, token, tier_suffix[0]]),
 			"%s效果：%s（%s）" % [zh_family, _title(token), tier_suffix[1]],
@@ -694,7 +752,7 @@ func _register_named_family(
 			),
 			"%s「%s」的%s正式階段效果。" % [zh_family, _title(token), tier_suffix[1]],
 			"Formal %s effect for %s %s." % [
-				String(tier_suffix[2]).to_lower(), en_family.to_lower(), _title(token),
+				tier_suffix[3], en_family.to_lower(), _title(token),
 			]
 		)
 

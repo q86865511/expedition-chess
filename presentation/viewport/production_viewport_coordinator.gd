@@ -71,21 +71,19 @@ func synchronize(window_size: Vector2i) -> StringName:
 	if not mapper_error.is_empty():
 		return mapper_error
 	var world_rect: Rect2 = world_layout["world_rect"]
-	var authored_world_size := _world_policy.world_size()
-	if world_viewport.size != authored_world_size:
-		var restores_stretch := world_container.stretch
-		if restores_stretch:
-			world_container.stretch = false
-		world_viewport.size = authored_world_size
-		if restores_stretch:
-			world_container.stretch = true
 	world_viewport.canvas_item_default_texture_filter = (
 		Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	)
 	world_container.position = world_rect.position
 	world_container.size = world_rect.size
 	world_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	# stretch + stretch_shrink 讓 SubViewport 恆為 world_rect/scale = 640×360
+	# （§10.1）；先前先關再開 stretch 的寫法會被 stretch=true 的
+	# recalc 覆寫回容器尺寸，authored 解析度從未生效。
 	world_container.stretch = true
+	world_container.stretch_shrink = maxi(
+		1, int(world_layout["integer_scale"])
+	)
 
 	var screen_rect: Rect2 = ui_layout["screen_rect"]
 	var reference := Vector2(UiScaleRoot.REFERENCE_SIZE)

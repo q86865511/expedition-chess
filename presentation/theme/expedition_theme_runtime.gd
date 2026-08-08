@@ -35,23 +35,7 @@ func apply(host: Control, scale_percent: int) -> bool:
 	var runtime_theme := BASE_THEME.duplicate(false) as Theme
 	if runtime_theme == null:
 		return false
-	runtime_theme.default_font_size = roundi(18.0 * factor)
-	for type_name: StringName in TYPE_SIZES:
-		runtime_theme.set_font_size(
-			&"font_size", type_name, roundi(float(TYPE_SIZES[type_name]) * factor)
-		)
-	for token: StringName in TOKEN_SIZES:
-		runtime_theme.set_font_size(
-			token, &"ExpeditionTypeScale", roundi(float(TOKEN_SIZES[token]) * factor)
-		)
-	for token: StringName in SPACING_TOKENS:
-		runtime_theme.set_constant(
-			token, &"ExpeditionSpacing", roundi(float(SPACING_TOKENS[token]) * factor)
-		)
-	runtime_theme.set_constant(&"separation", &"HBoxContainer", roundi(16.0 * factor))
-	runtime_theme.set_constant(&"separation", &"VBoxContainer", roundi(12.0 * factor))
-	runtime_theme.set_constant(&"h_separation", &"GridContainer", roundi(12.0 * factor))
-	runtime_theme.set_constant(&"v_separation", &"GridContainer", roundi(8.0 * factor))
+	_scale_theme(runtime_theme, factor)
 	host.theme = runtime_theme
 	_apply_control_metrics(host, factor, base_metrics)
 	host.set_meta(&"effective_theme_scale_percent", scale_percent)
@@ -61,24 +45,85 @@ func apply(host: Control, scale_percent: int) -> bool:
 	return true
 
 
+## 縮放契約（REQ-UX-003）：字級、separation/spacing 常數、StyleBox content
+## margin 一律 ×factor；border 與 texture margin 維持像素原值（nearest 像素風）。
+## 逐 type 讀 BASE_THEME 的 authored 值計算，杜絕「variation 自帶字級不縮放」
+## 一類的盲區。
+func _scale_theme(runtime_theme: Theme, factor: float) -> void:
+	runtime_theme.default_font_size = roundi(
+		float(BASE_THEME.default_font_size) * factor
+	)
+	for type_name: StringName in BASE_THEME.get_type_list():
+		for size_name: StringName in BASE_THEME.get_font_size_list(type_name):
+			runtime_theme.set_font_size(
+				size_name,
+				type_name,
+				roundi(
+					float(BASE_THEME.get_font_size(size_name, type_name)) * factor
+				)
+			)
+		for constant_name: StringName in BASE_THEME.get_constant_list(type_name):
+			runtime_theme.set_constant(
+				constant_name,
+				type_name,
+				roundi(
+					float(
+						BASE_THEME.get_constant(constant_name, type_name)
+					) * factor
+				)
+			)
+		for style_name: StringName in BASE_THEME.get_stylebox_list(type_name):
+			var base_style := BASE_THEME.get_stylebox(style_name, type_name)
+			if base_style == null:
+				continue
+			var scaled := base_style.duplicate() as StyleBox
+			for side: int in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+				var margin := base_style.get_content_margin(side)
+				if margin >= 0.0:
+					scaled.set_content_margin(side, roundf(margin * factor))
+			runtime_theme.set_stylebox(style_name, type_name, scaled)
+
+
 func _capture_control_metrics(host: Control) -> Dictionary:
 	var result: Dictionary = {}
-	for node: Node in host.find_children("*", "BaseButton", true, false):
-		var button := node as BaseButton
-		if button == null:
-			continue
+	for control: Control in _metric_controls(host):
 		var baseline: Vector2
-		if button.has_meta(&"expedition_theme_base_minimum"):
-			baseline = button.get_meta(&"expedition_theme_base_minimum")
+		if control.has_meta(&"expedition_theme_base_minimum"):
+			baseline = control.get_meta(&"expedition_theme_base_minimum")
 		else:
-			baseline = _authored_button_minimum(button)
-		baseline.y = maxf(baseline.y, float(SPACING_TOKENS[&"min_button_height"]))
-		button.set_meta(&"expedition_theme_base_minimum", baseline)
-		result[button.get_instance_id()] = baseline
+			baseline = _authored_button_minimum(control)
+		if control is BaseButton:
+			baseline.y = maxf(
+				baseline.y, float(SPACING_TOKENS[&"min_button_height"])
+			)
+		control.set_meta(&"expedition_theme_base_minimum", baseline)
+		result[control.get_instance_id()] = baseline
 	return result
 
 
-func _authored_button_minimum(button: BaseButton) -> Vector2:
+## 縮放對象：所有 BaseButton（自動納入）＋任何由 ExpeditionLayoutMetrics
+## 登記過 base meta 的 Control（Label/HSlider/GridContainer 等）。
+func _metric_controls(host: Control) -> Array[Control]:
+	var seen: Dictionary = {}
+	var result: Array[Control] = []
+	for node: Node in host.find_children("*", "BaseButton", true, false):
+		var button := node as Control
+		if button != null and not seen.has(button.get_instance_id()):
+			seen[button.get_instance_id()] = true
+			result.append(button)
+	for node: Node in host.find_children("*", "Control", true, false):
+		var control := node as Control
+		if (
+			control != null
+			and control.has_meta(&"expedition_theme_base_minimum")
+			and not seen.has(control.get_instance_id())
+		):
+			seen[control.get_instance_id()] = true
+			result.append(control)
+	return result
+
+
+func _authored_button_minimum(button: Control) -> Vector2:
 	var baseline := button.custom_minimum_size
 	if baseline.x > 0.0 and baseline.y > 0.0:
 		return baseline
@@ -96,35 +141,21 @@ func _authored_button_minimum(button: BaseButton) -> Vector2:
 	return baseline
 
 
+## 最小尺寸契約：寬度屬版面欄位預算（reference 空間，不縮）；高度隨縮放
+## ×factor。`expedition_theme_fixed_minimum`（棋盤/bench 格等 sprite 佔位）
+## 兩軸皆維持 reference 值——字級縮放對它們的視覺影響由 ellipsis 截斷吸收。
 func _apply_control_metrics(
 	host: Control,
 	factor: float,
 	base_metrics: Dictionary
 ) -> void:
-	for node: Node in host.find_children("*", "BaseButton", true, false):
-		var button := node as BaseButton
-		if button == null:
-			continue
-		var base_size: Vector2 = button.get_meta(
+	for control: Control in _metric_controls(host):
+		var base_size: Vector2 = control.get_meta(
 			&"expedition_theme_base_minimum",
-			base_metrics.get(button.get_instance_id(), Vector2.ZERO)
+			base_metrics.get(control.get_instance_id(), Vector2.ZERO)
 		)
-		var scaled_width := (
-			base_size.x
-			if _uses_responsive_b1_width(button)
-			else ceilf(base_size.x * factor)
-		)
-		button.custom_minimum_size = (
+		control.custom_minimum_size = (
 			base_size
-			if bool(button.get_meta(&"expedition_theme_fixed_minimum", false))
-			else Vector2(scaled_width, ceilf(base_size.y * factor))
+			if bool(control.get_meta(&"expedition_theme_fixed_minimum", false))
+			else Vector2(base_size.x, ceilf(base_size.y * factor))
 		)
-
-
-func _uses_responsive_b1_width(control: Control) -> bool:
-	var ancestor := control.get_parent()
-	while ancestor != null:
-		if ancestor is ProductionScreen:
-			return ancestor.get_node_or_null(^"B1Layout") != null
-		ancestor = ancestor.get_parent()
-	return false

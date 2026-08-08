@@ -98,7 +98,8 @@ func test_scale_rebuild_does_not_capture_scaled_combined_minimum() -> void:
 	rebuilt_button.custom_minimum_size = Vector2(180.0, 48.0)
 	host.add_child(rebuilt_button)
 	assert_true(runtime.apply(host, 150))
-	assert_eq(rebuilt_button.custom_minimum_size, Vector2(270.0, 72.0))
+	# B1R3 契約：寬度屬版面欄位預算（reference 空間不縮），高度 ×factor。
+	assert_eq(rebuilt_button.custom_minimum_size, Vector2(180.0, 72.0))
 	assert_true(runtime.apply(host, 100))
 	assert_eq(
 		rebuilt_button.custom_minimum_size,
@@ -116,7 +117,8 @@ func test_scale_rebuild_does_not_capture_scaled_combined_minimum() -> void:
 	)
 	assert_eq(
 		inherited_button.custom_minimum_size.x,
-		ceilf(recorded_100_minimum.x * 1.5)
+		recorded_100_minimum.x,
+		"width floors stay in reference space; only heights scale"
 	)
 	assert_true(runtime.apply(host, 100))
 	assert_eq(

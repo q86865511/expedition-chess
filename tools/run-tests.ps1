@@ -184,7 +184,22 @@ function Invoke-GodotChild {
 
     $argumentLine = (($Arguments | ForEach-Object { ConvertTo-WindowsCommandLineArgument -Value $_ }) -join ' ')
     $runStarted = [DateTime]::UtcNow
-    $process = Start-Process -FilePath $Executable -ArgumentList $argumentLine -PassThru -WindowStyle Hidden
+    # 子程序一律使用隔離 APPDATA：測試會經 SettingsService 等 autoload 寫
+    # user://，不得觸碰真實使用者設定（B1R3 追蹤項根治）。
+    if (-not $script:IsolatedAppData) {
+        $script:IsolatedAppData = Join-Path ([IO.Path]::GetTempPath()) (
+            'expedition-test-appdata-' + [DateTime]::UtcNow.ToString('yyyyMMddHHmmss') + '-' + $PID
+        )
+        New-Item -ItemType Directory -Force -Path $script:IsolatedAppData | Out-Null
+    }
+    $originalAppData = $env:APPDATA
+    $env:APPDATA = $script:IsolatedAppData
+    try {
+        $process = Start-Process -FilePath $Executable -ArgumentList $argumentLine -PassThru -WindowStyle Hidden
+    }
+    finally {
+        $env:APPDATA = $originalAppData
+    }
     $effectiveTimeoutSeconds = if ($TimeoutOverrideSeconds -gt 0) {
         $TimeoutOverrideSeconds
     }

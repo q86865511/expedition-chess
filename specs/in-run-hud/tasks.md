@@ -18,10 +18,16 @@
 - [ ] **T00 HARD**：鎖 requirements／design／tasks；架構規格先行改動已由 Claude 完成
   （`REQ-UX-006`、`AC-080`~`AC-082`、`DEC-015`、§10.1／10.2／10.3／10.4／10.6、§14 矩陣、manifest）。
   Codex 開工前確認 `-Suite Spec` exit 0。
-- [ ] **T01 HARD（Claude 執行）**：備戰期單位屬性預覽 API——唯讀查詢，複用
-  `BattleRuleCatalogBuilder` 的星級與裝備疊算路徑，回傳具名型別。
-  不改 canonical 狀態、不新增 RNG draw、不改 save schema、不新增 Autoload。
-  （IRH-REQ-016／AC 對應：備戰屬性＝戰鬥首 tick 屬性）
+- [x] **T01 HARD（Claude 執行）**：備戰期單位屬性預覽 API——唯讀查詢，與 `compile()` 共用
+  `BattleSetupSourceCompiler` 的 `_apply_stats`／`_find_scaling` 星級縮放路徑，回傳具名型別。
+  不改 canonical 狀態、不新增 RNG draw、不改 save schema、不新增 Autoload。（IRH-REQ-016）
+  交付：`BattleSetupSourceCompiler.try_compile_unit_stats()`、`UnitStatsPreviewSnapshot`
+  （`domain/battle/`）、`UnitStatsPreviewViewModel`（`presentation/viewmodels/`，
+  `try_stats_for()`／`all_stats()`）。
+  證據：`tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd` 5 tests／36 asserts
+  （含變異驗證：`preview.attack + 1` 使 4 個測試函式轉紅）；fresh All exit 0
+  （307 scripts、1224/1224 tests、25773 asserts、Spec 0 failures）。
+  範圍界線：裝備／羈絆／遺物的 effect 加成不併入數值，只回報來源 id（見 design.md §7）。
 - [ ] **T02 HARD**：世界層解析度裁決——依 `design.md` §3 的取捨表，在 plan 中提出結論與理由並回報。
   若選 B（960×540）必須同時提出 2560×1440 下避免半像素取樣的具體作法，
   並將 44 單位資產重生成列為獨立前置批次。（IRH-REQ-007）

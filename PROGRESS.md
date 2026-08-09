@@ -13,6 +13,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-09] ✅ `in-run-hud` T01 備戰期單位屬性預覽 API（IRH-REQ-016）— 新增
+  `BattleSetupSourceCompiler.try_compile_unit_stats()`（與 `compile()` 共用
+  `_apply_stats`／`_find_scaling`，不需 `BoardPlacementState`，板凳單位同樣適用）、
+  具名型別 `UnitStatsPreviewSnapshot`、`UnitStatsPreviewViewModel`
+  （`try_stats_for()`／`all_stats()`，與 `TraitPreviewViewModel` 同構）。
+  5 tests／36 asserts，含變異驗證；fresh All exit 0（307 scripts、1224/1224、
+  25773 asserts、Spec 0 failures）。
+  **修正規格自身錯誤**：原驗收「備戰屬性＝戰鬥首 tick 屬性」不可能成立（`battle_start`
+  觸發的效果會在首 tick 前生效，而預覽依 §10.3 不得重現 effect 解算），改為精確判準
+  「預覽逐欄位＝`BattleSimulation` 初始化寫進 `BattleEntityState` 的 `base_*` 與 `max_health`」。
+  **踩坑**：首次 All 因 Spec 契約 `Public API has a silent-null path` 失敗——domain 公開
+  方法含 `return null` 必須命名為 `try_` 開頭；已依既有慣例改名（`try_compile_unit_stats`、
+  `try_stats_for`）。
+  **附帶查證**：`BattleEquipmentRule.stat_modifiers` 無任何模擬消費者，裝備在實戰的屬性
+  貢獻只走 `effect_ids`；已記入 design.md，未改動。
 - [2026-08-09] 📄 `in-run-hud` 局內 HUD 重製規格完成（交 Codex 實作）— 依 TFT 對局主介面
   逆向拆解素材產出 `specs/in-run-hud/` 三件套＋`layout-reference-1920.json`（25 個模組、
   5 個剔除模組、1 項待 Codex 裁決）。架構規格先行改動：新增 `REQ-UX-006`、

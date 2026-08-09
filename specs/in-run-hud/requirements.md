@@ -151,7 +151,15 @@
     **不得在 presentation 或 tooltip 複製公式**（§10.3 硬規則）。
   - 必須是唯讀查詢，回傳具名型別（非 `Dictionary`），不改變任何 canonical 狀態、
     不新增 RNG draw、不改 save schema。
-  - 驗收：同一單位在備戰顯示的屬性，與其進入戰鬥後首個 tick 的屬性一致。
+  - 驗收：同一單位在備戰顯示的屬性，逐欄位等於 `BattleSetupSourceCompiler.compile()`
+    產出的 `UnitBattleSnapshot`——亦即 `BattleSimulation` 初始化時寫進 `BattleEntityState`
+    的 `base_*` 與 `max_health`（`battle_simulation.gd:182-196` 為逐欄位直接賦值）。
+    棋盤與板凳單位都必須可查（`compile()` 只收棋盤單位，板凳單位是本 API 的存在理由）。
+  - **不納入**：裝備、羈絆與遺物在實戰是經 effect 解算成 `BattleTimedState` 後由
+    `BattleCombatMath` 疊加的，其是否生效取決於 effect 的條件與觸發時機。預覽不得重現
+    effect 解算（§10.3 禁止在呈現層複製公式），改以「配戴中的來源清單」呈現。
+    因此「備戰屬性＝戰鬥首 tick 屬性」不是本片的驗收判準——`battle_start` 觸發的效果
+    會在首個 tick 前生效，該判準對帶此類效果的單位必然不成立。
 
 ### 不回歸
 

@@ -30,6 +30,48 @@ func compile(
 		true, true, true, true, true, true
 	)
 
+## 單一單位的星級縮放屬性預覽（IRH-REQ-016）。與 compile() 共用 _apply_stats／
+## _find_scaling，因此逐欄位等同 compile() 產出的 UnitBattleSnapshot，也就是
+## BattleSimulation 初始化寫進 BattleEntityState 的 base 值。不需要
+## BoardPlacementState，板凳單位同樣適用；rule 或 catalog 缺失時屬性維持零值。
+## 依 try_ 慣例：instance 為 null 時回 null，呼叫端必須處理。
+func try_compile_unit_stats(
+	instance: UnitInstance,
+	catalog: BattleRuleCatalog
+) -> UnitStatsPreviewSnapshot:
+	if instance == null:
+		return null
+	var carrier := UnitBattleSnapshot.new()
+	carrier.instance_id = StringName(instance.instance_id)
+	carrier.unit_id = instance.def_id
+	carrier.star = instance.star
+	var rule: BattleUnitRule = (
+		catalog.try_unit_rule(instance.def_id) if catalog != null else null
+	)
+	if rule != null:
+		carrier.unit_id = rule.unit_id
+		carrier.basic_attack_profile = rule.basic_attack_profile
+		if rule.base_stats != null:
+			_apply_stats(
+				carrier, rule.base_stats, _find_scaling(rule.star_scalings, instance.star)
+			)
+	var preview := UnitStatsPreviewSnapshot.new()
+	preview.instance_id = carrier.instance_id
+	preview.unit_id = carrier.unit_id
+	preview.star = carrier.star
+	preview.health = carrier.health
+	preview.attack = carrier.attack
+	preview.armor = carrier.armor
+	preview.magic_resist = carrier.magic_resist
+	preview.attack_speed_milli = carrier.attack_speed_milli
+	preview.attack_range_cells = carrier.attack_range_cells
+	preview.start_mana = carrier.start_mana
+	preview.max_mana = carrier.max_mana
+	preview.move_speed_milli = carrier.move_speed_milli
+	preview.basic_attack_profile = carrier.basic_attack_profile
+	preview.equipment_instance_ids = instance.equipment_instance_ids.duplicate()
+	return preview
+
 # ---------------------------------------------------------------------------
 # 上場棋收集（排除板凳；召喚物結構上不存在於 RosterState）
 # ---------------------------------------------------------------------------

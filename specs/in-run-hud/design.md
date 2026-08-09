@@ -210,7 +210,25 @@ Godot 拖放三函式（`_get_drag_data` / `_can_drop_data` / `_drop_data`）為
   輸出為具名型別（非 `Dictionary`，遵守 CLAUDE.md 架構約定），內部走
   `BattleRuleCatalogBuilder` 既有的星級與裝備疊算路徑。
 - 不變式：唯讀、不改 canonical 狀態、不新增 RNG draw、不改 save schema、不新增 Autoload。
-- 驗收（AC 對應 IRH-REQ-016）：同一單位在備戰顯示的屬性，等於其進入戰鬥後首個 tick 的屬性。
+- 驗收（AC 對應 IRH-REQ-016）：預覽逐欄位等於 `BattleSetupSourceCompiler.compile()` 產出的
+  `UnitBattleSnapshot`，亦即 `BattleSimulation` 初始化寫進 `BattleEntityState` 的
+  `base_*` 與 `max_health`。棋盤與板凳單位都必須可查。
+
+**實作結果（T01 已完成）**：
+
+- `BattleSetupSourceCompiler.try_compile_unit_stats(instance, catalog) -> UnitStatsPreviewSnapshot`
+  ——與 `compile()` 共用 `_apply_stats` 與 `_find_scaling`，不需 `BoardPlacementState`，
+  板凳單位同樣適用。
+- `UnitStatsPreviewSnapshot`（`domain/battle/`）——具名型別，欄位與 `UnitBattleSnapshot`
+  的屬性段一對一，另帶 `equipment_instance_ids` 供面板列出來源。
+- `UnitStatsPreviewViewModel`（`presentation/viewmodels/`）——與 `TraitPreviewViewModel`
+  同構：`stats_for(instance_id)` 與 `all_stats()`，catalog 持 deep clone，每次讀取重新
+  向 `RunController.roster_snapshot()` 取值。
+- **範圍界線**：裝備、羈絆與遺物在實戰是經 effect 解算成 `BattleTimedState` 後由
+  `BattleCombatMath` 疊加的；預覽不重現 effect 解算，只回報配戴中的來源 id。
+  「備戰屬性＝戰鬥首 tick 屬性」不是判準——`battle_start` 效果會在首 tick 前生效。
+- 附帶查證：`BattleEquipmentRule.stat_modifiers` 目前**沒有任何模擬消費者**
+  （只有 catalog builder 填值與測試 fixture 使用）；裝備在實戰的屬性貢獻只走 `effect_ids`。
 
 **Codex 相依處理**：此 API 到位前，`RUN_PREPARE` 的單位檢視面板以降級呈現
 （名稱、費用、星級、羈絆、裝備槽可正常顯示；屬性格顯示明確的「尚未可用」狀態），
@@ -232,7 +250,7 @@ Godot 拖放三函式（`_get_drag_data` / `_can_drop_data` / `_drop_data`）為
 | 8 | IRH-REQ-010 | 純鍵盤完成「買棋→上場→配裝→開始戰鬥」；`W` 快捷切換正確 | 整合 |
 | 9 | IRH-REQ-011、IRH-REQ-012 | 成本一律來自 `ShopService.quote_*`；9 級 XP 停用；停用原因為具名 `source_code`；商店卡費用等級有非色彩訊號 | 整合 |
 | 10 | IRH-REQ-013 | 羈絆階級接線正確；非色彩訊號存在；浮層邊緣翻轉不出安全區 | 整合 |
-| 11 | IRH-REQ-014 | 備戰屬性＝戰鬥首 tick 屬性；空狀態不殘留前一單位 | 整合 |
+| 11 | IRH-REQ-014、IRH-REQ-016 | 備戰預覽逐欄位＝`compile()` 的 `UnitBattleSnapshot`；板凳單位可查；空狀態不殘留前一單位 | 單元＋整合 |
 | 12 | IRH-REQ-015 | 幕／層／節點進度與 domain 一致；轉場提示不阻擋輸入 | 整合 |
 | 13 | IRH-REQ-017 | `-Suite All` exit 0；呈現層不觸碰 gameplay RNG stream | 全 gate |
 

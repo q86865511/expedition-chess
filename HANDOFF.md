@@ -76,9 +76,15 @@
 - `CampViewModel`（`presentation/viewmodels/camp_view_model.gd`） — 營地五設施的單一 ProfileState 投影
 - `ExpeditionGateViewModel`／`CommanderHallViewModel`／`CollectionViewModel`／`UnlockWorkshopViewModel`／`ChallengeMonumentViewModel` — S5 局外成長各設施讀取介面
 - （S2/S3 既有）戰鬥 event/result clone、商店 offer 表、地圖節點狀態——見各 Lab 的 session/presentation 腳本示範消費方式
-- （in-run-hud 新增，Claude 提供）備戰期單位屬性預覽——回傳套用星級與已配戴裝備後的有效屬性，
-  與戰鬥共用同一公式來源。此 API 到位前，備戰的單位檢視面板屬性格顯示「尚未可用」，
-  **不得由呈現層自行計算數值填充**（§10.3 禁止在 tooltip 複製公式）
+- `UnitStatsPreviewViewModel`（`presentation/viewmodels/unit_stats_preview_view_model.gd`，
+  in-run-hud T01 已交付）— 備戰期單位屬性預覽。`try_stats_for(unit_instance_id)` 回
+  `UnitStatsPreviewSnapshot`（棋盤與板凳單位皆可查，未知 id 回 null）、`all_stats()` 回全部
+  並依 instance id 排序。底層走 `BattleSetupSourceCompiler.try_compile_unit_stats()`，與
+  `compile()` 共用同一條星級縮放路徑，因此逐欄位等於 `BattleSimulation` 初始化寫進
+  `BattleEntityState` 的 `base_*` 與 `max_health`。
+  **範圍界線**：裝備／羈絆／遺物在實戰是經 effect 解算成 `BattleTimedState` 後由
+  `BattleCombatMath` 疊加的，預覽不重現 effect 解算（§10.3 禁止複製公式），
+  只回報 `equipment_instance_ids` 供面板列出來源。呈現層**不得**自行把這些加成算進數值。
 
 **in-run-hud 追加約束**（本片專用，與上列七條並存）：
 

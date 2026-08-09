@@ -58,9 +58,9 @@
     "section_count": 18,
     "mermaid_count": 3,
     "ids": {
-      "REQ": 75,
-      "AC": 79,
-      "DEC": 14,
+      "REQ": 76,
+      "AC": 82,
+      "DEC": 15,
       "ASM": 6,
       "RSK": 12
     },
@@ -94,7 +94,7 @@
     "deferred_class_names": [
     ]
   },
-  "aggregate_sha256": "b476e9c52af77101b4d7ab06dc2abbb5cbc3a91f1c788db20305c0feef8cfe2b"
+  "aggregate_sha256": "ded60984ecd970cbd0577ba66083c2120105dc315f8a038ace7974439401c5df"
 }
 ```
 <!-- spec-manifest:end -->

@@ -13,6 +13,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-09] 📄 `in-run-hud` 局內 HUD 重製規格完成（交 Codex 實作）— 依 TFT 對局主介面
+  逆向拆解素材產出 `specs/in-run-hud/` 三件套＋`layout-reference-1920.json`（25 個模組、
+  5 個剔除模組、1 項待 Codex 裁決）。架構規格先行改動：新增 `REQ-UX-006`、
+  `AC-080`~`AC-082`、`DEC-015`，修訂 §10.1／10.2／10.3／10.4／10.6 並新增 §10.7 系統選單，
+  §14 追溯矩陣與 manifest（REQ 75→76、AC 79→82、DEC 14→15、aggregate SHA-256 重算）同步；
+  `-Suite Spec` exit 0、0 failures。同步 `HANDOFF.md`（新 §0 接手點、§2 追加約束、§3 進度地圖）、
+  `specs/ui-art-refresh/review-and-plan.md` Phase B 狀態、`specs/g2-roadmap.md` 新增 §10 UI 線、
+  專案 `CLAUDE.md` 架構約定與目前切片。範圍：局內四 route 全面重製、UI 基準 1280×720 →
+  1920×1080 並支援 2560×1440、棋盤移世界層 3/4 投影、ESC 系統選單、棋子與裝備拖曳（含合成）。
 - [2026-08-08] 🎨 UI／美術／中文化整修 Phase B1R2 修訂樣板待核可 — 依第二審
   N1～N16 修復 action button `clip_text` 最小寬回歸、中央裝備庫死路、150% bottom
   安全區溢出、棋盤／bench 裁切、空狀態帶、營地空中央、設定標題／列／tooltip 重疊、
@@ -256,8 +265,12 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase B：B1R2 Theme／字型／營地與備戰修訂樣板已完成驗收，
-  等待使用者重新視覺核可；核可前禁止開始 B2 鋪開。
+- UI `in-run-hud` 局內 HUD 重製：規格三件套與架構規格改動已完成（2026-08-09），
+  待 Codex 依 `specs/in-run-hud/codex-plan-prompt.md` 進 plan mode 開工。
+  Claude 端待辦為 `T01` 備戰期單位屬性預覽 API（domain 唯讀查詢）。
+- UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
+  2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
+  對局內畫面解除。局外畫面的正式視覺重設計仍留在 Phase B，待局內完成後再排。
 
 ## 待辦
 
@@ -267,7 +280,12 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  核可後才進 Phase B2；其後仍為 Phase C 資產接線、Phase D 中文化收尾。
+  局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
+  其後仍為 Phase C 資產接線、Phase D 中文化收尾。
+- `in-run-hud`（交 Codex）：依 `specs/in-run-hud/tasks.md` 的 P0～P7 共 33 項任務執行。
+  Claude 端唯一任務為 `T01` 備戰期單位屬性預覽 API。待 Codex 在 plan 階段裁決世界層
+  解析度（維持 640×360 或提升 960×540，規格建議前者）。`T22`（最短可見播放時間／
+  首幀呈現契約）必須先於 `T23` 戰鬥 HUD 完成，否則戰鬥畫面無可信驗收手段。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -286,6 +304,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 重要決策紀錄
 
+- [2026-08-09] `in-run-hud` 使用者裁決（四項）：(1) 改造範圍為局內四個 route 全面重做；
+  (2) UI 設計基準改 1920×1080 並支援 2560×1440，**既有 B1R3 樣板與舊畫面全部捨棄、
+  直接以新畫面重新設計**；(3) 棋盤移至世界層 3/4 投影 sprite；(4) 拖曳擺位納入，
+  含裝備拖移與合成，並保留鍵盤等價路徑（懸停＋`W` 快速上場／收回）。
+  domain 缺口由 Claude 先寫規格作為前置任務。
+  理由：參考素材（TFT 對局主介面）的資訊密度在 1280×720 畫布放不下；棋盤留在 UI 層
+  會使 44 組像素資產永遠無法上場。
+- [2026-08-09] `in-run-hud` 剔除「商店鎖定」模組：`domain/run/economy/node_entry_service.gd:44-45`
+  將「進入節點時 `shop_offers` 非空」判為 `SHOP_LEAK` 錯誤，商店由 `try_release_shop_offers()`
+  在結算與離節點時強制清空。TFT 式跨回合鎖定在本專案沒有對應語意，實作將破壞既有不變式
+  與 `reserved_copies` 帳務，故不做前置 domain 任務。
+- [2026-08-09] `in-run-hud` 世界層解析度建議維持 640×360：640×360 在 1920×1080 為 3×、
+  在 2560×1440 為 4×，兩者皆整數倍；960×540 在 2560×1440 為 2.667× 非整數縮放，
+  與 spec §10.1「相機不得使用造成半像素取樣的縮放」衝突，且需重生成 44 組 sprite sheet
+  （各 240 frames）、44 portraits 與 88 icons。最終裁決權交 Codex 在 plan 階段行使。
 - [2026-08-04] G2 `balance-playtest` 使用者裁決：大樣本統計（10k/30k）自本切片移至
   Phase 2 平衡收斂後執行，本切片以 3k screening #2 gate PASS 作 screening 證據收尾；
   採用 Phase 0~3 執行計畫並新增 `difficulty-curve` 機制切片（`specs/g2-roadmap.md` §9）。

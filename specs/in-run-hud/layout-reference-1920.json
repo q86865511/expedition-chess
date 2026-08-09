@@ -1,0 +1,322 @@
+{
+  "meta": {
+    "title": "遠征棋 局內 HUD 版面資料（1920×1080 基準）",
+    "spec": "specs/in-run-hud/design.md",
+    "referenceResolution": { "width": 1920, "height": 1080 },
+    "supportedResolutions": ["1280x720", "1920x1080", "2560x1440"],
+    "coordinateOrigin": "top-left",
+    "unit": "px",
+    "locale": "zh_TW",
+    "derivation": "tftReference 欄位為外部參考素材（2560×1440）座標乘以 0.75 的換算值，僅供比例參考；project 欄位才是本專案的權威依據。",
+    "authority": "區域幾何的唯一事實來源是 ProductionLayoutShell.region_rect_for()；本檔的 shellRegions 為其在 1920×1080 下的推導值，若兩者不符以程式為準。"
+  },
+
+  "designTokens": {
+    "note": "沿用本專案既有 token，數值為 1280 基準值 ×1.5。不採用參考素材的字級階梯（其 body 換算後僅 15/18，對 CJK 與像素風過小）。",
+    "fontSize": { "title": 48, "heading": 36, "body": 27, "auxiliary": 24 },
+    "spacing": { "space_1": 6, "space_2": 12, "space_4": 24, "space_6": 36, "space_8": 48 },
+    "layout": { "safeMargin": 36, "gutter": 24, "minButtonHeight": 72 },
+    "colorSource": "theme/expedition_theme.tres 與 assets/pilot/palette.json；不得在程式內嵌 hex"
+  },
+
+  "layers": [
+    { "id": "world", "z": 0, "note": "SubViewport：棋盤、單位 sprite、環境" },
+    { "id": "worldSpaceUI", "z": 100, "note": "血條、法力條、選取框；投影後以固定像素尺寸繪製" },
+    { "id": "hud", "z": 200, "note": "ProductionLayoutShell 七區" },
+    { "id": "overlay", "z": 300, "note": "REGION_OVERLAY：系統選單、tooltip、拖曳層" },
+    { "id": "banner", "z": 400, "note": "幕／節點轉場大字，不阻擋輸入" },
+    { "id": "modal", "z": 500, "note": "既有 _PRESENTATION_CONFIRMATIONS" }
+  ],
+
+  "shellConstants": {
+    "referenceSize": [1920, 1080],
+    "safeMargin": 36,
+    "gutter": 24,
+    "topHeight": 126,
+    "bottomHeight": 204,
+    "prepareBottomHeight": 210,
+    "sideWidth": 420,
+    "statusHeight": 66,
+    "statusGutter": 12,
+    "panelContentMargin": [24, 18],
+    "titleInset": 12,
+    "titleWidth": 450
+  },
+
+  "shellRegions": {
+    "note": "以 RUN_PREPARE（prepareBottomHeight 210）推導；RUN_COMBAT 使用 bottomHeight 204，中間三區高度改為 630、bottom.y 改為 840。",
+    "top": { "x": 36, "y": 36, "w": 1848, "h": 126 },
+    "left": { "x": 36, "y": 186, "w": 420, "h": 624 },
+    "center": { "x": 480, "y": 186, "w": 960, "h": 624 },
+    "right": { "x": 1464, "y": 186, "w": 420, "h": 624 },
+    "bottom": { "x": 36, "y": 834, "w": 1848, "h": 210 },
+    "overlay": { "x": 0, "y": 0, "w": 1920, "h": 1080 }
+  },
+
+  "modules": [
+    {
+      "id": "progress-tracker",
+      "name": "幕／層／節點進度列",
+      "region": "top",
+      "align": "center",
+      "tftReference": { "id": "round-tracker", "rect": [649, 0, 596, 38] },
+      "project": {
+        "note": "本專案無 round 概念；進度單位為幕／層／節點。節點類型必須以圖示或形狀區分，不得只靠顏色。",
+        "bindings": ["RunViewState.act_index", "MapNodeState.layer_index", "MapNodeState.node_kind", "MapState.completed_node_ids"],
+        "states": ["completed", "current", "future"]
+      }
+    },
+    {
+      "id": "expedition-hp",
+      "name": "遠征 HP",
+      "region": "top",
+      "align": "left",
+      "tftReference": { "id": "player-nameplate", "rect": [900, 536, 124, 38], "note": "參考素材為 PVP 對手名牌，本專案改為遠征 HP" },
+      "project": { "bindings": ["RunViewState.expedition_hp"] }
+    },
+    {
+      "id": "system-menu-button",
+      "name": "系統選單鍵",
+      "region": "top",
+      "align": "right",
+      "tftReference": { "id": "top-right-actions", "rect": [1613, 4, 83, 38] },
+      "project": { "note": "開啟 ESC 系統選單；ESC 鍵為主要路徑，本鍵為滑鼠路徑", "bindings": [] }
+    },
+    {
+      "id": "trait-list",
+      "name": "羈絆列",
+      "region": "left",
+      "tftReference": { "id": "trait-list", "rect": [64, 289, 128, 90], "note": "參考素材側欄極窄（128px）；本專案 sideWidth 420，因 CJK 文字與階級標示需要更寬" },
+      "project": {
+        "bindings": ["TraitPreviewViewModel.trait_snapshots()", "TraitBattleSnapshot.tier", "TraitBattleSnapshot.member_instance_ids"],
+        "note": "現況為未接線的空 Label，本片必須實作。階級不得只靠顏色。",
+        "sort": "已啟用（階級高→低）→ 未啟用（差 1 個→差多個）"
+      }
+    },
+    {
+      "id": "trait-tooltip",
+      "name": "羈絆詳情浮層",
+      "region": "overlay",
+      "tftReference": { "id": "trait-tooltip", "rect": [214, 248, 311, 319] },
+      "project": {
+        "note": "高度自適應、寬度固定；貼近畫面邊緣時自動翻轉且不超出安全區。當前生效階級高亮、未達成階級降透明度。",
+        "bindings": ["TraitPreviewViewModel.trait_snapshots()"]
+      }
+    },
+    {
+      "id": "item-bench",
+      "name": "裝備庫",
+      "region": "left",
+      "tftReference": { "id": "item-bench", "rect": [6, 278, 47, 495], "slotSize": 47 },
+      "project": {
+        "bindings": ["InventoryViewModel.inventory_items()", "InventoryViewModel.overflow_items()"],
+        "interactions": ["drag-to-unit", "hover-tooltip"],
+        "note": "overflow 必須可見；拖曳至已持裝備的棋子觸發合成預覽（需二次確認）"
+      }
+    },
+    {
+      "id": "relic-slots",
+      "name": "遺物槽",
+      "region": "left",
+      "tftReference": { "id": "augment-slots", "note": "參考素材的強化符文槽；本專案以遺物承擔該角色" },
+      "project": { "bindings": ["RelicSlotViewModel.active_slots()"] }
+    },
+    {
+      "id": "board-grid",
+      "name": "棋盤",
+      "region": "center",
+      "layer": "world",
+      "tftReference": { "id": "board-grid", "rect": [525, 71, 900, 795], "grid": "7×8 六角" },
+      "project": {
+        "grid": { "cols": 8, "rows": 8, "shape": "square", "allyRows": [0, 1, 2, 3] },
+        "note": "移至世界層以 3/4 投影渲染；格位權威在 domain，投影只做座標轉換。不得改為六角格。",
+        "bindings": ["BoardValidationReport", "BoardPreparationValidator"]
+      }
+    },
+    {
+      "id": "unit-bench",
+      "name": "備戰席",
+      "region": "center",
+      "tftReference": { "id": "unit-bench", "rect": [1358, 225, 75, 263], "note": "參考素材為直向 6 格且標註待確認；本專案採橫向 9 格" },
+      "project": {
+        "slotCount": 9,
+        "orientation": "horizontal",
+        "bindings": ["RosterState.bench_unit_instance_ids", "BenchCompactor"],
+        "note": "RUN_COMBAT 時轉為唯讀而非消失，維持兩 route 版面同構"
+      }
+    },
+    {
+      "id": "unit-healthbar",
+      "name": "單位血條與法力條",
+      "region": "—",
+      "layer": "worldSpaceUI",
+      "tftReference": { "id": "unit-healthbar", "note": "固定像素尺寸、不隨相機縮放" },
+      "project": {
+        "note": "投影至螢幕後以固定像素尺寸繪製；依 logical_y 深度排序；不得被特效遮蔽。星級以形狀標記，不只靠顏色。",
+        "bindings": ["CombatUnitInspectionSnapshot.stats"]
+      }
+    },
+    {
+      "id": "unit-inspector",
+      "name": "單位檢視面板",
+      "region": "right",
+      "tftReference": { "id": "unit-inspector", "rect": [1714, 169, 199, 675], "note": "參考素材寬 199（10.4% 畫面寬）；本專案 sideWidth 420（21.9%），因繁中屬性標籤較長" },
+      "project": {
+        "sections": ["立繪與星級", "羈絆標籤", "名稱與費用", "生命", "法力", "技能與定位", "裝備槽", "定位標籤", "屬性格", "出售"],
+        "bindings": {
+          "combat": "RunPresentationSession.inspect_combat_unit()",
+          "prepare": "IRH-REQ-016 前置 API（未到位前屬性格顯示「尚未可用」，不得由呈現層自行計算）"
+        },
+        "note": "出售在 2★ 以上或已配戴裝備時需二次確認；未選取單位時為明確空狀態"
+      }
+    },
+    {
+      "id": "enemy-intel",
+      "name": "敵情摘要",
+      "region": "right",
+      "tftReference": { "id": "side-tools", "rect": [1868, 98, 53, 98] },
+      "project": { "bindings": ["RunCombatIntelModel.enemy_rows()", "RunCombatIntelModel.boss_phase_rows()"] }
+    },
+    {
+      "id": "level-panel",
+      "name": "等級與經驗",
+      "region": "bottom",
+      "tftReference": { "id": "level-panel", "rect": [266, 876, 206, 44] },
+      "project": {
+        "bindings": ["EconomyState.level", "EconomyState.xp", "EconomyConfigRule.xp_thresholds"],
+        "note": "9 級顯示 MAX 且購買 XP 停用"
+      }
+    },
+    {
+      "id": "shop-odds",
+      "name": "費用機率列",
+      "region": "bottom",
+      "tftReference": { "id": "shop-odds", "rect": [480, 885, 285, 29] },
+      "project": {
+        "bindings": ["EconomyConfigRule.shop_odds_by_level"],
+        "note": "0% 項目降透明度；費用等級不得只靠顏色，需同時有形狀或文字"
+      }
+    },
+    {
+      "id": "gold-display",
+      "name": "金幣",
+      "region": "bottom",
+      "tftReference": { "id": "gold-display", "rect": [919, 876, 113, 38] },
+      "project": { "bindings": ["EconomyState.gold"] }
+    },
+    {
+      "id": "streak-indicator",
+      "name": "連勝／連敗",
+      "region": "bottom",
+      "tftReference": { "id": "streak-indicator", "rect": [1421, 878, 64, 38], "note": "參考素材語意未定；本專案明確為連勝／連敗計數" },
+      "project": { "bindings": ["EconomyState.win_streak", "EconomyState.loss_streak"] }
+    },
+    {
+      "id": "shop-cards",
+      "name": "商店卡片列",
+      "region": "bottom",
+      "tftReference": { "id": "shop-cards", "rect": [480, 930, 1005, 135], "cardSize": [197, 134], "gap": 6, "count": 5 },
+      "project": {
+        "bindings": ["EconomyState.shop_offers", "ShopOffer"],
+        "cardContent": ["立繪", "羈絆標籤", "名稱", "費用", "已持有副本數", "購買後升星預覽"],
+        "note": "邊框依費用著色，但費用等級必須同時以形狀或文字標示；買空的槽位維持佔位不重排"
+      }
+    },
+    {
+      "id": "buy-xp-button",
+      "name": "購買 XP",
+      "region": "bottom",
+      "tftReference": { "id": "buy-xp-button", "rect": [269, 934, 201, 54] },
+      "project": {
+        "bindings": ["BuyXpCommand", "ShopService.quote_buy_xp()"],
+        "note": "成本一律來自 quote，不得在呈現層複製公式；停用原因讀 error.diagnostic_values[\"source_code\"]"
+      }
+    },
+    {
+      "id": "reroll-button",
+      "name": "刷新商店",
+      "region": "bottom",
+      "tftReference": { "id": "reroll-button", "rect": [269, 990, 201, 56] },
+      "project": { "bindings": ["RefreshShopCommand", "ShopService.quote_refresh()"] }
+    },
+    {
+      "id": "fight-button",
+      "name": "開始戰鬥",
+      "region": "bottom",
+      "align": "right",
+      "tftReference": { "id": "fight-button", "rect": [1508, 956, 154, 71] },
+      "project": { "bindings": ["prepare.start", "RunPrepareScreenModel.start_enabled()"] }
+    },
+    {
+      "id": "combat-resource-bar",
+      "name": "戰鬥期常駐資源列",
+      "region": "bottom",
+      "tftReference": { "id": "—", "note": "參考素材的 HUD 在戰鬥期持續顯示資源；本專案戰鬥畫面目前完全不顯示，屬缺口" },
+      "project": {
+        "bindings": ["RunPresentationSnapshot.economy", "RunViewState.expedition_hp"],
+        "note": "唯讀；金幣／等級／遠征 HP"
+      }
+    },
+    {
+      "id": "playback-controls",
+      "name": "播放控制",
+      "region": "bottom",
+      "project": {
+        "bindings": ["RunPresentationSession.set_playback_paused()", "RunPresentationSession.set_playback_speed()"],
+        "speeds": [1, 2, 4],
+        "note": "暫停與倍速不得改變 canonical 戰鬥摘要（REQ-UX-002／AC-007）"
+      }
+    },
+    {
+      "id": "transition-banner",
+      "name": "幕／節點轉場大字",
+      "region": "overlay",
+      "layer": "banner",
+      "tftReference": { "id": "round-banner", "rect": [720, 225, 450, 135] },
+      "project": { "pointerEvents": false, "note": "不得阻擋輸入" }
+    },
+    {
+      "id": "system-menu",
+      "name": "ESC 系統選單",
+      "region": "overlay",
+      "tftReference": { "id": "—", "note": "參考素材未涵蓋；本專案新增需求 REQ-UX-006" },
+      "project": {
+        "items": ["繼續遊戲", "設定", "返回主選單", "離開遊戲"],
+        "note": "設定為內嵌覆蓋層不跳離 route；返回主選單與離開遊戲需二次確認；focus trap；RUN_COMBAT 開啟時暫停播放並於關閉時還原原暫停狀態",
+        "inputAction": "自訂 InputMap action，不得沿用 ui_cancel"
+      }
+    },
+    {
+      "id": "drag-layer",
+      "name": "拖曳層",
+      "region": "overlay",
+      "project": {
+        "note": "棋子與裝備共用同一 drag layer；拖曳只映射既有 intent，不新增 domain command",
+        "paths": {
+          "unit": "move_selected_to_board() / move_selected_to_bench() → commit_board_draft() → CommitBoardLayoutCommand",
+          "equip": "prepare.equip",
+          "forge": "ForgeViewModel.recipe_preview() → prepare.forge → prepare.forge.confirm"
+        },
+        "keyboardEquivalent": "保留既有選取＋移動按鈕；新增 W 快捷（懸停切換上場／收回）"
+      }
+    }
+  ],
+
+  "removedModules": [
+    { "id": "shop-lock", "reason": "與 domain 不變式衝突：node_entry_service.gd:44-45 將進入節點時 shop_offers 非空判為 SHOP_LEAK，商店由 try_release_shop_offers() 在結算與離節點時強制清空，跨回合鎖定無對應語意。" },
+    { "id": "little-legend", "reason": "單人 PVE，無小小英雄概念。" },
+    { "id": "player-nameplate", "reason": "無 PVP 對手；語意改為遠征 HP，見 expedition-hp 模組。" },
+    { "id": "perf-hud", "reason": "僅允許以 debug build 覆蓋層存在，不進正式介面。" },
+    { "id": "augment-slots-carousel", "reason": "本專案以遺物與獎勵節點承擔該角色，沿用既有 RUN_REWARD 流程，不新增選卡輪。" }
+  ],
+
+  "openDecisions": [
+    {
+      "id": "world-resolution",
+      "question": "世界層維持 640×360 或提升至 960×540",
+      "owner": "Codex（plan 階段裁決並回報）",
+      "recommendation": "640×360",
+      "rationale": "640×360 在 1920×1080 為 3× 整數、在 2560×1440 為 4× 整數；960×540 在 2560×1440 為 2.667× 非整數，與 §10.1「相機不得使用造成半像素取樣的縮放」衝突，且需重生成 44 組 sprite sheet（各 240 frames）、44 portraits 與 88 icons。"
+    }
+  ]
+}

@@ -37,6 +37,9 @@
 - `ShopService`、三幕地圖、節點收入與戰果／遠征 HP／獎勵 exactly-once 結算已由 S3 實作；S2 只產生 canonical result/proposal，只有 S3 settlement/reward transaction 可提交局內持久變更。
 - S4 羈絆／裝備／遺物與 S5 局外成長已完成；AppRoot 是 CAMP↔RUN↔RESULTS 唯一 composition root，四個 run command 由 `RunCommandFactory` 顯式注入 pinned `relic_table`。
 - 所有一般 Camp writer 必須 fresh load 且只在 `RunStatus.NONE` 時寫入；decoded retained run 只能 expected-run-id 明示棄置，`INCOMPATIBLE_PRESERVED` 必須保留並 boot failure。
+- UI 設計基準畫布為 1920×1080（支援 1280×720 與 2560×1440）；世界層解析度必須在所有支援輸出下皆為整數倍。呈現層尺寸一律經 `ExpeditionLayoutMetrics` 登記，不得直接寫 `custom_minimum_size`（spec §10.1、DEC-015）。
+- 棋盤與其上的單位由世界層以 3/4 投影渲染，UI 層只疊血條、選取框與拖曳預覽；格位權威在 domain，反投影結果須經 domain 合法性檢查後才採用，且不得回寫 domain。
+- 局內的返回主選單、設定與離開遊戲由 ESC 系統選單覆蓋層提供，不常駐於操作列；拖曳只映射既有 intent，不得新增或修改 domain command（spec §10.7、REQ-UX-006）。
 
 ## 文件工作流
 
@@ -68,3 +71,8 @@
 - G2 `difficulty-curve`（`codex/g2-difficulty-curve`，進行中）:幕間難度縮放、三幕
   Boss 差異化、多敵遭遇、trait 門檻階梯、tier-1 池重標、challenge run-op 回鏈;
   規格位於 `specs/difficulty-curve/`。
+- G2 `in-run-hud`（`codex/g2-ui-art-refresh-b`，規格完成待實作，2026-08-09）:局內四個
+  route 全面重製、UI 基準改 1920×1080 並支援 2560×1440、棋盤移世界層 3/4 投影、
+  ESC 系統選單、棋子與裝備拖曳（含合成）。規格位於 `specs/in-run-hud/`
+  （三件套＋`layout-reference-1920.json`）;實作交 Codex，`T01` 備戰期屬性預覽 API 由
+  Claude 執行。依使用者裁決，`ui-art-refresh` Phase B1R3 樣板不再作為基線。

@@ -109,13 +109,62 @@ static func _region_rect_for_state(
 
 
 func current_region_rect(region: StringName) -> Rect2:
-	return _region_rect_for_state(
-		region, _bottom_height, _status_visible, _scale_factor
+	return _region_rect_for_state_with_bottom(region)
+
+
+## 底部帶的有效高度＝max(基準×factor、實測內容 min＋內距)。
+## 內容（分組頁高度、node-choice 動作）在建構後才定案，靜態回填追不上
+## 時序；每次取 rect 時實測，面板永不被內容撐出安全區。
+func _effective_bottom_height() -> float:
+	var height := ceilf(_bottom_height * _scale_factor)
+	var content := _contents.get(REGION_BOTTOM) as Control
+	if content != null:
+		height = maxf(
+			height,
+			content.get_combined_minimum_size().y
+			+ PANEL_CONTENT_MARGIN.y * 2.0
+		)
+	return height
+
+
+## 頂/狀態帶照 factor 縮放；底部帶採 _effective_bottom_height 的實測值。
+func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
+	var top_height := ceilf(TOP_HEIGHT * _scale_factor)
+	var status_height := ceilf(STATUS_HEIGHT * _scale_factor)
+	var scaled_bottom := _effective_bottom_height()
+	var content_top := SAFE_MARGIN + top_height + GUTTER
+	var footer_top := REFERENCE_SIZE.y - SAFE_MARGIN - scaled_bottom
+	var status_top := footer_top - STATUS_GUTTER - status_height
+	var content_bottom := (
+		status_top - STATUS_GUTTER
+		if _status_visible
+		else footer_top - GUTTER
 	)
+	var content_height := content_bottom - content_top
+	match region:
+		REGION_TOP:
+			return Rect2(SAFE_MARGIN, SAFE_MARGIN, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, top_height)
+		REGION_LEFT:
+			return Rect2(SAFE_MARGIN, content_top, SIDE_WIDTH, content_height)
+		REGION_RIGHT:
+			return Rect2(REFERENCE_SIZE.x - SAFE_MARGIN - SIDE_WIDTH, content_top, SIDE_WIDTH, content_height)
+		REGION_CENTER:
+			var center_x := SAFE_MARGIN + SIDE_WIDTH + GUTTER
+			return Rect2(center_x, content_top, REFERENCE_SIZE.x - center_x - SAFE_MARGIN - SIDE_WIDTH - GUTTER, content_height)
+		REGION_BOTTOM:
+			return Rect2(SAFE_MARGIN, footer_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, scaled_bottom)
+		REGION_STATUS:
+			return Rect2(SAFE_MARGIN, status_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, status_height)
+	return Rect2(Vector2.ZERO, REFERENCE_SIZE)
 
 
 func set_scale_factor(factor: float) -> void:
 	_scale_factor = maxf(factor, 0.01)
+	_relayout_regions()
+
+
+## 外部觸發重排（例如分組切換改變底部帶內容 min 之後）。
+func relayout() -> void:
 	_relayout_regions()
 
 
@@ -124,10 +173,28 @@ func _relayout_regions() -> void:
 		var panel := _panels.get(region) as Control
 		if panel == null:
 			continue
-		var rect := current_region_rect(region)
-		panel.position = rect.position
-		panel.custom_minimum_size = rect.size
-		panel.size = rect.size
+		_place_panel(region, panel, current_region_rect(region))
+
+
+## 底部帶錨定畫面底、向上生長：內容 min 晚到（主題切換後的延遲重算、
+## 分組切換、node-choice）也絕不會把底緣推出安全區。其餘區域維持
+## 顯式 rect（P6：先 minimum 再 size）。
+func _place_panel(region: StringName, panel: Control, rect: Rect2) -> void:
+	if region == REGION_BOTTOM:
+		panel.anchor_left = 0.0
+		panel.anchor_right = 1.0
+		panel.anchor_top = 1.0
+		panel.anchor_bottom = 1.0
+		panel.offset_left = SAFE_MARGIN
+		panel.offset_right = -SAFE_MARGIN
+		panel.offset_bottom = -SAFE_MARGIN
+		panel.offset_top = -SAFE_MARGIN - rect.size.y
+		panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		panel.custom_minimum_size = Vector2(0.0, 0.0)
+		return
+	panel.position = rect.position
+	panel.custom_minimum_size = rect.size
+	panel.size = rect.size
 
 
 func set_status_visible(value: bool) -> void:
@@ -170,9 +237,7 @@ func _add_panel(
 ) -> void:
 	var panel := PanelContainer.new()
 	panel.name = node_name
-	panel.position = rect.position
-	panel.custom_minimum_size = rect.size
-	panel.size = rect.size
+	_place_panel(region, panel, rect)
 	panel.theme_type_variation = variation
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content_control.name = "Content"

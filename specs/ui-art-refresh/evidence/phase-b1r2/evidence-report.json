@@ -8,7 +8,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "camp",
-			"sha256": "67ee48ca6e282b991b0deb54ee19f1b9a48f9bc1c8c07d2812b76b107e7520b3",
+			"sha256": "7b6f45535890663ca283734f3e30a9244a4826f1678a5f864acf4ecf8dc369e1",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -20,7 +20,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "camp",
-			"sha256": "8356dab723e44a4b4ac30df7bd5c2b9a6988b2b081a6d168a560ec081908e00f",
+			"sha256": "a99d6b9a082a0c78911895a79f30bc1d1fa0dd295c33f2a3cc22ccf061457fda",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -32,7 +32,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "camp",
-			"sha256": "e9d79ec8691754bbc0714c532cdf54ff8d569a874d87b70b467e078403337fa7",
+			"sha256": "6148a8b4206d13fc4a1a7cc8f3ab97726188d63a5460556d43052266ca9e31df",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -44,7 +44,7 @@
 			"requested_height": 1080,
 			"requested_width": 1920,
 			"route": "camp",
-			"sha256": "7c51be0f3f31d55e6da3c22b86bccff951356d17fab03d3f555a6b8590930335",
+			"sha256": "826203f38180e0c07603cfe5dd9de9171e181c976d995d7cc6a81aa0adeed77a",
 			"ui_scale": 100,
 			"width": 1920
 		},
@@ -56,7 +56,7 @@
 			"requested_height": 1080,
 			"requested_width": 1920,
 			"route": "camp",
-			"sha256": "0f777753cd2751ecc5c7c2b2a6e113f356c4fb10a33734003083cdf524b88f36",
+			"sha256": "6ffb74ecf19152792d7c26369b4f13a28ada1c42f4312c621d2e6e7374e6f081",
 			"ui_scale": 125,
 			"width": 1920
 		},
@@ -68,7 +68,7 @@
 			"requested_height": 1080,
 			"requested_width": 1920,
 			"route": "camp",
-			"sha256": "d77b90f847ab75346307656a720a1b7f71e9c6c08710f51677382bf105b87671",
+			"sha256": "c71552eb3fa0eb2062f9fa9290b9ae02beed5abc4e588e2f52f1e30a730cd337",
 			"ui_scale": 150,
 			"width": 1920
 		},
@@ -80,7 +80,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "menu-main",
-			"sha256": "00e7a6066c4edbbd917f65176c185851a617d9236d5bf26e047b8005ca01a593",
+			"sha256": "337527253ec8cd5e379441a67eaeb2ee0ea63cc2c72b9bab8e9282cfce4b2bd4",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -92,7 +92,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "menu-main",
-			"sha256": "ccc8be072fecb9c2f27a2b6067ee6084043904c4190850f1a7c343baf6c5061a",
+			"sha256": "9ffb3366cc2d0b43d5da55001cbfb5a12362c45607515bc278f62e3e2fd63f9e",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -104,7 +104,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "menu-main",
-			"sha256": "0535aaddafaba7f91027702f49808f89e1fb10454d669ef3fee84810287bc575",
+			"sha256": "de12b1398aa22b58b6a06ec8e7f4a81d13851588a8b9a161b95283891b52baae",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -116,7 +116,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "settings-after-apply",
-			"sha256": "6c6d019b1bad9ab1863bd056cea6fa72b4e942ec77bc8bc6c6af353a91335ea2",
+			"sha256": "ef31e2c86f97f26bddfc26077bd924c04e4e7b21f2877487e008098a20e157f3",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -128,7 +128,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "settings-after-apply",
-			"sha256": "2a5405fed4051585f1569f5b608e52ab9293058cf1ec14daa7ba6e9cbe237c72",
+			"sha256": "d9214bb9170373b303a3d7e2c57031ea254c1fe12f8212805877ebc35901f00c",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -140,7 +140,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "settings-after-apply",
-			"sha256": "06374a0ec36e1875503fb379528622ef3dd42a64baea82de072141e25c30f0ae",
+			"sha256": "455f3d3f2d9dcc54ec435120aee84360f354c55156ff279747d22826a6126026",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -152,7 +152,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare",
-			"sha256": "19545df84fa2e4ca1800a97b1e1f20d01dd0fb8db6a513a4c5459a86ac077ea4",
+			"sha256": "43cfd51074d584969eaa5ffd97cd75452e6c7b56ffeecfbd12065ea3df5c5f0b",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -164,7 +164,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare",
-			"sha256": "ae4130021d34d53c1a75934410b60c4dbf54c91a67053a119840a7bf32686c4e",
+			"sha256": "938b2c42c3acd84c4d4622cf24a6a5391ff0d6625690cc99436387e8b0c80022",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -176,7 +176,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare",
-			"sha256": "4e2679e0bcf2c9d919b1a811ed565f773f8dfe24dbe620ce67e61688577e66bc",
+			"sha256": "2a9e1efbae1e6ba56ea9f863dc6f6e796958cc665eb145d537c938a23663b596",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -188,7 +188,7 @@
 			"requested_height": 1080,
 			"requested_width": 1920,
 			"route": "prepare",
-			"sha256": "a9cc75a3acdf58930138a7c7c1003dc39a3be8492b9b8ec241a895e41dffca5a",
+			"sha256": "99459921247df366d642e426afed90ea5894a67f114faf6d1d19fdc289e870cf",
 			"ui_scale": 100,
 			"width": 1920
 		},
@@ -200,7 +200,7 @@
 			"requested_height": 1080,
 			"requested_width": 1920,
 			"route": "prepare",
-			"sha256": "22fbf6b65bb0dbbe994421c07d609d65e0cc2bfa4d83d48429195aa6655c7039",
+			"sha256": "a46e9b7e367bcd6494d5f2c5afa38d391cf23efa9ec2345c2b89f263a2d522ea",
 			"ui_scale": 125,
 			"width": 1920
 		},
@@ -212,7 +212,7 @@
 			"requested_height": 1080,
 			"requested_width": 1920,
 			"route": "prepare",
-			"sha256": "c9bf01e5965b119728af9905d815495f32cead898362637dfa029c6ef6e3be15",
+			"sha256": "e34fa5dff805a5855ae220226a22451b1e90b4cf769b1f8cc69ce31d1227cf7e",
 			"ui_scale": 150,
 			"width": 1920
 		},
@@ -224,7 +224,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-forge-equipment",
-			"sha256": "dd0a365453c0c11a93ec3430c97d01b6a2883741eb9a594669f548bc613f1086",
+			"sha256": "e36a0dff30d25d50191ddca5ab1a34959072c617de02717c024fe5d0b4b77c25",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -236,7 +236,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-party",
-			"sha256": "37748e5754bfc2f2843597c9c1bdea2cc38c9faed60ebe2ba3f4dbbe5c8aa72f",
+			"sha256": "3f71601271fbce34e7ad6f42ad6dfb249143dffc67dc85939855f1802c17010d",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -248,7 +248,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-advance",
-			"sha256": "e4aa8d6718c1f7d53757cef29d8ec3426ffec7ffdbd115875eadec6bbbe1fc87",
+			"sha256": "bbcba099b4f81c23f3cebe9c3b56f387d158b3f54ce61799df4192db725fba7c",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -260,7 +260,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-forge-equipment",
-			"sha256": "c95fcdc2c7cbcf204d13532d95b247c2623417c2ad02d2651d1d66f065d029cd",
+			"sha256": "01a682ed79a2785335e022ae4c2c7d135cb7b85b72bb1b884b7aac6fb96a8238",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -272,7 +272,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-party",
-			"sha256": "21bb14c11921dc43a50fe24a1a518ad60bb5373772b823ce1026af732bb5ff18",
+			"sha256": "d50fac6f3b1a5eae3abee9991b56c2a72dde1c57933b8e42cd35fe496b79a858",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -284,7 +284,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-advance",
-			"sha256": "124850862888334528f003cd57424169e009fec774f9c346a01f8db12d2fc3d2",
+			"sha256": "eb99312ac46f6e6a0d65bef1888b9c69773054f9257c1802be76abac6eaf794a",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -296,7 +296,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-forge-equipment",
-			"sha256": "e324a7bd2e3f0df6e586448e4cd7ef32c622a75c7c264943ff504bc0f93b8730",
+			"sha256": "a4c77ebbefa310d94b2c94d8c593b4c50f22acbbaa9c487b49008c46b3093559",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -308,7 +308,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-party",
-			"sha256": "592d62f27ca4c606a0d3b8445faace2b3f6e6c9ccca546bff7e9c21d728c4a8f",
+			"sha256": "988c711f91458c3de8cefeaf9ffc756cd0b8ba23f883264728c5d3d7846d3108",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -320,7 +320,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-group-advance",
-			"sha256": "c02ce91c9cd2fa702ccc0158bf3f638fe8c2137ddf5c81df89c90e79ef538736",
+			"sha256": "438c9b71b111460351c40f94448f8b797f033dbb171262c398751beba9127eb8",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -332,7 +332,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-scale-rebuild",
-			"sha256": "19545df84fa2e4ca1800a97b1e1f20d01dd0fb8db6a513a4c5459a86ac077ea4",
+			"sha256": "43cfd51074d584969eaa5ffd97cd75452e6c7b56ffeecfbd12065ea3df5c5f0b",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -344,7 +344,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-node-choice",
-			"sha256": "0681d84d3ec80784035f021296aad9de2f316f750566edf31a94dfe5a55f5f08",
+			"sha256": "c53b237c1569c4df7f341524a719d79a8b5d9c126352f9208fd7e6effa2c6612",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -356,7 +356,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-node-choice",
-			"sha256": "e2f12ff8f007416aa6d8f49e8d9b2fe56ccd0e7a05732747082067ac57e7fcfa",
+			"sha256": "d38f0f7f885855787e747b32b1c4852429356566c596029d8994f3f042660987",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -368,7 +368,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-node-choice",
-			"sha256": "d152e0f43ef47f898429ebfd8ee5d4eeab592af0da3d0f216126fd381c6618bc",
+			"sha256": "68c897a5e9048a1f91fa185303b2c429f0a9960aacf32b188c5b19ba8e387de3",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -380,7 +380,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-node-choice-modal",
-			"sha256": "c677f09005ca154d821b21066bcb3cf07409500c719dab781678cd61074525a0",
+			"sha256": "84dc31d3b47dcd552c9d68874d80d7307d04eba4854498db029a70ffbebf5fd0",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -392,7 +392,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-node-choice-modal",
-			"sha256": "bc23dfd9ce6c571cf6700613f02e1badc52fc232c53d82b6a99d406b2a2d9a96",
+			"sha256": "74e3ee3dd5e27a68e579ad1f4196805275ad5ce630d6086bdd708100e35150df",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -404,7 +404,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-node-choice-modal",
-			"sha256": "7bdc0dd38a1907c51d03fba3b8c1d91ef3bfb4a1b6b1c546042d8496a2d608b2",
+			"sha256": "6686149259cfb0fcd61c4c58c3df46ca774654870e96d1725ea08d2e1d4de882",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -416,7 +416,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-return-modal",
-			"sha256": "fd7a58e6acaf18c43cfea24e33e3f464d87fb0a80efd9e4bad731ea4571d4d35",
+			"sha256": "36081c2501093e096f0289b1e7f2c9d84fb4f00f800ed71667ecb3364af3d615",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -428,7 +428,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-return-modal",
-			"sha256": "5d29ae496d83325fc68b9ee581a103620098257937e8c05150e85b72c249e278",
+			"sha256": "496d2694fda36341ec9b9da919e12fa805321db0f18d2b0076d5c97632dc059e",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -440,7 +440,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-return-modal",
-			"sha256": "996df85ad241f8217dc5f13085feb4947392ff951c7cde400594d36773ee42e4",
+			"sha256": "2ca29ef1e275cd32cb61d28d718d96932c3f32daabf3f8a23da62a9ad1065079",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -452,7 +452,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-status",
-			"sha256": "f8681089b8ceefe772a3491d40c4ada1debec0d494052a0d2f158c1b616f3369",
+			"sha256": "97422f3af0ef34767e7b854a1d0e1d0afc06e48a72aef7ab170755c40555ef98",
 			"ui_scale": 100,
 			"width": 1280
 		},
@@ -464,7 +464,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-status",
-			"sha256": "f2ba91df02940b14b0c7de90a557e4d5dd9dccce5a6b64189c3e7ff5bdeb03cf",
+			"sha256": "ab7adb199fe7fab9d0b17ccb717146c17f74af2c6709ca7b46466c66395af699",
 			"ui_scale": 125,
 			"width": 1280
 		},
@@ -476,7 +476,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "prepare-status",
-			"sha256": "77a24157258c190fcd89a8f1bec9ef03aec79a802f83bead9151e6723b47c478",
+			"sha256": "49e4ff4d804aba215aad84d64e4221a8a5bbdf4fea954d4ae6f202030339fefe",
 			"ui_scale": 150,
 			"width": 1280
 		},
@@ -488,7 +488,7 @@
 			"requested_height": 720,
 			"requested_width": 1280,
 			"route": "focus",
-			"sha256": "7a29c89db566965a1e216b4aef8ab3a26fa1881f9dfb7e6899ae2d6448eab64f",
+			"sha256": "0f4556593293661764771e242b681bc616e91cbce0b6f362d7ecb2ba6c75d119",
 			"ui_scale": 100,
 			"width": 1280
 		}

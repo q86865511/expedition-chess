@@ -373,16 +373,15 @@ func _bind_localized_controls() -> void:
 		controls.name = "Actions"
 		if route_kind == &"SETTINGS":
 			controls.z_index = 6
-			add_child(controls)
 		else:
-			# 動作欄真置中：CenterContainer 承擔錨定，欄位大小變動
-			# （縮放、文案）時仍保持水平垂直置中。
-			var center := CenterContainer.new()
-			center.name = "ActionsHost"
-			center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			add_child(center)
-			center.add_child(controls)
+			# 動作欄真置中：PRESET_CENTER 的錨點在中心，但預設 grow 會讓
+			# 左上角落在中心；grow BOTH 才是真置中（同 modal 的 P10 修法）。
+			# `Actions` 維持為畫面直屬子節點——多處程式與測試以
+			# `get_node(^"Actions")` 取用它，不得改變節點路徑。
+			controls.set_anchors_preset(Control.PRESET_CENTER)
+			controls.grow_horizontal = Control.GROW_DIRECTION_BOTH
+			controls.grow_vertical = Control.GROW_DIRECTION_BOTH
+		add_child(controls)
 		for action_id: StringName in action_ids:
 			var action := _new_action_button(action_id)
 			if route_kind == &"SETTINGS":
@@ -463,6 +462,9 @@ func apply_theme_scale_layout(scale_percent: int) -> void:
 			title.position = title_rect.position
 			title.size = title_rect.size
 		_sync_status_band_visibility()
+		# 主題切換後子節點 minimum 的重算是延遲的；立即量測會拿到舊值。
+		# 下一影格再收斂一次（shell 帶高實測＋composition rect 重排）。
+		call_deferred(&"_deferred_layout_settle")
 
 
 ## SETTINGS 版面的單一權威（P3/P4/P5）：由下往上排——動作列貼安全區底、
@@ -744,6 +746,9 @@ func _on_prepare_action_group_selected(index: int) -> void:
 			206.0,
 			_prepare_action_group_pages[index].get_combined_minimum_size().y
 		)
+	if _layout_shell != null:
+		# 分組切換改變底部帶內容 min，帶高需即時重算。
+		_layout_shell.relayout()
 	_apply_keyboard_focus_graph()
 
 
@@ -1349,6 +1354,12 @@ func _show_confirmation_modal(
 		_link_focus_cycle(dialog_controls)
 	if confirm != null:
 		call_deferred(&"_grab_focus_deferred", confirm)
+
+
+func _deferred_layout_settle() -> void:
+	if not is_inside_tree():
+		return
+	_sync_status_band_visibility()
 
 
 func _sync_status_band_visibility() -> void:

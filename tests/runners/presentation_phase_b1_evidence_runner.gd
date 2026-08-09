@@ -226,13 +226,20 @@ func _validate_prepare_content_regions(screen: Control, case_name: String) -> vo
 	var center_scroll := screen.find_child(
 		"PrepareCenterScroll", true, false
 	) as ScrollContainer
-	var center_rect := (
-		center_scroll.get_global_rect()
-		if center_scroll != null
-		else shell.current_region_rect(ProductionLayoutShell.REGION_CENTER)
-	)
+	var center_region := shell.current_region_rect(
+		ProductionLayoutShell.REGION_CENTER
+	).grow(1.0)
 	var status_rect := shell.current_region_rect(ProductionLayoutShell.REGION_STATUS)
 	var bottom_rect := shell.current_region_rect(ProductionLayoutShell.REGION_BOTTOM)
+	# B1R3 T13：捲動視窗本身必須落在中央區域內；follow_focus 保證鍵盤
+	# 可捲達，其「內容」允許超出視窗（由裁剪與捲動吸收），不再逐一圈地。
+	if center_scroll != null:
+		if not center_scroll.follow_focus:
+			_issues.append("prepare_center_scroll_without_follow_focus:%s" % case_name)
+		if not center_region.encloses(center_scroll.get_global_rect()):
+			_issues.append("prepare_center_scroll_overflow:%s:%s" % [
+				case_name, center_scroll.get_global_rect(),
+			])
 	for node_name: String in [
 		"BoardGrid",
 		"BenchRow",
@@ -242,10 +249,12 @@ func _validate_prepare_content_regions(screen: Control, case_name: String) -> vo
 		if control == null:
 			_issues.append("prepare_region_control_missing:%s:%s" % [case_name, node_name])
 			continue
-		# B1R3 T13：狀態帶可見與否都要守——先前「is_status_visible 即跳過」
-		# 讓 P6（面板不回縮、狀態帶壓內容）從守門下溜走。
+		if _has_follow_focus_scroll_ancestor(control, screen):
+			continue
+		# 狀態帶可見與否都要守——先前「is_status_visible 即跳過」讓 P6
+		# 從守門下溜走。
 		var control_rect := control.get_global_rect()
-		if not center_rect.encloses(control_rect):
+		if not center_region.encloses(control_rect):
 			_issues.append("prepare_center_overflow:%s:%s:%s" % [case_name, node_name, control_rect])
 		if control_rect.intersects(bottom_rect):
 			_issues.append("prepare_center_cross_region:%s:%s" % [case_name, node_name])
@@ -343,6 +352,19 @@ func _ancestor_scroll_container(control: Control) -> ScrollContainer:
 			return ancestor as ScrollContainer
 		ancestor = ancestor.get_parent()
 	return null
+
+
+func _has_follow_focus_scroll_ancestor(
+	control: Control,
+	stop_at: Node
+) -> bool:
+	var ancestor := control.get_parent()
+	while ancestor != null and ancestor != stop_at:
+		var scroll := ancestor as ScrollContainer
+		if scroll != null:
+			return scroll.follow_focus
+		ancestor = ancestor.get_parent()
+	return false
 
 
 func _capture_focus(output_dir: String) -> void:

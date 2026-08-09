@@ -1,11 +1,11 @@
 {
     "schema_version":  2,
-    "captured_at_utc":  "2026-08-08T10:29:30.4523190Z",
+    "captured_at_utc":  "2026-08-08T14:04:23.0306141Z",
     "root":  "%APPDATA%/Godot/app_userdata",
     "directory_count":  241,
-    "file_count":  73,
-    "total_bytes":  2338766,
-    "inventory_sha256":  "7d1c0553ea2142425d4b4a48ba56b1d43b571b29e8ef0c3c2e44cb3a1d5b280a",
+    "file_count":  75,
+    "total_bytes":  2339614,
+    "inventory_sha256":  "f4f2984aabdcd9b8ab161931d901894a02363b7f87acc76e35fb9db369aa93db",
     "expected_paths":  {
                            "game_directory":  true,
                            "nested_backup_directory":  true,
@@ -60,7 +60,7 @@
                         {
                             "path":  "遠征棋",
                             "creation_time_utc":  "2026-07-31T12:09:35.6378073Z",
-                            "last_write_time_utc":  "2026-08-08T08:45:09.0533567Z"
+                            "last_write_time_utc":  "2026-08-08T13:43:49.0527012Z"
                         },
                         {
                             "path":  "遠征棋/artifacts",
@@ -75,12 +75,12 @@
                         {
                             "path":  "遠征棋/balance-candidate-archive-test",
                             "creation_time_utc":  "2026-08-02T08:07:38.7738269Z",
-                            "last_write_time_utc":  "2026-08-08T08:31:28.1550359Z"
+                            "last_write_time_utc":  "2026-08-08T12:01:10.6253586Z"
                         },
                         {
                             "path":  "遠征棋/balance-candidate-manifest-revision-test",
                             "creation_time_utc":  "2026-08-03T06:09:38.7759816Z",
-                            "last_write_time_utc":  "2026-08-08T08:31:28.1676334Z"
+                            "last_write_time_utc":  "2026-08-08T12:01:10.6317058Z"
                         },
                         {
                             "path":  "遠征棋/balance-candidate-manifest-revision-test/revisions",
@@ -90,12 +90,12 @@
                         {
                             "path":  "遠征棋/balance-candidate-manifest-revision-test/revisions/balance.g2.876e9818fcae",
                             "creation_time_utc":  "2026-08-03T06:12:13.1345800Z",
-                            "last_write_time_utc":  "2026-08-08T08:31:28.1676334Z"
+                            "last_write_time_utc":  "2026-08-08T12:01:10.6317058Z"
                         },
                         {
                             "path":  "遠征棋/logs",
                             "creation_time_utc":  "2026-07-31T12:09:35.6398128Z",
-                            "last_write_time_utc":  "2026-08-08T08:36:54.2149082Z"
+                            "last_write_time_utc":  "2026-08-08T13:40:58.9651575Z"
                         },
                         {
                             "path":  "遠征棋/objectdb_snapshots",
@@ -105,12 +105,12 @@
                         {
                             "path":  "遠征棋/playtest_reports",
                             "creation_time_utc":  "2026-08-01T13:31:41.8696919Z",
-                            "last_write_time_utc":  "2026-08-08T08:44:52.2047975Z"
+                            "last_write_time_utc":  "2026-08-08T12:14:34.4475714Z"
                         },
                         {
                             "path":  "遠征棋/playtest_session",
                             "creation_time_utc":  "2026-08-04T11:51:56.7023579Z",
-                            "last_write_time_utc":  "2026-08-08T08:44:54.3703224Z"
+                            "last_write_time_utc":  "2026-08-08T12:14:36.3799442Z"
                         },
                         {
                             "path":  "遠征棋/saves",
@@ -1251,28 +1251,7 @@
                       "path":  "遠征棋/logs/godot.log",
                       "length":  167,
                       "creation_time_utc":  "2026-07-31T12:09:35.6398128Z",
-                      "last_write_time_utc":  "2026-08-08T08:36:54.6213753Z",
-                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
-                  },
-                  {
-                      "path":  "遠征棋/logs/godot2026-08-07T19.44.21.log",
-                      "length":  167,
-                      "creation_time_utc":  "2026-08-07T11:44:21.9451972Z",
-                      "last_write_time_utc":  "2026-08-07T11:44:21.9451972Z",
-                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
-                  },
-                  {
-                      "path":  "遠征棋/logs/godot2026-08-07T19.46.41.log",
-                      "length":  167,
-                      "creation_time_utc":  "2026-08-07T11:46:41.1665548Z",
-                      "last_write_time_utc":  "2026-08-07T11:46:41.1665548Z",
-                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
-                  },
-                  {
-                      "path":  "遠征棋/logs/godot2026-08-08T16.30.11.log",
-                      "length":  167,
-                      "creation_time_utc":  "2026-08-08T08:30:11.9589578Z",
-                      "last_write_time_utc":  "2026-08-08T08:30:11.9589578Z",
+                      "last_write_time_utc":  "2026-08-08T13:40:59.3503736Z",
                       "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
                   },
                   {
@@ -1280,6 +1259,27 @@
                       "length":  167,
                       "creation_time_utc":  "2026-08-08T08:36:54.2149082Z",
                       "last_write_time_utc":  "2026-08-08T08:36:54.2149082Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-08T20.00.02.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-08T12:00:02.7514353Z",
+                      "last_write_time_utc":  "2026-08-08T12:00:02.7514353Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-08T20.48.47.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-08T12:48:47.9713203Z",
+                      "last_write_time_utc":  "2026-08-08T12:48:47.9723208Z",
+                      "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
+                  },
+                  {
+                      "path":  "遠征棋/logs/godot2026-08-08T21.40.58.log",
+                      "length":  167,
+                      "creation_time_utc":  "2026-08-08T13:40:58.9636539Z",
+                      "last_write_time_utc":  "2026-08-08T13:40:58.9636539Z",
                       "sha256":  "bb769333ce4912d6d18019f11a4708440344bd48ca2973eea6ed8439cbeabc89"
                   },
                   {
@@ -1318,11 +1318,25 @@
                       "sha256":  "77d402dc09839687a16c4ad43eeadc05d7e6c18953a174aeae660b530ae86251"
                   },
                   {
+                      "path":  "遠征棋/playtest_reports/session-264226165745108b57febb068d4bad91.json",
+                      "length":  415,
+                      "creation_time_utc":  "2026-08-08T12:01:01.8723140Z",
+                      "last_write_time_utc":  "2026-08-08T12:01:01.8723140Z",
+                      "sha256":  "bc4b02644cf69ed9d924a9c295774d59867827ef138b3f360ca91ac4a3db9ef2"
+                  },
+                  {
                       "path":  "遠征棋/playtest_reports/session-26a8b4e7ada3d2bec7f93f1cb921d08c.json",
                       "length":  415,
                       "creation_time_utc":  "2026-08-07T08:39:09.7937286Z",
                       "last_write_time_utc":  "2026-08-07T08:39:09.7937286Z",
                       "sha256":  "0983435271ce4272b47096bdc6e0f5d29546b319a757a8fc281e0bab1097479a"
+                  },
+                  {
+                      "path":  "遠征棋/playtest_reports/session-294279023deaf70361ca9aa8aea87083.json",
+                      "length":  429,
+                      "creation_time_utc":  "2026-08-08T12:14:34.4392690Z",
+                      "last_write_time_utc":  "2026-08-08T12:14:34.4406131Z",
+                      "sha256":  "9274afef1a341a8635ebecf55bc5adcba988240021087855c62ac0690378c7ff"
                   },
                   {
                       "path":  "遠征棋/playtest_reports/session-3e7218271741c61d6df4b5b99400b5ec.json",
@@ -1523,9 +1537,9 @@
                   {
                       "path":  "遠征棋/playtest_session/.pending-session.json",
                       "length":  304,
-                      "creation_time_utc":  "2026-08-08T08:32:13.0755213Z",
-                      "last_write_time_utc":  "2026-08-08T08:45:44.6306242Z",
-                      "sha256":  "6979b3dd015aac563b5f6dc4f4b998f63f2c067f02123b2bdc72a90fe29a629c"
+                      "creation_time_utc":  "2026-08-08T12:02:14.8662385Z",
+                      "last_write_time_utc":  "2026-08-08T13:42:06.2753809Z",
+                      "sha256":  "839ae3a8d714b0db902fbf34221306d2583967b2a3beff143cd4a63f57842f18"
                   },
                   {
                       "path":  "遠征棋/saves/save.backup.json",
@@ -1545,15 +1559,15 @@
                       "path":  "遠征棋/settings-v1.backup",
                       "length":  362,
                       "creation_time_utc":  "2026-07-31T12:21:27.8965305Z",
-                      "last_write_time_utc":  "2026-08-08T08:45:09.0523542Z",
-                      "sha256":  "086eb37c6e5b9a85c87a13bc6d43356660f911062d332a72226783d23ab56be4"
+                      "last_write_time_utc":  "2026-08-08T13:43:49.0527012Z",
+                      "sha256":  "e177ed34f9696b12f6030b598b2fca860c74039102b8f36b747ac6ac62eb9745"
                   },
                   {
                       "path":  "遠征棋/settings-v1.json",
-                      "length":  358,
+                      "length":  362,
                       "creation_time_utc":  "2026-08-07T07:33:19.8991766Z",
-                      "last_write_time_utc":  "2026-08-08T08:45:09.0442810Z",
-                      "sha256":  "fe6ac163dc27667fd9ec8d981f683655de951a1b3e5ad20323cd0d58fcc3c302"
+                      "last_write_time_utc":  "2026-08-08T13:43:49.0507007Z",
+                      "sha256":  "086eb37c6e5b9a85c87a13bc6d43356660f911062d332a72226783d23ab56be4"
                   },
                   {
                       "path":  "遠征棋/shader_cache/CanvasShaderGLES3/8c75bfd6674276f0cfc0473f20f73cbe5021e08c53369f21dd6d519ba9ce4ea4/6bb7c9a2fd1c4a8fa77cb96555b9b4a720209981.cache",

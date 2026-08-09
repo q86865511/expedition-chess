@@ -8,7 +8,8 @@ extends RefCounted
 ##   預算，維持 reference 值；內容變大時 Godot 的 minimum size 仍會撐開）。
 ## - `set_fixed_cell()` 用於棋盤/bench 格這類「sprite 佔位」控制項：
 ##   兩軸皆固定、文字以省略號截斷，並攜帶幾何稽核的明示豁免 meta。
-## - `px()` 讀取已隨縮放發布的 ExpeditionSpacing token。
+## 寬度值屬各畫面的欄位預算，直接以字面值寫在呼叫端（單一事實來源；
+## 曾考慮 theme token 但零消費者的平行常數只會分歧）。
 
 const META_BASE_MINIMUM := &"expedition_theme_base_minimum"
 const META_FIXED_MINIMUM := &"expedition_theme_fixed_minimum"
@@ -40,7 +41,3 @@ static func set_fixed_cell(button: Button, width: float, height: float) -> void:
 	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
 
-static func px(owner: Control, token: StringName) -> int:
-	if owner == null:
-		return 0
-	return owner.get_theme_constant(token, &"ExpeditionSpacing")

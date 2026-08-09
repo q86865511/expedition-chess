@@ -185,8 +185,12 @@ function Invoke-GodotChild {
     $argumentLine = (($Arguments | ForEach-Object { ConvertTo-WindowsCommandLineArgument -Value $_ }) -join ' ')
     $runStarted = [DateTime]::UtcNow
     # 子程序一律使用隔離 APPDATA：測試會經 SettingsService 等 autoload 寫
-    # user://，不得觸碰真實使用者設定（B1R3 追蹤項根治）。
+    # user://，不得觸碰真實使用者設定（B1R3 追蹤項根治）。每個 runner
+    # 程序一個目錄；上一輪殘留的 expedition-test-appdata-* 先清（N5）。
     if (-not $script:IsolatedAppData) {
+        Get-ChildItem -LiteralPath ([IO.Path]::GetTempPath()) -Directory -Filter 'expedition-test-appdata-*' -ErrorAction SilentlyContinue |
+            Where-Object { $_.LastWriteTime -lt (Get-Date).AddHours(-6) } |
+            ForEach-Object { try { Remove-Item -LiteralPath $_.FullName -Recurse -Force -Confirm:$false } catch {} }
         $script:IsolatedAppData = Join-Path ([IO.Path]::GetTempPath()) (
             'expedition-test-appdata-' + [DateTime]::UtcNow.ToString('yyyyMMddHHmmss') + '-' + $PID
         )

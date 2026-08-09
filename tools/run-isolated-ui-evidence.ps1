@@ -130,14 +130,12 @@ function Invoke-GodotProcess {
 
 New-Item -ItemType Directory -Force -Path $evidenceRoot | Out-Null
 $beforePath = Join-Path $evidenceRoot 'real-appdata-before.json'
-$before = $null
-if (Test-Path -LiteralPath $beforePath -PathType Leaf) {
-    $before = Get-Content -LiteralPath $beforePath -Raw -Encoding UTF8 | ConvertFrom-Json
-}
-if ($null -eq $before -or [string]::IsNullOrWhiteSpace([string]$before.inventory_sha256)) {
-    $before = Get-AppDataSnapshot -Root $realAppDataRoot
-    Write-JsonFile -Path $beforePath -Value $before
-}
+# B1R2 P8: capture the before-snapshot at invocation time. Reusing a
+# committed baseline from disk falsely fails after any legitimate play
+# session touches the real profile. (ASCII-only comment: this file has
+# no BOM and PS 5.1 decodes non-BOM files as ANSI.)
+$before = Get-AppDataSnapshot -Root $realAppDataRoot
+Write-JsonFile -Path $beforePath -Value $before
 if (-not $profileRoot.StartsWith($allowedRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Isolated profile escaped the allowed root: $profileRoot"
 }

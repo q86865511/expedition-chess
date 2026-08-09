@@ -14,6 +14,16 @@ const TOKEN_SIZES: Dictionary = {
 	&"body": 18,
 	&"auxiliary": 16,
 }
+## 這些型別是 reference 空間的「固定格陣/帶列」：水平間距屬寬度預算，
+## 不隨 UI 縮放（否則 5 卡＋兩側欄在 150% 會擠出 1232 內容寬）。
+const REFERENCE_SPACING_TYPES: Array[StringName] = [
+	&"ExpeditionPrepareBottomBand",
+	&"ExpeditionPrepareShopBand",
+	&"ExpeditionShopCardsRow",
+	&"ExpeditionBenchRow",
+	&"ExpeditionInventoryRow",
+	&"ExpeditionBoardGrid",
+]
 const SPACING_TOKENS: Dictionary = {
 	&"space_1": 4,
 	&"space_2": 8,
@@ -28,7 +38,14 @@ const SPACING_TOKENS: Dictionary = {
 
 
 func apply(host: Control, scale_percent: int) -> bool:
-	if host == null or scale_percent not in SUPPORTED_SCALES:
+	# freed 物件在 GDScript 4 不等於 null；consumer 的 deferred apply 可能
+	# 在 host 已釋放後才輪到（跨測試 teardown 邊界實測會發生）。
+	# 只擋已釋放者——尚未進場景樹的 host 是合法呼叫端。
+	if (
+		host == null
+		or not is_instance_valid(host)
+		or scale_percent not in SUPPORTED_SCALES
+	):
 		return false
 	var factor := float(scale_percent) / 100.0
 	var base_metrics := _capture_control_metrics(host)
@@ -67,13 +84,18 @@ func _scale_theme(runtime_theme: Theme, factor: float) -> void:
 				)
 			)
 		for constant_name: StringName in BASE_THEME.get_constant_list(type_name):
+			var constant_factor := (
+				1.0
+				if type_name in REFERENCE_SPACING_TYPES
+				else factor
+			)
 			runtime_theme.set_constant(
 				constant_name,
 				type_name,
 				roundi(
 					float(
 						BASE_THEME.get_constant(constant_name, type_name)
-					) * factor
+					) * constant_factor
 				)
 			)
 		for style_name: StringName in BASE_THEME.get_stylebox_list(type_name):

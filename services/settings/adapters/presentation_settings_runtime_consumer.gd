@@ -173,13 +173,19 @@ func _apply_accessibility(snapshot: SettingsSnapshot) -> StringName:
 
 
 func _apply_ui_scale(scale_percent: int) -> void:
-	if _host == null or scale_percent not in [100, 125, 150]:
+	if (
+		_host == null
+		or not is_instance_valid(_host)
+		or scale_percent not in [100, 125, 150]
+	):
 		return
 	_theme_runtime.apply(_host, scale_percent)
 
 
 func _accessibility_host() -> Node:
-	if _host == null:
+	# deferred 套用可能在 host 已被釋放後才輪到（freed 物件不等於 null，
+	# 直接 find_child 會在引擎層炸「find_children on a null value」）。
+	if _host == null or not is_instance_valid(_host):
 		return null
 	if _host.name == ACCESSIBILITY_HOST_NAME:
 		return _host

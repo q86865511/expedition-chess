@@ -94,12 +94,17 @@ func test_run_prepare_geometry_across_scales() -> void:
 			"PrepareLeftContent", true, false
 		) as Control
 		if percent == 150 and left_probe != null:
-			assert_almost_eq(
-				left_probe.size.y,
-				280.0,
-				2.0,
-				"left content must settle at the scaled region height"
-			)
+			var shell := prepare.get("_layout_shell") as ProductionLayoutShell
+			assert_not_null(shell)
+			if shell != null:
+				assert_almost_eq(
+					left_probe.size.y,
+					shell.current_content_rect(
+						ProductionLayoutShell.REGION_LEFT
+					).size.y,
+					2.0,
+					"left content must settle at the scaled region height"
+				)
 		_audit_screen(prepare, percent)
 		_audit_prepare_group_pages(prepare, percent)
 		_audit_shop_cards_in_focus_ring(prepare, percent)
@@ -148,8 +153,47 @@ func _apply_scale_via_settings(
 func _audit_screen(screen: ProductionScreen, percent: int) -> void:
 	var context := "%s@ui%d" % [String(screen.route_kind), percent]
 	_audit_sibling_heights(screen, context)
+	_audit_band_uniform_heights(screen, context)
 	_audit_button_text_fits(screen, context)
 	_audit_safe_area(screen, context)
+
+
+## (a2) 底部帶（Actions 子樹）內所有可見 Button/OptionButton 必須同高——
+## 跨欄位（分組欄 vs 常駐欄 vs 商店動作欄）也要一致，補殺
+## 「下拉與鄰欄按鈕不同高」這類跨 parent 症狀（B1R3 N6）。
+func _audit_band_uniform_heights(
+	screen: ProductionScreen,
+	context: String
+) -> void:
+	if screen.route_kind != &"RUN_PREPARE":
+		return
+	var band := screen.find_child("Actions", true, false) as Control
+	if band == null:
+		return
+	var reference_height := -1.0
+	var reference_name := ""
+	for node: Node in band.find_children("*", "Button", true, false):
+		var control := node as Control
+		if (
+			control == null
+			or not control.is_visible_in_tree()
+			or control.has_meta(&"shop_offer_id")
+			or control.theme_type_variation == &"ExpeditionShopCard"
+		):
+			continue
+		var height := control.get_global_rect().size.y
+		if reference_height < 0.0:
+			reference_height = height
+			reference_name = control.name
+			continue
+		assert_almost_eq(
+			height,
+			reference_height,
+			1.0,
+			"%s: band action %s (%.0f) differs from %s (%.0f)" % [
+				context, control.name, height, reference_name, reference_height,
+			]
+		)
 
 
 ## (a) 同 parent 之下所有可見 Button（含 OptionButton）高度必須一致。

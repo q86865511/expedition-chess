@@ -101,8 +101,11 @@
   - 驗收：拖曳完成後的 canonical 結果與既有按鈕路徑完全一致（同一佈局經兩種操作路徑
     產生相同 `RunState`）。
 
-- **IRH-REQ-009 裝備拖曳與合成**：必須支援自裝備庫拖曳裝備至棋子身上配戴，
-  以及拖曳造成合成時的配方預覽與確認。
+- **IRH-REQ-009 裝備拖曳與合成**：必須支援自裝備庫拖曳**完整裝備**至棋子身上配戴，
+  以及在裝備庫內拖曳**零件至零件**觸發合成時的配方預覽與確認。
+  （零件結構上不可裝備——`EquipItemCommand` 拒收零件，合成唯一路徑是 inventory 內
+  兩個 component instance，見 `forge_equipment_command.gd`；拖零件到棋子上不是合法操作，
+  UI 須以非色彩訊號拒絕並說明。）
   - 合成沿用既有 `prepare.forge` / `prepare.forge.confirm` 與 `ForgeViewModel.recipe_preview()`；
     §10.3 要求的「不可逆操作一次確認」必須保留。
   - 驗收：拖曳配戴／合成的結果與既有按鈕路徑一致；overflow 與拆卸行為不變。

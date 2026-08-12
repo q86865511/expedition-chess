@@ -93,8 +93,20 @@
   一切數字來自 `ShopService.quote_*` 與 `EconomyConfigRule`，零公式；金幣不足時仍回正確價格
   （gold_cap 探針差額法），reroll 的 relic 挑戰加價已含入。建構子收 `RunSession`＋
   `EconomyExpeditionCatalog`＋run 的 `RunRelicTable`。
-  **接線缺口**：`app_root.gd` 尚無 `try_run_session()` 存取器，composition root 接線
-  由 Claude 隨 T10 批次補上——Codex 先照簽名寫消費端即可。
+  **接線已完成（gate 批次，2026-08-12）**：畫面**不要**直接建構本 ViewModel——
+  `RunPresentationSession` 建構子已加四個供給尾參（run_session／forge_table／
+  economy_catalog／relic_table，AppRoot 唯一建構點 `app_root.gd:2073` 已傳入），
+  session 提供唯讀轉發：`shop_economy_status()`／`shop_refresh_quote()`／
+  `shop_buy_xp_quote()`／`shop_sell_quote(unit_instance_id)`，以及 forge 供給
+  `forge_inventory_components()`／`forge_recipes_containing(component_def_id)`／
+  `try_forge_pair_recipe(instance_a, instance_b)`。刻意**不**塞進
+  `RunPresentationSnapshot`——sell 報價是逐單位查詢，塞 snapshot 會讓每次 dispatch
+  多跑 N×2 次報價，soak 成本不可控。原「補 `try_run_session()` 存取器」的構想**不做**：
+  公開 raw session 正是 R14 審查點名要移除的東西。
+  **Codex 待做**：畫面經 `LiveScreenIntentPort`／`ProductionLiveScreenContext` 只拿得到
+  dispatch 與 snapshot，需要一個 lease 保護的唯讀 supply port（建議名
+  `LiveScreenSupplyPort`，比照既有 port 的 lease 驗證寫法）轉發上列七個方法，
+  面板才讀得到報價與配方。
 - `TraitPreviewViewModel.trait_progress()`（同檔擴充，上游批次 2）— 羈絆進度唯一權威：
   回 `Array[TraitProgressSnapshot]`（`domain/battle/`），**含場上 0 隻的 inactive 列**、
   distinct_count、active_tier、next_required_count 與完整門檻階梯，trait_id 字典序。

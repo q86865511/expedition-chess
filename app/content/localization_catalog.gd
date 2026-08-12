@@ -340,6 +340,12 @@ func _register_fixed_keys() -> void:
 	_register(&"map.node_kind.rest", "休息", "Rest")
 	_register(&"map.node_kind.treasure", "寶藏", "Treasure")
 	_register(&"map.node_kind.boss", "首領", "Boss")
+	# in-run-hud：進度列每個節點的狀態文字。以前 accessible copy 只有符號＋節點種類，
+	# 讀屏使用者聽不出「這一格是走過的、現在的、還是還沒到的」。命名比照同族的
+	# map.node_kind.*（值 token 直接對應 InRunHudShell 的 PROGRESS_STATE_* 常數）。
+	_register(&"map.node_state.completed", "已完成", "Completed")
+	_register(&"map.node_state.current", "目前所在", "Current")
+	_register(&"map.node_state.unreached", "未到達", "Not Reached")
 	# wave2-C
 	_register(
 		&"error.status.pre_commit",

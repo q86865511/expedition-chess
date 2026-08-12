@@ -187,8 +187,15 @@ Godot 拖放三函式（`_get_drag_data` / `_can_drop_data` / `_drop_data`）為
 | 棋子上場 | 備戰席 → 棋盤格 | `move_selected_to_board()` → `commit_board_draft()` → `CommitBoardLayoutCommand` |
 | 棋子收回 | 棋盤格 → 備戰席 | `move_selected_to_bench()` → 同上 |
 | 棋子換位 | 棋盤格 → 已佔用格 | 交換後 `commit_board_draft()` |
-| 裝備配戴 | 裝備庫 → 棋子 | `prepare.equip` |
-| 裝備合成 | 裝備 → 已持裝備的棋子 | `ForgeViewModel.recipe_preview()` → `prepare.forge` → `prepare.forge.confirm`（二次確認不得省略） |
+| 裝備配戴 | 裝備庫 → 棋子（**限完整裝備**） | `prepare.equip` |
+| 裝備合成 | 零件 → 零件（**裝備庫內**） | `ForgeViewModel.recipe_preview()` → `prepare.forge` → `prepare.forge.confirm`（二次確認不得省略） |
+
+> **合成語意勘誤（2026-08-12）**：本專案的零件（component）**結構上不可裝備**——
+> `forge_equipment_command.gd` 檔頭明載 components are never directly equippable、
+> `EquipItemCommand` 拒收零件，合成的唯一路徑是 inventory 內兩個 component instance。
+> 因此 TFT 式「拖零件到已持零件的棋子上合成」在本專案不存在；
+> 合成拖曳＝裝備庫內零件對零件，拖到棋子上的只會是完整裝備（配戴）。
+> 早前批次指示中「懸停在已持有裝備的棋子上顯示配方預覽」為誤述，以本節為準。
 
 - 拖曳層使用 `REGION_OVERLAY`（L3 等價），棋子與裝備共用同一 drag layer。
 - 拖曳中的預覽（合法格、交換箭頭、人口與羈絆變化）一律由既有 ViewModel 計算，

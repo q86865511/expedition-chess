@@ -13,6 +13,28 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-12] ✅ `in-run-hud` 上游批次 2＋Codex gate 批次（Claude）— 解除台帳
+  IRH-REQ-011/013 BLOCKED 與 008/014 部分 PARTIAL 的上游缺口，並完成 T10。
+  (1) 三個 API：`ShopEconomyViewModel`（quote 轉發＋gold_cap 探針差額法，金幣不足仍回
+  正確價格、relic 挑戰加價含入、catalog 世代守衛）；`compile_trait_progress()`（羈絆進度
+  唯一權威，含 inactive 列，計數與 `compile()` 共用單一實作）＋
+  `TraitPreviewViewModel.trait_progress()`；`BoardDraftPreviewViewModel`（草稿佈局的
+  人口/合法性/羈絆預覽，一律經 `BoardPreparationValidator` 零複製）。
+  (2) gate 批次：`RunPresentationSession` 建構子四個供給尾參（29 呼叫端不破壞）＋
+  七個唯讀轉發方法；**T10** AppRoot 於 `_commit_route` 對 RUN routes 呼叫
+  `bind_system_menu_settings(當前 snapshot, 當前 port)`（查證：settings 套用不重建
+  coordinator，會過期的是 committed snapshot 而非 port，每次 route commit 重讀即根治）；
+  focus graph RUN_PREPARE 補 11 個 action（含簡報漏列的 `prepare.forge.cancel`／
+  `prepare.dismantle`），新測試直接向 ProductionScreen 問實際清單比對；三個
+  `map.node_state.*` loc key（zh_TW/en）＋CSV/RAW 重導＋
+  `LOCALIZATION_CATALOG_SHA256` 同步。
+  (3) 規格勘誤：零件結構上不可裝備（`EquipItemCommand` 拒收），合成＝裝備庫內
+  零件對零件；早前批次 prompt 的 TFT 式「拖到已持裝棋子合成」為誤述，
+  design.md §6 與 IRH-REQ-009 已改。
+  證據：兩批合計 34 個新測試；限定 Gut×4、Spec、static gate 全 exit 0（主對話親跑）；
+  變異驗證五處轉紅還原；fresh All exit 0（333 scripts、1388/1388 tests、
+  38268 asserts、Spec 0 failures，含 localization SHA 連動後的 Content/Smoke）。
+
 - [2026-08-12] ✅ `in-run-hud` T32 findings closure 雙審關閉 — 使用者轉交的 external
   Opus closure re-review verdict 為 `APPROVED`；前次 13 項 findings 判定 10 項 `CLOSED`、
   3 項 `ACCEPTED`、0 項 `OPEN`，原文與 SHA-256 已保存於

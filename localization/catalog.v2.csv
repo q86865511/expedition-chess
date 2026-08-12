@@ -802,6 +802,9 @@ map.node_kind.merchant,商人,Merchant
 map.node_kind.normal,一般戰鬥,Battle
 map.node_kind.rest,休息,Rest
 map.node_kind.treasure,寶藏,Treasure
+map.node_state.completed,已完成,Completed
+map.node_state.current,目前所在,Current
+map.node_state.unreached,未到達,Not Reached
 map.select,選擇節點,Select Node
 menu.continue,繼續遠征,Continue
 menu.exit,離開,Exit

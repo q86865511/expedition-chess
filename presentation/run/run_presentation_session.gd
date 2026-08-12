@@ -33,6 +33,14 @@ var _playback_warning: DiagnosticError
 ## 戰鬥檢視只能由 COMBAT_PENDING 的 battle_setup 建；result 提交後 canonical 只留
 ## BattleResultPendingResolutionState（無 setup），故 COMBAT 期間保留最後一份投影。
 var _retained_combat_inspections: Array[CombatUnitInspectionSnapshot] = []
+## in-run-hud T10：備戰期的鍛造預覽與商店報價供給。兩者都是「畫面要問、但公式在
+## domain」的讀取面（spec §10.3 禁止呈現層自行換算），所以 session 在建構邊界收下
+## pinned 供給，畫面只經下面的唯讀方法取值，不自行接 catalog 或 Autoload。
+var _forge_table: ForgeRecipeTable
+## ShopEconomyViewModel 每次查詢都重新向 RunSession 取 run_snapshot() deep clone，
+## 自身只持 catalog／relic_table 的私有 clone，因此可以隨 session（＝單一 pinned
+## 世代）存活一次建構；catalog 世代更換必然伴隨新的 session。
+var _shop_economy: ShopEconomyViewModel
 
 
 func _init(
@@ -40,12 +48,22 @@ func _init(
 	p_factory: RunCommandFactory = null,
 	p_battle_catalog: BattleRuleCatalog = null,
 	p_commander_passive_effect_ids: Array[StringName] = [],
-	p_combat: CombatCoordinator = null
+	p_combat: CombatCoordinator = null,
+	p_run_session: RunSession = null,
+	p_forge_table: ForgeRecipeTable = null,
+	p_economy_catalog: EconomyExpeditionCatalog = null,
+	p_relic_table: RunRelicTable = null
 ) -> void:
 	_controller = p_controller
 	_factory = p_factory
 	_battle_catalog = p_battle_catalog.deep_clone() if p_battle_catalog != null else null
 	_commander_passive_effect_ids.assign(p_commander_passive_effect_ids)
+	_forge_table = p_forge_table.deep_clone() if p_forge_table != null else null
+	# 供給缺席（既有呼叫端只傳前五個參數）時同樣建得起來：ShopEconomyViewModel 對
+	# null session／catalog 一律回空狀態或具名 rejection_code，不會 crash。
+	_shop_economy = ShopEconomyViewModel.new(
+		p_run_session, p_economy_catalog, p_relic_table
+	)
 	_combat = p_combat if p_combat != null else (
 		CombatCoordinator.new(_controller) if _controller != null else null
 	)
@@ -72,6 +90,94 @@ func reachable_nodes() -> Array:
 		if reachable:
 			result.append(MapNodePresentationType.from_state(node, true))
 	return result
+
+
+## 備戰期鍛造面板的零件清單（inventory 內的物品快照，clone-only）。未注入
+## ForgeRecipeTable 或無 controller 時回空陣列——「沒有可顯示的零件」與「鍛造供給
+## 缺席」在畫面上都是同一件事：沒有可鍛造的東西。
+func forge_inventory_components() -> Array[ItemInstanceState]:
+	var view_model := _try_forge_view_model()
+	if view_model == null:
+		return []
+	return view_model.inventory_components()
+
+
+## 含指定零件 def_id 的所有已註冊配方（自配＋交叉配方）。配方權威只有 pinned
+## ForgeRecipeTable 一處，呈現層不得自行組合零件。
+func forge_recipes_containing(component_def_id: StringName) -> Array[ForgeRecipeRule]:
+	var view_model := _try_forge_view_model()
+	if view_model == null or component_def_id.is_empty():
+		return []
+	return view_model.recipe_preview(component_def_id)
+
+
+## 拖曳合成的即時預覽：兩個 inventory 零件 instance 配得出來的成品規則，配不出來
+## （或其中一個不是可用零件）時回 null。可用性判準與 ForgeEquipmentCommand 同源：
+## 兩個相異 instance、都在 inventory、都未綁在單位上；成品仍由 table.try_recipe()
+## 決定，本方法不複製任何配方規則。真正的鍛造一律走 FORGE_EQUIPMENT intent。
+func try_forge_pair_recipe(
+	component_instance_id_a: String,
+	component_instance_id_b: String
+) -> ForgeRecipeRule:
+	if (
+		_forge_table == null
+		or component_instance_id_a.is_empty()
+		or component_instance_id_b.is_empty()
+		or component_instance_id_a == component_instance_id_b
+	):
+		return null
+	var components := forge_inventory_components()
+	var def_a := _try_available_component_def_id(
+		components, component_instance_id_a
+	)
+	var def_b := _try_available_component_def_id(
+		components, component_instance_id_b
+	)
+	if def_a.is_empty() or def_b.is_empty():
+		return null
+	return _forge_table.try_recipe(def_a, def_b)
+
+
+## 經濟資訊列（金幣／等級經驗／連勝連敗／目前等級費用機率）。供給缺席時為全零快照。
+func shop_economy_status() -> ShopEconomySnapshot:
+	return _shop_economy.economy_status()
+
+
+## 刷新商店的報價（實際扣款、可否負擔、不可用時的 domain 具名原因）。
+func shop_refresh_quote() -> ShopQuoteSnapshot:
+	return _shop_economy.refresh_quote()
+
+
+## 購買經驗的報價（花費、獲得經驗、折算後等級／經驗、MAX 狀態）。
+func shop_buy_xp_quote() -> ShopXpQuoteSnapshot:
+	return _shop_economy.buy_xp_quote()
+
+
+## 指定單位的出售報價（實際入袋金幣，含 gold_cap 夾擠）。
+func shop_sell_quote(unit_instance_id: String) -> ShopQuoteSnapshot:
+	return _shop_economy.sell_quote(unit_instance_id)
+
+
+## ViewModel 只在讀取邊界存活（同 _build_snapshot 的既有範式）：回傳值本身已是
+## clone，畫面因此拿不到 RunController。
+func _try_forge_view_model() -> ForgeViewModel:
+	if _controller == null or _forge_table == null:
+		return null
+	return ForgeViewModel.new(_controller, _forge_table)
+
+
+func _try_available_component_def_id(
+	components: Array[ItemInstanceState],
+	item_instance_id: String
+) -> StringName:
+	for item: ItemInstanceState in components:
+		if (
+			item != null
+			and item.instance_id == item_instance_id
+			and item.bound_unit_instance_id == null
+		):
+			return item.def_id
+	return &""
 
 
 func dispatch(intent: RunPresentationIntent) -> RunPresentationResult:
@@ -273,6 +379,10 @@ func release() -> void:
 	_controller = null
 	_factory = null
 	_battle_catalog = null
+	_forge_table = null
+	# 供給一併解除，讓 RunSession／catalog clone 隨 run 範疇結束釋放；後續查詢
+	# 走的是與「從未注入供給」相同的空狀態路徑。
+	_shop_economy = ShopEconomyViewModel.new(null, null, null)
 	_retained_combat_inspections.clear()
 	_snapshot = RunPresentationSnapshot.new()
 

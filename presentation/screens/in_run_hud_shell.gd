@@ -932,6 +932,7 @@ func _progress_sequence_label() -> Label:
 	var node_kinds: Array[StringName] = []
 	var state_signals: Array[String] = []
 	var kind_signals: Array[String] = []
+	var state_localization_keys: Array[StringName] = []
 	var visible_tokens: Array[String] = []
 	var accessible_tokens: Array[String] = []
 	if _snapshot != null:
@@ -944,10 +945,15 @@ func _progress_sequence_label() -> Label:
 			node_kinds.append(node.kind)
 			state_signals.append(state_signal)
 			kind_signals.append(kind_signal)
+			var state_localization_key := StringName(
+				"map.node_state.%s" % String(state)
+			)
+			state_localization_keys.append(state_localization_key)
 			visible_tokens.append("%s%s" % [state_signal, kind_signal])
-			accessible_tokens.append("%s%s %s %s" % [
+			accessible_tokens.append("%s%s %s %s %s" % [
 				state_signal,
 				kind_signal,
+				_text(state_localization_key),
 				_text(StringName("map.node_kind.%s" % String(node.kind))),
 				_content(node.def_id),
 			])
@@ -965,6 +971,7 @@ func _progress_sequence_label() -> Label:
 	label.set_meta(&"node_kinds", node_kinds)
 	label.set_meta(&"state_signals", state_signals)
 	label.set_meta(&"kind_signals", kind_signals)
+	label.set_meta(&"state_localization_keys", state_localization_keys)
 	return label
 
 

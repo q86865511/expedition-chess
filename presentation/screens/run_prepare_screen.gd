@@ -17,19 +17,34 @@ class PrepareQuickToggleItemList:
 
 
 	func _gui_input(event: InputEvent) -> void:
-		if (
-			event == null
-			or not event.is_action_pressed(
-				&"prepare_quick_toggle_unit",
-				false,
-				true
-			)
+		if event == null:
+			return
+		if event.is_action_pressed(&"ui_up", false, true):
+			_move_keyboard_selection(-1)
+			accept_event()
+			return
+		if event.is_action_pressed(&"ui_down", false, true):
+			_move_keyboard_selection(1)
+			accept_event()
+			return
+		if not event.is_action_pressed(
+			&"prepare_quick_toggle_unit", false, true
 		):
 			return
 		# Focused ItemList otherwise consumes printable W for incremental search
 		# before the screen's unhandled-input path can observe it.
 		accept_event()
 		quick_toggle_requested.emit()
+
+
+	func _move_keyboard_selection(direction: int) -> void:
+		if item_count <= 0:
+			return
+		var selected := get_selected_items()
+		var current := selected[0] if not selected.is_empty() else 0
+		var target := clampi(current + direction, 0, item_count - 1)
+		select(target)
+		item_selected.emit(target)
 
 var _model: RunPrepareScreenModel
 var _presenter: RunScreenPresenter
@@ -590,6 +605,9 @@ func _build_prepare_controls() -> void:
 	if build_selector != null:
 		left.move_child(build_selector, 1)
 		build_selector.item_selected.connect(_on_build_unit_selected)
+		build_selector.focus_entered.connect(
+			_on_build_unit_selector_focus_entered
+		)
 	# Reuse the shared HUD's item-bench heading/scroll position. The prepare
 	# route replaces its generic read-only list with the drag-capable selector;
 	# keeping both would render duplicate inventory lists.
@@ -610,6 +628,10 @@ func _build_prepare_controls() -> void:
 		true
 	)
 	var inventory_selector := left.get_node(^"InventorySelector") as ItemList
+	if inventory_selector != null:
+		inventory_selector.focus_entered.connect(
+			_on_inventory_selector_focus_entered
+		)
 	if inventory_selector != null:
 		left.move_child(inventory_selector, inventory_index)
 	var forge_preview := Label.new()
@@ -1377,6 +1399,24 @@ func _on_build_unit_selected(index: int) -> void:
 	_quick_toggle_unit_id = unit_id
 	_keyboard_move_unit_id = unit_id
 	_select_inspector_unit(unit_id)
+
+
+func _on_build_unit_selector_focus_entered() -> void:
+	var selector := _control(&"BuildUnitSelector") as ItemList
+	if selector == null or selector.item_count <= 0:
+		return
+	var selected := selector.get_selected_items()
+	if selected.is_empty():
+		selector.select(0)
+		_on_build_unit_selected(0)
+
+
+func _on_inventory_selector_focus_entered() -> void:
+	var selector := _control(&"InventorySelector") as ItemList
+	if selector == null or selector.item_count <= 0:
+		return
+	if selector.get_selected_items().is_empty():
+		selector.select(0)
 
 
 func _on_bench_cell_pressed(cell: Button) -> void:

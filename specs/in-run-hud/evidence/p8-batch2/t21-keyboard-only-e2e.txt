@@ -1,0 +1,33 @@
+T21 — 純鍵盤 E2E
+日期：2026-08-12
+
+Focused integration gate
+command: tools/run-tests.ps1 -Suite Gut -TestPath res://tests/integration/presentation_ui_r14_functional_controls/test_prepare_keyboard_only_purchase_deploy_equip_start.gd
+exit: 0
+excerpt:
+  1/1 passed.
+  Scripts               1
+  Tests                 1
+  Passing Tests         1
+  Asserts              34
+  Time              9.078s
+  ---- All tests passed! ----
+
+Regression gate
+command: tools/run-tests.ps1 -Suite Gut -TestPath res://tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd
+exit: 0
+excerpt:
+  9/9 passed.
+  Scripts               1
+  Tests                 9
+  Passing Tests         9
+  Asserts             102
+  Time              0.718s
+  ---- All tests passed! ----
+
+Coverage notes
+- 功能序列只以 InputEventAction／InputEventKey 驅動：Tab 焦點、Enter 購買、方向鍵選棋、W 上場、方向鍵選裝、Enter 配裝、Enter 開戰。
+- 測試不以滑鼠座標驅動，也不直接呼叫 screen action／selection 方法。
+- headless GUT 沒有 OS 視窗焦點；測試只從 ProductionScreen 的正式 focus graph 第一站啟動焦點，後續全程由 InputEvent 驅動。
+- RUN_PREPARE focus graph 與 ProductionScreen 實際 focus controls 均驗證包含 shop offer、BuildUnitSelector、InventorySelector、prepare.refresh、prepare.equip、prepare.start。
+- 正式 equipment 配裝後完成 SaveRepository round-trip，未出現 SAVE_TMP_READBACK_INVALID 或 incompatible marker。

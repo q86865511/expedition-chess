@@ -1,0 +1,16 @@
+S0 LiveScreenSupplyPort focused verification
+Date: 2026-08-12
+Command: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Gut -TestPath res://tests/unit/presentation_ui_scene_routing/test_live_screen_supply_port_lease_and_clone_out.gd -GodotPath E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe -TimeoutSeconds 1200
+Exit code: 0
+
+GUT excerpt:
+Scripts               1
+Tests                 2
+Passing Tests         2
+Asserts              18
+---- All tests passed! ----
+
+Coverage:
+- ProductionLiveScreenContext derives a supply port from the existing intent port without exposing RunPresentationSession.
+- Reads clone out mutable DTOs.
+- Revoked leases fail closed for all ten supply methods.

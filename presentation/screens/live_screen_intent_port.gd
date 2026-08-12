@@ -35,6 +35,13 @@ func dispatch(intent: RunPresentationIntent) -> RunPresentationResult:
 	return _route_after_dispatch(result)
 
 
+## Creates the read-only companion port from the same private lease/session.
+## ProductionLiveScreenContext consumes this factory so AppRoot never needs to
+## expose, duplicate, or retain a raw RunPresentationSession reference.
+func supply_port() -> LiveScreenSupplyPort:
+	return LiveScreenSupplyPort.new(_lease, _registry, _session)
+
+
 func begin_confirmation(
 	intent: RunPresentationIntent
 ) -> ConfirmationDraftResult:

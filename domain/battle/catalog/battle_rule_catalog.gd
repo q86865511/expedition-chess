@@ -45,6 +45,13 @@ func try_unit_rule(content_id: StringName) -> BattleUnitRule:
 		if value.unit_id == content_id: return value.deep_clone()
 	return null
 
+## 全 pinned 羈絆 id（比照 unit_ids_copy）。羈絆進度面板要列出「場上 0 隻」的 inactive 列，
+## 必須能列舉 catalog 的全部 trait rule，而不只是 roster 命中的那些（IRH-REQ-013）。
+func trait_ids_copy() -> Array[StringName]:
+	var result: Array[StringName] = []
+	for value: BattleTraitRule in _traits: result.append(value.trait_id)
+	return result
+
 func try_trait_rule(content_id: StringName) -> BattleTraitRule:
 	for value: BattleTraitRule in _traits:
 		if value.trait_id == content_id: return value.deep_clone()

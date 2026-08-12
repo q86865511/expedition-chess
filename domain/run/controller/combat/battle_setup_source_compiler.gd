@@ -72,6 +72,51 @@ func try_compile_unit_stats(
 	preview.equipment_instance_ids = instance.equipment_instance_ids.duplicate()
 	return preview
 
+## 羈絆進度的唯一上游權威（IRH-REQ-013）。列舉 pinned catalog 的**全部** trait rule
+## （含場上 0 隻的 inactive 列），依 trait_id 字典序回傳；沒有可列舉的規則時回空陣列，
+## 故不需 try_ 前綴。
+##
+## 與 compile() 的關係：計數（不同 def_id 數）與階序判定共用 _collect_trait_counts／
+## _active_tier，不是第二套實作——因此已達門檻的列，其 trait_id／active_tier／
+## member_instance_ids 逐欄位等同 compile() 的 player_active_traits。
+## thresholds 為 authored 原序原樣投影（不過濾 effect），供面板畫完整門檻階梯。
+func compile_trait_progress(
+	committed_roster: RosterState,
+	catalog: BattleRuleCatalog
+) -> Array[TraitProgressSnapshot]:
+	var result: Array[TraitProgressSnapshot] = []
+	if catalog == null:
+		return result
+	var on_field: Array = []
+	if committed_roster != null and committed_roster.board != null:
+		on_field = _collect_on_field(committed_roster, catalog)
+	var counts := _collect_trait_counts(on_field)
+	var trait_ids := catalog.trait_ids_copy()
+	trait_ids.sort_custom(_string_name_before)
+	for trait_id: StringName in trait_ids:
+		var trait_rule := catalog.try_trait_rule(trait_id)
+		if trait_rule == null:
+			continue
+		var snapshot := TraitProgressSnapshot.new()
+		snapshot.trait_id = trait_id
+		snapshot.distinct_count = _distinct_count_in(counts, trait_id)
+		snapshot.active_tier = _active_tier(trait_rule, snapshot.distinct_count)
+		snapshot.member_instance_ids = _members_in(counts, trait_id)
+		snapshot.next_required_count = -1
+		for index: int in range(trait_rule.thresholds.size()):
+			var threshold := trait_rule.thresholds[index]
+			if threshold == null:
+				continue
+			var projected := TraitProgressThresholdSnapshot.new()
+			projected.tier = index + 1
+			projected.required_count = threshold.required_count
+			projected.effect_ids = threshold.effect_ids.duplicate()
+			snapshot.thresholds.append(projected)
+			if snapshot.next_required_count < 0 and index + 1 > snapshot.active_tier:
+				snapshot.next_required_count = threshold.required_count
+		result.append(snapshot)
+	return result
+
 # ---------------------------------------------------------------------------
 # 上場棋收集（排除板凳；召喚物結構上不存在於 RosterState）
 # ---------------------------------------------------------------------------
@@ -179,44 +224,23 @@ func _apply_stats(
 # ---------------------------------------------------------------------------
 
 func _compile_traits(on_field: Array, catalog: BattleRuleCatalog) -> Array[TraitBattleSnapshot]:
+	var counts := _collect_trait_counts(on_field)
 	var trait_ids: Array[StringName] = []
-	var def_sets: Dictionary = {}
-	var members: Dictionary = {}
-	for entry: Dictionary in on_field:
-		var rule: BattleUnitRule = entry["rule"]
-		if rule == null:
-			continue
-		var instance: UnitInstance = entry["instance"]
-		for trait_id: StringName in rule.trait_ids:
-			if not trait_ids.has(trait_id):
-				trait_ids.append(trait_id)
-				def_sets[trait_id] = {}
-				members[trait_id] = [] as Array[StringName]
-			(def_sets[trait_id] as Dictionary)[instance.def_id] = true
-			var member_list: Array[StringName] = members[trait_id]
-			var member_id := StringName(instance.instance_id)
-			if not member_list.has(member_id):
-				member_list.append(member_id)
+	trait_ids.assign(counts.keys())
 	trait_ids.sort_custom(_string_name_before)
 	var result: Array[TraitBattleSnapshot] = []
 	for trait_id: StringName in trait_ids:
 		var trait_rule := catalog.try_trait_rule(trait_id)
 		if trait_rule == null:
 			continue
-		var distinct_count := (def_sets[trait_id] as Dictionary).size()
-		var active_tier := 0
-		for index: int in range(trait_rule.thresholds.size()):
-			var threshold := trait_rule.thresholds[index]
-			if threshold != null and distinct_count >= threshold.required_count:
-				active_tier = index + 1
+		var distinct_count := _distinct_count_in(counts, trait_id)
+		var active_tier := _active_tier(trait_rule, distinct_count)
 		if active_tier == 0:
 			continue
 		var snapshot := TraitBattleSnapshot.new()
 		snapshot.trait_id = trait_id
 		snapshot.tier = active_tier
-		var member_list: Array[StringName] = members[trait_id]
-		member_list.sort_custom(_string_name_before)
-		snapshot.member_instance_ids = member_list
+		snapshot.member_instance_ids = _members_in(counts, trait_id)
 		var effect_ids: Array[StringName] = \
 			trait_rule.thresholds[active_tier - 1].effect_ids.duplicate()
 		effect_ids.sort_custom(_string_name_before)
@@ -231,6 +255,55 @@ func _compile_traits(on_field: Array, catalog: BattleRuleCatalog) -> Array[Trait
 			effect_index += 1
 		result.append(snapshot)
 	return result
+
+## 上場棋的羈絆計數：trait_id -> {"def_ids": Set[def_id], "members": Array[StringName]}。
+## compile() 的 active trait 與 compile_trait_progress() 的進度列共用這一份計數，
+## 避免兩條讀取路徑各自實作「不同 def_id 決定 tier」而漂移。
+func _collect_trait_counts(on_field: Array) -> Dictionary:
+	var counts: Dictionary = {}
+	for entry: Dictionary in on_field:
+		var rule: BattleUnitRule = entry["rule"]
+		if rule == null:
+			continue
+		var instance: UnitInstance = entry["instance"]
+		for trait_id: StringName in rule.trait_ids:
+			if not counts.has(trait_id):
+				var members: Array[StringName] = []
+				counts[trait_id] = {"def_ids": {}, "members": members}
+			var bucket: Dictionary = counts[trait_id]
+			(bucket["def_ids"] as Dictionary)[instance.def_id] = true
+			var member_list: Array[StringName] = bucket["members"]
+			var member_id := StringName(instance.instance_id)
+			if not member_list.has(member_id):
+				member_list.append(member_id)
+	for trait_id: StringName in counts:
+		var bucket: Dictionary = counts[trait_id]
+		var member_list: Array[StringName] = bucket["members"]
+		member_list.sort_custom(_string_name_before)
+	return counts
+
+func _distinct_count_in(counts: Dictionary, trait_id: StringName) -> int:
+	if not counts.has(trait_id):
+		return 0
+	var bucket: Dictionary = counts[trait_id]
+	return (bucket["def_ids"] as Dictionary).size()
+
+func _members_in(counts: Dictionary, trait_id: StringName) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if not counts.has(trait_id):
+		return result
+	var bucket: Dictionary = counts[trait_id]
+	var member_list: Array[StringName] = bucket["members"]
+	return member_list.duplicate()
+
+## 「不同 def_id 數 → 已達階序」的唯一判定（0 ＝ 未達任何門檻）。
+func _active_tier(trait_rule: BattleTraitRule, distinct_count: int) -> int:
+	var active_tier := 0
+	for index: int in range(trait_rule.thresholds.size()):
+		var threshold := trait_rule.thresholds[index]
+		if threshold != null and distinct_count >= threshold.required_count:
+			active_tier = index + 1
+	return active_tier
 
 # ---------------------------------------------------------------------------
 # 裝備效果（逐上場棋 equipment_instance_ids → def_id → try_equipment_rule）

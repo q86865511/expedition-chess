@@ -86,6 +86,29 @@
   `BattleCombatMath` 疊加的，預覽不重現 effect 解算（§10.3 禁止複製公式），
   只回報 `equipment_instance_ids` 供面板列出來源。呈現層**不得**自行把這些加成算進數值。
 
+- `ShopEconomyViewModel`（`presentation/viewmodels/shop_economy_view_model.gd`，in-run-hud
+  上游批次 2 交付）— 經濟資訊列與報價：`economy_status()`（金幣／gold_cap／等級經驗與下一級
+  門檻／MAX／連勝連敗／目前等級費用機率）、`refresh_quote()`／`buy_xp_quote()`／
+  `sell_quote(unit_instance_id)`（實際金額、可負擔與否、不可用的 domain 具名原因碼）。
+  一切數字來自 `ShopService.quote_*` 與 `EconomyConfigRule`，零公式；金幣不足時仍回正確價格
+  （gold_cap 探針差額法），reroll 的 relic 挑戰加價已含入。建構子收 `RunSession`＋
+  `EconomyExpeditionCatalog`＋run 的 `RunRelicTable`。
+  **接線缺口**：`app_root.gd` 尚無 `try_run_session()` 存取器，composition root 接線
+  由 Claude 隨 T10 批次補上——Codex 先照簽名寫消費端即可。
+- `TraitPreviewViewModel.trait_progress()`（同檔擴充，上游批次 2）— 羈絆進度唯一權威：
+  回 `Array[TraitProgressSnapshot]`（`domain/battle/`），**含場上 0 隻的 inactive 列**、
+  distinct_count、active_tier、next_required_count 與完整門檻階梯，trait_id 字典序。
+  計數與 `compile()` 共用同一實作，active 列與 `player_active_traits` 逐欄位一致。
+  既有 `trait_snapshots()` 行為未變。羈絆面板／浮層一律改消費本方法，
+  取代只涵蓋 active 的 `RunPresentationSnapshot.active_trait_progress` 投影。
+- `BoardDraftPreviewViewModel`（`presentation/viewmodels/board_draft_preview_view_model.gd`，
+  上游批次 2）— 拖曳中的草稿預覽：`preview(draft_placements, draft_bench_unit_instance_ids)`
+  回 `BoardDraftPreviewSnapshot`（used_population／derived_capacity／valid／issue_codes()／
+  該草稿下的 trait_progress）；`committed_preview()` 回已提交佈局的同構結果。
+  人口與合法性一律經 `BoardPreparationValidator.validate()`，零複製；全程唯讀不 dispatch。
+  草稿是**完整指派**——呼叫端（如 `BoardDraftMoveAdapter`）負責給出整組 placements＋bench，
+  缺漏由 validator 以 `BOARD_UNIT_UNASSIGNED` 如實回報。
+
 **in-run-hud 追加約束**（本片專用，與上列七條並存）：
 
 - **尺寸一律經版面 metrics 入口**：`presentation/` 不得直接寫 `custom_minimum_size = Vector2(...)`；

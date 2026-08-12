@@ -10,7 +10,7 @@ func resolve(request: ContentIdMigrationRequest) -> ContentIdMigrationResult:
 	if _registry == null or request == null:
 		return _incompatible(request)
 	var lookup := _registry._migration_lookup(request.content_id)
-	if lookup.kind == ContentMigrationLookup.Kind.MISSING or (not request.expected_category.is_empty() and lookup.category != request.expected_category):
+	if lookup.kind == ContentMigrationLookup.Kind.MISSING or not request.accepts_category(lookup.category):
 		return _incompatible(request)
 	match lookup.kind:
 		ContentMigrationLookup.Kind.ACTIVE:

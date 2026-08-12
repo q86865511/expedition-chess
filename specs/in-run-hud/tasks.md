@@ -52,7 +52,14 @@
   `_unhandled_input` 優先序（modal > 選單 > 開啟）。**不得沿用 `ui_cancel`**。（IRH-REQ-006／測試 #5）
 - [x] **T09 HARD**：系統選單覆蓋層——掛 `REGION_OVERLAY`，四項（繼續遊戲／設定／
   返回主選單／離開遊戲），focus trap 與焦點還原。（IRH-REQ-004／測試 #3）
-- [ ] **T10 HARD**：設定內嵌——將 `settings_screen_composition.gd` 自 `SETTINGS` route 解耦，
+- [x] **T10 HARD（Claude 完成，2026-08-12）**：settings port 注入——查證縫已存在
+  （`production_screen.bind_system_menu_settings(snapshot, port)`），缺的是 AppRoot 從未呼叫；
+  `_commit_route` 對 RUN routes 每次重讀當前 `settings_application_port()` 與
+  `repository.current_snapshot()` 再綁定（查證：settings 套用不重建 coordinator，
+  會過期的是 committed snapshot 而非 port）。
+  交付：commit `06acfcc`；證據：`test_system_menu_settings_port_injection.gd` 2 tests
+  （含重載後非 stale 案例）＋變異驗證（移除綁定呼叫 → 3 條連鎖紅）。
+  原描述保留於下供追溯：設定內嵌——將 `settings_screen_composition.gd` 自 `SETTINGS` route 解耦，
   抽出可被 overlay 宿主呼叫的組裝入口；`SETTINGS` route 與 overlay 共用同一份實作。（IRH-REQ-004）
 - [x] **T11 NORMAL/TDD**：播放暫停還原——開啟記錄 `previous_paused`、關閉還原；
   不得無條件恢復播放；canonical 摘要不變。（IRH-REQ-005／測試 #4）

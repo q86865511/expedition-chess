@@ -158,8 +158,45 @@ func shop_sell_quote(unit_instance_id: String) -> ShopQuoteSnapshot:
 	return _shop_economy.sell_quote(unit_instance_id)
 
 
+## 拖曳草稿的人口／合法性／羈絆變化預覽（IRH-REQ-008）。人口與合法性一律經
+## BoardPreparationValidator、羈絆經 compile_trait_progress()——本方法只轉發，
+## 零複製。草稿是完整指派（缺漏由 validator 以 BOARD_UNIT_UNASSIGNED 如實回報）。
+## 供給缺席時回 null。
+func try_board_draft_preview(
+	draft_placements: Array[BoardPlacementState],
+	draft_bench_unit_instance_ids: Array[String]
+) -> BoardDraftPreviewSnapshot:
+	var view_model := _try_board_draft_view_model()
+	if view_model == null:
+		return null
+	return view_model.preview(draft_placements, draft_bench_unit_instance_ids)
+
+
+## 已提交佈局的同構預覽（拖曳前的基準值，供畫面顯示「變化前→變化後」）。
+func try_committed_board_preview() -> BoardDraftPreviewSnapshot:
+	var view_model := _try_board_draft_view_model()
+	if view_model == null:
+		return null
+	return view_model.committed_preview()
+
+
+## 羈絆進度唯一權威的轉發（IRH-REQ-013）：含場上 0 隻的 inactive 列、distinct_count、
+## active_tier、next_required_count 與完整門檻階梯，trait_id 字典序。
+## 供給缺席時回空陣列。取代只涵蓋 active 的 snapshot 投影作為面板資料來源。
+func trait_progress() -> Array[TraitProgressSnapshot]:
+	if _controller == null or _battle_catalog == null:
+		return []
+	return TraitPreviewViewModel.new(_controller, _battle_catalog).trait_progress()
+
+
 ## ViewModel 只在讀取邊界存活（同 _build_snapshot 的既有範式）：回傳值本身已是
 ## clone，畫面因此拿不到 RunController。
+func _try_board_draft_view_model() -> BoardDraftPreviewViewModel:
+	if _controller == null or _factory == null or _battle_catalog == null:
+		return null
+	return BoardDraftPreviewViewModel.new(_controller, _factory, _battle_catalog)
+
+
 func _try_forge_view_model() -> ForgeViewModel:
 	if _controller == null or _forge_table == null:
 		return null

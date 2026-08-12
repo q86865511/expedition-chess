@@ -413,3 +413,81 @@ func _sell_request(
 		run.reservation_owners, EconomyCommandSupport.try_shop_rng(run),
 		run.next_transaction_serial, run.next_unit_serial, catalog
 	)
+
+
+# ---------------------------------------------------------------------------
+# 草稿預覽與羈絆進度轉發（T19／T16 的 session 供給面）
+# ---------------------------------------------------------------------------
+
+func test_board_draft_and_trait_progress_forwarding_match_direct_view_models() -> void:
+	# 用 trait fixture（兩顆上場、trait.pack 門檻 2 已達）——catalog 必須真的有 trait，
+	# 否則 parity 是空對空恆過（變異驗證抓過這個弱點）。
+	var run := ViewModelTestFixture.trait_preview_run()
+	var battle_catalog := ViewModelTestFixture.trait_battle_catalog(
+		run.content_snapshot.manifest_digest_value()
+	)
+	var repository := SaveRootFixture.create_repository(FakeSaveStorage.new())
+	add_child_autofree(repository)
+	var controller := ViewModelTestFixture.controller_for(run, battle_catalog, repository)
+	var factory := _draft_factory(
+		run.content_snapshot.manifest_digest_value(), battle_catalog
+	)
+	var no_effects: Array[StringName] = []
+	var session := RunPresentationSession.new(
+		controller, factory, battle_catalog, no_effects
+	)
+
+	var committed := session.try_committed_board_preview()
+	assert_not_null(committed, "有 controller/factory/catalog 供給時必須可查")
+	if committed == null:
+		return
+	var direct := BoardDraftPreviewViewModel.new(
+		controller, factory, battle_catalog
+	).committed_preview()
+	assert_eq(committed.used_population, direct.used_population, "人口與直呼 ViewModel 同源")
+	assert_eq(committed.derived_capacity, direct.derived_capacity)
+	assert_eq(committed.valid, direct.valid)
+	assert_eq(committed.trait_progress.size(), direct.trait_progress.size())
+
+	var progress := session.trait_progress()
+	var direct_progress := TraitPreviewViewModel.new(
+		controller, battle_catalog
+	).trait_progress()
+	assert_gt(direct_progress.size(), 0, "fixture catalog 必須有 trait，否則 parity 空對空恆過")
+	assert_eq(progress.size(), direct_progress.size(), "羈絆進度與直呼 ViewModel 同源")
+	for index: int in range(progress.size()):
+		assert_eq(progress[index].trait_id, direct_progress[index].trait_id)
+		assert_eq(progress[index].distinct_count, direct_progress[index].distinct_count)
+		assert_eq(progress[index].active_tier, direct_progress[index].active_tier)
+	if not progress.is_empty():
+		assert_eq(progress[0].trait_id, ViewModelTestFixture.TRAIT_ID)
+		assert_eq(progress[0].distinct_count, 2, "兩顆相異 def_id 上場")
+		assert_eq(progress[0].active_tier, 1, "門檻 2 已達 → tier 1")
+
+
+func test_board_draft_and_trait_progress_absent_supply_fail_closed() -> void:
+	var session := RunPresentationSession.new()
+	var empty_placements: Array[BoardPlacementState] = []
+	var empty_bench: Array[String] = []
+
+	assert_null(
+		session.try_board_draft_preview(empty_placements, empty_bench),
+		"無供給時草稿預覽回 null 而非 crash"
+	)
+	assert_null(session.try_committed_board_preview())
+	assert_eq(session.trait_progress().size(), 0, "無供給時羈絆進度為空陣列")
+
+
+func _draft_factory(
+	manifest_digest: String,
+	battle_catalog: BattleRuleCatalog
+) -> RunCommandFactory:
+	var no_effects: Array[StringName] = []
+	return RunCommandFactory.new(
+		EconomyTestFixture.catalog(manifest_digest),
+		null,
+		battle_catalog,
+		no_effects,
+		&"commander.fixture",
+		0
+	)

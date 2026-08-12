@@ -9,6 +9,15 @@ const SCREEN_LIVE_CONTEXT_INVALID: StringName = &"SCREEN_LIVE_CONTEXT_INVALID"
 const SCREEN_COMPOSITION_MISSING: StringName = &"SCREEN_COMPOSITION_MISSING"
 const SCREEN_COMPOSITION_TYPE_INVALID: StringName = \
 	&"SCREEN_COMPOSITION_TYPE_INVALID"
+const SYSTEM_MENU_BIND_INVALID: StringName = &"SYSTEM_MENU_BIND_INVALID"
+const SYSTEM_MENU_INPUT: StringName = &"system_menu"
+const SYSTEM_MENU_BUTTON_NODE: StringName = &"SystemMenuButton"
+const RUN_ROUTES: Array[StringName] = [
+	&"RUN_MAP",
+	&"RUN_PREPARE",
+	&"RUN_COMBAT",
+	&"RUN_REWARD",
+]
 
 const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
 ## design :201「UI 只由 unacknowledged committed receipt 顯示 result」的顯示端節點名。
@@ -41,8 +50,14 @@ const PREPARE_ACTION_GROUPS: Array[Dictionary] = [
 	},
 ]
 const PREPARE_PINNED_ACTIONS: Array[StringName] = [
-	&"run.menu", &"prepare.start",
+	&"prepare.start",
 ]
+## Action semantics remain keyed by `action_id`; only the compact visual label
+## may use a shorter, already-localized sibling key. Assistive copy and tooltip
+## keep resolving the full semantic action key.
+const ACTION_VISUAL_LOCALIZATION_KEYS: Dictionary = {
+	&"service.dismantle": &"prepare.dismantle",
+}
 
 ## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
 ## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
@@ -83,10 +98,98 @@ var _modal_background_focus: Dictionary[int, int] = {}
 var _prepare_action_group_selector: OptionButton
 var _prepare_action_group_pages: Array[GridContainer] = []
 var _layout_shell: ProductionLayoutShell
+var _system_menu_button: Button
+var _system_menu_overlay: SystemMenuOverlay
+var _system_menu_settings_snapshot: SettingsSnapshot
+var _system_menu_settings_port: SettingsApplicationPort
+var _system_menu_exit_handler: Callable
+var _system_menu_pause_captured: bool = false
+var _system_menu_previous_paused: bool = false
 
 
 func _ready() -> void:
 	_binding_closed = true
+
+
+## App composition root 可在 route activate 前注入目前 committed settings 與既有
+## application port；overlay 只持 clone 與 typed port，不自行存檔或切換 route。
+func bind_system_menu_settings(
+	snapshot: SettingsSnapshot,
+	port: SettingsApplicationPort
+) -> StringName:
+	if snapshot == null or port == null or (
+		_system_menu_overlay != null and _system_menu_overlay.is_open()
+	):
+		return SYSTEM_MENU_BIND_INVALID
+	_system_menu_settings_snapshot = snapshot.deep_clone()
+	_system_menu_settings_port = port
+	if _system_menu_overlay != null:
+		_system_menu_overlay.configure(
+			_localized_text_clone(),
+			_system_menu_settings_snapshot,
+			_system_menu_settings_port
+		)
+	return &""
+
+
+## 測試宿主或平台 shell 可攔截退出；未注入時 production 先走 action port，
+## 若 route 沒提供 menu.exit 才使用 SceneTree.quit()，不新增 Autoload。
+func bind_system_menu_exit_handler(handler: Callable) -> StringName:
+	if not handler.is_valid():
+		return SYSTEM_MENU_BIND_INVALID
+	_system_menu_exit_handler = handler
+	return &""
+
+
+func system_menu_overlay() -> SystemMenuOverlay:
+	return _system_menu_overlay
+
+
+func system_menu_button() -> Button:
+	return _system_menu_button
+
+
+func system_menu_state() -> StringName:
+	return (
+		_system_menu_overlay.state_name()
+		if _system_menu_overlay != null
+		else &"CLOSED"
+	)
+
+
+## Child compositions use this query instead of reaching into route-shell
+## modal/menu state. Background shortcuts stay blocked until the overlay closes.
+func is_background_input_blocked() -> bool:
+	if _modal_open:
+		return true
+	return (
+		_system_menu_overlay != null
+		and _system_menu_overlay.is_open()
+	)
+
+
+func open_system_menu() -> bool:
+	if (
+		route_kind not in RUN_ROUTES
+		or not _live_active
+		or _system_menu_overlay == null
+		or _system_menu_overlay.is_open()
+	):
+		return false
+	if not _capture_combat_pause_for_system_menu():
+		return false
+	if _system_menu_overlay.open(_ordered_focus_controls(), self):
+		return true
+	_restore_combat_pause_after_system_menu()
+	return false
+
+
+func close_system_menu() -> bool:
+	return (
+		_system_menu_overlay.close()
+		if _system_menu_overlay != null
+		else false
+	)
 
 
 func bind(context: StagedScreenContext) -> StringName:
@@ -138,12 +241,42 @@ func activate_live() -> void:
 		return
 	var buttons := _action_buttons()
 	for button: Button in buttons:
+		if (
+			button.has_meta(&"system_menu_owned")
+			or button.has_meta(&"direct_action_owned")
+			or button.has_meta(&"read_only_snapshot_control")
+		):
+			continue
 		if not button.pressed.is_connected(_on_action_pressed.bind(button)):
 			button.pressed.connect(_on_action_pressed.bind(button))
+	if _system_menu_button != null:
+		_system_menu_button.disabled = false
 	refresh_interaction_state()
 	var focusable := _ordered_focus_controls()
 	if not focusable.is_empty():
 		call_deferred(&"_grab_focus_deferred", focusable[0])
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (
+		route_kind not in RUN_ROUTES
+		or event == null
+		or not event.is_action_pressed(SYSTEM_MENU_INPUT, false, true)
+	):
+		return
+	var handled := false
+	if _modal_open:
+		handled = _cancel_active_confirmation()
+	elif _dismiss_visible_popup():
+		handled = true
+	elif _dismiss_focused_text_edit():
+		handled = true
+	elif _system_menu_overlay != null and _system_menu_overlay.is_open():
+		handled = _system_menu_overlay.handle_system_menu_action()
+	else:
+		handled = open_system_menu()
+	if handled and is_inside_tree():
+		get_viewport().set_input_as_handled()
 
 
 func request_intent(intent: RunPresentationIntent) -> RunPresentationResult:
@@ -227,11 +360,23 @@ func report_composition_result(result: Variant) -> void:
 
 
 func is_confirmation_modal_open() -> bool:
-	return _modal_open
+	return (
+		_modal_open
+		or (
+			_system_menu_overlay != null
+			and _system_menu_overlay.is_confirmation_open()
+		)
+	)
 
 
 func confirmation_modal_node_name() -> String:
-	return _modal_node_name
+	if _modal_open:
+		return _modal_node_name
+	return (
+		_system_menu_overlay.confirmation_node_name()
+		if _system_menu_overlay != null
+		else ""
+	)
 
 
 func settings_draft() -> SettingsSnapshot:
@@ -364,6 +509,38 @@ func _bind_localized_controls() -> void:
 		controls.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(controls)
 		_build_prepare_action_controls(controls, action_ids)
+	elif route_kind == &"RUN_COMBAT" and _layout_shell != null:
+		var controls := VBoxContainer.new()
+		controls.name = "Actions"
+		controls.theme_type_variation = &"ExpeditionPrepareBottomBand"
+		controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		controls.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		controls.clip_contents = true
+		# The shell's bottom Content is the geometry authority. As its sole
+		# expanding child, Actions follows scale/status relayout without copying
+		# an absolute reference rect into the composition.
+		var bottom_content := layout_content(
+			ProductionLayoutShell.REGION_BOTTOM
+		)
+		bottom_content.add_child(controls)
+		_build_combat_snapshot_controls(controls, action_ids)
+	elif route_kind in RUN_ROUTES and _layout_shell != null:
+		# MAP / REWARD share the same authored bottom action band as PREPARE.
+		# Bottom Content is the sole geometry authority: Actions is its only
+		# expanding child, so scale/status relayout is owned by Containers instead
+		# of copying a cached shell rect onto a root-level control.
+		var controls := HBoxContainer.new()
+		controls.name = "Actions"
+		controls.theme_type_variation = &"ExpeditionPrepareBottomBand"
+		controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		controls.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		controls.alignment = BoxContainer.ALIGNMENT_END
+		layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(controls)
+		for action_id: StringName in action_ids:
+			var action := _new_action_button(action_id)
+			action.theme_type_variation = &"ExpeditionBottomAction"
+			action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			controls.add_child(action)
 	else:
 		var controls: BoxContainer = (
 			HBoxContainer.new()
@@ -389,10 +566,186 @@ func _bind_localized_controls() -> void:
 				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
 		_apply_settings_layout(100)
+	_install_system_menu()
+
+
+func _install_system_menu() -> void:
+	if route_kind not in RUN_ROUTES or _system_menu_overlay != null:
+		return
+	_system_menu_button = Button.new()
+	_system_menu_button.name = SYSTEM_MENU_BUTTON_NODE
+	_system_menu_button.text = _context.resolve_text(&"screen.run_container.title")
+	_system_menu_button.focus_mode = Control.FOCUS_ALL
+	_system_menu_button.disabled = true
+	# Visible text, accessibility text, and stable metadata share one exact key.
+	_system_menu_button.set_meta(&"localization_key", &"screen.run_container.title")
+	_system_menu_button.set_meta(
+		&"accessible_text", _system_menu_button.text
+	)
+	_system_menu_button.set_meta(&"system_menu_owned", true)
+	_system_menu_button.pressed.connect(_on_system_menu_button_pressed)
+	ExpeditionLayoutMetrics.set_fixed_min(_system_menu_button, 270.0, 72.0)
+	var button_host := layout_content(ProductionLayoutShell.REGION_OVERLAY)
+	if button_host != null and _layout_shell != null:
+		button_host.add_child(_system_menu_button)
+		_system_menu_button.set_anchors_and_offsets_preset(
+			Control.PRESET_TOP_LEFT
+		)
+		var top_rect := _layout_shell.current_content_rect(
+			ProductionLayoutShell.REGION_TOP
+		)
+		_system_menu_button.position = Vector2(
+			top_rect.end.x - 270.0, top_rect.position.y
+		)
+		_system_menu_button.size = Vector2(270.0, 72.0)
+	else:
+		_system_menu_button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		_system_menu_button.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		_system_menu_button.position = Vector2(-306.0, 36.0)
+		add_child(_system_menu_button)
+	_system_menu_overlay = SystemMenuOverlay.new()
+	_system_menu_overlay.name = "SystemMenuOverlay"
+	var overlay_host := layout_content(ProductionLayoutShell.REGION_OVERLAY)
+	if overlay_host != null:
+		overlay_host.add_child(_system_menu_overlay)
+	else:
+		add_child(_system_menu_overlay)
+	_system_menu_overlay.configure(
+		_localized_text_clone(),
+		_system_menu_settings_snapshot,
+		_system_menu_settings_port
+	)
+	_system_menu_overlay.closed.connect(_on_system_menu_closed)
+	_system_menu_overlay.return_to_menu_requested.connect(
+		_on_system_menu_return_to_menu_requested
+	)
+	_system_menu_overlay.exit_requested.connect(
+		_on_system_menu_exit_requested
+	)
+	_system_menu_overlay.settings_applied.connect(
+		_on_system_menu_settings_applied
+	)
+
+
+func _on_system_menu_button_pressed() -> void:
+	open_system_menu()
+
+
+func _on_system_menu_closed() -> void:
+	_restore_combat_pause_after_system_menu()
+	_apply_keyboard_focus_graph()
+
+
+func _on_system_menu_return_to_menu_requested() -> void:
+	close_system_menu()
+	if (
+		_live_active
+		and _live_context != null
+		and _live_context.action_port != null
+	):
+		_dispatch_action(&"run.menu", null)
+
+
+func _on_system_menu_exit_requested() -> void:
+	close_system_menu()
+	if _system_menu_exit_handler.is_valid():
+		_system_menu_exit_handler.call()
+		return
+	if (
+		_live_context != null
+		and _live_context.action_port != null
+		and _live_context.action_port.action_ids().has(&"menu.exit")
+	):
+		_dispatch_action(&"menu.exit", null)
+		return
+	if is_inside_tree():
+		get_tree().quit()
+
+
+func _on_system_menu_settings_applied(
+	result: SettingsApplicationResult
+) -> void:
+	if result == null:
+		return
+	if result.snapshot != null:
+		_system_menu_settings_snapshot = result.snapshot.deep_clone()
+	_status_view.show_result(result, _text_resolver())
+	_sync_status_band_visibility()
+
+
+func _capture_combat_pause_for_system_menu() -> bool:
+	if route_kind != &"RUN_COMBAT" or _system_menu_pause_captured:
+		return true
+	if _live_context == null or _live_context.playback_port == null:
+		return false
+	var current := _live_context.playback_port.try_playback()
+	if not current.ok or current.state == null:
+		_status_view.show_result(current, _text_resolver())
+		_sync_status_band_visibility()
+		return false
+	var previous := current.state.paused
+	var pause_result := _live_context.playback_port.set_paused(true)
+	if not pause_result.ok:
+		_status_view.show_result(pause_result, _text_resolver())
+		_sync_status_band_visibility()
+		return false
+	_system_menu_previous_paused = previous
+	_system_menu_pause_captured = true
+	return true
+
+
+func _restore_combat_pause_after_system_menu() -> void:
+	if not _system_menu_pause_captured:
+		return
+	var previous := _system_menu_previous_paused
+	_system_menu_pause_captured = false
+	_system_menu_previous_paused = false
+	if _live_context == null or _live_context.playback_port == null:
+		return
+	var restore_result := _live_context.playback_port.set_paused(previous)
+	if not restore_result.ok:
+		_status_view.show_result(restore_result, _text_resolver())
+		_sync_status_band_visibility()
+
+
+func _cancel_active_confirmation() -> bool:
+	if not _modal_open:
+		return false
+	var cancel := _action_button(_modal_cancel_action)
+	if cancel != null:
+		_on_action_pressed(cancel)
+	else:
+		_close_confirmation_modal()
+	return true
+
+
+func _dismiss_visible_popup() -> bool:
+	if not is_inside_tree():
+		return false
+	var root := get_tree().root
+	if root == null:
+		return false
+	var popups := root.find_children("*", "Popup", true, false)
+	for index: int in range(popups.size() - 1, -1, -1):
+		var popup := popups[index] as Window
+		if popup != null and popup.visible:
+			popup.hide()
+			return true
+	return false
+
+
+func _dismiss_focused_text_edit() -> bool:
+	if not is_inside_tree():
+		return false
+	var focus := get_viewport().gui_get_focus_owner()
+	if focus is LineEdit or focus is TextEdit:
+		(focus as Control).release_focus()
+		return true
+	return false
 
 
 func _install_b1_layout() -> void:
-	if route_kind not in [&"CAMP_WORLD", &"RUN_PREPARE"]:
+	if route_kind != &"CAMP_WORLD" and route_kind not in RUN_ROUTES:
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layout_shell = ProductionLayoutShell.new()
@@ -410,8 +763,9 @@ func _install_b1_layout() -> void:
 		title.position = title_rect.position
 		title.size = title_rect.size
 		title.theme_type_variation = &"ExpeditionTitle"
-		title.custom_minimum_size = Vector2(
-			ProductionLayoutShell.TITLE_WIDTH, 0.0
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		ExpeditionLayoutMetrics.set_fixed_min(
+			title, ProductionLayoutShell.TITLE_WIDTH, 0.0
 		)
 		title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -438,9 +792,9 @@ func _configure_non_b1_layout(title: Label) -> void:
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	if title != null:
-		title.position = Vector2(72.0, 28.0)
-		title.size = Vector2(1136.0, 56.0)
-		title.custom_minimum_size = Vector2(0.0, 56.0)
+		title.position = Vector2(108.0, 42.0)
+		title.size = Vector2(1704.0, 84.0)
+		ExpeditionLayoutMetrics.set_fixed_min(title, 0.0, 84.0)
 		title.theme_type_variation = &"ExpeditionTitle"
 		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	if route_kind != &"SETTINGS":
@@ -474,23 +828,25 @@ func _apply_settings_layout(scale_percent: int) -> void:
 	if route_kind != &"SETTINGS":
 		return
 	var factor := float(scale_percent) / 100.0
-	var safe_bottom := 720.0 - ProductionLayoutShell.SAFE_MARGIN
-	var actions_height := ceilf(48.0 * factor)
+	var safe_bottom := 1080.0 - ProductionLayoutShell.SAFE_MARGIN
+	var actions_height := ceilf(72.0 * factor)
 	var actions_top := safe_bottom - actions_height
-	var status_height := ceilf(44.0 * factor)
-	var gap := ceilf(8.0 * factor)
+	var status_height := ceilf(66.0 * factor)
+	var gap := ceilf(12.0 * factor)
 	var status_top := actions_top - gap - status_height
-	var composition_top := 100.0
+	var composition_top := 150.0
 	var composition_height := status_top - gap - composition_top
 	var actions := get_node_or_null(^"Actions") as Control
 	if actions != null:
-		actions.position = Vector2(72.0, actions_top)
-		actions.size = Vector2(1136.0, actions_height)
+		actions.position = Vector2(108.0, actions_top)
+		actions.size = Vector2(1704.0, actions_height)
 	var composition := get_node_or_null(^"Composition") as Control
 	if composition != null:
-		composition.position = Vector2(72.0, composition_top)
-		composition.custom_minimum_size = Vector2(1136.0, composition_height)
-		composition.size = Vector2(1136.0, composition_height)
+		composition.position = Vector2(108.0, composition_top)
+		ExpeditionLayoutMetrics.set_fixed_min(
+			composition, 1704.0, composition_height
+		)
+		composition.size = Vector2(1704.0, composition_height)
 		composition.clip_contents = true
 		if composition.has_method(&"apply_status_rect"):
 			composition.call(
@@ -498,14 +854,14 @@ func _apply_settings_layout(scale_percent: int) -> void:
 				Rect2(
 					0.0,
 					composition_height - status_height,
-					1136.0,
+					1704.0,
 					status_height
 				)
 			)
 	_status_view.attach(
 		self,
 		0,
-		Rect2(72.0, status_top, 1136.0, status_height)
+		Rect2(108.0, status_top, 1704.0, status_height)
 	)
 
 
@@ -535,9 +891,19 @@ func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
 func _new_action_button(action_id: StringName) -> Button:
 	var button := Button.new()
 	button.name = _button_name(action_id)
-	button.text = _context.resolve_text(action_id)
+	var visual_key := StringName(
+		ACTION_VISUAL_LOCALIZATION_KEYS.get(action_id, action_id)
+	)
+	var accessible_text := _context.resolve_text(action_id)
+	button.text = _context.resolve_text(visual_key)
 	button.focus_mode = Control.FOCUS_ALL
 	button.set_meta(&"action_id", action_id)
+	button.set_meta(&"localization_key", visual_key)
+	button.set_meta(&"visual_localization_key", visual_key)
+	button.set_meta(&"accessibility_localization_key", action_id)
+	button.set_meta(&"accessible_text", accessible_text)
+	if visual_key != action_id:
+		button.tooltip_text = accessible_text
 	return button
 
 
@@ -557,7 +923,7 @@ func _build_prepare_action_controls(
 
 	var secondary := VBoxContainer.new()
 	secondary.name = "PrepareSecondaryActions"
-	ExpeditionLayoutMetrics.set_fixed_min(secondary, 206.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(secondary, 309.0, 0.0)
 	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(secondary)
 	_prepare_action_group_selector = OptionButton.new()
@@ -566,7 +932,7 @@ func _build_prepare_action_controls(
 	_prepare_action_group_selector.theme_type_variation = &"ExpeditionBottomAction"
 	_prepare_action_group_selector.allow_reselect = true
 	ExpeditionLayoutMetrics.set_fixed_min(
-		_prepare_action_group_selector, 0.0, 48.0
+		_prepare_action_group_selector, 0.0, 72.0
 	)
 	_prepare_action_group_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_prepare_action_group_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -588,11 +954,19 @@ func _build_prepare_action_controls(
 	page_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	page_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	page_scroll.follow_focus = true
+	# The selector and page share a secondary column. Reserve one authored
+	# action row for the inner viewport so a focused button always fits fully;
+	# the outer BottomContentScroll absorbs the combined column height.
+	ExpeditionLayoutMetrics.set_fixed_min(page_scroll, 0.0, 72.0)
 	page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	secondary.add_child(page_scroll)
+	# Keep the authored column width independent from localized text minima.
+	# Height is synchronized from the visible page by
+	# _refresh_prepare_action_pages_minimum(), so the vertical scroll range still
+	# follows theme-scale and localization changes without widening the band.
 	var pages := Control.new()
 	pages.name = "PrepareActionGroupPages"
-	ExpeditionLayoutMetrics.set_fixed_min(pages, 206.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(pages, 309.0, 0.0)
 	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page_scroll.add_child(pages)
@@ -605,17 +979,37 @@ func _build_prepare_action_controls(
 		page.visible = group_index == default_group_index
 		pages.add_child(page)
 		_prepare_action_group_pages.append(page)
+		page.minimum_size_changed.connect(
+			_on_prepare_action_page_minimum_changed.bind(group_index)
+		)
 		for action_value: Variant in group["actions"]:
 			var action_id := StringName(action_value)
 			if action_ids.has(action_id):
 				var action := _new_action_button(action_id)
 				action.theme_type_variation = &"ExpeditionBottomAction"
 				action.set_meta(&"expedition_theme_fixed_minimum", true)
+				# The column is intentionally fixed at 309 reference pixels. Preserve
+				# the complete localized label for tooltip/accessibility while allowing
+				# an ellipsis to prevent a long translation from widening the HBox.
+				action.clip_text = true
+				action.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+				var accessible_text := String(
+					action.get_meta(&"accessible_text", action.text)
+				)
+				action.tooltip_text = accessible_text
+				action.set_meta(&"accessible_text", accessible_text)
+				action.set_meta(
+					ExpeditionLayoutMetrics.META_ALLOW_TEXT_CLIP, true
+				)
+				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				page.add_child(action)
+				action.focus_entered.connect(
+					_on_prepare_action_focus_entered.bind(page_scroll, action)
+				)
 
 	var pinned := VBoxContainer.new()
 	pinned.name = "PinnedActions"
-	ExpeditionLayoutMetrics.set_fixed_min(pinned, 180.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(pinned, 270.0, 0.0)
 	pinned.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(pinned)
 	for action_id: StringName in PREPARE_PINNED_ACTIONS:
@@ -633,6 +1027,101 @@ func _build_prepare_action_controls(
 	_on_prepare_action_group_selected(default_group_index)
 
 
+## T23：COMBAT 沿用相同底帶骨架，但 shop／bench 只投影 bind 時取得的
+## RunPresentationSnapshot clone。唯讀 controls 沒有 action_id 或 signal handler；
+## playback 三動作仍使用正式 action button path。
+func _build_combat_snapshot_controls(
+	controls: VBoxContainer,
+	action_ids: Array[StringName]
+) -> void:
+	var snapshot := _context.snapshot_clone() as RunPresentationSnapshot
+	if snapshot != null:
+		# StagedScreenContext 已 clone；這裡再切一份局部讀模型，避免未來 helper
+		# 意外把 presentation surface 與 context 的 mutable DTO 共用。
+		snapshot = snapshot.deep_clone()
+
+	var shop_and_actions := HBoxContainer.new()
+	shop_and_actions.name = "CombatShopAndPlaybackRow"
+	shop_and_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ExpeditionLayoutMetrics.set_fixed_min(shop_and_actions, 0.0, 108.0)
+	controls.add_child(shop_and_actions)
+
+	var shop_cards := HBoxContainer.new()
+	shop_cards.name = "CombatShopCards"
+	shop_cards.theme_type_variation = &"ExpeditionShopCardsRow"
+	shop_cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	shop_cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	shop_cards.set_meta(
+		&"accessible_text", _context.resolve_text(&"prepare.panel.shop")
+	)
+	ExpeditionLayoutMetrics.set_fixed_min(shop_cards, 900.0, 108.0)
+	shop_and_actions.add_child(shop_cards)
+	_build_shop_card_row(shop_cards, snapshot, false)
+
+	var playback_actions := HBoxContainer.new()
+	playback_actions.name = "CombatPlaybackActions"
+	playback_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	playback_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ExpeditionLayoutMetrics.set_fixed_min(playback_actions, 540.0, 108.0)
+	shop_and_actions.add_child(playback_actions)
+	for action_id: StringName in action_ids:
+		var action := _new_action_button(action_id)
+		action.theme_type_variation = &"ExpeditionBottomAction"
+		action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		action.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		playback_actions.add_child(action)
+
+	var bench_row := HBoxContainer.new()
+	bench_row.name = "CombatBenchRow"
+	bench_row.theme_type_variation = &"ExpeditionBenchRow"
+	bench_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bench_row.set_meta(
+		&"accessible_text", _context.resolve_text(&"prepare.panel.bench")
+	)
+	ExpeditionLayoutMetrics.set_fixed_min(bench_row, 0.0, 48.0)
+	controls.add_child(bench_row)
+	var roster := snapshot.roster.deep_clone() if (
+		snapshot != null and snapshot.roster != null
+	) else null
+	for slot_index: int in range(BoardPreparationValidator.BENCH_CAPACITY):
+		var unit_instance_id := (
+			roster.bench_unit_instance_ids[slot_index]
+			if roster != null and slot_index < roster.bench_unit_instance_ids.size()
+			else ""
+		)
+		var display_text := _combat_bench_unit_text(roster, unit_instance_id)
+		var cell := Button.new()
+		cell.name = "CombatBenchSlot%d" % slot_index
+		cell.text = display_text
+		cell.theme_type_variation = &"ExpeditionGridCell"
+		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cell.disabled = true
+		cell.focus_mode = Control.FOCUS_NONE
+		cell.set_meta(&"read_only_snapshot_control", true)
+		cell.set_meta(&"typed_data_kind", &"combat_bench_slot")
+		cell.set_meta(&"bench_slot", slot_index)
+		cell.set_meta(&"unit_instance_id", unit_instance_id)
+		cell.set_meta(&"accessible_text", display_text)
+		cell.tooltip_text = display_text
+		ExpeditionLayoutMetrics.set_fixed_cell(cell, 180.0, 48.0)
+		bench_row.add_child(cell)
+
+
+func _combat_bench_unit_text(
+	roster: RosterState,
+	unit_instance_id: String
+) -> String:
+	if roster != null and not unit_instance_id.is_empty():
+		for unit: UnitInstance in roster.unit_instances:
+			if unit != null and unit.instance_id == unit_instance_id:
+				return "%s · %s %d" % [
+					localized_content_text(unit.def_id),
+					_context.resolve_text(&"combat.stat.star"),
+					unit.star,
+				]
+	return _context.resolve_text(&"combat.inspection.none")
+
+
 func _build_prepare_shop_controls(
 	controls: HBoxContainer,
 	action_ids: Array[StringName],
@@ -641,7 +1130,7 @@ func _build_prepare_shop_controls(
 	var shop_shell := HBoxContainer.new()
 	shop_shell.name = "PrepareShopBand"
 	shop_shell.theme_type_variation = &"ExpeditionPrepareShopBand"
-	ExpeditionLayoutMetrics.set_fixed_min(shop_shell, 660.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(shop_shell, 990.0, 0.0)
 	shop_shell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	shop_shell.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(shop_shell)
@@ -656,7 +1145,7 @@ func _build_prepare_shop_controls(
 	var heading := Label.new()
 	heading.text = _context.resolve_text(&"prepare.panel.shop")
 	heading.theme_type_variation = &"ExpeditionSection"
-	ExpeditionLayoutMetrics.set_fixed_min(heading, 120.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(heading, 180.0, 0.0)
 	heading.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	heading.clip_text = true
 	heading.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -668,42 +1157,11 @@ func _build_prepare_shop_controls(
 	cards.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cards_column.add_child(cards)
-	if snapshot != null and snapshot.economy != null:
-		for offer: ShopOffer in snapshot.economy.shop_offers:
-			var card := Button.new()
-			card.name = "ShopCard%s" % String(offer.offer_id).to_pascal_case()
-			card.text = "%s\n%s %d  ·  ★1" % [
-				localized_content_text(offer.unit_def_id),
-				_context.resolve_text(&"prepare.resource.gold"),
-				offer.cost,
-			]
-			card.theme_type_variation = &"ExpeditionShopCard"
-			# 寬度預算（1200 內容寬扣兩側欄與縮放後的分隔）允許 112；
-			# 長內容名靠 autowrap 換行，卡片高度由帶區吸收，不截字。
-			ExpeditionLayoutMetrics.set_fixed_min(card, 112.0, 72.0)
-			card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			card.size_flags_vertical = Control.SIZE_EXPAND_FILL
-			card.focus_mode = Control.FOCUS_ALL
-			card.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
-			card.toggle_mode = false
-			card.set_meta(&"shop_offer_id", offer.offer_id)
-			card.set_meta(&"accessible_text", card.text)
-			card.pressed.connect(
-				_on_prepare_shop_card_pressed.bind(offer.offer_id)
-			)
-			cards.add_child(card)
-	if cards.get_child_count() == 0 and action_ids.has(&"prepare.buy"):
-		var empty_buy := _new_action_button(&"prepare.buy")
-		empty_buy.theme_type_variation = &"ExpeditionShopCard"
-		ExpeditionLayoutMetrics.set_fixed_min(empty_buy, 112.0, 72.0)
-		empty_buy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		empty_buy.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		empty_buy.disabled = true
-		cards.add_child(empty_buy)
+	_build_shop_card_row(cards, snapshot, true)
 	var shop_actions := GridContainer.new()
 	shop_actions.name = "PrepareShopActions"
 	shop_actions.columns = 1
-	ExpeditionLayoutMetrics.set_fixed_min(shop_actions, 140.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(shop_actions, 210.0, 0.0)
 	shop_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	shop_shell.add_child(shop_actions)
 	for action_id: StringName in [
@@ -712,8 +1170,436 @@ func _build_prepare_shop_controls(
 		if action_ids.has(action_id):
 			var action := _new_action_button(action_id)
 			action.theme_type_variation = &"ExpeditionBottomAction"
-			ExpeditionLayoutMetrics.set_fixed_min(action, 140.0, 48.0)
+			ExpeditionLayoutMetrics.set_fixed_min(action, 210.0, 72.0)
 			shop_actions.add_child(action)
+
+
+func _build_shop_card_row(
+	cards: HBoxContainer,
+	snapshot: RunPresentationSnapshot,
+	interactive: bool
+) -> void:
+	var offer_by_slot: Dictionary = {}
+	var duplicate_offer_slots: Dictionary = {}
+	var preview_by_slot: Dictionary = {}
+	if snapshot != null:
+		var economy := (
+			snapshot.economy.deep_clone()
+			if snapshot.economy != null
+			else null
+		)
+		if economy != null:
+			for offer: ShopOffer in economy.shop_offers:
+				if offer == null or offer.slot_index < 0 or offer.slot_index >= 5:
+					continue
+				if offer_by_slot.has(offer.slot_index):
+					duplicate_offer_slots[offer.slot_index] = true
+				else:
+					offer_by_slot[offer.slot_index] = offer.deep_clone()
+	var duplicate_preview_slots: Dictionary = {}
+	if snapshot != null:
+		for preview: ShopOfferPreviewSnapshot in snapshot.shop_offer_previews:
+			if preview == null or preview.slot_index < 0 or preview.slot_index >= 5:
+				continue
+			if preview_by_slot.has(preview.slot_index):
+				duplicate_preview_slots[preview.slot_index] = true
+			else:
+				preview_by_slot[preview.slot_index] = preview.deep_clone()
+	var visuals := ProductionUnitVisualCatalog.new()
+	for slot_index: int in range(5):
+		var offer := offer_by_slot.get(slot_index) as ShopOffer
+		var preview := preview_by_slot.get(slot_index) as ShopOfferPreviewSnapshot
+		var unavailable := (
+			duplicate_offer_slots.has(slot_index)
+			or duplicate_preview_slots.has(slot_index)
+			or (offer == null) != (preview == null)
+			or (
+				offer != null
+				and preview != null
+				and not _shop_preview_matches_offer(preview, offer)
+			)
+		)
+		cards.add_child(_new_shop_card(
+			slot_index,
+			null if unavailable else preview,
+			visuals,
+			interactive,
+			unavailable
+		))
+
+
+func _shop_preview_matches_offer(
+	preview: ShopOfferPreviewSnapshot,
+	offer: ShopOffer
+) -> bool:
+	return (
+		preview != null
+		and offer != null
+		and preview.slot_index == offer.slot_index
+		and not String(preview.offer_id).is_empty()
+		and preview.offer_id == StringName(offer.offer_id)
+		and not String(preview.unit_def_id).is_empty()
+		and preview.unit_def_id == offer.unit_def_id
+		and preview.cost == offer.cost
+		and preview.cost_tier >= 1
+		and preview.cost_tier <= 5
+	)
+
+
+func _new_shop_card(
+	slot_index: int,
+	preview: ShopOfferPreviewSnapshot,
+	visuals: ProductionUnitVisualCatalog,
+	interactive: bool,
+	unavailable: bool = false
+) -> Button:
+	var card := Button.new()
+	card.name = (
+		(
+			(
+				"ShopCardSlot%dUnavailable" % slot_index
+				if unavailable
+				else "ShopCardSlot%dEmpty" % slot_index
+			)
+			if preview == null
+			else "ShopCard%s" % String(preview.offer_id).to_pascal_case()
+		)
+		if interactive
+		else "CombatShopCardSlot%d" % slot_index
+	)
+	card.theme_type_variation = &"ExpeditionShopCard"
+	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	card.set_meta(&"shop_slot_index", slot_index)
+	card.set_meta(
+		&"shop_offer_id",
+		"" if preview == null else String(preview.offer_id)
+	)
+	if interactive:
+		# Select/dispatch is owned by the exact offer card. It must never join the
+		# generic action_id lookup or activation wiring used by action-band buttons.
+		card.set_meta(&"direct_action_owned", true)
+	card.set_meta(
+		&"typed_data_kind",
+		(
+			&"combat_shop_slot"
+			if not interactive
+			else (
+				&"shop_offer"
+				if preview != null
+				else &"shop_offer_unavailable" if unavailable
+				else &"empty_shop_slot"
+			)
+		)
+	)
+	ExpeditionLayoutMetrics.set_fixed_min(card, 168.0, 108.0)
+	if preview == null:
+		var empty_key := (
+			&"error.presentation.action_not_available"
+			if unavailable
+			else &"combat.inspection.none"
+		)
+		var empty_text := _context.resolve_text(empty_key)
+		card.text = empty_text
+		card.tooltip_text = empty_text
+		card.disabled = true
+		card.focus_mode = Control.FOCUS_NONE
+		card.set_meta(&"localization_key", empty_key)
+		card.set_meta(&"accessible_text", empty_text)
+		if not interactive:
+			card.set_meta(&"read_only_snapshot_control", true)
+		return card
+
+	# Keep only immutable presentation data on the card. Locale changes rebuild
+	# every player-visible string from these cloned snapshot fields, while the
+	# authoritative quoted cost is carried through unchanged.
+	card.set_meta(&"shop_unit_def_id", preview.unit_def_id)
+	card.set_meta(&"shop_cost", preview.cost)
+	card.set_meta(&"shop_cost_tier", preview.cost_tier)
+	card.set_meta(&"shop_trait_ids", preview.trait_ids.duplicate())
+	card.set_meta(&"shop_owned_unit_count", preview.owned_unit_count)
+	card.set_meta(
+		&"shop_star_up_after_purchase", preview.star_up_after_purchase
+	)
+	card.theme_type_variation = StringName(
+		"ExpeditionShopCardTier%d" % preview.cost_tier
+	)
+	# Button icon/autowrap would feed the portrait's intrinsic size into the
+	# Container minimum. The established overlay renderer keeps geometry fixed.
+	card.text = ""
+	card.clip_contents = true
+	_add_shop_card_content(
+		card,
+		visuals.try_portrait(preview.unit_def_id)
+	)
+	_refresh_shop_card_localization(card)
+	if interactive:
+		card.focus_mode = Control.FOCUS_ALL
+		card.pressed.connect(
+			_on_prepare_shop_card_pressed.bind(preview.offer_id)
+		)
+	else:
+		card.disabled = true
+		card.focus_mode = Control.FOCUS_NONE
+		card.set_meta(&"read_only_snapshot_control", true)
+	return card
+
+
+func _add_shop_card_content(
+	card: Button,
+	portrait: Texture2D
+) -> void:
+	var content := VBoxContainer.new()
+	content.name = "CardContent"
+	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(content)
+
+	var identity_row := HBoxContainer.new()
+	identity_row.name = "IdentityRow"
+	identity_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ExpeditionLayoutMetrics.set_fixed_min(identity_row, 0.0, 48.0)
+	content.add_child(identity_row)
+
+	var portrait_view := TextureRect.new()
+	portrait_view.name = "Portrait"
+	ExpeditionLayoutMetrics.set_fixed_min(portrait_view, 48.0, 48.0)
+	portrait_view.texture = portrait
+	portrait_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_view.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	portrait_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	identity_row.add_child(portrait_view)
+
+	var identity_text := VBoxContainer.new()
+	identity_text.name = "IdentityText"
+	identity_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity_row.add_child(identity_text)
+
+	var name_label := Label.new()
+	name_label.name = "UnitName"
+	name_label.add_theme_font_size_override(&"font_size", 18)
+	name_label.clip_text = true
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity_text.add_child(name_label)
+
+	var price_label := Label.new()
+	price_label.name = "PriceTier"
+	price_label.add_theme_font_size_override(&"font_size", 18)
+	price_label.clip_text = true
+	price_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	price_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	price_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	identity_text.add_child(price_label)
+	var tier_cues := HBoxContainer.new()
+	tier_cues.name = "TierCueShapes"
+	tier_cues.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	tier_cues.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	tier_cues.grow_vertical = Control.GROW_DIRECTION_BOTH
+	tier_cues.alignment = BoxContainer.ALIGNMENT_END
+	tier_cues.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(tier_cues, 48.0, 12.0)
+	price_label.add_child(tier_cues)
+
+	var trait_label := Label.new()
+	trait_label.name = "Traits"
+	trait_label.add_theme_font_size_override(&"font_size", 18)
+	trait_label.clip_text = true
+	trait_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	trait_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	trait_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(trait_label)
+
+	var ownership_label := Label.new()
+	ownership_label.name = "OwnedAndStarUp"
+	ownership_label.add_theme_font_size_override(&"font_size", 18)
+	ownership_label.clip_text = true
+	ownership_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	ownership_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ownership_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(ownership_label)
+	var star_cue := HBoxContainer.new()
+	star_cue.name = "StarUpCueShape"
+	star_cue.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	star_cue.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	star_cue.grow_vertical = Control.GROW_DIRECTION_BOTH
+	star_cue.alignment = BoxContainer.ALIGNMENT_END
+	star_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(star_cue, 30.0, 12.0)
+	ownership_label.add_child(star_cue)
+
+
+func _refresh_shop_card_localization(card: Button) -> void:
+	if card == null:
+		return
+	var offer_id := String(card.get_meta(&"shop_offer_id", ""))
+	if offer_id.is_empty():
+		var empty_key := StringName(
+			card.get_meta(&"localization_key", &"combat.inspection.none")
+		)
+		var empty_text := _context.resolve_text(empty_key)
+		card.text = empty_text
+		card.tooltip_text = empty_text
+		card.set_meta(&"accessible_text", empty_text)
+		return
+
+	var unit_def_id := StringName(
+		card.get_meta(&"shop_unit_def_id", &"")
+	)
+	var cost := int(card.get_meta(&"shop_cost", 0))
+	var cost_tier := int(card.get_meta(&"shop_cost_tier", 0))
+	var owned_unit_count := int(
+		card.get_meta(&"shop_owned_unit_count", 0)
+	)
+	var star_up_after_purchase := bool(
+		card.get_meta(&"shop_star_up_after_purchase", false)
+	)
+	var trait_labels: Array[String] = []
+	var stored_trait_ids := card.get_meta(&"shop_trait_ids", []) as Array
+	for raw_trait_id: Variant in stored_trait_ids:
+		trait_labels.append(localized_content_text(StringName(raw_trait_id)))
+
+	var unit_name := localized_content_text(unit_def_id)
+	var cost_key: StringName = &"tooltip.cost"
+	var star_key: StringName = &"tooltip.star"
+	var ownership_key: StringName = &"prepare.panel.units"
+	var name_label := card.get_node_or_null(
+		"CardContent/IdentityRow/IdentityText/UnitName"
+	) as Label
+	if name_label != null:
+		name_label.text = unit_name
+		name_label.set_meta(&"content_localization_id", unit_def_id)
+		name_label.set_meta(&"accessible_text", unit_name)
+	var price_label := card.get_node_or_null(
+		"CardContent/IdentityRow/IdentityText/PriceTier"
+	) as Label
+	if price_label != null:
+		price_label.text = "%s %d" % [
+			_context.resolve_text(cost_key),
+			cost,
+		]
+		price_label.set_meta(&"localization_key", cost_key)
+		price_label.set_meta(&"authoritative_cost", cost)
+		price_label.set_meta(&"authoritative_cost_tier", cost_tier)
+		price_label.set_meta(&"accessible_text", price_label.text)
+		_refresh_shop_tier_cue(price_label, cost_tier)
+	var trait_label := card.get_node_or_null(
+		"CardContent/Traits"
+	) as Label
+	if trait_label != null:
+		trait_label.text = " / ".join(trait_labels)
+		trait_label.set_meta(
+			&"content_localization_ids",
+			stored_trait_ids.duplicate()
+		)
+		trait_label.set_meta(&"accessible_text", trait_label.text)
+	var ownership_label := card.get_node_or_null(
+		"CardContent/OwnedAndStarUp"
+	) as Label
+	var star_result := (
+		_context.resolve_text(star_key)
+		if star_up_after_purchase
+		else ""
+	)
+	if ownership_label != null:
+		ownership_label.text = "%s %d" % [
+			_context.resolve_text(ownership_key), owned_unit_count,
+		]
+		if star_up_after_purchase:
+			ownership_label.text += " · %s" % star_result
+		ownership_label.set_meta(
+			&"localization_keys",
+			[ownership_key, star_key]
+		)
+		ownership_label.set_meta(
+			&"star_up_after_purchase_value",
+			1 if star_up_after_purchase else 0
+		)
+		ownership_label.set_meta(
+			&"accessible_text",
+			ownership_label.text
+		)
+		_refresh_shop_star_cue(ownership_label, star_up_after_purchase)
+
+	var detail_lines: Array[String] = [
+		unit_name,
+		"%s %d" % [
+			_context.resolve_text(cost_key), cost,
+		],
+		"%s %d" % [
+			_context.resolve_text(ownership_key),
+			owned_unit_count,
+		],
+	]
+	if not trait_labels.is_empty():
+		detail_lines.append(" / ".join(trait_labels))
+	if not star_result.is_empty():
+		detail_lines.append(star_result)
+	var detail_text := "\n".join(detail_lines)
+	card.tooltip_text = detail_text
+	card.set_meta(
+		&"localization_keys",
+		[cost_key, ownership_key, star_key]
+	)
+	card.set_meta(&"accessible_text", detail_text)
+
+
+func _refresh_shop_tier_cue(price_label: Label, cost_tier: int) -> void:
+	var cue := price_label.get_node_or_null(^"TierCueShapes") as HBoxContainer
+	if cue == null:
+		return
+	_clear_shop_cue_children(cue)
+	cue.set_meta(&"authoritative_cost_tier", cost_tier)
+	cue.set_meta(&"non_color_cue", &"tier-pips")
+	for index: int in maxi(1, cost_tier):
+		var pip := ColorRect.new()
+		pip.name = "TierPip%d" % index
+		pip.color = price_label.get_theme_color(&"font_color")
+		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(pip, 6.0, 6.0)
+		cue.add_child(pip)
+
+
+func _refresh_shop_star_cue(
+	ownership_label: Label,
+	star_up_after_purchase: bool
+) -> void:
+	var cue := ownership_label.get_node_or_null(
+		^"StarUpCueShape"
+	) as HBoxContainer
+	if cue == null:
+		return
+	_clear_shop_cue_children(cue)
+	cue.set_meta(&"star_up_after_purchase_value", star_up_after_purchase)
+	cue.set_meta(
+		&"non_color_cue",
+		&"star-rise" if star_up_after_purchase else &"star-flat"
+	)
+	var primary := ColorRect.new()
+	primary.name = "PrimaryShape"
+	primary.color = ownership_label.get_theme_color(&"font_color")
+	primary.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		primary,
+		6.0 if star_up_after_purchase else 18.0,
+		12.0 if star_up_after_purchase else 4.0
+	)
+	cue.add_child(primary)
+	if star_up_after_purchase:
+		var secondary := ColorRect.new()
+		secondary.name = "SecondaryShape"
+		secondary.color = primary.color
+		secondary.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(secondary, 12.0, 6.0)
+		cue.add_child(secondary)
+
+
+func _clear_shop_cue_children(cue: Control) -> void:
+	for child: Node in cue.get_children():
+		cue.remove_child(child)
+		child.free()
 
 
 func _on_prepare_shop_card_pressed(offer_id: StringName) -> void:
@@ -737,19 +1623,165 @@ func _on_prepare_action_group_selected(index: int) -> void:
 		return
 	for page_index: int in _prepare_action_group_pages.size():
 		_prepare_action_group_pages[page_index].visible = page_index == index
-	var pages := find_child("PrepareActionGroupPages", true, false) as Control
-	if pages != null:
-		# 用 helper 寫回 base meta，否則 theme runtime 下次 apply 會把
-		# 高度重設回登記值 0（P1 回歸的第二種路徑）。
-		ExpeditionLayoutMetrics.set_fixed_min(
-			pages,
-			206.0,
-			_prepare_action_group_pages[index].get_combined_minimum_size().y
-		)
-	if _layout_shell != null:
-		# 分組切換改變底部帶內容 min，帶高需即時重算。
-		_layout_shell.relayout()
+	_refresh_prepare_action_pages_minimum()
+	# Visibility and Container minimum invalidation settle at frame end.
+	call_deferred(&"_refresh_prepare_action_pages_minimum")
 	_apply_keyboard_focus_graph()
+
+
+func _on_prepare_action_page_minimum_changed(group_index: int) -> void:
+	if (
+		group_index < 0
+		or group_index >= _prepare_action_group_pages.size()
+		or not _prepare_action_group_pages[group_index].visible
+	):
+		return
+	call_deferred(&"_refresh_prepare_action_pages_minimum")
+
+
+func _refresh_prepare_action_pages_minimum() -> void:
+	var pages := find_child(
+		"PrepareActionGroupPages", true, false
+	) as Control
+	var page_scroll := find_child(
+		"PrepareActionGroupScroll", true, false
+	) as ScrollContainer
+	if pages == null or page_scroll == null:
+		return
+	var visible_page: GridContainer
+	for page: GridContainer in _prepare_action_group_pages:
+		if page.visible:
+			visible_page = page
+			break
+	if visible_page == null:
+		return
+	# Runtime size is already theme-scaled; do not replace the 1920-reference
+	# base metric or the next theme apply would scale a measured value again.
+	ExpeditionLayoutMetrics.set_runtime_min(
+		pages,
+		Vector2(309.0, visible_page.get_combined_minimum_size().y)
+	)
+	var action_row_height := 0.0
+	for child: Node in visible_page.get_children():
+		var action := child as Control
+		if action != null and action.visible:
+			action_row_height = maxf(
+				action_row_height,
+				action.get_combined_minimum_size().y
+			)
+	# This is a post-theme runtime measurement, not a new reference literal.
+	# Keeping one complete action row in the inner viewport lets the outer
+	# BottomContentScroll own the remaining vertical overflow.
+	ExpeditionLayoutMetrics.set_runtime_min(
+		page_scroll,
+		Vector2(0.0, action_row_height)
+	)
+	if _layout_shell != null:
+		_layout_shell.relayout()
+
+
+func _on_prepare_action_focus_entered(
+	scroll: ScrollContainer,
+	action: Control
+) -> void:
+	# Focus may move in the same frame as a group switch/container sort. Defer
+	# until the minimum-size propagation and scroll range have both settled.
+	call_deferred(&"_ensure_prepare_action_visible", scroll, action)
+
+
+func _ensure_prepare_action_visible(
+	scroll: ScrollContainer,
+	action: Control
+) -> void:
+	if (
+		scroll == null
+		or action == null
+		or not is_instance_valid(scroll)
+		or not is_instance_valid(action)
+		or not scroll.is_inside_tree()
+		or not action.is_inside_tree()
+		or not action.is_visible_in_tree()
+		or not action.has_focus()
+	):
+		return
+	scroll.ensure_control_visible(action)
+	call_deferred(
+		&"_ensure_prepare_action_visible_in_outer",
+		scroll,
+		action
+	)
+
+
+func _ensure_prepare_action_visible_in_outer(
+	inner_scroll: ScrollContainer,
+	action: Control
+) -> void:
+	if not _prepare_action_focus_is_valid(inner_scroll, action):
+		return
+	inner_scroll.ensure_control_visible(action)
+	var outer_scroll := _scroll_ancestor_named(
+		inner_scroll,
+		&"BottomContentScroll"
+	)
+	if outer_scroll == null:
+		return
+	outer_scroll.ensure_control_visible(inner_scroll)
+	call_deferred(
+		&"_finalize_prepare_action_visibility",
+		inner_scroll,
+		outer_scroll,
+		action
+	)
+
+
+func _finalize_prepare_action_visibility(
+	inner_scroll: ScrollContainer,
+	outer_scroll: ScrollContainer,
+	action: Control
+) -> void:
+	if (
+		not _prepare_action_focus_is_valid(inner_scroll, action)
+		or outer_scroll == null
+		or not is_instance_valid(outer_scroll)
+		or not outer_scroll.is_inside_tree()
+		or not outer_scroll.is_ancestor_of(action)
+	):
+		return
+	# The outer scroll moves the complete secondary column. Re-apply the inner
+	# range after that movement, then settle the outer range against the final
+	# action rect so both nested viewports contain the focused control.
+	inner_scroll.ensure_control_visible(action)
+	outer_scroll.ensure_control_visible(inner_scroll)
+
+
+func _prepare_action_focus_is_valid(
+	scroll: ScrollContainer,
+	action: Control
+) -> bool:
+	return (
+		scroll != null
+		and action != null
+		and is_instance_valid(scroll)
+		and is_instance_valid(action)
+		and scroll.is_inside_tree()
+		and action.is_inside_tree()
+		and action.is_visible_in_tree()
+		and action.has_focus()
+		and scroll.is_ancestor_of(action)
+	)
+
+
+func _scroll_ancestor_named(
+	control: Control,
+	target_name: StringName
+) -> ScrollContainer:
+	var ancestor := control.get_parent()
+	while ancestor != null and ancestor != self:
+		var scroll := ancestor as ScrollContainer
+		if scroll != null and scroll.name == target_name:
+			return scroll
+		ancestor = ancestor.get_parent()
+	return null
 
 
 func _attach_focus_indicator() -> void:
@@ -1120,9 +2152,34 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 		title.text = _context.resolve_text(_route_title_key())
 	for button: Button in _action_buttons():
 		if button.has_meta(&"action_id"):
-			button.text = _context.resolve_text(
-				StringName(button.get_meta(&"action_id"))
+			var action_id := StringName(button.get_meta(&"action_id"))
+			var visual_key := StringName(
+				button.get_meta(&"visual_localization_key", action_id)
 			)
+			var accessible_text := _context.resolve_text(action_id)
+			button.text = _context.resolve_text(visual_key)
+			button.set_meta(&"localization_key", visual_key)
+			button.set_meta(&"accessible_text", accessible_text)
+			if visual_key != action_id:
+				button.tooltip_text = accessible_text
+	# Shop cards are direct-owned controls, not generic action-band buttons.
+	# Recompose active and empty card copy from immutable snapshot metadata so a
+	# locale switch updates every visible/accessibility string without changing
+	# exact-offer ownership or the authored focus order.
+	for node: Node in find_children("*ShopCard*", "Button", true, false):
+		var card := node as Button
+		if card == null or not card.has_meta(&"shop_offer_id"):
+			continue
+		_refresh_shop_card_localization(card)
+	if _system_menu_button != null:
+		_system_menu_button.text = _context.resolve_text(
+			&"screen.run_container.title"
+		)
+		_system_menu_button.set_meta(
+			&"accessible_text", _system_menu_button.text
+		)
+	if _system_menu_overlay != null:
+		_system_menu_overlay.relocalize(localized_text)
 	if _prepare_action_group_selector != null:
 		for index: int in _prepare_action_group_selector.item_count:
 			var label_key := StringName(
@@ -1146,7 +2203,13 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 
 
 func refresh_interaction_state() -> void:
-	if _modal_open:
+	if (
+		_modal_open
+		or (
+			_system_menu_overlay != null
+			and _system_menu_overlay.is_open()
+		)
+	):
 		return
 	var composition := get_node_or_null("Composition")
 	var camp_start := _action_button(&"camp.start")
@@ -1185,7 +2248,15 @@ func refresh_interaction_state() -> void:
 		for node: Node in find_children("ShopCard*", "Button", true, false):
 			var shop_card := node as Button
 			if shop_card != null and shop_card.has_meta(&"shop_offer_id"):
-				shop_card.disabled = has_choice
+				var has_offer := not String(
+					shop_card.get_meta(&"shop_offer_id", "")
+				).is_empty()
+				shop_card.disabled = has_choice or not has_offer
+				shop_card.focus_mode = (
+					Control.FOCUS_ALL
+					if has_offer and not has_choice
+					else Control.FOCUS_NONE
+				)
 		var has_choice_confirmation := (
 			prepare_screen.has_pending_node_choice_confirmation()
 		)
@@ -1324,7 +2395,7 @@ func _show_confirmation_modal(
 	dialog.set_anchors_preset(Control.PRESET_CENTER)
 	dialog.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	dialog.grow_vertical = Control.GROW_DIRECTION_BOTH
-	ExpeditionLayoutMetrics.set_fixed_min(dialog, 560.0, 220.0)
+	ExpeditionLayoutMetrics.set_fixed_min(dialog, 840.0, 330.0)
 	dialog.theme_type_variation = &"ExpeditionModalPanel"
 	dialog.z_index = 100
 	add_child(dialog)
@@ -1359,6 +2430,8 @@ func _show_confirmation_modal(
 func _deferred_layout_settle() -> void:
 	if not is_inside_tree():
 		return
+	if route_kind == &"RUN_PREPARE":
+		_refresh_prepare_action_pages_minimum()
 	_sync_status_band_visibility()
 
 
@@ -1374,9 +2447,25 @@ func _sync_status_band_visibility() -> void:
 			ProductionLayoutShell.REGION_STATUS
 		)
 	)
+	_refresh_in_run_hud_shell_layout()
 	var composition := get_node_or_null(^"Composition")
 	if composition != null and composition.has_method(&"refresh_layout_rects"):
 		composition.call(&"refresh_layout_rects")
+
+
+## 四個局內 route 的共用 HUD 不隸屬 layout shell 的 host，因此 shell
+## scale/status 改變後要在同一事件結尾套用最新 content rect。這裡不輪詢。
+func _refresh_in_run_hud_shell_layout() -> void:
+	if route_kind not in RUN_ROUTES:
+		return
+	var composition := get_node_or_null(^"Composition")
+	if composition == null:
+		return
+	var hud_shell := composition.find_child(
+		"InRunHudShell", true, false
+	) as InRunHudShell
+	if hud_shell != null:
+		hud_shell.refresh_layout_rects()
 
 
 func _close_confirmation_modal() -> void:
@@ -1466,7 +2555,13 @@ func _restore_modal_trigger_focus() -> void:
 
 
 func _apply_keyboard_focus_graph() -> void:
-	if _modal_open:
+	if (
+		_modal_open
+		or (
+			_system_menu_overlay != null
+			and _system_menu_overlay.is_open()
+		)
+	):
 		return
 	var controls := _ordered_focus_controls()
 	_link_focus_cycle(controls)
@@ -1474,6 +2569,15 @@ func _apply_keyboard_focus_graph() -> void:
 
 func _ordered_focus_controls() -> Array[Control]:
 	var result: Array[Control] = []
+	# Staged-only composition tests run before activate_live() enables this
+	# button. Keep its stable first-stop position in the authored graph; the
+	# live activation enables it before focus is actually grabbed.
+	if (
+		_system_menu_button != null
+		and _system_menu_button.is_visible_in_tree()
+		and _system_menu_button.focus_mode != Control.FOCUS_NONE
+	):
+		result.append(_system_menu_button)
 	if (
 		route_kind == &"RUN_PREPARE"
 		and _control_is_focusable(_prepare_action_group_selector)
@@ -1530,6 +2634,14 @@ func _ordered_focus_controls() -> Array[Control]:
 			and not result.has(card)
 		):
 			result.append(card)
+	# BoardGrid is a hidden metadata contract. Keyboard board targeting is owned
+	# by BuildUnitSelector + W and the existing Move Board/Bench actions.
+	var bench_row := find_child("BenchRow", true, false) as HBoxContainer
+	if bench_row != null:
+		for node: Node in bench_row.get_children():
+			var bench_cell := node as Control
+			if _control_is_focusable(bench_cell) and not result.has(bench_cell):
+				result.append(bench_cell)
 	# 誤觸代價高的動作排在所有同畫面「動作按鈕」之後（下面的 selector 仍排在它後面；
 	# 焦點環涵蓋它，只是不在按鈕段的前面）。
 	for action_id: StringName in deferred:
@@ -1545,6 +2657,9 @@ func _ordered_focus_controls() -> Array[Control]:
 		&"DeploymentIssues",
 		&"UnitSelector",
 		&"OfferSelector",
+		&"TraitList",
+		&"HudInventory",
+		&"HudRelicSlots",
 		&"BoardSelector",
 		&"BenchSelector",
 		&"ShopSelector",
@@ -1561,7 +2676,7 @@ func _ordered_focus_controls() -> Array[Control]:
 			true,
 			false
 		) as Control
-		if _control_is_focusable(selector):
+		if _control_is_focusable(selector) and not result.has(selector):
 			result.append(selector)
 	return result
 
@@ -1654,7 +2769,6 @@ func _required_action_ids() -> Array[StringName]:
 				&"map.select",
 				&"map.confirm",
 				&"choice.ack",
-				&"run.menu",
 			]
 		&"RUN_PREPARE":
 			return [
@@ -1677,14 +2791,12 @@ func _required_action_ids() -> Array[StringName]:
 				&"choice.confirm",
 				&"choice.cancel",
 				&"choice.ack",
-				&"run.menu",
 			]
 		&"RUN_COMBAT":
 			return [
 				&"combat.pause",
 				&"combat.inspect",
 				&"combat.speed",
-				&"run.menu",
 			]
 		&"RUN_REWARD":
 			# `choice.ack`：OPEN_REWARD_STAGE 出口把 phase 切成 REWARD（design :207）。
@@ -1692,7 +2804,6 @@ func _required_action_ids() -> Array[StringName]:
 				&"reward.select",
 				&"reward.confirm",
 				&"choice.ack",
-				&"run.menu",
 			]
 		&"RUN_ROUTE_FALLBACK":
 			return [&"run.retry_route", &"run.menu"]

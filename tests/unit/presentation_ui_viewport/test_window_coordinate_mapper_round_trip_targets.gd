@@ -15,7 +15,7 @@ const UI_SCALES: Array[int] = [100, 125, 150]
 const TILE_SIZE := Vector2i(16, 16)
 const BOARD_TILE := Vector2i(17, 11)
 const CAMP_HOTSPOT := Rect2(412.0, 196.0, 48.0, 32.0)
-const UI_CONTROL := Rect2(930.0, 520.0, 210.0, 72.0)
+const UI_CONTROL := Rect2(1395.0, 780.0, 315.0, 108.0)
 
 
 func test_world_tile_and_camp_hotspot_round_trip_across_resolution_matrix() -> void:

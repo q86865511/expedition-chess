@@ -61,7 +61,9 @@ func test_failed_confirm_still_closes_the_modal_and_restores_the_background() ->
 		"the failure still has to be visible—closing the modal is not swallowing it"
 	)
 	assert_eq(screen.status_report().get("committed"), true)
-	for node: Node in screen.get_node(^"Actions").find_children(
+	for node: Node in screen.find_child(
+		"Actions", true, false
+	).find_children(
 		"*",
 		"Button",
 		true,

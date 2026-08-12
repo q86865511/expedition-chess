@@ -72,7 +72,7 @@ func _build_facility_data() -> void:
 	var data := ItemList.new()
 	data.name = "FacilityData"
 	data.position = Vector2(72.0, 112.0)
-	data.custom_minimum_size = Vector2(640.0, 320.0)
+	ExpeditionLayoutMetrics.set_min(data, 960.0, 480.0)
 	data.focus_mode = Control.FOCUS_ALL
 	data.set_meta(&"typed_data_kind", _parent_route_kind())
 	var values: Array[StringName] = []

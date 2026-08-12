@@ -6,25 +6,41 @@ param(
     [int]$UiScale = 100,
     [ValidateSet('zh_TW', 'en')]
     [string]$Locale = 'zh_TW',
-    [ValidateSet('1280x720', '1920x1080')]
-    [string]$WindowSize = '1280x720',
+    [ValidateSet('1280x720', '1920x1080', '2560x1440')]
+    [string]$WindowSize = '1920x1080',
     [string]$TestPath = '',
     [switch]$FreshProfile,
     [ValidateSet('Present', 'Absent')]
-    [string]$ExpectedDiagnostic = 'Absent'
+    [string]$ExpectedDiagnostic = 'Absent',
+    [string]$OutputDirectory = 'specs\in-run-hud\evidence\phase-b1'
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $profileRoot = [System.IO.Path]::GetFullPath(
-    (Join-Path $repoRoot 'artifacts\ui-art-refresh\phase-b1r2\profile')
+    (Join-Path $repoRoot 'artifacts\in-run-hud\phase-b1\profile')
 )
 $allowedRoot = [System.IO.Path]::GetFullPath(
-    (Join-Path $repoRoot 'artifacts\ui-art-refresh\phase-b1r2')
+    (Join-Path $repoRoot 'artifacts\in-run-hud\phase-b1')
 )
-$evidenceRoot = [System.IO.Path]::GetFullPath(
-    (Join-Path $repoRoot 'specs\ui-art-refresh\evidence\phase-b1r2')
+$evidenceBase = [System.IO.Path]::GetFullPath(
+    (Join-Path $repoRoot 'specs\in-run-hud\evidence')
 )
+$evidenceRoot = if ([System.IO.Path]::IsPathRooted($OutputDirectory)) {
+    [System.IO.Path]::GetFullPath($OutputDirectory)
+}
+else {
+    [System.IO.Path]::GetFullPath((Join-Path $repoRoot $OutputDirectory))
+}
+$evidencePrefix = $evidenceBase + [System.IO.Path]::DirectorySeparatorChar
+if (-not $evidenceRoot.StartsWith(
+    $evidencePrefix,
+    [System.StringComparison]::OrdinalIgnoreCase
+)) {
+    throw "Evidence output must remain below: $evidenceBase"
+}
+$relativeEvidence = $evidenceRoot.Substring($repoRoot.Length).TrimStart('\').Replace('\', '/')
+$evidenceResPath = 'res://' + $relativeEvidence
 $realAppDataRoot = [System.IO.Path]::GetFullPath(
     (Join-Path $env:APPDATA 'Godot\app_userdata')
 )
@@ -190,11 +206,11 @@ switch ($Mode) {
         $runExitCode = $LASTEXITCODE
     }
     'Evidence' {
-        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--script', 'res://tests/runners/presentation_phase_b1_evidence_runner.gd', '--', '--output-dir=res://specs/ui-art-refresh/evidence/phase-b1r2')
+        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--script', 'res://tests/runners/presentation_phase_b1_evidence_runner.gd', '--', "--output-dir=$evidenceResPath")
     }
     'Activation' {
         $expected = $ExpectedDiagnostic.ToLowerInvariant()
-        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--script', 'res://tests/runners/presentation_phase_b1r_activation_runner.gd', '--', '--output-dir=res://specs/ui-art-refresh/evidence/phase-b1r2', "--expected-diagnostic=$expected")
+        $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--script', 'res://tests/runners/presentation_phase_b1r_activation_runner.gd', '--', "--output-dir=$evidenceResPath", "--expected-diagnostic=$expected")
     }
     'Run' {
         $runExitCode = Invoke-GodotProcess -Arguments @('--path', $repoRoot, '--resolution', $WindowSize) -Visible
@@ -217,6 +233,6 @@ Write-JsonFile -Path (Join-Path $evidenceRoot 'real-appdata-integrity.json') -Va
     after_directory_count = [int]$after.directory_count
 })
 if (-not $unchanged) {
-    throw 'Real APPDATA changed during an isolated Godot launch; see phase-b1r2 snapshots.'
+    throw "Real APPDATA changed during an isolated Godot launch; see $evidenceRoot."
 }
 exit $runExitCode

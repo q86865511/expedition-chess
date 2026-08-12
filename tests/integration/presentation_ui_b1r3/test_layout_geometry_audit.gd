@@ -9,7 +9,7 @@ const FunctionalSupport = preload(
 	+ "r14_functional_controls_test_support.gd"
 )
 
-const SAFE_RECT := Rect2(24.0, 24.0, 1232.0, 672.0)
+const SAFE_RECT := Rect2(36.0, 36.0, 1848.0, 1008.0)
 const SCALES: Array[int] = [100, 125, 150]
 const INTERACTIVE_CLASSES: Array[String] = [
 	"Button", "OptionButton", "SpinBox", "HSlider", "LineEdit", "ItemList",
@@ -107,6 +107,7 @@ func test_run_prepare_geometry_across_scales() -> void:
 				)
 		_audit_screen(prepare, percent)
 		_audit_prepare_group_pages(prepare, percent)
+		await _audit_prepare_action_scroll(prepare, percent)
 		_audit_shop_cards_in_focus_ring(prepare, percent)
 		if percent == 100:
 			await _audit_modal_centering(prepare)
@@ -116,12 +117,12 @@ func test_run_prepare_geometry_across_scales() -> void:
 
 
 ## host 在 lifecycle harness 中沒有尺寸，anchors 版面會塌到 0；
-## 稽核前先給設計尺寸 1280×720。
+## 稽核前先給 1920×1080 reference 尺寸。
 func _boot_sized() -> Variant:
 	var harness: Variant = FunctionalSupport.boot(self)
 	if harness != null and harness.host != null:
 		harness.host.position = Vector2.ZERO
-		harness.host.size = Vector2(1280.0, 720.0)
+		harness.host.size = Vector2(1920.0, 1080.0)
 	await wait_process_frames(1)
 	return harness
 
@@ -268,14 +269,49 @@ func _audit_button_text_fits(screen: ProductionScreen, context: String) -> void:
 		)
 
 
-## (c) 可見互動控制項必須落在安全區內，除非位於 follow_focus 的捲動容器中。
+## (c) 可見互動控制項必須落在安全區內。巢狀 follow_focus 容器允許 inner
+## viewport 超出 outer 的裁切範圍；最外層必須完整落在安全區，持有焦點的
+## control 則必須落在所有 scroll 與安全區的有效交集內。
 func _audit_safe_area(screen: ProductionScreen, context: String) -> void:
 	for class_hint: String in INTERACTIVE_CLASSES:
 		for node: Node in screen.find_children("*", class_hint, true, false):
 			var control := node as Control
 			if control == null or not control.is_visible_in_tree():
 				continue
-			if _has_focus_following_scroll_ancestor(control, screen):
+			var scrolls := _focus_following_scroll_ancestors(control, screen)
+			if not scrolls.is_empty():
+				var effective_rect := SAFE_RECT.grow(1.0)
+				for scroll: ScrollContainer in scrolls:
+					var viewport_rect := scroll.get_global_rect()
+					assert_true(
+						viewport_rect.size.x > 0.0 and viewport_rect.size.y > 0.0,
+						"%s: scroll viewport %s must have non-zero geometry" % [
+							context, scroll.name,
+						]
+					)
+					assert_true(
+						scroll.follow_focus,
+						"%s: scroll viewport %s must follow focus" % [
+							context, scroll.name,
+						]
+					)
+					effective_rect = effective_rect.intersection(viewport_rect)
+				var outermost := scrolls[scrolls.size() - 1]
+				assert_true(
+					SAFE_RECT.grow(1.0).encloses(outermost.get_global_rect()),
+					"%s: outer scroll %s must stay in the safe area" % [
+						context, outermost.name,
+					]
+				)
+				if control.has_focus():
+					assert_true(
+						effective_rect.size.x > 0.0
+						and effective_rect.size.y > 0.0
+						and effective_rect.grow(1.0).encloses(control.get_global_rect()),
+						"%s: focused %s was not visible through every scroll" % [
+							context, control.name,
+						]
+					)
 				continue
 			var rect := control.get_global_rect()
 			# grow(1)：多層 ceil 換算允許 1px 容差。
@@ -330,7 +366,144 @@ func _audit_prepare_group_pages(screen: ProductionScreen, percent: int) -> void:
 	)
 
 
-## (e) P3：設定畫面動作列底緣不得低於安全區底（696）。
+## 125% / 150% 時 action page 會高於 bottom band；逐組以真實 focus 路徑
+## 把最後一顆 enabled action 捲入可見範圍，避免 follow_focus 成為全面豁免。
+func _audit_prepare_action_scroll(
+	screen: ProductionScreen,
+	percent: int
+) -> void:
+	var selector := screen.find_child(
+		"PrepareActionGroupSelector", true, false
+	) as OptionButton
+	var scroll := screen.find_child(
+		"PrepareActionGroupScroll", true, false
+	) as ScrollContainer
+	var outer_scroll := screen.find_child(
+		"BottomContentScroll", true, false
+	) as ScrollContainer
+	var shell := screen.get("_layout_shell") as ProductionLayoutShell
+	assert_not_null(selector, "ui%d: prepare group selector is required" % percent)
+	assert_not_null(scroll, "ui%d: prepare action scroll is required" % percent)
+	assert_not_null(outer_scroll, "ui%d: outer bottom scroll is required" % percent)
+	assert_not_null(shell, "ui%d: prepare layout shell is required" % percent)
+	if selector == null or scroll == null or outer_scroll == null or shell == null:
+		return
+	assert_true(scroll.follow_focus, "ui%d: action scroll must follow focus" % percent)
+	assert_true(outer_scroll.follow_focus, "ui%d: bottom scroll must follow focus" % percent)
+
+	for group_index: int in selector.item_count:
+		var focus_owner := screen.get_viewport().gui_get_focus_owner()
+		if focus_owner != null:
+			focus_owner.release_focus()
+		await wait_process_frames(1)
+		selector.select(group_index)
+		selector.item_selected.emit(group_index)
+		scroll.scroll_vertical = 0
+		outer_scroll.scroll_vertical = 0
+		await wait_process_frames(3)
+
+		var viewport_rect := scroll.get_global_rect()
+		var outer_viewport_rect := outer_scroll.get_global_rect()
+		var bottom_control := screen.layout_content(
+			ProductionLayoutShell.REGION_BOTTOM
+		)
+		assert_not_null(
+			bottom_control,
+			"ui%d group%d: bottom content control is required" % [
+				percent, group_index,
+			]
+		)
+		if bottom_control == null:
+			continue
+		var effective_viewport := (
+			SAFE_RECT.grow(1.0)
+			.intersection(viewport_rect)
+			.intersection(outer_viewport_rect)
+		)
+		assert_true(
+			viewport_rect.size.x > 0.0 and viewport_rect.size.y > 0.0,
+			"ui%d group%d: action scroll viewport must be non-zero" % [
+				percent, group_index,
+			]
+		)
+		assert_true(
+			SAFE_RECT.grow(1.0).encloses(outer_viewport_rect),
+			"ui%d group%d: outer scroll %s must remain in safe area %s" % [
+				percent, group_index, outer_viewport_rect, SAFE_RECT,
+			]
+		)
+
+		var last_enabled := _last_enabled_button_in_scroll(scroll)
+		if last_enabled == null:
+			# Some canonical states intentionally disable an entire contextual
+			# group (for example advance without a pending choice). There is no
+			# legal focus target in that group, but the viewport checks still apply.
+			continue
+		var before_inner_scroll := scroll.scroll_vertical
+		var before_outer_scroll := outer_scroll.scroll_vertical
+		var was_outside := not effective_viewport.encloses(
+			last_enabled.get_global_rect()
+		)
+		last_enabled.grab_focus()
+		await wait_process_frames(5)
+		var settled_viewport := scroll.get_global_rect()
+		var settled_outer := outer_scroll.get_global_rect()
+		var action_rect := last_enabled.get_global_rect()
+		var settled_effective := (
+			SAFE_RECT.grow(1.0)
+			.intersection(settled_viewport)
+			.intersection(settled_outer)
+		)
+		assert_true(
+			last_enabled.has_focus(),
+			"ui%d group%d: last enabled action must accept keyboard focus" % [
+				percent, group_index,
+			]
+		)
+		assert_true(
+			action_rect.size.x <= settled_viewport.size.x + 1.0
+			and action_rect.size.y <= settled_viewport.size.y + 1.0
+			and action_rect.size.x <= settled_outer.size.x + 1.0
+			and action_rect.size.y <= settled_outer.size.y + 1.0,
+			"ui%d group%d: action %s must fit inner %s and outer %s" % [
+				percent, group_index, action_rect, settled_viewport, settled_outer,
+			]
+		)
+		assert_true(
+			settled_viewport.grow(1.0).encloses(action_rect)
+			and settled_outer.grow(1.0).encloses(settled_viewport)
+			and settled_outer.grow(1.0).encloses(action_rect)
+			and settled_effective.grow(1.0).encloses(action_rect),
+			"ui%d group%d: %s action %s / inner %s / outer %s / effective %s" % [
+				percent, group_index, last_enabled.name, action_rect,
+				settled_viewport, settled_outer, settled_effective,
+			]
+		)
+		if was_outside:
+			assert_true(
+				scroll.scroll_vertical > before_inner_scroll
+				or outer_scroll.scroll_vertical > before_outer_scroll,
+				"ui%d group%d: focus must advance a nested scroll position" % [
+					percent, group_index,
+				]
+			)
+
+
+func _last_enabled_button_in_scroll(scroll: ScrollContainer) -> Button:
+	var result: Button = null
+	for node: Node in scroll.find_children("*", "Button", true, false):
+		var button := node as Button
+		if (
+			button != null
+			and button.is_visible_in_tree()
+			and not button.disabled
+			and button.focus_mode != Control.FOCUS_NONE
+		):
+			result = button
+	return result
+
+
+## (e) P3：設定畫面動作列底緣不得低於 reference 安全區底（1044）。
 func _audit_settings_actions_bottom(
 	screen: ProductionScreen,
 	percent: int
@@ -378,19 +551,15 @@ func _audit_modal_centering(screen: ProductionScreen) -> void:
 	if not FunctionalSupport.press(self, screen, &"run.menu"):
 		return
 	await wait_process_frames(1)
-	var dialog: Control = null
-	for node: Node in screen.find_children("*", "PanelContainer", true, false):
-		var candidate := node as Control
-		if candidate != null and candidate.z_index >= 100 \
-			and candidate.is_visible_in_tree():
-			dialog = candidate
-			break
+	var dialog := screen.find_child(
+		"RunMenuConfirmation", true, false
+	) as Control
 	assert_not_null(dialog, "run.menu during a live run must open a modal")
 	if dialog == null:
 		return
 	var center := dialog.get_global_rect().get_center()
-	assert_almost_eq(center.x, 640.0, 4.0, "modal must center horizontally")
-	assert_almost_eq(center.y, 360.0, 4.0, "modal must center vertically")
+	assert_almost_eq(center.x, 960.0, 4.0, "modal must center horizontally")
+	assert_almost_eq(center.y, 540.0, 4.0, "modal must center vertically")
 	# 取消鈕在 confirm 之後建立——取 dialog 內最後一顆按鈕關閉 modal。
 	var cancel: Button = null
 	for node: Node in dialog.find_children("*", "Button", true, false):
@@ -402,14 +571,15 @@ func _audit_modal_centering(screen: ProductionScreen) -> void:
 		await wait_process_frames(1)
 
 
-func _has_focus_following_scroll_ancestor(
+func _focus_following_scroll_ancestors(
 	control: Control,
 	stop_at: Node
-) -> bool:
+) -> Array[ScrollContainer]:
+	var result: Array[ScrollContainer] = []
 	var ancestor := control.get_parent()
 	while ancestor != null and ancestor != stop_at:
 		var scroll := ancestor as ScrollContainer
 		if scroll != null:
-			return scroll.follow_focus
+			result.append(scroll)
 		ancestor = ancestor.get_parent()
-	return false
+	return result

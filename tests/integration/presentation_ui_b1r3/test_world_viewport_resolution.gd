@@ -19,7 +19,17 @@ func test_world_subviewport_renders_at_authored_640x360() -> void:
 	assert_not_null(coordinator)
 	if coordinator == null:
 		return
-	assert_eq(coordinator.synchronize(Vector2i(1280, 720)), &"")
+	assert_eq(coordinator.synchronize(Vector2i(1920, 1080)), &"")
+	var ui_root := main.get_node_or_null(
+		^"AppRoot/UiLayer/UiRoot"
+	) as Control
+	assert_not_null(ui_root)
+	if ui_root != null:
+		assert_eq(
+			ui_root.size,
+			Vector2(1920, 1080),
+			"coordinator must overwrite the legacy authored offset at runtime"
+		)
 	var world_viewport := main.get_node_or_null(
 		^"AppRoot/WorldViewportContainer/WorldViewport"
 	) as SubViewport
@@ -37,5 +47,5 @@ func test_world_subviewport_renders_at_authored_640x360() -> void:
 	assert_not_null(container)
 	if container != null:
 		assert_true(container.stretch)
-		assert_eq(container.stretch_shrink, 2)
+		assert_eq(container.stretch_shrink, 3)
 	remove_child(main)

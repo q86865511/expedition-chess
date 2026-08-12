@@ -74,6 +74,36 @@ func test_run_combat_and_reward_render_authoritative_reloadable_snapshots() -> v
 		),
 		&""
 	)
+	var combat_root := (combat as Node).get_parent()
+	var accessibility_runtime := combat_root.get_node_or_null(
+		^"AccessibilityRuntime"
+	) as Control
+	var damage_sample := combat_root.get_node_or_null(
+		^"AccessibilityRuntime/DamageEvents/DamageSample1"
+	) as Label
+	assert_not_null(accessibility_runtime)
+	assert_not_null(damage_sample)
+	if accessibility_runtime != null and damage_sample != null:
+		assert_false(
+			accessibility_runtime.visible,
+			"formal RUN_COMBAT must not paint the legacy diagnostic probe surface"
+		)
+		assert_eq(
+			accessibility_runtime.mouse_filter,
+			Control.MOUSE_FILTER_IGNORE,
+			"hidden diagnostic probes must not intercept player HUD input"
+		)
+		assert_true(
+			bool(accessibility_runtime.get_meta(
+				&"production_probe_surface_hidden",
+				false
+			)),
+			"formal compose must explicitly mark the non-visual probe host"
+		)
+		assert_true(
+			damage_sample.visible,
+			"probe children must retain local semantic state for inspection tests"
+		)
 	var enemies: Array = combat.call(&"enemy_rows")
 	assert_eq(enemies.size(), 1)
 	var enemy: Variant = enemies[0]

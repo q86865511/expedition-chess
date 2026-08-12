@@ -7,6 +7,29 @@ const START_NOT_READY: StringName = &"RUN_PREPARE_START_NOT_READY"
 const SELECTION_REQUIRED: StringName = &"PREPARE_SELECTION_REQUIRED"
 const BOARD_FULL: StringName = &"PREPARE_BOARD_FULL"
 const BENCH_FULL: StringName = &"PREPARE_BENCH_FULL"
+const BENCH_ROW_HEIGHT: float = 72.0
+
+
+class PrepareQuickToggleItemList:
+	extends ItemList
+
+	signal quick_toggle_requested()
+
+
+	func _gui_input(event: InputEvent) -> void:
+		if (
+			event == null
+			or not event.is_action_pressed(
+				&"prepare_quick_toggle_unit",
+				false,
+				true
+			)
+		):
+			return
+		# Focused ItemList otherwise consumes printable W for incremental search
+		# before the screen's unhandled-input path can observe it.
+		accept_event()
+		quick_toggle_requested.emit()
 
 var _model: RunPrepareScreenModel
 var _presenter: RunScreenPresenter
@@ -15,6 +38,23 @@ var _draft_bench_unit_instance_ids: Array[String] = []
 var _pending_forge_confirmation: ConfirmationDraft
 var _pending_node_choice_confirmation: ConfirmationDraft
 var _selected_node_choice_id: StringName
+var _hud_shell: InRunHudShell
+var _world_snapshot_factory := WorldBoardSnapshotFactory.new()
+var _draft_move_adapter := BoardDraftMoveAdapter.new()
+var _quick_toggle_unit_id: String = ""
+var _keyboard_move_unit_id: String = ""
+var _selected_inspector_unit_id: String = ""
+var _world_board_mount_error: StringName = &""
+var _world_board_mount_deferred_pending: bool = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_ENTER_TREE:
+		# Production routes compose while detached. A compose-time deferred call
+		# may therefore run and safely return before SceneRouter commits the
+		# candidate; entering the tree is the event boundary that guarantees one
+		# fresh mount attempt without polling.
+		_schedule_world_board_mount()
 
 
 func compose(
@@ -388,25 +428,10 @@ func move_selected_to_board() -> AppActionResult:
 		unit_id = _single_selected_metadata(&"BuildUnitSelector")
 	if unit_id.is_empty():
 		return AppActionResult.failure(_selection_error())
-	var open_cell := _first_open_player_cell()
-	if open_cell.x < 0:
-		return AppActionResult.failure(
-			DiagnosticError.new(
-				BOARD_FULL,
-				&"error.presentation.prepare_board_full"
-			)
-		)
-	_remove_from_board(unit_id)
-	_draft_bench_unit_instance_ids.erase(unit_id)
-	_draft_board.placements.append(
-		BoardPlacementState.new(
-			int(open_cell.y),
-			int(open_cell.x),
-			unit_id
-		)
+	return _stage_adapter_move(
+		unit_id,
+		Callable(_draft_move_adapter, &"move_to_first_open_board").bind(unit_id)
 	)
-	_refresh_draft_selectors()
-	return AppActionResult.success(false)
 
 
 func move_selected_to_bench() -> AppActionResult:
@@ -415,34 +440,59 @@ func move_selected_to_bench() -> AppActionResult:
 		unit_id = _single_selected_metadata(&"BuildUnitSelector")
 	if unit_id.is_empty():
 		return AppActionResult.failure(_selection_error())
-	if (
-		not _draft_bench_unit_instance_ids.has(unit_id)
-		and _draft_bench_unit_instance_ids.size() >= 9
-	):
-		return AppActionResult.failure(
-			DiagnosticError.new(
-				BENCH_FULL,
-				&"error.presentation.prepare_bench_full"
-			)
-		)
-	_remove_from_board(unit_id)
-	if not _draft_bench_unit_instance_ids.has(unit_id):
-		_draft_bench_unit_instance_ids.append(unit_id)
+	return _stage_adapter_move(
+		unit_id,
+		Callable(_draft_move_adapter, &"move_to_first_open_bench").bind(unit_id)
+	)
+
+
+func _stage_adapter_move(unit_id: String, operation: Callable) -> AppActionResult:
+	if unit_id.is_empty() or not operation.is_valid() or _draft_board == null:
+		return AppActionResult.failure(_selection_error())
+	_draft_move_adapter.reset(_draft_board, _draft_bench_unit_instance_ids)
+	var error_code: StringName = operation.call()
+	if not error_code.is_empty():
+		return AppActionResult.failure(_draft_move_error(error_code))
+	_draft_board = _draft_move_adapter.board_clone()
+	_draft_bench_unit_instance_ids.assign(_draft_move_adapter.bench_clone())
 	_refresh_draft_selectors()
 	return AppActionResult.success(false)
+
+
+func _draft_move_error(error_code: StringName) -> DiagnosticError:
+	match error_code:
+		BoardDraftMoveAdapter.BOARD_FULL:
+			return DiagnosticError.new(
+				BOARD_FULL, &"error.presentation.prepare_board_full"
+			)
+		BoardDraftMoveAdapter.BENCH_FULL:
+			return DiagnosticError.new(
+				BENCH_FULL, &"error.presentation.prepare_bench_full"
+			)
+	return _selection_error()
 
 
 func _build_prepare_controls() -> void:
 	var existing := find_child("PrepareContent", true, false)
 	if existing != null:
 		existing.get_parent().remove_child(existing)
-		existing.queue_free()
+		existing.free()
 	var layout := Control.new()
 	layout.name = "PrepareContent"
 	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layout.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(layout)
 	var snapshot := _model.snapshot_clone() if _model != null else null
+	_hud_shell = InRunHudShell.new()
+	_hud_shell.name = "InRunHudShell"
+	layout.add_child(_hud_shell)
+	_hud_shell.bind(
+		snapshot,
+		&"RUN_PREPARE",
+		Callable(self, &"_region_content_rect"),
+		Callable(self, &"_localized_ui_text"),
+		Callable(self, &"_localized_content_text")
+	)
 	var metrics := Control.new()
 	metrics.name = "PrepareMetrics"
 	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
@@ -456,15 +506,15 @@ func _build_prepare_controls() -> void:
 	var metric_labels: Array[Label] = []
 	metric_labels.append(_metric_label(
 		&"prepare.resource.hp",
-		str(snapshot.view.expedition_hp) if snapshot != null and snapshot.view != null else "-"
+		str(snapshot.view.expedition_hp) if snapshot != null and snapshot.view != null else _unavailable_text()
 	))
 	metric_labels.append(_metric_label(
 		&"prepare.resource.gold",
-		str(snapshot.economy.gold) if snapshot != null and snapshot.economy != null else "-"
+		str(snapshot.economy.gold) if snapshot != null and snapshot.economy != null else _unavailable_text()
 	))
 	metric_labels.append(_metric_label(
 		&"prepare.resource.level_xp",
-		"%s / %s" % [snapshot.economy.level, snapshot.economy.xp] if snapshot != null and snapshot.economy != null else "-"
+		"%s / %s" % [snapshot.economy.level, snapshot.economy.xp] if snapshot != null and snapshot.economy != null else _unavailable_text()
 	))
 	var capacity := Label.new()
 	capacity.name = "CapacityValue"
@@ -473,7 +523,7 @@ func _build_prepare_controls() -> void:
 		str(displayed_capacity()),
 	]
 	capacity.theme_type_variation = &"ExpeditionMetric"
-	capacity.custom_minimum_size = Vector2(88.0, 0.0)
+	ExpeditionLayoutMetrics.set_reference_min(capacity, Vector2(132.0, 0.0))
 	capacity.clip_text = true
 	capacity.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	capacity.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -492,6 +542,10 @@ func _build_prepare_controls() -> void:
 		metric.offset_top = 0.0
 		metric.offset_bottom = 0.0
 		metrics.add_child(metric)
+	# Resource/progress values are rendered by InRunHudShell. Preserve this
+	# legacy probe node for older geometry contracts without painting a second
+	# top row through the shared HUD.
+	metrics.visible = false
 
 	var contracts := VBoxContainer.new()
 	contracts.name = "PrepareContractSelectors"
@@ -501,23 +555,60 @@ func _build_prepare_controls() -> void:
 	_add_selector(contracts, &"BenchSelector", Vector2.ZERO, &"bench_draft")
 	_add_selector(contracts, &"ShopSelector", Vector2.ZERO, &"shop_offer")
 
-	var left := VBoxContainer.new()
-	left.name = "PrepareLeftContent"
+	var left_scroll := ScrollContainer.new()
+	left_scroll.name = "PrepareLeftContent"
 	var left_rect := _region_content_rect(ProductionLayoutShell.REGION_LEFT)
-	left.position = left_rect.position
-	left.size = left_rect.size
-	layout.add_child(left)
-	left.add_child(_heading(&"prepare.panel.party"))
+	left_scroll.position = left_rect.position
+	left_scroll.size = left_rect.size
+	left_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	left_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	left_scroll.follow_focus = true
+	left_scroll.visible = false
+	layout.add_child(left_scroll)
+	var left := _hud_shell.find_child(
+		"InRunLeftStack", true, false
+	) as VBoxContainer
+	if left == null:
+		left = VBoxContainer.new()
+		left.name = "PrepareLeftStack"
+		left_scroll.add_child(left)
+	var party_heading := _heading(&"prepare.panel.party")
+	left.add_child(party_heading)
+	left.move_child(party_heading, 0)
 	_add_selector(
 		left,
 		&"BuildUnitSelector",
 		# min 72：清單內部可捲動、EXPAND 會吃滿剩餘高；min 過大會在 150%
 		# 讓左欄 combined min 超出區域預算（見 refresh_layout_rects 註解）。
-		Vector2(0.0, 72.0),
+		Vector2(0.0, 108.0),
 		&"unit_instance"
 	)
-	left.add_child(_heading(&"prepare.panel.synergies"))
-	left.add_child(_empty_label(&"prepare.empty.synergies"))
+	var build_selector := left.get_node(^"BuildUnitSelector") as ItemList
+	if build_selector != null:
+		left.move_child(build_selector, 1)
+		build_selector.item_selected.connect(_on_build_unit_selected)
+	# Reuse the shared HUD's item-bench heading/scroll position. The prepare
+	# route replaces its generic read-only list with the drag-capable selector;
+	# keeping both would render duplicate inventory lists.
+	var shared_inventory := left.get_node_or_null(^"HudInventory") as ItemList
+	var inventory_index := (
+		shared_inventory.get_index()
+		if shared_inventory != null
+		else left.get_child_count()
+	)
+	if shared_inventory != null:
+		left.remove_child(shared_inventory)
+		shared_inventory.free()
+	_add_selector(
+		left,
+		&"InventorySelector",
+		Vector2(0.0, 168.0),
+		&"item_instance",
+		true
+	)
+	var inventory_selector := left.get_node(^"InventorySelector") as ItemList
+	if inventory_selector != null:
+		left.move_child(inventory_selector, inventory_index)
 
 	var center_scroll := ScrollContainer.new()
 	center_scroll.name = "PrepareCenterScroll"
@@ -525,27 +616,27 @@ func _build_prepare_controls() -> void:
 	center_scroll.position = center_rect.position
 	center_scroll.size = center_rect.size
 	center_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	center_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	center_scroll.follow_focus = true
+	center_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	center_scroll.follow_focus = false
+	center_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layout.add_child(center_scroll)
 	var center := VBoxContainer.new()
 	center.name = "PrepareCenterContent"
 	center.theme_type_variation = &"ExpeditionBoardStack"
-	center.custom_minimum_size = Vector2(maxf(560.0, center_rect.size.x - 20.0), 0.0)
-	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	center_scroll.add_child(center)
-	center.add_child(_heading(&"prepare.panel.board"))
-	_build_board_grid(center)
-	center.add_child(_heading(&"prepare.panel.bench"))
-	_build_bench_row(center)
-	center.add_child(_heading(&"prepare.panel.inventory"))
-	_add_selector(
+	ExpeditionLayoutMetrics.set_reference_min(
 		center,
-		&"InventorySelector",
-		Vector2(0.0, 48.0),
-		&"item_instance",
-		true
+		Vector2(maxf(840.0, center_rect.size.x - 30.0), 0.0)
 	)
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center_scroll.add_child(center)
+	_build_board_grid(center)
+	# Bench is a HUD strip, not part of the theme-scaled VBox flow. Keeping it
+	# after a heading pushed it into the projected board at 125%/150% UI scale.
+	# Anchor it to the center panel's top edge so all nine slots remain above the
+	# projection without shrinking any of the board's 64 legal hit cells.
+	_build_bench_row(layout)
+	_place_bench_row()
 
 	var right_scroll := ScrollContainer.new()
 	right_scroll.name = "PrepareRightScroll"
@@ -558,9 +649,20 @@ func _build_prepare_controls() -> void:
 	layout.add_child(right_scroll)
 	var right := VBoxContainer.new()
 	right.name = "PrepareRightContent"
-	right.custom_minimum_size = Vector2(maxf(220.0, right_rect.size.x - 20.0), 0.0)
+	ExpeditionLayoutMetrics.set_reference_min(
+		right,
+		Vector2(maxf(330.0, right_rect.size.x - 30.0), 0.0)
+	)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right_scroll.add_child(right)
+	_hud_shell.mount_unit_inspector(right)
+	# The projected world board deliberately owns no Control-sized cells. This
+	# side proxy is therefore the keyboard-only destination picker: board cells
+	# are authored row-major, followed by bench slots in slot order. Its child is
+	# named UnitSelector so ProductionScreen's existing focus collector includes
+	# it without introducing a second focus-graph authority.
+	right.add_child(_heading(&"prepare.panel.board"))
+	_build_keyboard_placement_targets(right)
 	right.add_child(_heading(&"prepare.panel.overflow"))
 	var overflow_values := overflow_ids()
 	if overflow_values.is_empty():
@@ -568,7 +670,7 @@ func _build_prepare_controls() -> void:
 	else:
 		var overflow := ItemList.new()
 		overflow.name = "OverflowSelector"
-		overflow.custom_minimum_size = Vector2(0.0, 84.0)
+		ExpeditionLayoutMetrics.set_reference_min(overflow, Vector2(0.0, 126.0))
 		overflow.focus_mode = Control.FOCUS_ALL
 		overflow.set_meta(&"typed_data_kind", &"item_overflow")
 		for item_id: String in overflow_values:
@@ -584,7 +686,7 @@ func _build_prepare_controls() -> void:
 	else:
 		var issues := ItemList.new()
 		issues.name = "DeploymentIssues"
-		issues.custom_minimum_size = Vector2(0.0, 84.0)
+		ExpeditionLayoutMetrics.set_reference_min(issues, Vector2(0.0, 126.0))
 		issues.focus_mode = Control.FOCUS_ALL
 		issues.set_meta(&"typed_data_kind", &"deployment_issue")
 		for index: int in issue_codes.size():
@@ -607,45 +709,110 @@ func _build_board_grid(parent: VBoxContainer) -> void:
 	grid.name = "BoardGrid"
 	grid.columns = 8
 	grid.theme_type_variation = &"ExpeditionBoardGrid"
-	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.visible = false
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_reference_min(grid, Vector2.ZERO)
+	grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	grid.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	parent.add_child(grid)
-	for logical_y: int in range(4):
-		for logical_x: int in range(8):
-			var cell := Button.new()
+	for logical_y: int in range(BoardPreparationValidator.PLAYER_MAX_Y + 1):
+		for logical_x: int in range(BoardPreparationValidator.BOARD_WIDTH):
+			var cell := PrepareUnitDragButton.new()
 			cell.name = "BoardCell_%d_%d" % [logical_y, logical_x]
-			# 棋格是 Phase C sprite 佔位：reference 固定尺寸、文字省略號截斷
-			# （幾何稽核以 meta 明示豁免文字寬規則）。
-			ExpeditionLayoutMetrics.set_fixed_cell(cell, 56.0, 48.0)
-			cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			cell.size_flags_vertical = Control.SIZE_EXPAND_FILL
-			cell.focus_mode = Control.FOCUS_ALL
+			# WorldBoard is authoritative. These nodes remain only as a hidden
+			# metadata contract and own neither layout nor UI input.
+			ExpeditionLayoutMetrics.set_reference_min(cell, Vector2.ZERO)
+			cell.flat = true
+			cell.disabled = true
+			cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			cell.focus_mode = Control.FOCUS_NONE
 			cell.theme_type_variation = &"ExpeditionGridCell"
-			cell.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 			cell.set_meta(&"board_x", logical_x)
 			cell.set_meta(&"board_y", logical_y)
 			cell.set_meta(&"unit_instance_id", "")
-			cell.pressed.connect(_on_board_cell_pressed.bind(cell))
+			cell.set_meta(&"drag_target_kind", &"board")
 			grid.add_child(cell)
 
 
-func _build_bench_row(parent: VBoxContainer) -> void:
+func _build_bench_row(parent: Control) -> void:
 	var row := HBoxContainer.new()
 	row.name = "BenchRow"
 	row.theme_type_variation = &"ExpeditionBenchRow"
+	ExpeditionLayoutMetrics.set_fixed_min(row, 0.0, BENCH_ROW_HEIGHT)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(row)
-	for index: int in range(9):
-		var cell := Button.new()
+	for index: int in range(BoardPreparationValidator.BENCH_CAPACITY):
+		var cell := PrepareUnitDragButton.new()
 		cell.name = "BenchCell%d" % index
-		ExpeditionLayoutMetrics.set_fixed_cell(cell, 56.0, 48.0)
+		# Nine slots plus scaled theme separation stay inside the fixed center
+		# column through 150% UI reflow.
+		ExpeditionLayoutMetrics.set_fixed_cell(cell, 54.0, 72.0)
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cell.mouse_filter = Control.MOUSE_FILTER_STOP
 		cell.focus_mode = Control.FOCUS_ALL
 		cell.theme_type_variation = &"ExpeditionGridCell"
 		cell.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 		cell.set_meta(&"unit_instance_id", "")
+		cell.set_meta(&"drag_target_kind", &"bench")
+		cell.set_meta(&"bench_slot", index)
 		cell.pressed.connect(_on_bench_cell_pressed.bind(cell))
+		cell.unit_dropped.connect(_on_unit_dropped)
+		cell.equipment_dropped.connect(_on_equipment_dropped)
+		cell.mouse_entered.connect(_on_unit_interaction_targeted.bind(cell))
+		cell.focus_entered.connect(_on_unit_interaction_targeted.bind(cell))
 		row.add_child(cell)
+
+
+func _place_bench_row() -> void:
+	var row := find_child("BenchRow", true, false) as HBoxContainer
+	if row == null:
+		return
+	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
+	# layout_region_content_rect excludes the panel's content margin. The board
+	# begins at reference y=324. Preserve the authored 72px strip's intended
+	# bottom edge while letting the theme-scaled combined minimum grow upward;
+	# otherwise 125%/150% make the slots grow downward into the world board.
+	var authored_top := (
+		center_rect.position.y
+		- ProductionLayoutShell.PANEL_CONTENT_MARGIN.y
+	)
+	var authored_bottom := authored_top + BENCH_ROW_HEIGHT
+	var rendered_height := maxf(
+		BENCH_ROW_HEIGHT,
+		row.get_combined_minimum_size().y
+	)
+	row.position = Vector2(
+		center_rect.position.x,
+		authored_bottom - rendered_height
+	).round()
+	row.size = Vector2(center_rect.size.x, rendered_height).round()
+
+
+func _build_keyboard_placement_targets(parent: VBoxContainer) -> void:
+	var selector := PrepareQuickToggleItemList.new()
+	selector.name = "UnitSelector"
+	ExpeditionLayoutMetrics.set_reference_min(selector, Vector2(0.0, 168.0))
+	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	selector.focus_mode = Control.FOCUS_ALL
+	selector.select_mode = ItemList.SELECT_SINGLE
+	selector.set_meta(&"typed_data_kind", &"prepare_placement_target")
+	selector.set_meta(&"stable_focus_id", &"prepare.placement_targets")
+	selector.set_meta(
+		&"target_order",
+		&"board_row_major_then_bench_slot"
+	)
+	selector.set_meta(
+		&"accessible_text",
+		_localized_ui_text(&"prepare.panel.board")
+	)
+	selector.item_selected.connect(_on_keyboard_target_selected)
+	selector.item_activated.connect(_on_keyboard_target_activated)
+	selector.focus_entered.connect(_on_keyboard_target_focus_entered)
+	selector.quick_toggle_requested.connect(
+		_on_selector_quick_toggle_requested
+	)
+	parent.add_child(selector)
 
 
 func _empty_label(key: StringName) -> Label:
@@ -694,6 +861,7 @@ func refresh_layout_rects() -> void:
 		var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
 		center_scroll.position = center_rect.position
 		center_scroll.size = center_rect.size
+	_place_bench_row()
 	var right_scroll := find_child("PrepareRightScroll", true, false) as Control
 	if right_scroll != null:
 		var right_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
@@ -705,7 +873,7 @@ func _metric_label(key: StringName, value: String) -> Label:
 	var label := Label.new()
 	label.text = "%s  %s" % [_localized_ui_text(key), value]
 	label.theme_type_variation = &"ExpeditionMetric"
-	label.custom_minimum_size = Vector2(108.0, 0.0)
+	ExpeditionLayoutMetrics.set_reference_min(label, Vector2(162.0, 0.0))
 	label.clip_text = true
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -723,7 +891,7 @@ func _build_node_choice_overlay(
 		return
 	var selector := ItemList.new()
 	selector.name = "ChoiceSelector"
-	selector.custom_minimum_size = Vector2(248.0, 120.0)
+	ExpeditionLayoutMetrics.set_reference_min(selector, Vector2(372.0, 180.0))
 	selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	selector.focus_mode = Control.FOCUS_ALL
 	selector.select_mode = ItemList.SELECT_SINGLE
@@ -772,9 +940,15 @@ func _add_selector(
 	data_kind: StringName,
 	multi_select: bool = false
 ) -> void:
-	var selector := ItemList.new()
+	var selector: ItemList
+	if data_kind == &"item_instance":
+		selector = PrepareEquipmentDragList.new()
+	elif control_name == &"BuildUnitSelector":
+		selector = PrepareQuickToggleItemList.new()
+	else:
+		selector = ItemList.new()
 	selector.name = String(control_name)
-	selector.custom_minimum_size = minimum_size
+	ExpeditionLayoutMetrics.set_reference_min(selector, minimum_size)
 	selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	selector.focus_mode = Control.FOCUS_ALL
@@ -786,6 +960,14 @@ func _add_selector(
 	selector.set_meta(&"typed_data_kind", data_kind)
 	selector.set_meta(&"accessible_text", String(control_name))
 	parent.add_child(selector)
+	if selector is PrepareEquipmentDragList:
+		(selector as PrepareEquipmentDragList).forge_pair_dropped.connect(
+			_on_forge_pair_dropped
+		)
+	elif selector is PrepareQuickToggleItemList:
+		(selector as PrepareQuickToggleItemList).quick_toggle_requested.connect(
+			_on_selector_quick_toggle_requested
+		)
 
 
 func _refresh_draft_selectors() -> void:
@@ -836,7 +1018,22 @@ func _refresh_draft_selectors() -> void:
 				)
 	if inventory != null:
 		inventory.clear()
+		# item_instances is the resolver table, not the inventory membership
+		# authority. Iterating it directly exposes equipped and overflow items as
+		# draggable/forgeable sources. Resolve only canonical inventory ids and
+		# skip missing ids (fail closed) without inferring membership.
+		var item_by_id: Dictionary = {}
 		for item: ItemInstanceState in snapshot.roster.item_instances:
+			if item != null and not item.instance_id.is_empty():
+				item_by_id[item.instance_id] = item
+		var appended_ids: Dictionary = {}
+		for item_id: String in snapshot.roster.inventory_item_instance_ids:
+			if appended_ids.has(item_id):
+				continue
+			var resolved: Variant = item_by_id.get(item_id)
+			if not resolved is ItemInstanceState:
+				continue
+			var item := resolved as ItemInstanceState
 			_append_typed_item(
 				inventory,
 				"%s · %s" % [
@@ -845,6 +1042,7 @@ func _refresh_draft_selectors() -> void:
 				],
 				item.instance_id
 			)
+			appended_ids[item_id] = true
 	if units != null:
 		units.clear()
 		for unit: UnitInstance in snapshot.roster.unit_instances:
@@ -856,6 +1054,109 @@ func _refresh_draft_selectors() -> void:
 			)
 	_refresh_board_grid(snapshot)
 	_refresh_bench_row(snapshot)
+	_refresh_keyboard_placement_targets(snapshot)
+	# Initial compose happens before ProductionScreen is attached to the tree.
+	# Schedule unconditionally (same contract as RUN_COMBAT); by deferred time
+	# the route is installed and the production world/coordinator groups exist.
+	_schedule_world_board_mount()
+
+
+func _schedule_world_board_mount() -> void:
+	if _world_board_mount_deferred_pending:
+		return
+	_world_board_mount_deferred_pending = true
+	call_deferred(&"_mount_world_board")
+
+
+func _mount_world_board() -> void:
+	_world_board_mount_deferred_pending = false
+	if not is_inside_tree() or _model == null or _draft_board == null:
+		return
+	var overlay_mount: Control = (
+		_hud_shell.host(ProductionLayoutShell.REGION_OVERLAY)
+		if _hud_shell != null
+		else null
+	)
+	var mount_error := ProductionWorldSurface.INVALID_OVERLAY_MOUNT
+	if overlay_mount != null:
+		mount_error = WorldBoardMountAdapter.mount(
+			get_tree(),
+			_world_snapshot_factory.build_prepare(
+				_model.snapshot_clone(),
+				_draft_board.deep_clone()
+			),
+			Callable(self, &"_world_cell_is_draft_eligible"),
+			overlay_mount
+		)
+	_world_board_mount_error = mount_error
+	if not mount_error.is_empty():
+		_report_world_board_mount_error(mount_error)
+		return
+	_connect_world_surface_inputs()
+
+
+func world_board_mount_error() -> StringName:
+	return _world_board_mount_error
+
+
+func _report_world_board_mount_error(_error_code: StringName) -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen == null:
+		return
+	parent_screen.report_composition_result(AppActionResult.failure(
+		DiagnosticError.new(
+			&"RENDER_FAILED",
+			&"error.presentation.render_failed"
+		)
+	))
+
+
+func _connect_world_surface_inputs() -> void:
+	for node: Node in get_tree().get_nodes_in_group(
+		ProductionWorldSurface.MOUNT_GROUP
+	):
+		var surface := node as ProductionWorldSurface
+		if surface == null:
+			continue
+		if not surface.unit_dropped.is_connected(_on_world_unit_dropped):
+			surface.unit_dropped.connect(_on_world_unit_dropped)
+		if not surface.equipment_dropped.is_connected(
+			_on_equipment_dropped
+		):
+			surface.equipment_dropped.connect(_on_equipment_dropped)
+		if not surface.unit_targeted.is_connected(_on_world_unit_targeted):
+			surface.unit_targeted.connect(_on_world_unit_targeted)
+		if not surface.unit_hovered.is_connected(_on_world_unit_hovered):
+			surface.unit_hovered.connect(_on_world_unit_hovered)
+
+
+func _world_cell_is_draft_eligible(cell: Vector2i) -> bool:
+	return (
+		cell.x >= 0
+		and cell.x < BoardPreparationValidator.BOARD_WIDTH
+		and cell.y >= 0
+		and cell.y <= BoardPreparationValidator.PLAYER_MAX_Y
+	)
+
+
+func _on_world_unit_dropped(unit_id: String, target_cell: Vector2i) -> void:
+	_on_unit_dropped(unit_id, &"board", target_cell, -1)
+
+
+func _on_world_unit_targeted(unit_id: String) -> void:
+	_quick_toggle_unit_id = unit_id
+	_keyboard_move_unit_id = unit_id
+	if unit_id.is_empty():
+		return
+	_select_item_by_metadata(&"BuildUnitSelector", unit_id)
+	_select_inspector_unit(unit_id)
+
+
+func _on_world_unit_hovered(unit_id: String) -> void:
+	# Hover only supplies the TFT-style W target. It must not silently replace
+	# the keyboard move source selected in BuildUnitSelector.
+	_quick_toggle_unit_id = unit_id
+	_preview_inspector_unit(unit_id)
 
 
 func _refresh_board_grid(snapshot: RunPresentationSnapshot) -> void:
@@ -876,8 +1177,14 @@ func _refresh_board_grid(snapshot: RunPresentationSnapshot) -> void:
 		)
 		var unit_id := String(occupants.get(coordinate, ""))
 		cell.set_meta(&"unit_instance_id", unit_id)
-		cell.text = _unit_display_name(unit_id, snapshot) if not unit_id.is_empty() else ""
-		cell.tooltip_text = cell.text
+		var accessible_name := (
+			_unit_display_name(unit_id, snapshot)
+			if not unit_id.is_empty()
+			else ""
+		)
+		cell.text = ""
+		cell.tooltip_text = accessible_name
+		cell.set_meta(&"accessible_text", accessible_name)
 
 
 func _refresh_bench_row(snapshot: RunPresentationSnapshot) -> void:
@@ -898,18 +1205,316 @@ func _refresh_bench_row(snapshot: RunPresentationSnapshot) -> void:
 		cell.tooltip_text = cell.text
 
 
+func _refresh_keyboard_placement_targets(
+	snapshot: RunPresentationSnapshot
+) -> void:
+	var selector := _control(&"UnitSelector") as ItemList
+	if selector == null:
+		return
+	var occupants: Dictionary = {}
+	if _draft_board != null:
+		for placement: BoardPlacementState in _draft_board.placements:
+			if placement != null:
+				occupants[Vector2i(
+					placement.logical_x,
+					placement.logical_y
+				)] = placement.unit_instance_id
+	selector.clear()
+	var board_name := _localized_ui_text(&"prepare.panel.board")
+	for logical_y: int in range(BoardPreparationValidator.PLAYER_MAX_Y + 1):
+		for logical_x: int in range(BoardPreparationValidator.BOARD_WIDTH):
+			var cell := Vector2i(logical_x, logical_y)
+			var unit_id := String(occupants.get(cell, ""))
+			var label := "%s [%d,%d]" % [
+				board_name,
+				logical_y,
+				logical_x,
+			]
+			if not unit_id.is_empty():
+				label = "%s · %s" % [
+					label,
+					_unit_display_name(unit_id, snapshot),
+				]
+			_append_keyboard_target(
+				selector,
+				label,
+				&"board",
+				cell,
+				-1,
+				unit_id
+			)
+	var bench_name := _localized_ui_text(&"prepare.panel.bench")
+	for slot: int in range(BoardDraftMoveAdapter.BENCH_SIZE):
+		var unit_id := (
+			_draft_bench_unit_instance_ids[slot]
+			if slot < _draft_bench_unit_instance_ids.size()
+			else ""
+		)
+		var label := "%s [%d]" % [bench_name, slot]
+		if not unit_id.is_empty():
+			label = "%s · %s" % [
+				label,
+				_unit_display_name(unit_id, snapshot),
+			]
+		_append_keyboard_target(
+			selector,
+			label,
+			&"bench",
+			Vector2i(-1, -1),
+			slot,
+			unit_id
+		)
+	if selector.item_count > 0:
+		selector.select(0)
+
+
+func _append_keyboard_target(
+	selector: ItemList,
+	label: String,
+	target_kind: StringName,
+	target_cell: Vector2i,
+	target_slot: int,
+	unit_id: String
+) -> void:
+	selector.add_item(label)
+	var index := selector.item_count - 1
+	selector.set_item_metadata(index, {
+		"target_kind": target_kind,
+		"target_cell": target_cell,
+		"target_slot": target_slot,
+		"unit_instance_id": unit_id,
+	})
+	selector.set_item_tooltip(index, label)
+
+
+func _on_keyboard_target_focus_entered() -> void:
+	var selector := _control(&"UnitSelector") as ItemList
+	if selector == null or selector.item_count <= 0:
+		_quick_toggle_unit_id = ""
+		return
+	var selected := selector.get_selected_items()
+	if selected.is_empty():
+		selector.select(0)
+		_on_keyboard_target_selected(0)
+	else:
+		_on_keyboard_target_selected(selected[0])
+
+
+func _on_keyboard_target_selected(index: int) -> void:
+	var target := _keyboard_target_metadata(index)
+	_quick_toggle_unit_id = String(target.get("unit_instance_id", ""))
+	_preview_inspector_unit(_quick_toggle_unit_id)
+
+
+func _on_keyboard_target_activated(index: int) -> void:
+	if _background_input_blocked() or _keyboard_move_unit_id.is_empty():
+		return
+	var target := _keyboard_target_metadata(index)
+	if target.is_empty():
+		return
+	var target_cell: Vector2i = target.get(
+		"target_cell",
+		Vector2i(-1, -1)
+	)
+	_on_unit_dropped(
+		_keyboard_move_unit_id,
+		StringName(target.get("target_kind", &"")),
+		target_cell,
+		int(target.get("target_slot", -1))
+	)
+
+
+func _keyboard_target_metadata(index: int) -> Dictionary:
+	var selector := _control(&"UnitSelector") as ItemList
+	if selector == null or index < 0 or index >= selector.item_count:
+		return {}
+	var value: Variant = selector.get_item_metadata(index)
+	return value.duplicate(true) if value is Dictionary else {}
+
+
 func _on_board_cell_pressed(cell: Button) -> void:
 	var unit_id := String(cell.get_meta(&"unit_instance_id", "")) if cell != null else ""
 	if not unit_id.is_empty():
 		_select_item_by_metadata(&"BoardSelector", unit_id)
 		_select_item_by_metadata(&"BuildUnitSelector", unit_id)
+		_select_inspector_unit(unit_id)
+
+
+func _on_build_unit_selected(index: int) -> void:
+	var selector := _control(&"BuildUnitSelector") as ItemList
+	if selector == null or index < 0 or index >= selector.item_count:
+		_quick_toggle_unit_id = ""
+		_keyboard_move_unit_id = ""
+		_select_inspector_unit("")
+		return
+	var unit_id := String(selector.get_item_metadata(index))
+	_quick_toggle_unit_id = unit_id
+	_keyboard_move_unit_id = unit_id
+	_select_inspector_unit(unit_id)
 
 
 func _on_bench_cell_pressed(cell: Button) -> void:
 	var unit_id := String(cell.get_meta(&"unit_instance_id", "")) if cell != null else ""
 	if not unit_id.is_empty():
+		_quick_toggle_unit_id = unit_id
+		_keyboard_move_unit_id = unit_id
 		_select_item_by_metadata(&"BenchSelector", unit_id)
 		_select_item_by_metadata(&"BuildUnitSelector", unit_id)
+		_select_inspector_unit(unit_id)
+
+
+func _select_inspector_unit(unit_id: String) -> void:
+	_selected_inspector_unit_id = unit_id
+	_restore_selected_inspector()
+
+
+func _preview_inspector_unit(unit_id: String) -> void:
+	if _hud_shell == null:
+		return
+	if unit_id.is_empty():
+		_restore_selected_inspector()
+	else:
+		_hud_shell.show_prepare_unit(unit_id)
+
+
+func _restore_selected_inspector() -> void:
+	if _hud_shell == null:
+		return
+	if _selected_inspector_unit_id.is_empty():
+		_hud_shell.show_inspector_empty()
+	else:
+		_hud_shell.show_prepare_unit(_selected_inspector_unit_id)
+
+
+func _on_unit_interaction_targeted(cell: Button) -> void:
+	if cell == null:
+		return
+	var unit_id := String(cell.get_meta(&"unit_instance_id", ""))
+	# Focus metadata is the keyboard authority. Empty cells deliberately clear a
+	# previously focused unit so W cannot act on a stale hover/focus target.
+	_quick_toggle_unit_id = unit_id
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (
+		event == null
+		or not event.is_action_pressed(&"prepare_quick_toggle_unit", false, true)
+	):
+		return
+	_handle_quick_toggle_input()
+	if is_inside_tree():
+		get_viewport().set_input_as_handled()
+
+
+func _on_selector_quick_toggle_requested() -> void:
+	_handle_quick_toggle_input()
+
+
+func _handle_quick_toggle_input() -> void:
+	if _background_input_blocked() or _quick_toggle_unit_id.is_empty():
+		return
+	var result := quick_toggle_unit(_quick_toggle_unit_id)
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.report_composition_result(result)
+
+
+func quick_toggle_unit(unit_id: String) -> RunPresentationResult:
+	_draft_move_adapter.reset(_draft_board, _draft_bench_unit_instance_ids)
+	var error_code := (
+		_draft_move_adapter.move_to_first_open_bench(unit_id)
+		if _unit_is_on_board(unit_id)
+		else _draft_move_adapter.move_to_first_open_board(unit_id)
+	)
+	if not error_code.is_empty():
+		return RunPresentationResult.failure(_draft_move_error(error_code))
+	_apply_adapter_draft()
+	return _commit_immediate_draft()
+
+
+func _on_unit_dropped(
+	unit_id: String,
+	target_kind: StringName,
+	target_cell: Vector2i,
+	target_slot: int
+) -> void:
+	if _background_input_blocked():
+		return
+	_draft_move_adapter.reset(_draft_board, _draft_bench_unit_instance_ids)
+	var error_code := (
+		_draft_move_adapter.move_to_board(unit_id, target_cell)
+		if target_kind == &"board"
+		else _draft_move_adapter.move_to_bench(unit_id, target_slot)
+		if target_kind == &"bench"
+		else BoardDraftMoveAdapter.TARGET_INVALID
+	)
+	var result: Variant
+	if error_code.is_empty():
+		_apply_adapter_draft()
+		result = _commit_immediate_draft()
+	else:
+		result = AppActionResult.failure(_draft_move_error(error_code))
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.report_composition_result(result)
+
+
+func _on_equipment_dropped(item_id: String, unit_id: String) -> void:
+	if _background_input_blocked():
+		return
+	if (
+		not _select_item_by_metadata(&"InventorySelector", item_id)
+		or not _select_item_by_metadata(&"BuildUnitSelector", unit_id)
+	):
+		return
+	var result := equip_selected_item()
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.report_composition_result(result)
+
+
+func _on_forge_pair_dropped(first_item_id: String, second_item_id: String) -> void:
+	if _background_input_blocked():
+		return
+	var inventory := _control(&"InventorySelector") as ItemList
+	if inventory == null:
+		return
+	inventory.deselect_all()
+	for index: int in inventory.item_count:
+		var value := String(inventory.get_item_metadata(index))
+		if value == first_item_id or value == second_item_id:
+			inventory.select(index, false)
+	var result := begin_forge_selected()
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.report_composition_result(result)
+		parent_screen.refresh_interaction_state()
+
+
+func _apply_adapter_draft() -> void:
+	_draft_board = _draft_move_adapter.board_clone()
+	_draft_bench_unit_instance_ids.assign(_draft_move_adapter.bench_clone())
+	_refresh_draft_selectors()
+
+
+func _commit_immediate_draft() -> RunPresentationResult:
+	var result := commit_board_draft()
+	var canonical := (
+		result.snapshot.deep_clone()
+		if result != null and result.snapshot != null
+		else _model.snapshot_clone()
+	)
+	_reset_consumer_draft(canonical)
+	_refresh_draft_selectors()
+	return result
+
+
+func _unit_is_on_board(unit_id: String) -> bool:
+	if _draft_board != null:
+		for placement: BoardPlacementState in _draft_board.placements:
+			if placement != null and placement.unit_instance_id == unit_id:
+				return true
+	return false
 
 
 func _select_item_by_metadata(selector_name: StringName, identity: String) -> bool:
@@ -940,6 +1545,9 @@ func _append_typed_item(
 func _reset_consumer_draft(snapshot: RunPresentationSnapshot) -> void:
 	_draft_board = null
 	_draft_bench_unit_instance_ids.clear()
+	_quick_toggle_unit_id = ""
+	_keyboard_move_unit_id = ""
+	_selected_inspector_unit_id = ""
 	_pending_forge_confirmation = null
 	_pending_node_choice_confirmation = null
 	_selected_node_choice_id = &""
@@ -949,6 +1557,12 @@ func _reset_consumer_draft(snapshot: RunPresentationSnapshot) -> void:
 	_draft_bench_unit_instance_ids.assign(
 		snapshot.roster.bench_unit_instance_ids
 	)
+	_draft_move_adapter.reset(_draft_board, _draft_bench_unit_instance_ids)
+
+
+func _background_input_blocked() -> bool:
+	var parent_screen := get_parent() as ProductionScreen
+	return parent_screen != null and parent_screen.is_background_input_blocked()
 
 
 func _selected_metadata(selector_name: StringName) -> Array[String]:
@@ -981,8 +1595,8 @@ func _remove_from_board(unit_id: String) -> void:
 func _first_open_player_cell() -> Vector2i:
 	if _draft_board == null:
 		return Vector2i(-1, -1)
-	for logical_y: int in range(4):
-		for logical_x: int in range(8):
+	for logical_y: int in range(BoardPreparationValidator.PLAYER_MAX_Y + 1):
+		for logical_x: int in range(BoardPreparationValidator.BOARD_WIDTH):
 			var occupied := false
 			for placement: BoardPlacementState in _draft_board.placements:
 				if (
@@ -1004,7 +1618,7 @@ func _unit_display_name(
 		for unit: UnitInstance in snapshot.roster.unit_instances:
 			if unit.instance_id == unit_instance_id:
 				return _localized_content_text(unit.def_id)
-	return unit_instance_id
+	return _unavailable_text()
 
 
 func _item_display_name(
@@ -1015,7 +1629,11 @@ func _item_display_name(
 		for item: ItemInstanceState in snapshot.roster.item_instances:
 			if item.instance_id == item_instance_id:
 				return _localized_content_text(item.def_id)
-	return item_instance_id
+	return _unavailable_text()
+
+
+func _unavailable_text() -> String:
+	return _localized_ui_text(&"combat.inspection.none")
 
 
 func _localized_content_text(content_id: StringName) -> String:

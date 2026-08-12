@@ -460,8 +460,10 @@ func _build_combat_inspection(
 ) -> CombatUnitInspectionSnapshot:
 	var inspection := CombatUnitInspectionSnapshot.new()
 	inspection.unit_serial = unit_serial
+	inspection.presentation_instance_id = unit.instance_id
 	inspection.source_id = unit.unit_id
 	inspection.side_id = unit.side
+	inspection.logical_cell = Vector2i(unit.logical_x, unit.logical_y)
 	inspection.target_serial = _first_target_serial(
 		unit,
 		serial_by_instance
@@ -665,6 +667,7 @@ func _build_snapshot() -> RunPresentationSnapshot:
 	result.manifest_digest = view.content_manifest_digest
 	result.view = view.deep_clone()
 	result.map = _controller.map_snapshot()
+	_mark_progress_transitions(result, _snapshot)
 	result.economy = _controller.economy_snapshot()
 	result.roster = _controller.roster_snapshot()
 	result.pending_reward = _controller.pending_reward_snapshot()
@@ -694,10 +697,163 @@ func _build_snapshot() -> RunPresentationSnapshot:
 			result.roster,
 			result.economy.level
 		)
+	if _battle_catalog != null:
+		# ViewModel 僅在 snapshot 建立邊界存活；回傳值會再由
+		# RunPresentationSnapshot.deep_clone() clone-out，畫面不保留 controller。
+		result.unit_stats_previews.assign(
+			UnitStatsPreviewViewModel.new(
+				_controller, _battle_catalog
+			).all_stats()
+		)
+		result.prepare_unit_inspections.assign(
+			_build_prepare_unit_inspections(result)
+		)
+		result.active_trait_previews.assign(
+			TraitPreviewViewModel.new(
+				_controller, _battle_catalog
+			).trait_snapshots()
+		)
+		result.active_trait_progress.assign(
+			_build_active_trait_progress(result)
+		)
+		if result.roster != null and result.economy != null:
+			result.shop_offer_previews.assign(
+				ShopOfferPreviewViewModel.new(
+					result.roster, _battle_catalog
+				).previews(result.economy)
+			)
 	result.combat_inspections = _resolve_combat_inspections(view)
 	for kind_name: String in RunPresentationIntent.Kind.keys():
 		result.available_actions.append(StringName(kind_name))
 	return result
+
+
+func _build_active_trait_progress(
+	snapshot: RunPresentationSnapshot
+) -> Array[TraitProgressPresentationSnapshot]:
+	var result: Array[TraitProgressPresentationSnapshot] = []
+	if (
+		snapshot == null
+		or _battle_catalog == null
+		or snapshot.manifest_digest.is_empty()
+		or _battle_catalog.manifest_digest_value() != snapshot.manifest_digest
+	):
+		return result
+	for active: TraitBattleSnapshot in snapshot.active_trait_previews:
+		if active == null or active.trait_id.is_empty():
+			result.clear()
+			return result
+		var rule := _battle_catalog.try_trait_rule(active.trait_id)
+		if rule == null:
+			result.clear()
+			return result
+		var progress := TraitProgressPresentationSnapshot.new()
+		progress.trait_id = active.trait_id
+		progress.current_tier = active.tier
+		progress.member_count = active.member_instance_ids.size()
+		for index: int in range(rule.thresholds.size()):
+			var authored := rule.thresholds[index]
+			if authored == null:
+				result.clear()
+				return result
+			var threshold := TraitThresholdPresentationSnapshot.new()
+			threshold.tier = index + 1
+			threshold.required_count = authored.required_count
+			threshold.effect_ids.assign(authored.effect_ids)
+			progress.thresholds.append(threshold)
+		if progress.thresholds.is_empty():
+			result.clear()
+			return result
+		result.append(progress)
+	return result
+
+
+func _build_prepare_unit_inspections(
+	snapshot: RunPresentationSnapshot
+) -> Array[PrepareUnitInspectionSnapshot]:
+	var result: Array[PrepareUnitInspectionSnapshot] = []
+	if (
+		snapshot == null
+		or snapshot.roster == null
+		or _battle_catalog == null
+		or snapshot.manifest_digest.is_empty()
+		or _battle_catalog.manifest_digest_value() != snapshot.manifest_digest
+	):
+		return result
+	for unit: UnitInstance in snapshot.roster.unit_instances:
+		if unit == null:
+			continue
+		var preview := _find_prepare_stats(
+			snapshot.unit_stats_previews, unit.instance_id
+		)
+		var rule := _battle_catalog.try_unit_rule(unit.def_id)
+		if (
+			preview == null
+			or rule == null
+			or preview.unit_id != unit.def_id
+			or preview.star != unit.star
+			or preview.equipment_instance_ids != unit.equipment_instance_ids
+		):
+			continue
+		var inspection := PrepareUnitInspectionSnapshot.new()
+		inspection.unit_instance_id = StringName(unit.instance_id)
+		inspection.unit_id = preview.unit_id
+		inspection.unit_def_id = unit.def_id
+		inspection.star = unit.star
+		inspection.cost_tier = rule.cost_tier
+		inspection.trait_ids.assign(rule.trait_ids)
+		inspection.ability_id = (
+			rule.ability_id.value if rule.ability_id != null else &""
+		)
+		inspection.ai_profile = rule.ai_profile
+		inspection.equipment_instance_ids.assign(unit.equipment_instance_ids)
+		inspection.stats = preview.deep_clone()
+		result.append(inspection)
+	result.sort_custom(_prepare_inspection_precedes)
+	return result
+
+
+func _find_prepare_stats(
+	previews: Array[UnitStatsPreviewSnapshot],
+	unit_instance_id: String
+) -> UnitStatsPreviewSnapshot:
+	for preview: UnitStatsPreviewSnapshot in previews:
+		if preview != null and String(preview.instance_id) == unit_instance_id:
+			return preview
+	return null
+
+
+func _prepare_inspection_precedes(
+	left: PrepareUnitInspectionSnapshot,
+	right: PrepareUnitInspectionSnapshot
+) -> bool:
+	return String(left.unit_instance_id) < String(right.unit_instance_id)
+
+
+## Transition banners are committed-snapshot events, not phase guesses. A new
+## session (or a changed run id) has no previous sample and therefore emits no
+## banner. Invalid current-node data is rejected by progress_current_node_id().
+func _mark_progress_transitions(
+	result: RunPresentationSnapshot,
+	previous: RunPresentationSnapshot
+) -> void:
+	if (
+		result == null
+		or result.view == null
+		or previous == null
+		or previous.view == null
+		or previous.run_id.is_empty()
+		or previous.run_id != result.run_id
+	):
+		return
+	result.progress_act_transitioned = (
+		previous.view.act_index != result.view.act_index
+	)
+	var current_node_id := result.progress_current_node_id()
+	result.progress_node_transitioned = (
+		not current_node_id.is_empty()
+		and current_node_id != previous.progress_current_node_id()
+	)
 
 
 ## Kept as a thin alias: the shared rule lives on MapNodePresentation
@@ -713,7 +869,7 @@ func _command_error(value: CommandError) -> DiagnosticError:
 	if value == null:
 		return _error(&"RUN_COMMAND_FAILED", &"error.presentation.run_command_failed")
 	return _error(
-		_source_code(value.code, value.diagnostic_values),
+		_source_code(&"RUN_COMMAND_FAILED", value.diagnostic_values),
 		&"error.presentation.run_command_failed"
 	)
 

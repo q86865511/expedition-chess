@@ -1,0 +1,6 @@
+{
+	"reason": "fresh-profile first combat deterministically routed to RUN_MAP",
+	"route": "RUN_REWARD",
+	"snapshot_phase": "PendingRewardState.CHOOSING",
+	"source": "formal-screen-typed-snapshot-fixture"
+}

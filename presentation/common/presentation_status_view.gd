@@ -22,14 +22,14 @@ const POST_COMMIT_PREFIX_KEY: StringName = &"error.status.post_commit"
 ## G2 F1：沒有明確版面時這個 Label 玩家實際看不到——autowrap Label 的
 ## `get_minimum_size()` 寬度是 1px，不在 Container 內又沒有 anchors/offsets 時
 ## size 就被夾成 1px；且預設 z_index=0 會被 scenes/production/*.tscn 那個
-## z_index=1 的全 rect Composition 蓋掉。座標沿用同一批 .tscn 的 1280×720
-## 設計空間絕對座標慣例（run_combat_screen.gd 的 EnemySemantics、
+## z_index=1 的全 rect Composition 蓋掉。座標沿用 1920×1080 reference
+## 空間的絕對座標慣例（run_combat_screen.gd 的 EnemySemantics、
 ## run_map_screen.gd 的 NodeSelector 亦同）。
-const BAR_ORIGIN: Vector2 = Vector2(72.0, 636.0)
-const BAR_SIZE: Vector2 = Vector2(1136.0, 48.0)
+const BAR_ORIGIN: Vector2 = Vector2(108.0, 954.0)
+const BAR_SIZE: Vector2 = Vector2(1704.0, 72.0)
 ## 同一畫面可以有多條狀態列（ProductionScreen 一條、SETTINGS 的 Composition 一條）；
 ## row 往上疊，兩條訊息不會互相蓋住。
-const BAR_ROW_STRIDE: float = 56.0
+const BAR_ROW_STRIDE: float = 84.0
 ## Composition 是 z_index=1、標題 Label 是 z_index=10；狀態列必須高於兩者。
 const BAR_Z_INDEX: int = 20
 
@@ -67,7 +67,7 @@ func attach(
 func _apply_layout(label: Label, row: int, layout_rect: Rect2) -> void:
 	if layout_rect.size.x > 0.0 and layout_rect.size.y > 0.0:
 		label.position = layout_rect.position
-		label.custom_minimum_size = layout_rect.size
+		ExpeditionLayoutMetrics.set_reference_min(label, layout_rect.size)
 		label.size = layout_rect.size
 		label.z_index = BAR_Z_INDEX
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -76,7 +76,7 @@ func _apply_layout(label: Label, row: int, layout_rect: Rect2) -> void:
 		BAR_ORIGIN.x,
 		BAR_ORIGIN.y - BAR_ROW_STRIDE * float(maxi(row, 0))
 	)
-	label.custom_minimum_size = BAR_SIZE
+	ExpeditionLayoutMetrics.set_reference_min(label, BAR_SIZE)
 	label.size = BAR_SIZE
 	label.z_index = BAR_Z_INDEX
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

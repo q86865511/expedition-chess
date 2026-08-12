@@ -2,6 +2,8 @@ class_name ProductionViewportCoordinator
 extends Node
 
 const INVALID_TREE: StringName = &"PRODUCTION_VIEWPORT_TREE_INVALID"
+const INVALID_WORLD_SURFACE: StringName = &"PRODUCTION_VIEWPORT_WORLD_SURFACE_INVALID"
+const COORDINATOR_GROUP: StringName = &"production_viewport_coordinator"
 
 @export var world_container_path: NodePath = ^"../WorldViewportContainer"
 @export var world_viewport_path: NodePath = ^"../WorldViewportContainer/WorldViewport"
@@ -17,6 +19,7 @@ var _last_window_size := Vector2i.ZERO
 
 
 func _ready() -> void:
+	add_to_group(COORDINATOR_GROUP)
 	var viewport := get_viewport()
 	if viewport != null and not viewport.size_changed.is_connected(
 		_on_viewport_size_changed
@@ -104,7 +107,7 @@ func synchronize(window_size: Vector2i) -> StringName:
 	set_meta(&"world_rect", world_rect)
 	set_meta(&"ui_screen_rect", screen_rect)
 	set_meta(&"ui_scale_percent", _ui_scale_percent)
-	return &""
+	return _push_coordinate_mapper_to_world_surfaces()
 
 
 func window_size() -> Vector2i:
@@ -117,6 +120,41 @@ func pointer_to_world(window_point: Vector2) -> Vector2:
 
 func pointer_to_ui(window_point: Vector2) -> Vector2:
 	return _mapper.screen_to_ui(window_point)
+
+
+func coordinate_mapper_clone() -> WindowCoordinateMapper:
+	if not coordinate_mapper_ready():
+		return null
+	return _mapper.deep_clone()
+
+
+func coordinate_mapper_ready() -> bool:
+	return coordinate_mapper_error().is_empty()
+
+
+func coordinate_mapper_error() -> StringName:
+	return _mapper.configuration_error()
+
+
+func _push_coordinate_mapper_to_world_surfaces() -> StringName:
+	var tree := get_tree()
+	if tree == null:
+		return INVALID_TREE
+	var first_error: StringName = &""
+	for candidate: Node in tree.get_nodes_in_group(
+		ProductionWorldSurface.MOUNT_GROUP
+	):
+		if not candidate is ProductionWorldSurface:
+			if first_error.is_empty():
+				first_error = INVALID_WORLD_SURFACE
+			continue
+		var surface := candidate as ProductionWorldSurface
+		var refresh_error := surface.refresh_coordinate_mapper(
+			_mapper.deep_clone()
+		)
+		if first_error.is_empty() and not refresh_error.is_empty():
+			first_error = refresh_error
+	return first_error
 
 
 func _visible_window_size() -> Vector2i:

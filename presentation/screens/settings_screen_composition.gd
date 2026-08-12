@@ -60,6 +60,54 @@ func stage(
 	return &""
 
 
+## 局內系統選單與獨立 SETTINGS route 共用同一個 editor 組裝入口。
+## 這個入口只 stage clone，不做 route transition，也不持有 application service。
+func compose_embedded(
+	snapshot: SettingsSnapshot,
+	localized_text: Dictionary = {}
+) -> StringName:
+	return stage(snapshot, localized_text)
+
+
+## 內嵌宿主以既有 typed application port 提交目前 draft；成功或 post-commit
+## presentation failure 都以 application 回傳的 committed snapshot 回填 editor。
+func submit_through(
+	port: SettingsApplicationPort
+) -> SettingsApplicationResult:
+	if port == null or _draft == null:
+		_apply_control_status(SettingsScreenPresenter.SETTINGS_PORT_INVALID)
+		return SettingsApplicationResult.failure(DiagnosticError.new(
+			SettingsScreenPresenter.SETTINGS_PORT_INVALID,
+			&"error.settings.port_invalid"
+		))
+	var validation := _validate_draft(_draft)
+	if not validation.is_empty():
+		_apply_control_status(validation)
+		return SettingsApplicationResult.failure(DiagnosticError.new(
+			validation,
+			DEFAULT_MESSAGE_KEY
+		))
+	var result := port.apply(_draft.deep_clone())
+	if result == null:
+		_apply_control_status(SettingsScreenPresenter.SETTINGS_PORT_INVALID)
+		return SettingsApplicationResult.failure(DiagnosticError.new(
+			SettingsScreenPresenter.SETTINGS_PORT_INVALID,
+			&"error.settings.application_invalid_result"
+		))
+	if result.snapshot != null and (result.ok or result.committed):
+		mark_committed(result.snapshot)
+	_apply_control_status(
+		&""
+		if result.ok
+		else (
+			result.error.source_code
+			if result.error != null
+			else DEFAULT_MESSAGE_KEY
+		)
+	)
+	return result
+
+
 func settings_draft() -> SettingsSnapshot:
 	return _draft.deep_clone() if _draft != null else null
 
@@ -186,7 +234,7 @@ func _build_editors() -> void:
 	var rows := VBoxContainer.new()
 	rows.name = "SettingEditors"
 	rows.theme_type_variation = &"ExpeditionSettingsRows"
-	rows.custom_minimum_size = Vector2(1116.0, 0.0)
+	ExpeditionLayoutMetrics.set_min(rows, 1674.0, 0.0)
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(rows)
 	_add_option(rows, &"locale", ["zh_TW", "en"], String(_draft.locale))
@@ -258,7 +306,7 @@ func _add_volume(
 	var row := _add_labeled_row(parent, setting_id)
 	var editor := HSlider.new()
 	_prepare_editor(editor, setting_id)
-	editor.custom_minimum_size.x = 180.0
+	ExpeditionLayoutMetrics.set_min(editor, 270.0, 0.0)
 	editor.min_value = 0
 	editor.max_value = 10000
 	editor.step = 100
@@ -292,7 +340,7 @@ func _add_labeled_row(
 	var label := Label.new()
 	label.text = _text(_label_key(setting_id))
 	label.theme_type_variation = &"ExpeditionSettingsLabel"
-	label.custom_minimum_size.x = 190.0
+	ExpeditionLayoutMetrics.set_min(label, 285.0, 0.0)
 	row.add_child(label)
 	_labels[setting_id] = label
 	return row

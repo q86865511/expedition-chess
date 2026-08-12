@@ -301,6 +301,22 @@ static func combat_snapshot() -> RunPresentationSnapshot:
 		OptionalStringValue.new("elite.node"),
 		completed
 	)
+	# Combat composition now fails closed without typed inspection authority.
+	# Keep this shared snapshot production-valid by using a pinned visual id and
+	# stable transcript identity instead of relying on an empty-board fallback.
+	var inspection := CombatUnitInspectionSnapshot.new()
+	inspection.unit_serial = 1
+	inspection.presentation_instance_id = &"combat.nonterminal.enemy.alpha"
+	inspection.source_id = &"unit.slice_monster_00"
+	inspection.side_id = &"enemy"
+	inspection.logical_cell = Vector2i(5, 6)
+	inspection.stats = {
+		"star": 1,
+		"health": 100,
+		"start_mana": 0,
+		"max_mana": 100,
+	}
+	snapshot.combat_inspections.append(inspection)
 	return snapshot
 
 

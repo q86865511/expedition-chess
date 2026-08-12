@@ -1,8 +1,6 @@
 extends RefCounted
 
-const ResolutionFixtureFactory = preload(
-	"res://tests/fixtures/save/resolution_fixture_factory.gd"
-)
+const MAIN_SCENE := preload("res://app/main.tscn")
 const BOARD_TILE := Vector2i(17, 11)
 const TILE_SIZE := Vector2i(16, 16)
 const CAMP_HOTSPOT := Rect2(412.0, 196.0, 48.0, 32.0)
@@ -91,6 +89,7 @@ class FakeAudioBusPort:
 class BootHarness:
 	extends RefCounted
 
+	var main: Node
 	var registry: ContentRegistryService
 	var repository: SaveRepository
 	var router: SceneRouterService
@@ -100,6 +99,8 @@ class BootHarness:
 	var audio: AudioCoordinator
 	var root: ApplicationRoot
 	var host: Control
+	var viewport_coordinator: ProductionViewportCoordinator
+	var world_surface: ProductionWorldSurface
 	var gameplay_storage: FakeSaveStorage
 	var settings_bind_error: StringName
 	var boot_error: StringName
@@ -143,12 +144,29 @@ static func boot_runtime(
 	harness.audio_port = FakeAudioBusPort.new()
 	harness.audio = AudioCoordinator.new(harness.audio_port)
 	harness.audio.name = "R14AudioCoordinator"
-	harness.root = ApplicationRoot.new()
-	harness.root.name = "R14ApplicationRoot"
-	harness.host = Control.new()
-	harness.host.name = "PresentationHost"
-	harness.host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	harness.root.add_child(harness.host)
+	# RUN_COMBAT now requires the production world SubViewport consumer before
+	# its first presentable frame. Use the real main composition so this joint
+	# fixture exercises the same unique surface/coordinator contract as the app,
+	# while keeping its injected save, settings, and audio services.
+	harness.main = MAIN_SCENE.instantiate()
+	harness.root = harness.main.get_node_or_null(^"AppRoot") as ApplicationRoot
+	harness.host = harness.main.get_node_or_null(
+		^"AppRoot/UiLayer/UiRoot/PresentationHost"
+	) as Control
+	harness.viewport_coordinator = harness.main.get_node_or_null(
+		^"AppRoot/ViewportCoordinator"
+	) as ProductionViewportCoordinator
+	harness.world_surface = harness.main.get_node_or_null(
+		^"AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"
+	) as ProductionWorldSurface
+	if (
+		harness.root == null
+		or harness.host == null
+		or harness.viewport_coordinator == null
+		or harness.world_surface == null
+	):
+		harness.boot_error = &"R14_PRODUCTION_COMPOSITION_MISSING"
+		return harness
 	harness.root.boot_failed.connect(func(error_code: StringName) -> void:
 		harness.boot_error = error_code
 	)
@@ -182,10 +200,15 @@ static func boot_runtime(
 		harness.router,
 		harness.settings_repository,
 		harness.audio,
-		harness.root,
+		harness.main,
 	]:
 		tree.root.add_child(node)
 		harness.owned_nodes.append(node)
+	var viewport_error := harness.viewport_coordinator.synchronize(
+		Vector2i(1280, 720)
+	)
+	if not viewport_error.is_empty():
+		harness.boot_error = viewport_error
 	return harness
 
 
@@ -264,26 +287,78 @@ static func drive_to_run_prepare(harness: BootHarness) -> Dictionary:
 
 
 static func seed_committed_combat_phase(harness: BootHarness) -> StringName:
-	if harness == null or harness.repository == null:
-		return &"R14_SAVE_REPOSITORY_MISSING"
+	var screen := active_screen(harness)
+	if screen == null or screen.route_kind != &"RUN_PREPARE":
+		return &"R14_PREPARE_ROUTE_MISSING"
+	var refreshed := screen.request_intent(
+		RunPresentationIntent.new(RunPresentationIntent.Kind.REFRESH_SHOP)
+	)
+	if not refreshed.ok:
+		return _run_error(refreshed)
+	var snapshot := _run_snapshot(harness)
+	if snapshot == null or snapshot.economy == null:
+		return &"R14_PREPARE_SNAPSHOT_MISSING"
+	var bought := false
+	for offer: ShopOffer in snapshot.economy.shop_offers:
+		screen = active_screen(harness)
+		if screen == null:
+			return &"R14_PREPARE_REPLACEMENT_MISSING"
+		var buy := RunPresentationIntent.new(
+			RunPresentationIntent.Kind.BUY_UNIT
+		)
+		buy.offer_id = offer.offer_id
+		var purchased := screen.request_intent(buy)
+		if purchased.ok:
+			bought = true
+			break
+	if not bought:
+		return &"R14_AFFORDABLE_UNIT_MISSING"
+	snapshot = _run_snapshot(harness)
+	if snapshot == null or snapshot.roster == null:
+		return &"R14_PURCHASED_ROSTER_MISSING"
+	var commit := RunPresentationIntent.new(
+		RunPresentationIntent.Kind.COMMIT_BOARD_LAYOUT
+	)
+	var placements: Array[BoardPlacementState] = []
+	var bench: Array[String] = []
+	var capacity := maxi(
+		0,
+		snapshot.economy.level if snapshot.economy != null else 0
+	)
+	for index: int in range(snapshot.roster.unit_instances.size()):
+		var instance_id := snapshot.roster.unit_instances[index].instance_id
+		if index < capacity:
+			@warning_ignore("integer_division")
+			var row: int = index / BoardPreparationValidator.BOARD_WIDTH
+			placements.append(BoardPlacementState.new(
+				row,
+				index % BoardPreparationValidator.BOARD_WIDTH,
+				instance_id
+			))
+		else:
+			bench.append(instance_id)
+	commit.board = BoardState.new(placements)
+	commit.bench_unit_instance_ids.assign(bench)
+	screen = active_screen(harness)
+	if screen == null:
+		return &"R14_PREPARE_REPLACEMENT_MISSING"
+	var committed := screen.request_intent(commit)
+	if not committed.ok:
+		return _run_error(committed)
+	screen = active_screen(harness)
+	if screen == null:
+		return &"R14_PREPARE_COMMITTED_ROUTE_MISSING"
+	var started := screen.request_intent(RunPresentationIntent.new(
+		RunPresentationIntent.Kind.START_OR_RESUME_COMBAT
+	))
+	if not started.ok:
+		return _run_error(started)
 	var loaded := harness.repository.load()
-	if (
-		not loaded.ok
-		or loaded.profile == null
-		or loaded.run == null
-		or loaded.run.map_state == null
-		or loaded.run.map_state.current_node_id == null
-	):
-		return &"R14_PREPARE_SAVE_MISSING"
-	var run := loaded.run.deep_clone()
-	run.run_phase = RunState.RunPhase.COMBAT
-	run.resolution_state = CombatPendingResolutionState.new(
-		ResolutionFixtureFactory.create_battle_setup()
-	)
-	var saved := harness.repository.save(
-		RunSaveRootFactory.new().build(loaded.profile, run)
-	)
-	return &"" if saved.ok else saved.error.code
+	if not loaded.ok or loaded.run == null:
+		return &"R14_COMBAT_SAVE_MISSING"
+	if loaded.run.run_phase != RunState.RunPhase.COMBAT:
+		return &"R14_COMBAT_PHASE_NOT_COMMITTED"
+	return &""
 
 
 static func continue_to_run_combat(harness: BootHarness) -> Dictionary:
@@ -613,6 +688,15 @@ static func _first_reachable_combat_node_id(run: RunState) -> String:
 		):
 			return node.node_id
 	return ""
+
+
+static func _run_snapshot(harness: BootHarness) -> RunPresentationSnapshot:
+	if harness == null or harness.root == null:
+		return null
+	var session := harness.root.get(
+		&"_run_presentation_session"
+	) as RunPresentationSession
+	return session.snapshot() if session != null else null
 
 
 static func _accessibility_report(

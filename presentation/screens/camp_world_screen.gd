@@ -158,7 +158,7 @@ func _build_expedition_controls() -> void:
 	expedition_panel.add_child(commander_label)
 	_commander_selector = OptionButton.new()
 	_commander_selector.name = "CommanderSelector"
-	_commander_selector.custom_minimum_size = Vector2(0.0, 48.0)
+	ExpeditionLayoutMetrics.set_min(_commander_selector, 0.0, 72.0)
 	_commander_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_commander_selector.focus_mode = Control.FOCUS_ALL
 	_commander_selector.allow_reselect = true
@@ -182,7 +182,7 @@ func _build_expedition_controls() -> void:
 	expedition_panel.add_child(challenge_label)
 	_challenge_selector = SpinBox.new()
 	_challenge_selector.name = "ChallengeSelector"
-	_challenge_selector.custom_minimum_size = Vector2(0.0, 48.0)
+	ExpeditionLayoutMetrics.set_min(_challenge_selector, 0.0, 72.0)
 	_challenge_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_challenge_selector.focus_mode = Control.FOCUS_ALL
 	_challenge_selector.min_value = 0.0

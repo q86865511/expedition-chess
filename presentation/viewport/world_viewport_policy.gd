@@ -2,7 +2,7 @@ class_name WorldViewportPolicy
 extends RefCounted
 
 const WORLD_SIZE := Vector2i(640, 360)
-const UI_REFERENCE_SIZE := Vector2i(1280, 720)
+const UI_REFERENCE_SIZE := Vector2i(1920, 1080)
 const INVALID_WINDOW_SIZE: StringName = &"VIEWPORT_WINDOW_SIZE_INVALID"
 
 

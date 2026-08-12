@@ -8,6 +8,17 @@ var _presenter: RunScreenPresenter
 var _selected_node_id: String = ""
 var _map_generation_requested: bool = false
 var _node_selector: ItemList
+var _hud_shell: InRunHudShell
+var _world_board_clear_error: StringName = &""
+var _world_board_clear_deferred_pending: bool = false
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_ENTER_TREE:
+		# Production candidates compose while detached. The compose-time deferred
+		# clear may already have been consumed; entering the tree is the event that
+		# guarantees one fresh attempt without layout/process polling.
+		_schedule_world_board_clear()
 
 
 func compose(
@@ -20,8 +31,44 @@ func compose(
 	_presenter = RunScreenPresenter.new(&"RUN_MAP", intent_port)
 	_selected_node_id = ""
 	_map_generation_requested = false
+	_build_hud_shell()
 	_build_node_selector()
+	_schedule_world_board_clear()
 	return &""
+
+
+func _schedule_world_board_clear() -> void:
+	if _snapshot == null or _world_board_clear_deferred_pending:
+		return
+	_world_board_clear_deferred_pending = true
+	call_deferred(&"_clear_world_board")
+
+
+func _clear_world_board() -> void:
+	# Always release the latch: a detached deferred call must leave ENTER_TREE
+	# free to schedule the same candidate's formal clear attempt.
+	_world_board_clear_deferred_pending = false
+	if not is_inside_tree() or _snapshot == null:
+		return
+	_world_board_clear_error = WorldBoardMountAdapter.clear(get_tree())
+	if not _world_board_clear_error.is_empty():
+		_report_world_board_clear_error(_world_board_clear_error)
+
+
+func world_board_clear_error() -> StringName:
+	return _world_board_clear_error
+
+
+func _report_world_board_clear_error(_error_code: StringName) -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen == null:
+		return
+	parent_screen.report_composition_result(AppActionResult.failure(
+		DiagnosticError.new(
+			&"RENDER_FAILED",
+			&"error.presentation.render_failed"
+		)
+	))
 
 
 func request(intent: RunPresentationIntent) -> RunPresentationResult:
@@ -35,6 +82,7 @@ func request(intent: RunPresentationIntent) -> RunPresentationResult:
 	var result := _presenter.request(intent)
 	if (result.ok or result.committed) and result.snapshot != null:
 		_snapshot = result.snapshot.deep_clone()
+		_build_hud_shell()
 		_build_node_selector()
 	return result
 
@@ -143,14 +191,14 @@ func confirm_selection() -> RunPresentationResult:
 
 
 func _build_node_selector() -> void:
-	var existing := get_node_or_null(^"NodeSelector")
+	var existing := find_child("NodeSelector", true, false)
 	if existing != null:
-		remove_child(existing)
-		existing.queue_free()
+		existing.get_parent().remove_child(existing)
+		existing.free()
 	_node_selector = ItemList.new()
 	_node_selector.name = "NodeSelector"
-	_node_selector.position = Vector2(72.0, 112.0)
-	_node_selector.custom_minimum_size = Vector2(560.0, 320.0)
+	ExpeditionLayoutMetrics.set_min(_node_selector, 840.0, 480.0)
+	_node_selector.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_node_selector.focus_mode = Control.FOCUS_ALL
 	_node_selector.select_mode = ItemList.SELECT_SINGLE
 	_node_selector.set_meta(&"typed_choice_kind", &"map_node")
@@ -176,7 +224,10 @@ func _build_node_selector() -> void:
 			generated_id
 		)
 	_node_selector.item_selected.connect(_on_node_selected)
-	add_child(_node_selector)
+	var center_host := _hud_shell.host(
+		ProductionLayoutShell.REGION_CENTER
+	) if _hud_shell != null else self
+	center_host.add_child(_node_selector)
 	for index: int in _node_selector.item_count:
 		if not _node_selector.is_item_disabled(index):
 			_node_selector.select(index)
@@ -196,7 +247,88 @@ func _on_node_selected(index: int) -> void:
 		_selected_node_id = String(
 			_node_selector.get_item_metadata(index)
 		)
+	_refresh_node_preview()
 	_update_parent_action_state()
+
+
+func _build_hud_shell() -> void:
+	var existing := find_child("InRunHudShell", true, false)
+	if existing != null:
+		existing.get_parent().remove_child(existing)
+		existing.free()
+	_hud_shell = InRunHudShell.new()
+	_hud_shell.name = "InRunHudShell"
+	add_child(_hud_shell)
+	_hud_shell.bind(
+		_snapshot,
+		&"RUN_MAP",
+		Callable(self, "_hud_region_rect"),
+		Callable(self, "_localized_ui_text"),
+		Callable(self, "_localized_content_text")
+	)
+	var right_host := _hud_shell.host(ProductionLayoutShell.REGION_RIGHT)
+	var common_inspector := right_host.get_node_or_null(^"UnitInspector")
+	if common_inspector != null:
+		right_host.remove_child(common_inspector)
+		common_inspector.free()
+	var preview := VBoxContainer.new()
+	preview.name = "NodePreview"
+	preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview.add_child(_detail_label(
+		&"map.select", _text_or_key(&"map.select")
+	))
+	right_host.add_child(preview)
+
+
+func _refresh_node_preview() -> void:
+	if _hud_shell == null:
+		return
+	var preview := _hud_shell.find_child("NodePreview", true, false) as VBoxContainer
+	if preview == null:
+		return
+	for child: Node in preview.get_children():
+		preview.remove_child(child)
+		child.free()
+	var selected: MapNodeState
+	if _snapshot != null and _snapshot.map != null:
+		for node: MapNodeState in _snapshot.map.nodes:
+			if node != null and node.node_id == _selected_node_id:
+				selected = node
+				break
+	preview.add_child(_detail_label(
+		&"map.select",
+		_node_text(selected) if selected != null else _text_or_key(&"map.select")
+	))
+
+
+func _detail_label(key: StringName, value: String) -> Label:
+	var label := Label.new()
+	label.theme_type_variation = &"ExpeditionSection"
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.text = "%s\n%s" % [_text_or_key(key), value]
+	return label
+
+
+func _hud_region_rect(region: StringName) -> Rect2:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.layout_region_content_rect(region)
+		if parent_screen != null
+		else Rect2()
+	)
+
+
+func _localized_ui_text(key: StringName) -> String:
+	return _text_or_key(key)
+
+
+func _text_or_key(key: StringName) -> String:
+	var parent_screen := get_parent() as ProductionScreen
+	return (
+		parent_screen.localized_ui_text(key)
+		if parent_screen != null
+		else String(key)
+	)
 
 
 func _node_text(node: MapNodeState) -> String:

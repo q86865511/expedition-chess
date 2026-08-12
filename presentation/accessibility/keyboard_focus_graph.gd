@@ -34,7 +34,6 @@ const _PRIMARY_ACTIONS: Dictionary = {
 		&"map.select",
 		&"map.confirm",
 		&"choice.ack",
-		&"run.menu",
 	],
 	&"RUN_PREPARE": [
 		&"prepare.unit",
@@ -45,19 +44,16 @@ const _PRIMARY_ACTIONS: Dictionary = {
 		&"service.exit",
 		&"choice.ack",
 		&"prepare.start",
-		&"run.menu",
 	],
 	&"RUN_COMBAT": [
 		&"combat.pause",
 		&"combat.inspect",
 		&"combat.speed",
-		&"run.menu",
 	],
 	&"RUN_REWARD": [
 		&"reward.select",
 		&"reward.confirm",
 		&"choice.ack",
-		&"run.menu",
 	],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
 	&"APP_ROUTE_FALLBACK": [&"app.retry_route", &"menu.exit"],

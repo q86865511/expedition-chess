@@ -13,6 +13,12 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-12] ✅ `in-run-hud` T32 findings closure 雙審關閉 — 使用者轉交的 external
+  Opus closure re-review verdict 為 `APPROVED`；前次 13 項 findings 判定 10 項 `CLOSED`、
+  3 項 `ACCEPTED`、0 項 `OPEN`，原文與 SHA-256 已保存於
+  `specs/in-run-hud/evidence/p7-final/in-run-hud-opus-re-review-approved.md`，codex 第二審亦已落檔。
+  此核可只涵蓋 findings closure：T32 已關閉，T31 仍未關；需求台帳維持
+  **PASS 8／PARTIAL 7／BLOCKED 2**，不宣稱整片完成。
 - [2026-08-09] ✅ `in-run-hud` T01 備戰期單位屬性預覽 API（IRH-REQ-016）— 新增
   `BattleSetupSourceCompiler.try_compile_unit_stats()`（與 `compile()` 共用
   `_apply_stats`／`_find_scaling`，不需 `BoardPlacementState`，板凳單位同樣適用）、
@@ -278,11 +284,25 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 進行中
 
+- [2026-08-12] 🟡 `in-run-hud` P7 未閉合產品需求：
+  `specs/in-run-hud/evidence/p7-final/evidence-report.json` 為 `ok=true`、exit 0、
+  137／137 cases（baseline 128＋shop-tier 9）、`issues=[]`；三尺寸 × 三 UI scale 矩陣與
+  prepare／combat／map／reward 各九圖已重建，real APPDATA before／after SHA-256 均為
+  `b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867`，完成後 Godot 0。
+  逐條判定仍為 **PASS 8／PARTIAL 7／BLOCKED 2**，見 `irh-requirements-manifest.md`。
+  2026-08-11T18:27:27Z～18:49:46Z final current-source `-Suite All` exit 0（1339 秒）：GUT
+  326 scripts／1354／1354 tests／37956 assertions／0 failures／0 errors；Spec 4076 cases，
+  Import／Smoke／Gut／Content／Canonical／Combat／Expedition／ActEliminationGate／Spec 全部取得
+  預期 exit 0；此 run 已涵蓋修正後 evidence runner contract。
+  原 external Opus review verdict 為 `CHANGES_REQUESTED`；修正後 closure re-review 已
+  `APPROVED`，13 項 findings 為 10 項 `CLOSED`、3 項 `ACCEPTED`、0 項 `OPEN`，原文與
+  decision table 均落於 `evidence/p7-final/`，T32 已關閉。
+  本片仍未完成：正式 settings port；shop odds／quote；inactive／distinct trait authority（active
+  authored threshold ladder 已完成）；forge recipe preview；dynamic summon visual/max-stat authority；
+  人口／羈絆 drag preview；sell confirmation；progress accessibility localization；完整 keyboard E2E。
+  REWARD 九圖仍是 typed `PendingRewardState` fixture。T31 維持未勾，不得宣稱整片完成。
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `in-run-hud` 局內 HUD 重製：規格三件套與架構規格改動已完成（2026-08-09），
-  待 Codex 依 `specs/in-run-hud/codex-plan-prompt.md` 進 plan mode 開工。
-  Claude 端待辦為 `T01` 備戰期單位屬性預覽 API（domain 唯讀查詢）。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
   對局內畫面解除。局外畫面的正式視覺重設計仍留在 Phase B，待局內完成後再排。
@@ -297,10 +317,13 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
   局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
   其後仍為 Phase C 資產接線、Phase D 中文化收尾。
-- `in-run-hud`（交 Codex）：依 `specs/in-run-hud/tasks.md` 的 P0～P7 共 33 項任務執行。
-  Claude 端唯一任務為 `T01` 備戰期單位屬性預覽 API。待 Codex 在 plan 階段裁決世界層
-  解析度（維持 640×360 或提升 960×540，規格建議前者）。`T22`（最短可見播放時間／
-  首幀呈現契約）必須先於 `T23` 戰鬥 HUD 完成，否則戰鬥畫面無可信驗收手段。
+- `in-run-hud`：T01 已交付，世界層已採 640×360，T22 最短可見播放契約已落地；P7
+  evidence candidate 現為 137 cases／0 issues、PASS 8／PARTIAL 7／BLOCKED 2；final
+  current-source All 已綠並涵蓋修正後 evidence runner contract。下一步依
+  `specs/in-run-hud/evidence/p7-final/irh-requirements-manifest.md` 補正式 settings port、
+  inactive／distinct trait authority 與 shop odds／quote typed API、forge recipe preview、
+  拖曳預覽／鍵盤 E2E，再完成未閉合 requirements 與 T31 closure；T32 已由 external
+  Opus re-review `APPROVED` 關閉。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -308,10 +331,11 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已知問題
 
-- Fresh profile 的短戰鬥 transcript 會在 RUN_COMBAT 第一個可呈現影格即 exhausted，
-  `SETTLE_BATTLE` 使畫面由備戰直接回地圖；Phase A 以 10 ms 間隔擷取 80 幀仍無可見
-  RUN_COMBAT 畫面。這不阻擋「開始戰鬥」寫操作，但阻擋戰鬥畫面實機截圖，後續 UI
-  phase 應檢查最短可見播放時間或首幀呈現契約。
+- `in-run-hud` P7 尚有產品邊界與上游缺口：正式 settings port 未注入；shop odds／quote 與
+  inactive／distinct trait authority 未到位；forge recipe preview、拖曳人口／羈絆預覽及
+  純鍵盤完整 E2E 尚缺；dynamic summon 缺 visual/max-stat authority；sell quote／高星或帶裝
+  出售確認、進度狀態 accessibility 在地化文字亦未閉合。Button／projected-DnD persisted
+  canonical 等價已驗。REWARD 九圖為 typed `PendingRewardState` fixture，非 fresh-profile 自然路徑。
 - Combat／Expedition／Build／Camp／Run／Results Lab 仍是開發用灰盒，不是正式產品 UI；正式 production 美術與音訊已由 content-production 閉環，後續產品化 UX 依 roadmap 的剩餘切片處理。
 - Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。

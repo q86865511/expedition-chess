@@ -14,7 +14,7 @@ const DRIVE_STEP_MS: float = 500.0
 const DRIVE_STEP_LIMIT: int = 200
 
 
-func test_formal_combat_screen_drives_playback_and_settles_into_reward() -> void:
+func test_formal_combat_screen_drives_playback_from_the_scene_tree() -> void:
 	var harness: Variant = Support.boot(self)
 	assert_true(Support.start_run(harness).ok)
 	assert_eq(Support.drive_to_combat(harness), &"")
@@ -47,24 +47,64 @@ func test_formal_combat_screen_drives_playback_and_settles_into_reward() -> void
 		"the formal combat screen must drive playback from the scene tree"
 	)
 	await wait_process_frames(6)
+	var advanced_playback := composition.try_playback()
+	assert_true(
+		advanced_playback.ok and advanced_playback.state != null,
+		"the real-process cursor probe must remain readable before settlement"
+	)
+	if not advanced_playback.ok or advanced_playback.state == null:
+		return
 	assert_gt(
-		composition.try_playback().state.cursor,
+		advanced_playback.state.cursor,
 		0,
 		"scene-tree frames alone must advance the committed playback cursor"
 	)
 
+
+func test_formal_combat_screen_settles_with_a_fresh_fixed_delta_driver() -> void:
+	# Use a fresh harness so the deterministic settlement clock cannot inherit
+	# any delta accumulated by the real-process cursor probe above.
+	var harness: Variant = Support.boot(self)
+	assert_true(Support.start_run(harness).ok)
+	assert_eq(Support.drive_to_combat(harness), &"")
+	var screen := Support.active_screen(harness)
+	assert_not_null(screen)
+	if screen == null:
+		return
+	assert_eq(screen.route_kind, &"RUN_COMBAT")
+	var composition := screen.get_node_or_null("Composition") as RunCombatScreen
+	assert_not_null(composition)
+	if composition == null:
+		return
+	var playback := composition.try_playback()
+	assert_true(playback.ok, "the fresh combat screen must own a committed transcript")
+	if not playback.ok:
+		return
+	assert_eq(playback.state.cursor, 0)
+	# Take ownership of presentation delta before yielding for the actual mount
+	# and draw latch; no host-frame delta can enter this settlement clock.
+	composition.set_process(false)
+	assert_true(
+		await _await_world_frame(composition),
+		"combat world must mount and draw before settlement; mount=%s"
+			% String(composition.world_board_mount_error())
+	)
+	assert_eq(composition.world_board_mount_error(), &"")
+
 	var settled := false
+	var settle_result: RunPresentationResult
 	for _step: int in range(DRIVE_STEP_LIMIT):
 		var window := composition.advance_playback_frame(DRIVE_STEP_MS)
+		settle_result = composition.settle_result()
+		if settle_result != null:
+			settled = true
+			break
 		if not window.ok:
 			settled = true
 			break
-		if window.window != null and window.window.exhausted:
-			settled = true
-			break
+		await wait_process_frames(1)
 	assert_true(settled, "playback must reach the end of the committed transcript")
 
-	var settle_result: RunPresentationResult = composition.settle_result()
 	assert_not_null(
 		settle_result,
 		"finished playback must dispatch SETTLE_BATTLE through the typed intent port"
@@ -105,15 +145,64 @@ func test_committed_result_without_transcript_still_reaches_reward() -> void:
 	if session == null:
 		return
 	session.release_playback(&"g2_reload_without_transcript")
+	# Recreate the presentation session from the already-committed canonical
+	# controller state. The new session intentionally has no process-memory
+	# retained inspections or transcript, matching a reload boundary.
+	var commander_effects: Array[StringName] = []
+	commander_effects.assign(session.get("_commander_passive_effect_ids"))
+	var fresh_session := RunPresentationSession.new(
+		session.get("_controller") as RunController,
+		session.get("_factory") as RunCommandFactory,
+		session.get("_battle_catalog") as BattleRuleCatalog,
+		commander_effects
+	)
+	var fresh_snapshot := fresh_session.snapshot()
+	assert_eq(
+		fresh_snapshot.view.resolution_kind,
+		ResolutionState.Kind.BATTLE_RESULT_PENDING
+	)
+	assert_true(
+		fresh_snapshot.combat_inspections.is_empty(),
+		"fresh presentation session must not inherit retained combat DTOs"
+	)
+	harness.root.set("_run_presentation_session", fresh_session)
+	var reload_result := harness.root.call(&"_navigate_subroute", &"RUN_COMBAT") as AppActionResult
+	assert_not_null(reload_result)
+	assert_true(reload_result.ok if reload_result != null else false)
 	var composition := Support.composition(harness) as RunCombatScreen
 	assert_not_null(composition)
 	if composition == null:
 		return
-	var window := composition.advance_playback_frame(DRIVE_STEP_MS)
+	# Keep the production mount and CanvasItem draw lifecycle, but take ownership
+	# of presentation delta before waiting for that draw. Otherwise an arbitrary
+	# host-frame delta can enter the 750 ms clock before the 749/750 boundary
+	# assertions below.
+	composition.set_process(false)
+	assert_true(
+		await _await_world_frame(composition),
+		"committed summary world must mount and draw; mount=%s"
+			% String(composition.world_board_mount_error())
+	)
+	assert_eq(composition.world_board_mount_error(), &"")
+	assert_true(
+		composition.has_presented_first_frame(),
+		"committed summary must draw once before the minimum-visible clock starts"
+	)
+	# 已提交 summary 沒有 transcript 可播，仍須遵守同一個首幀＋最短可見契約。
+	# 畫面已由正式 scene-tree 路徑呈現，固定 delta 只推 presentation clock。
+	var window := composition.advance_playback_frame(749.0)
 	assert_false(window.ok)
 	assert_eq(
 		Support.error_code(window),
 		RunPresentationSession.PLAYBACK_NOT_AVAILABLE
+	)
+	assert_eq(composition.visible_playback_elapsed_ms(), 749.0)
+	assert_null(composition.settle_result())
+	window = composition.advance_playback_frame(1.0)
+	assert_false(window.ok)
+	assert_eq(
+		composition.visible_playback_elapsed_ms(),
+		RunCombatScreen.MIN_VISIBLE_PLAYBACK_MS
 	)
 	var settle_result: RunPresentationResult = composition.settle_result()
 	assert_not_null(settle_result)
@@ -162,7 +251,7 @@ func test_combat_intel_star_comes_from_the_committed_battle_snapshot() -> void:
 	assert_not_null(composition)
 	if composition == null:
 		return
-	var rarity := composition.get_node_or_null(^"RaritySemantics") as Control
+	var rarity := composition.find_child("RaritySemantics", true, false) as Control
 	assert_not_null(rarity)
 	if rarity != null:
 		assert_gt(
@@ -170,3 +259,19 @@ func test_combat_intel_star_comes_from_the_committed_battle_snapshot() -> void:
 			0,
 			"real combat data must produce non-colour rarity cues"
 		)
+
+
+func _await_world_frame(composition: RunCombatScreen) -> bool:
+	if composition == null:
+		return false
+	for _frame: int in 12:
+		if (
+			composition.world_board_ready()
+			and composition.has_presented_first_frame()
+		):
+			return true
+		await wait_process_frames(1)
+	return (
+		composition.world_board_ready()
+		and composition.has_presented_first_frame()
+	)

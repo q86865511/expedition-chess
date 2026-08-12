@@ -37,7 +37,8 @@ func test_app_root_settings_port_applies_to_replaced_run_combat_scene() -> void:
 	var continued := Support.continue_to_run_combat(harness)
 	assert_true(
 		bool(continued.get("ok", false)),
-		"fresh AppRoot must Continue the fake-storage COMBAT save through SceneRouter"
+		"fresh AppRoot must Continue the fake-storage COMBAT save through SceneRouter: %s"
+		% String(continued.get("error", &""))
 	)
 	if not bool(continued.get("ok", false)):
 		return
@@ -140,7 +141,11 @@ func test_real_settings_repository_rebuilds_run_combat_after_app_restart() -> vo
 	if not combat_root.settings_bind_error.is_empty():
 		return
 	var entered_combat := Support.continue_to_run_combat(combat_root)
-	assert_true(bool(entered_combat.get("ok", false)))
+	assert_true(
+		bool(entered_combat.get("ok", false)),
+		"COMBAT restart must use the production route composition: %s"
+		% String(entered_combat.get("error", &""))
+	)
 	if not bool(entered_combat.get("ok", false)):
 		return
 	var candidate := Support.candidate(125, &"tritanopia")

@@ -49,7 +49,7 @@ func test_run_map_disables_unreachable_nodes_and_localizes_kind_text() -> void:
 	assert_not_null(composition)
 	if composition == null:
 		return
-	var selector := composition.get_node_or_null(^"NodeSelector") as ItemList
+	var selector := composition.find_child("NodeSelector", true, false) as ItemList
 	assert_not_null(selector)
 	if selector == null:
 		return

@@ -91,9 +91,17 @@ static func build() -> Dictionary:
 				"required_actions": PackedStringArray(["start", "settings", "exit"]),
 			},
 		],
+		"system_menu_contract": {
+			"custom_input_action": true,
+			"stable_button": true,
+			"ordered_focus": true,
+			"five_states": true,
+			"focus_trap": true,
+			"no_resident_run_menu": true,
+		},
 		"render_policy": {
 			"world_size": Vector2i(640, 360),
-			"ui_reference_size": Vector2i(1280, 720),
+			"ui_reference_size": Vector2i(1920, 1080),
 			"integer_scale": true,
 			"letterbox": true,
 			"world_texture_filter": "nearest",

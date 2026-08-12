@@ -40,7 +40,6 @@ const ROUTE_ACTIONS: Dictionary = {
 		&"map.select",
 		&"map.confirm",
 		&"choice.ack",
-		&"run.menu",
 	],
 	&"RUN_PREPARE": [
 		&"prepare.unit",
@@ -51,19 +50,16 @@ const ROUTE_ACTIONS: Dictionary = {
 		&"service.exit",
 		&"choice.ack",
 		&"prepare.start",
-		&"run.menu",
 	],
 	&"RUN_COMBAT": [
 		&"combat.pause",
 		&"combat.inspect",
 		&"combat.speed",
-		&"run.menu",
 	],
 	&"RUN_REWARD": [
 		&"reward.select",
 		&"reward.confirm",
 		&"choice.ack",
-		&"run.menu",
 	],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
 	# G2 F4：MENU／CAMP／RESULTS 的 post-commit route 失敗共用的復原畫面。

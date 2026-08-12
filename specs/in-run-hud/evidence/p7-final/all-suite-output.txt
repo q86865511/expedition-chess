@@ -1,0 +1,80 @@
+command: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\run-tests.ps1 -Suite All -GodotPath 'E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe' -TimeoutSeconds 3600
+started_at_utc: 2026-08-11T18:27:27Z
+finished_at_utc: 2026-08-11T18:49:46Z
+wall_time_seconds: 1339
+stdout: Requested suites completed.
+stderr: <empty>
+exit_code: 0
+
+GUT:
+  scripts: 326
+  tests: 1354
+  passing_tests: 1354
+  assertions: 37956
+  passing_assertions: 37956
+  failures: 0
+  errors: 0
+
+Spec contract:
+  cases: 4076
+  passed: true
+  failures: []
+  exit_code: 0
+
+Other All-suite gates:
+  Import: exit 0
+  RunnerContract: exit 0
+  RunnerContract negative fixtures: expected non-zero results observed
+  Smoke: exit 0
+  Content: exit 0
+  Canonical: exit 0
+  Combat: exit 0
+  Expedition: exit 0
+  ActEliminationGate: exit 0
+  Gut: exit 0
+  Spec: exit 0
+
+Formal UI evidence:
+  command: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-isolated-ui-evidence.ps1 -Mode Evidence -FreshProfile -OutputDirectory 'specs\in-run-hud\evidence\p7-final' -GodotPath 'E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe'
+  baseline_cases: 128
+  shop_tier_cases: 9
+  total_cases: 137
+  expected_cases: 137
+  ok: true
+  exit_code: 0
+  issues: []
+  completed_at_local: 2026-08-12 approximately 02:20 Asia/Taipei
+  real_appdata_integrity_ok: true
+  real_appdata_before_sha256: b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867
+  real_appdata_after_sha256: b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867
+  remaining_godot_process_count: 0
+
+Current-source final rerun:
+  The All run recorded above includes the repaired evidence runner contract.
+  This is the final current-source All timestamp for this closure candidate.
+
+Post-document Spec verification:
+  command: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Spec -GodotPath 'E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe' -TimeoutSeconds 300
+  started_at_utc: 2026-08-11T18:56:05Z
+  finished_at_utc: 2026-08-11T18:56:09Z
+  cases: 4076
+  passed: true
+  failures: []
+  exit_code: 0
+
+Representative focused verification after Opus findings:
+  projected DnD versus button persisted canonical equivalence: 1 test / 20 assertions / exit 0
+  COMBAT_PENDING empty-inspection fail-closed: 10 tests / 87 assertions / exit 0
+
+Read-back checks:
+  gut/import Parse Error matches: 0
+  gut/import Failed to load script matches: 0
+
+Full machine-readable output:
+  This file preserves the final All invocation/result summary read back before
+  the post-document Spec run. The current artifacts/test/runner-execution.json
+  records that later Spec-only run, not the earlier All run.
+  artifacts/test/gut.xml
+  artifacts/test/gut.godot.log
+  artifacts/test/import.godot.log
+  artifacts/test/spec-contract.json

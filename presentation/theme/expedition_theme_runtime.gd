@@ -4,18 +4,18 @@ extends RefCounted
 const BASE_THEME: Theme = preload("res://theme/expedition_theme.tres")
 const SUPPORTED_SCALES: Array[int] = [100, 125, 150]
 const TYPE_SIZES: Dictionary = {
-	&"ExpeditionTitle": 32,
-	&"ExpeditionHeading": 24,
-	&"ExpeditionAuxiliary": 16,
+	&"ExpeditionTitle": 48,
+	&"ExpeditionHeading": 36,
+	&"ExpeditionAuxiliary": 24,
 }
 const TOKEN_SIZES: Dictionary = {
-	&"title": 32,
-	&"heading": 24,
-	&"body": 18,
-	&"auxiliary": 16,
+	&"title": 48,
+	&"heading": 36,
+	&"body": 27,
+	&"auxiliary": 24,
 }
 ## 這些型別是 reference 空間的「固定格陣/帶列」：水平間距屬寬度預算，
-## 不隨 UI 縮放（否則 5 卡＋兩側欄在 150% 會擠出 1232 內容寬）。
+## 不隨 UI 縮放（否則 5 卡＋兩側欄在 150% 會擠出 1848 內容寬）。
 const REFERENCE_SPACING_TYPES: Array[StringName] = [
 	&"ExpeditionPrepareBottomBand",
 	&"ExpeditionPrepareShopBand",
@@ -25,15 +25,15 @@ const REFERENCE_SPACING_TYPES: Array[StringName] = [
 	&"ExpeditionBoardGrid",
 ]
 const SPACING_TOKENS: Dictionary = {
-	&"space_1": 4,
-	&"space_2": 8,
-	&"space_3": 12,
-	&"space_4": 16,
-	&"space_6": 24,
-	&"space_8": 32,
-	&"safe_margin": 24,
-	&"gutter": 16,
-	&"min_button_height": 48,
+	&"space_1": 6,
+	&"space_2": 12,
+	&"space_3": 18,
+	&"space_4": 24,
+	&"space_6": 36,
+	&"space_8": 48,
+	&"safe_margin": 36,
+	&"gutter": 24,
+	&"min_button_height": 72,
 }
 
 
@@ -180,8 +180,9 @@ func _apply_control_metrics(
 			&"expedition_theme_base_minimum",
 			base_metrics.get(control.get_instance_id(), Vector2.ZERO)
 		)
-		control.custom_minimum_size = (
+		var runtime_size := (
 			base_size
 			if bool(control.get_meta(&"expedition_theme_fixed_minimum", false))
 			else Vector2(base_size.x, ceilf(base_size.y * factor))
 		)
+		ExpeditionLayoutMetrics.set_runtime_min(control, runtime_size)

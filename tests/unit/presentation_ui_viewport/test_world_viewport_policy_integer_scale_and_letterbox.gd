@@ -56,7 +56,7 @@ func test_world_and_ui_reference_contract_is_fixed_and_pixel_safe() -> void:
 		return
 
 	assert_eq(policy.call("world_size"), Vector2i(640, 360))
-	assert_eq(policy.call("ui_reference_size"), Vector2i(1280, 720))
+	assert_eq(policy.call("ui_reference_size"), Vector2i(1920, 1080))
 	assert_eq(policy.call("texture_filter_mode"), &"nearest")
 	assert_true(bool(policy.call("pixel_snap_enabled")))
 
@@ -82,7 +82,7 @@ func test_layout_uses_largest_integer_world_scale_and_centered_letterbox() -> vo
 		)
 		assert_eq(
 			layout.get("ui_reference_size"),
-			Vector2i(1280, 720),
+			Vector2i(1920, 1080),
 			"%s must preserve the independent UI reference" % window_size
 		)
 		assert_eq(

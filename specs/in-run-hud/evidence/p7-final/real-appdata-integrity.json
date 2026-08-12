@@ -1,0 +1,11 @@
+{
+    "ok":  true,
+    "compared_scope":  "%APPDATA%/Godot/app_userdata/**",
+    "includes_nested_backup":  true,
+    "before_inventory_sha256":  "b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867",
+    "after_inventory_sha256":  "b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867",
+    "before_file_count":  75,
+    "after_file_count":  75,
+    "before_directory_count":  241,
+    "after_directory_count":  241
+}

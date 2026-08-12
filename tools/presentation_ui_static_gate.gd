@@ -29,6 +29,9 @@ const SOURCE_EXTENSIONS: Array[String] = [
 const APP_ROOT_PATH := "res://app/app_root.gd"
 const COMBAT_LAB_SCENE_PATH := "res://scenes/dev/combat_lab/combat_lab.tscn"
 const ASSET_REFERENCE_PREFIX := "res://assets/"
+const LAYOUT_METRICS_SETTER_PATH := \
+	"res://presentation/theme/expedition_layout_metrics.gd"
+const CUSTOM_MINIMUM_SIZE_TOKEN := "custom_minimum_size"
 
 const DEV_REFERENCE := &"PUI_DEV_REFERENCE"
 const HARDCODED_PLAYER_TEXT := &"PUI_HARDCODED_PLAYER_TEXT"
@@ -38,6 +41,7 @@ const FOCUS_GRAPH_INVALID := &"PUI_FOCUS_GRAPH_INVALID"
 const VIEWPORT_POLICY_INVALID := &"PUI_VIEWPORT_POLICY_INVALID"
 const FILTER_POLICY_INVALID := &"PUI_FILTER_POLICY_INVALID"
 const THEME_TOKEN_INVALID := &"PUI_THEME_TOKEN_INVALID"
+const LAYOUT_METRIC_ASSIGNMENT := &"PUI_LAYOUT_METRIC_ASSIGNMENT"
 const UI_TUNE_DUPLICATE := &"PUI_UI_TUNE_DUPLICATE"
 const SCREEN_WRITER_DEPENDENCY := &"PUI_SCREEN_WRITER_DEPENDENCY"
 const ACCESSIBILITY_BINDING_INVALID := &"PUI_ACCESSIBILITY_BINDING_INVALID"
@@ -58,9 +62,11 @@ func validate_candidate(candidate: Dictionary) -> Dictionary:
 	var issues: Array[Dictionary] = []
 	var sources := _production_sources(candidate)
 	_validate_source_dependencies(sources, issues)
+	_validate_layout_metric_assignments(sources, issues)
 	_validate_localization(candidate, issues)
 	_validate_asset_references(candidate, sources, issues)
 	_validate_focus_graphs(candidate, issues)
+	_validate_system_menu_contract(candidate, issues)
 	_validate_render_policy(candidate, issues)
 	_validate_theme_policy(candidate, issues)
 	var accessibility_binding_count := _validate_accessibility_bindings(
@@ -87,6 +93,7 @@ func validate_project(root_path: String = "res://") -> Dictionary:
 		"asset_paths": _collect_asset_paths(root_path),
 		"localization": _collect_localization(root_path),
 		"focus_graphs": _collect_focus_graphs(root_path),
+		"system_menu_contract": _collect_system_menu_contract(root_path),
 		"render_policy": _collect_render_policy(root_path),
 		"theme_policy": _collect_theme_policy(root_path),
 		"accessibility_bindings": _collect_accessibility_bindings(
@@ -160,6 +167,26 @@ func _validate_source_dependencies(
 				HARDCODED_PLAYER_TEXT,
 				path,
 				"production source contains hardcoded player-visible text"
+			)
+
+
+func _validate_layout_metric_assignments(
+	sources: Dictionary,
+	issues: Array[Dictionary]
+) -> void:
+	for path: String in _sorted_keys(sources):
+		if (
+			not path.begins_with("res://presentation/")
+			or not path.ends_with(".gd")
+			or path == LAYOUT_METRICS_SETTER_PATH
+		):
+			continue
+		if _has_direct_custom_minimum_size_assignment(String(sources[path])):
+			_append_issue(
+				issues,
+				LAYOUT_METRIC_ASSIGNMENT,
+				path,
+				"custom_minimum_size must be assigned through ExpeditionLayoutMetrics"
 			)
 
 
@@ -297,6 +324,30 @@ func _validate_focus_graphs(
 			)
 
 
+func _validate_system_menu_contract(
+	candidate: Dictionary,
+	issues: Array[Dictionary]
+) -> void:
+	var value: Variant = candidate.get("system_menu_contract", {})
+	var contract: Dictionary = value if value is Dictionary else {}
+	for required: String in [
+		"custom_input_action",
+		"stable_button",
+		"ordered_focus",
+		"five_states",
+		"focus_trap",
+		"no_resident_run_menu",
+	]:
+		if bool(contract.get(required, false)):
+			continue
+		_append_issue(
+			issues,
+			FOCUS_GRAPH_INVALID,
+			"presentation/screens/system_menu_overlay.gd",
+			"system menu is missing required input/focus contract: %s" % required
+		)
+
+
 func _validate_render_policy(
 	candidate: Dictionary,
 	issues: Array[Dictionary]
@@ -314,7 +365,7 @@ func _validate_render_policy(
 	var policy := value as Dictionary
 	if (
 		policy.get("world_size") != Vector2i(640, 360)
-		or policy.get("ui_reference_size") != Vector2i(1280, 720)
+		or policy.get("ui_reference_size") != Vector2i(1920, 1080)
 		or not bool(policy.get("integer_scale", false))
 		or not bool(policy.get("letterbox", false))
 	):
@@ -717,15 +768,14 @@ func _collect_focus_graphs(root_path: String) -> Array[Dictionary]:
 		"COLLECTION": ["camp.back"],
 		"FACILITY_UNLOCK_WORKSHOP": ["camp.back"],
 		"FACILITY_CHALLENGE_MONUMENT": ["camp.back"],
-		"RUN_MAP": ["map.select", "map.confirm", "run.menu"],
-		"RUN_PREPARE": ["prepare.unit", "prepare.start", "run.menu"],
+		"RUN_MAP": ["map.select", "map.confirm"],
+		"RUN_PREPARE": ["prepare.unit", "prepare.start"],
 		"RUN_COMBAT": [
 			"combat.pause",
 			"combat.inspect",
 			"combat.speed",
-			"run.menu",
 		],
-		"RUN_REWARD": ["reward.select", "reward.confirm", "run.menu"],
+		"RUN_REWARD": ["reward.select", "reward.confirm"],
 		"RUN_ROUTE_FALLBACK": ["run.retry_route", "run.menu"],
 		"RESULTS": ["results.camp", "results.menu"],
 		"RESULTS_FALLBACK": [
@@ -755,6 +805,100 @@ func _collect_focus_graphs(root_path: String) -> Array[Dictionary]:
 	return graphs
 
 
+func _collect_system_menu_contract(root_path: String) -> Dictionary:
+	var screen_path := _project_path(
+		root_path,
+		"presentation/screens/production_screen.gd"
+	)
+	var overlay_path := _project_path(
+		root_path,
+		"presentation/screens/system_menu_overlay.gd"
+	)
+	var focus_path := _project_path(
+		root_path,
+		"presentation/accessibility/keyboard_focus_graph.gd"
+	)
+	if (
+		not FileAccess.file_exists(screen_path)
+		or not FileAccess.file_exists(overlay_path)
+		or not FileAccess.file_exists(focus_path)
+	):
+		return {}
+	var screen := FileAccess.get_file_as_string(screen_path)
+	var overlay := FileAccess.get_file_as_string(overlay_path)
+	var focus := FileAccess.get_file_as_string(focus_path)
+	var route_contracts_are_clean := true
+	for route_pair: PackedStringArray in [
+		PackedStringArray(["RUN_MAP", "RUN_PREPARE"]),
+		PackedStringArray(["RUN_PREPARE", "RUN_COMBAT"]),
+		PackedStringArray(["RUN_COMBAT", "RUN_REWARD"]),
+		PackedStringArray(["RUN_REWARD", "RUN_ROUTE_FALLBACK"]),
+	]:
+		route_contracts_are_clean = (
+			route_contracts_are_clean
+			and _route_contract_excludes_token(
+				screen,
+				"func _required_action_ids()",
+				route_pair[0],
+				route_pair[1],
+				"&\"run.menu\""
+			)
+			and _route_contract_excludes_token(
+				focus,
+				"const _PRIMARY_ACTIONS",
+				route_pair[0],
+				route_pair[1],
+				"&\"run.menu\""
+			)
+		)
+	return {
+		"custom_input_action": screen.contains(
+			"const SYSTEM_MENU_INPUT: StringName = &\"system_menu\""
+		),
+		"stable_button": (
+			screen.contains("SYSTEM_MENU_BUTTON_NODE")
+			and screen.contains("&\"SystemMenuButton\"")
+		),
+		"ordered_focus": screen.contains(
+			"result.append(_system_menu_button)"
+		),
+		"five_states": (
+			overlay.contains("CLOSED")
+			and overlay.contains("ROOT")
+			and overlay.contains("SETTINGS_EMBEDDED")
+			and overlay.contains("CONFIRM_MENU")
+			and overlay.contains("CONFIRM_EXIT")
+		),
+		"focus_trap": (
+			overlay.contains("_capture_background_focus")
+			and overlay.contains("_restore_background_focus")
+			and overlay.contains("focus_next")
+		),
+		"no_resident_run_menu": route_contracts_are_clean,
+	}
+
+
+func _route_contract_excludes_token(
+	source: String,
+	section_marker: String,
+	route: String,
+	next_route: String,
+	forbidden_token: String
+) -> bool:
+	var section_start := source.find(section_marker)
+	if section_start < 0:
+		return false
+	var route_start := source.find('&"%s":' % route, section_start)
+	if route_start < 0:
+		return false
+	var route_end := source.find('&"%s":' % next_route, route_start + 1)
+	if route_end < 0:
+		return false
+	return not source.substr(route_start, route_end - route_start).contains(
+		forbidden_token
+	)
+
+
 func _collect_render_policy(root_path: String) -> Dictionary:
 	var path := _project_path(
 		root_path,
@@ -766,8 +910,8 @@ func _collect_render_policy(root_path: String) -> Dictionary:
 	return {
 		"world_size": Vector2i(640, 360) \
 			if source.contains("Vector2i(640, 360)") else Vector2i.ZERO,
-		"ui_reference_size": Vector2i(1280, 720) \
-			if source.contains("Vector2i(1280, 720)") else Vector2i.ZERO,
+		"ui_reference_size": Vector2i(1920, 1080) \
+			if source.contains("Vector2i(1920, 1080)") else Vector2i.ZERO,
 		"integer_scale": source.contains("integer_scale"),
 		"letterbox": (
 			source.contains("letterboxed")
@@ -1063,6 +1207,88 @@ func _reachable_nodes(start: String, edges: Dictionary) -> Dictionary:
 			if not visited.has(target):
 				pending.append(target)
 	return visited
+
+
+func _has_direct_custom_minimum_size_assignment(source: String) -> bool:
+	var offset := 0
+	while offset < source.length():
+		var character := source[offset]
+		if character == "#":
+			offset = _skip_gdscript_line_comment(source, offset)
+			continue
+		if character == "\"" or character == "'":
+			offset = _skip_gdscript_string(source, offset)
+			continue
+		if source.substr(offset, CUSTOM_MINIMUM_SIZE_TOKEN.length()) \
+				== CUSTOM_MINIMUM_SIZE_TOKEN:
+			var before_ok := (
+				offset == 0
+				or not _is_identifier_character(source[offset - 1])
+			)
+			var token_end := offset + CUSTOM_MINIMUM_SIZE_TOKEN.length()
+			var after_ok := (
+				token_end >= source.length()
+				or not _is_identifier_character(source[token_end])
+			)
+			if before_ok and after_ok:
+				var assignment := _skip_gdscript_trivia(source, token_end)
+				if assignment < source.length():
+					var operator := source[assignment]
+					if operator == "=":
+						if assignment + 1 >= source.length() \
+								or source[assignment + 1] != "=":
+							return true
+					elif operator in ["+", "-", "*", "/", "%", "&", "|", "^"]:
+						if assignment + 1 < source.length() \
+								and source[assignment + 1] == "=":
+							return true
+			offset = token_end
+			continue
+		offset += 1
+	return false
+
+
+func _skip_gdscript_trivia(source: String, offset: int) -> int:
+	var cursor := offset
+	while cursor < source.length():
+		if source[cursor] in [" ", "\t", "\r", "\n"]:
+			cursor += 1
+			continue
+		if source[cursor] == "#":
+			cursor = _skip_gdscript_line_comment(source, cursor)
+			continue
+		break
+	return cursor
+
+
+func _skip_gdscript_line_comment(source: String, offset: int) -> int:
+	var line_end := source.find("\n", offset + 1)
+	return source.length() if line_end < 0 else line_end + 1
+
+
+func _skip_gdscript_string(source: String, offset: int) -> int:
+	var quote := source[offset]
+	var delimiter := quote
+	if source.substr(offset, 3) == quote + quote + quote:
+		delimiter = quote + quote + quote
+	var cursor := offset + delimiter.length()
+	while cursor < source.length():
+		if source.substr(cursor, delimiter.length()) == delimiter:
+			return cursor + delimiter.length()
+		if delimiter.length() == 1 and source[cursor] == "\\":
+			cursor += 2
+		else:
+			cursor += 1
+	return source.length()
+
+
+func _is_identifier_character(character: String) -> bool:
+	return (
+		(character >= "a" and character <= "z")
+		or (character >= "A" and character <= "Z")
+		or _is_ascii_digit(character)
+		or character == "_"
+	)
 
 
 func _contains_integer_token(line: String, token: String) -> bool:

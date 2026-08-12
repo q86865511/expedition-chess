@@ -93,7 +93,9 @@ func test_recovery_modal_traps_focus_blocks_background_and_restores_trigger() ->
 	if dialog == null:
 		return
 
-	for node: Node in screen.get_node(^"Actions").find_children(
+	for node: Node in screen.find_child(
+		"Actions", true, false
+	).find_children(
 		"*",
 		"Button",
 		true,

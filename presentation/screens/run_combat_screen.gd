@@ -62,6 +62,7 @@ var _model := RunCombatIntelModel.new()
 var _presenter: RunScreenPresenter
 var _playback_port: LiveScreenPlaybackPort
 var _inspection_port: LiveScreenInspectionPort
+var _supply_port: LiveScreenSupplyPort
 var _snapshot: RunPresentationSnapshot
 var _hud_shell: InRunHudShell
 var _world_snapshot_factory := WorldBoardSnapshotFactory.new()
@@ -85,13 +86,15 @@ var _world_board_render_status_signature: Dictionary = {}
 
 func compose(
 	snapshot: RunPresentationSnapshot,
-	intent_port: LiveScreenIntentPort
+	intent_port: LiveScreenIntentPort,
+	supply_port: LiveScreenSupplyPort = null
 ) -> StringName:
 	var error_code := _model.compose(snapshot)
 	if not error_code.is_empty():
 		_snapshot = null
 		return error_code
 	_snapshot = snapshot.deep_clone()
+	_supply_port = supply_port
 	_presenter = RunScreenPresenter.new(&"RUN_COMBAT", intent_port)
 	_selected_unit_serial = -1
 	_settle_requested = false
@@ -815,7 +818,8 @@ func _build_hud_shell() -> void:
 		&"RUN_COMBAT",
 		Callable(self, "_hud_region_rect"),
 		Callable(self, "_localized_ui_text"),
-		Callable(self, "_localized_content_text")
+		Callable(self, "_localized_content_text"),
+		_supply_port
 	)
 
 

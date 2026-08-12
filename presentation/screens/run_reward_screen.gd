@@ -22,7 +22,8 @@ func _notification(what: int) -> void:
 
 func compose(
 	snapshot: RunPresentationSnapshot,
-	intent_port: LiveScreenIntentPort
+	intent_port: LiveScreenIntentPort,
+	supply_port: LiveScreenSupplyPort = null
 ) -> StringName:
 	var error_code := _model.compose(snapshot)
 	if not error_code.is_empty():
@@ -30,7 +31,7 @@ func compose(
 		return error_code
 	_presenter = RunScreenPresenter.new(&"RUN_REWARD", intent_port)
 	_selected_reward_id = ""
-	_build_hud_shell(_model.snapshot_clone())
+	_build_hud_shell(_model.snapshot_clone(), supply_port)
 	_build_offer_selector()
 	_schedule_world_board_clear()
 	return &""
@@ -245,7 +246,10 @@ func _on_offer_selected(index: int) -> void:
 	_update_parent_action_state()
 
 
-func _build_hud_shell(snapshot: RunPresentationSnapshot) -> void:
+func _build_hud_shell(
+	snapshot: RunPresentationSnapshot,
+	supply_port: LiveScreenSupplyPort = null
+) -> void:
 	var existing := find_child("InRunHudShell", true, false)
 	if existing != null:
 		existing.get_parent().remove_child(existing)
@@ -258,7 +262,8 @@ func _build_hud_shell(snapshot: RunPresentationSnapshot) -> void:
 		&"RUN_REWARD",
 		Callable(self, "_hud_region_rect"),
 		Callable(self, "_localized_ui_text"),
-		Callable(self, "_localized_content_text")
+		Callable(self, "_localized_content_text"),
+		supply_port
 	)
 	var right_host := _hud_shell.host(ProductionLayoutShell.REGION_RIGHT)
 	var common_inspector := right_host.get_node_or_null(^"UnitInspector")

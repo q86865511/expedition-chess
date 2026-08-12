@@ -1,0 +1,41 @@
+T16 羈絆列與詳情浮層 focused evidence
+======================================
+
+實機視覺測試
+------------
+Command:
+E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe --path E:\ClaudeWorkingPlace\Game --resolution 1920x1080 --rendering-method gl_compatibility --script res://tests/runners/gut_runner.gd -- --test-path res://tests/unit/in_run_hud/test_trait_detail_popover_t16.gd
+
+Exit: 0
+Scripts: 1
+Tests: 2/2 passed
+Asserts: 38
+Failures: 0
+Godot process after run: none
+
+涵蓋：
+- LiveScreenSupplyPort.trait_progress() 的 inactive／active 完整列。
+- 單一 _trait_popover_models(Array[TraitProgressSnapshot]) 資料組裝掛點與 clone isolation。
+- member_instance_ids 對應正式 unit portrait，持有成員另有菱形＋框線非色彩標示。
+- 階級 reached／unreached 以 ◆／◇ 非色彩形狀呈現。
+- 1920x1080 下靠近右／下邊緣時水平與垂直翻轉，整個浮層維持在 36px safe area。
+- 高度依門檻與成員列自適應，超出安全高度時由 ScrollContainer 承接。
+
+既有 HUD 相容回歸
+-----------------
+Test path: res://tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd
+Exit: 0
+Tests: 8/8 passed
+Asserts: 94
+Failures / errors / orphans: 0 / 0 / 0
+
+四路由 production compose 回歸
+------------------------------
+Test path: res://tests/integration/presentation_ui_in_run_system_menu/test_system_menu_four_route_contract.gd
+Exit: 0
+Tests: 6/6 passed
+Asserts: 141
+Failures / errors / orphans: 0 / 0 / 0
+
+Screenshot:
+specs/in-run-hud/evidence/p8-batch2/t16-trait-detail-popover.png

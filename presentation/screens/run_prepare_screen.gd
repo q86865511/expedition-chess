@@ -509,7 +509,8 @@ func _build_prepare_controls() -> void:
 		&"RUN_PREPARE",
 		Callable(self, &"_region_content_rect"),
 		Callable(self, &"_localized_ui_text"),
-		Callable(self, &"_localized_content_text")
+		Callable(self, &"_localized_content_text"),
+		_supply_port
 	)
 	var metrics := Control.new()
 	metrics.name = "PrepareMetrics"

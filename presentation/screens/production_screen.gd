@@ -1835,7 +1835,8 @@ func _compose_production_child(
 				return SCREEN_COMPOSITION_TYPE_INVALID
 			return (composition as RunMapScreen).compose(
 				context.snapshot_clone() as RunPresentationSnapshot,
-				context.intent_port
+				context.intent_port,
+				context.supply_port
 			)
 		&"RUN_PREPARE":
 			if not composition is RunPrepareScreen:
@@ -1860,7 +1861,8 @@ func _compose_production_child(
 			var combat := composition as RunCombatScreen
 			var compose_error := combat.compose(
 				context.snapshot_clone() as RunPresentationSnapshot,
-				context.intent_port
+				context.intent_port,
+				context.supply_port
 			)
 			if not compose_error.is_empty():
 				return compose_error
@@ -1879,7 +1881,8 @@ func _compose_production_child(
 				return SCREEN_COMPOSITION_TYPE_INVALID
 			return (composition as RunRewardScreen).compose(
 				context.snapshot_clone() as RunPresentationSnapshot,
-				context.intent_port
+				context.intent_port,
+				context.supply_port
 			)
 		&"RESULTS", &"RESULTS_FALLBACK":
 			if not composition is ResultsScreenComposition:

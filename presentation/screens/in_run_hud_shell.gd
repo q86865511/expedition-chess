@@ -38,6 +38,8 @@ var _region_rect_provider: Callable
 var _hosts: Dictionary = {}
 var _unit_visuals := ProductionUnitVisualCatalog.new()
 var _unit_inspector: VBoxContainer
+var _trait_models: Array[Dictionary] = []
+var _trait_popover: PanelContainer
 
 
 func _ready() -> void:
@@ -49,7 +51,8 @@ func bind(
 	route_kind: StringName,
 	region_rect_provider: Callable,
 	ui_text: Callable,
-	content_text: Callable
+	content_text: Callable,
+	supply_port: LiveScreenSupplyPort = null
 ) -> StringName:
 	if snapshot == null or not region_rect_provider.is_valid():
 		return &"IN_RUN_HUD_BIND_INVALID"
@@ -58,6 +61,14 @@ func bind(
 	_ui_text = ui_text
 	_content_text = content_text
 	_region_rect_provider = region_rect_provider
+	_trait_models = _trait_popover_models(
+		supply_port.trait_progress()
+		if supply_port != null
+		else _legacy_trait_progress()
+	)
+	if supply_port == null:
+		for model: Dictionary in _trait_models:
+			model["legacy"] = true
 	_build_hosts()
 	_render_top_hud()
 	_render_left_hud()
@@ -391,41 +402,21 @@ func _render_left_hud() -> void:
 	ExpeditionLayoutMetrics.set_min(traits, 0.0, 150.0)
 	traits.focus_mode = Control.FOCUS_ALL
 	traits.set_meta(&"typed_data_kind", &"trait_preview")
-	if _snapshot.active_trait_progress.is_empty():
+	if _trait_models.is_empty():
 		traits.add_item(_text(&"prepare.empty.synergies"))
 		traits.set_item_disabled(0, true)
 	else:
-		for progress: TraitProgressPresentationSnapshot in \
-			_snapshot.active_trait_progress:
-			if progress == null:
-				continue
-			# member_instance_ids are not the domain's distinct-definition count.
-			# Do not present them as threshold progress; show only the active trait
-			# and the pinned authored threshold ladder below.
-			traits.add_item("▶ %s" % _content(progress.trait_id))
+		for model: Dictionary in _trait_models:
+			traits.add_item(_trait_row_text(model))
 			traits.set_item_metadata(
-				traits.item_count - 1, progress.trait_id
+				traits.item_count - 1, model.get("trait_id", &"")
 			)
-			var tooltip_lines: Array[String] = []
-			for threshold: TraitThresholdPresentationSnapshot in \
-				progress.thresholds:
-				if threshold == null:
-					continue
-				var threshold_line := "%s %s %d" % [
-					"▶" if threshold.tier == progress.current_tier else "○",
-					_text(&"prepare.panel.units"),
-					threshold.required_count,
-				]
-				var effects: Array[String] = []
-				for effect_id: StringName in threshold.effect_ids:
-					if not effect_id.is_empty():
-						effects.append(_content(effect_id))
-				if not effects.is_empty():
-					threshold_line += " · %s" % ", ".join(effects)
-				tooltip_lines.append(threshold_line)
 			traits.set_item_tooltip(
-				traits.item_count - 1, "\n".join(tooltip_lines)
+				traits.item_count - 1, _trait_accessible_text(model)
 			)
+		traits.item_selected.connect(_show_trait_popover.bind(traits))
+		traits.item_activated.connect(_show_trait_popover.bind(traits))
+		traits.gui_input.connect(_on_trait_list_gui_input.bind(traits))
 	stack.add_child(traits)
 	stack.add_child(_heading(&"prepare.panel.inventory"))
 	var inventory := ItemList.new()
@@ -442,6 +433,313 @@ func _render_left_hud() -> void:
 	relics.set_meta(&"typed_data_kind", &"relic_slot")
 	_render_relics(relics)
 	stack.add_child(relics)
+
+
+## T16 的唯一資料組裝掛點。正式畫面只把 supply port 的完整
+## Array[TraitProgressSnapshot] 丟進來；浮層與列本體都只讀這份 clone model。
+func _trait_popover_models(
+	progress_rows: Array[TraitProgressSnapshot]
+) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for progress: TraitProgressSnapshot in progress_rows:
+		if progress == null or progress.trait_id.is_empty():
+			continue
+		var model := {
+			"trait_id": progress.trait_id,
+			"distinct_count": progress.distinct_count,
+			"active_tier": progress.active_tier,
+			"next_required_count": progress.next_required_count,
+			"thresholds": [],
+			"members": [],
+		}
+		var thresholds: Array = model["thresholds"]
+		for threshold: TraitProgressThresholdSnapshot in progress.thresholds:
+			if threshold == null:
+				continue
+			thresholds.append({
+				"tier": threshold.tier,
+				"required_count": threshold.required_count,
+				"effect_ids": threshold.effect_ids.duplicate(),
+			})
+		var members: Array = model["members"]
+		for instance_id: StringName in progress.member_instance_ids:
+			var unit_def_id := _unit_def_id_for_instance(String(instance_id))
+			members.append({
+				"instance_id": String(instance_id),
+				"unit_def_id": unit_def_id,
+				"held": not unit_def_id.is_empty(),
+			})
+		result.append(model)
+	return result
+
+
+func _legacy_trait_progress() -> Array[TraitProgressSnapshot]:
+	var result: Array[TraitProgressSnapshot] = []
+	if _snapshot == null:
+		return result
+	for legacy: TraitProgressPresentationSnapshot in _snapshot.active_trait_progress:
+		if legacy == null:
+			continue
+		var progress := TraitProgressSnapshot.new()
+		progress.trait_id = legacy.trait_id
+		progress.distinct_count = legacy.member_count
+		progress.active_tier = legacy.current_tier
+		for threshold: TraitThresholdPresentationSnapshot in legacy.thresholds:
+			if threshold == null:
+				continue
+			var converted := TraitProgressThresholdSnapshot.new()
+			converted.tier = threshold.tier
+			converted.required_count = threshold.required_count
+			converted.effect_ids.assign(threshold.effect_ids)
+			progress.thresholds.append(converted)
+			if threshold.tier > progress.active_tier and progress.next_required_count < 0:
+				progress.next_required_count = threshold.required_count
+		for active: TraitBattleSnapshot in _snapshot.active_trait_previews:
+			if active != null and active.trait_id == progress.trait_id:
+				progress.member_instance_ids.assign(active.member_instance_ids)
+				break
+		result.append(progress)
+	return result
+
+
+func _trait_row_text(model: Dictionary) -> String:
+	if bool(model.get("legacy", false)):
+		return "▶ %s" % _content(StringName(model.get("trait_id", &"")))
+	var active_tier := int(model.get("active_tier", 0))
+	var next_required := int(model.get("next_required_count", -1))
+	var target := "✓" if next_required < 0 else str(next_required)
+	return "%s %s · %d/%s" % [
+		_trait_tier_signal(active_tier),
+		_content(StringName(model.get("trait_id", &""))),
+		int(model.get("distinct_count", 0)),
+		target,
+	]
+
+
+func _trait_accessible_text(model: Dictionary) -> String:
+	if bool(model.get("legacy", false)):
+		var legacy_lines: Array[String] = []
+		var current_tier := int(model.get("active_tier", 0))
+		for threshold_value: Variant in model.get("thresholds", []):
+			var threshold := threshold_value as Dictionary
+			var effects: Array[String] = []
+			for effect_id: StringName in threshold.get("effect_ids", []):
+				effects.append(_content(effect_id))
+			var line := "%s %s %d" % [
+				"▶" if int(threshold.get("tier", 0)) == current_tier else "○",
+				_text(&"prepare.panel.units"),
+				int(threshold.get("required_count", 0)),
+			]
+			if not effects.is_empty():
+				line += " · %s" % ", ".join(effects)
+			legacy_lines.append(line)
+		return "\n".join(legacy_lines)
+	var active_tier := int(model.get("active_tier", 0))
+	var next_required := int(model.get("next_required_count", -1))
+	return "%s %s · %s %d → %s" % [
+		_trait_tier_signal(active_tier),
+		_text(&"prepare.panel.synergies"),
+		_text(&"prepare.panel.units"),
+		int(model.get("distinct_count", 0)),
+		"✓" if next_required < 0 else str(next_required),
+	]
+
+
+func _trait_tier_signal(active_tier: int) -> String:
+	if active_tier <= 0:
+		return "○"
+	return "◆".repeat(active_tier)
+
+
+func _on_trait_list_gui_input(event: InputEvent, traits: ItemList) -> void:
+	if not event is InputEventMouseMotion or traits == null:
+		return
+	var index := traits.get_item_at_position(
+		(event as InputEventMouseMotion).position, true
+	)
+	if index >= 0:
+		_show_trait_popover(index, traits)
+
+
+func _show_trait_popover(index: int, traits: ItemList) -> void:
+	if index < 0 or index >= _trait_models.size() or traits == null:
+		return
+	if is_instance_valid(_trait_popover):
+		_trait_popover.get_parent().remove_child(_trait_popover)
+		_trait_popover.free()
+	_trait_popover = _build_trait_popover(_trait_models[index])
+	var overlay := host(ProductionLayoutShell.REGION_OVERLAY)
+	if overlay == null or _trait_popover == null:
+		return
+	overlay.add_child(_trait_popover)
+	_position_trait_popover(_trait_popover, traits, index, overlay)
+
+
+func _build_trait_popover(model: Dictionary) -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.name = "TraitDetailPopover"
+	panel.theme_type_variation = &"ExpeditionModalPanel"
+	panel.z_index = 80
+	panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.set_meta(&"trait_id", model.get("trait_id", &""))
+	panel.set_meta(&"active_tier", int(model.get("active_tier", 0)))
+	panel.set_meta(&"non_color_tier_signal", _trait_tier_signal(
+		int(model.get("active_tier", 0))
+	))
+	var thresholds := model.get("thresholds", []) as Array
+	var members := model.get("members", []) as Array
+	var member_rows := ceili(float(members.size()) / 5.0)
+	var desired_height := clampf(
+		430.0 + float(thresholds.size()) * 44.0 + float(member_rows) * 110.0,
+		220.0,
+		ProductionLayoutShell.REFERENCE_SIZE.y
+		- ProductionLayoutShell.SAFE_MARGIN * 2.0
+	)
+	ExpeditionLayoutMetrics.set_fixed_min(panel, 390.0, desired_height)
+	panel.size = Vector2(390.0, desired_height)
+	var scroll := ScrollContainer.new()
+	scroll.name = "TraitDetailScroll"
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.add_child(scroll)
+	var content := VBoxContainer.new()
+	content.name = "TraitDetailContent"
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(content)
+	content.add_child(_heading(&"prepare.panel.synergies"))
+	var title := _value_label(_content(StringName(model.get("trait_id", &""))))
+	title.name = "TraitDetailName"
+	content.add_child(title)
+	var summary := _value_label(_trait_accessible_text(model))
+	summary.name = "TraitProgressSummary"
+	content.add_child(summary)
+	var tier_row := HBoxContainer.new()
+	tier_row.name = "TraitTierCues"
+	tier_row.set_meta(&"non_color_cue", &"tier-shapes")
+	var active_tier := int(model.get("active_tier", 0))
+	for threshold_value: Variant in thresholds:
+		var threshold := threshold_value as Dictionary
+		var tier := int(threshold.get("tier", 0))
+		var cue := _value_label(
+			"◆" if tier <= active_tier and active_tier > 0 else "◇"
+		)
+		cue.name = "TraitTierCue%d" % tier
+		cue.set_meta(&"tier", tier)
+		cue.set_meta(&"reached", tier <= active_tier and active_tier > 0)
+		tier_row.add_child(cue)
+	content.add_child(tier_row)
+	for threshold_value: Variant in thresholds:
+		var threshold := threshold_value as Dictionary
+		var tier := int(threshold.get("tier", 0))
+		var tier_signal := (
+			"▶" if tier == active_tier else "✓" if tier < active_tier else "○"
+		)
+		var effects: Array[String] = []
+		for effect_id: StringName in threshold.get("effect_ids", []):
+			effects.append(_content(effect_id))
+		var line := "%s %s %d · %s" % [
+			tier_signal,
+			_text(&"prepare.panel.units"),
+			int(threshold.get("required_count", 0)),
+			", ".join(effects),
+		]
+		var threshold_label := _value_label(line.trim_suffix(" · "))
+		threshold_label.name = "TraitThreshold%d" % tier
+		threshold_label.set_meta(&"tier_state_signal", tier_signal)
+		content.add_child(threshold_label)
+	content.add_child(_heading(&"prepare.panel.units"))
+	if members.is_empty():
+		content.add_child(_value_label(_text(&"combat.inspection.none")))
+	else:
+		var member_grid := GridContainer.new()
+		member_grid.name = "TraitMemberGrid"
+		member_grid.columns = 5
+		content.add_child(member_grid)
+		for member_value: Variant in members:
+			member_grid.add_child(_trait_member_thumbnail(
+				member_value as Dictionary
+			))
+	panel.set_meta(&"accessible_text", "%s · %s" % [title.text, summary.text])
+	return panel
+
+
+func _trait_member_thumbnail(member: Dictionary) -> PanelContainer:
+	var card := PanelContainer.new()
+	var instance_id := String(member.get("instance_id", ""))
+	var unit_def_id := StringName(member.get("unit_def_id", &""))
+	card.name = "TraitMember_%s" % instance_id.replace(".", "_")
+	card.theme_type_variation = &"ExpeditionSection"
+	card.set_meta(&"unit_instance_id", instance_id)
+	card.set_meta(&"unit_def_id", unit_def_id)
+	card.set_meta(&"held", bool(member.get("held", false)))
+	card.set_meta(&"non_color_cue", &"owned-diamond-frame")
+	ExpeditionLayoutMetrics.set_fixed_min(card, 64.0, 70.0)
+	var stack := VBoxContainer.new()
+	stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(stack)
+	var portrait := TextureRect.new()
+	portrait.name = "Portrait"
+	portrait.texture = _unit_visuals.try_portrait(unit_def_id)
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(portrait, 48.0, 48.0)
+	stack.add_child(portrait)
+	var cue := _value_label("◆")
+	cue.name = "OwnedCue"
+	cue.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cue.tooltip_text = "%s ◆" % _content(unit_def_id)
+	stack.add_child(cue)
+	card.tooltip_text = "%s · ◆" % _content(unit_def_id)
+	card.set_meta(&"accessible_text", card.tooltip_text)
+	return card
+
+
+func _position_trait_popover(
+	panel: PanelContainer,
+	traits: ItemList,
+	index: int,
+	overlay: Control
+) -> void:
+	if panel == null or traits == null or overlay == null:
+		return
+	var safe := ProductionLayoutShell.SAFE_MARGIN
+	var overlay_rect := overlay.get_global_rect()
+	var source_rect := traits.get_global_rect()
+	var item_rect: Rect2 = traits.get_item_rect(index)
+	var item_top_global: Vector2 = (
+		traits.get_global_transform() * item_rect.position
+	)
+	var x: float = source_rect.end.x - overlay_rect.position.x + 12.0
+	var y: float = item_top_global.y - overlay_rect.position.y
+	var flipped_horizontal := false
+	var flipped_vertical := false
+	if x + panel.size.x > overlay.size.x - safe:
+		x = source_rect.position.x - overlay_rect.position.x - panel.size.x - 12.0
+		flipped_horizontal = true
+	if y + panel.size.y > overlay.size.y - safe:
+		y = item_top_global.y - overlay_rect.position.y + item_rect.size.y - panel.size.y
+		flipped_vertical = true
+	x = clampf(x, safe, maxf(safe, overlay.size.x - safe - panel.size.x))
+	y = clampf(y, safe, maxf(safe, overlay.size.y - safe - panel.size.y))
+	panel.position = Vector2(x, y)
+	panel.set_meta(&"safe_margin", safe)
+	panel.set_meta(&"flipped_horizontal", flipped_horizontal)
+	panel.set_meta(&"flipped_vertical", flipped_vertical)
+	panel.set_meta(&"safe_area_rect", Rect2(
+		Vector2(safe, safe), overlay.size - Vector2(safe, safe) * 2.0
+	))
+
+
+func _unit_def_id_for_instance(instance_id: String) -> StringName:
+	if _snapshot == null or _snapshot.roster == null:
+		return &""
+	for unit: UnitInstance in _snapshot.roster.unit_instances:
+		if unit != null and unit.instance_id == instance_id:
+			return unit.def_id
+	return &""
 
 
 func _render_economy_hud() -> void:

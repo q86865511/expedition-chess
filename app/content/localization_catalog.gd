@@ -207,6 +207,14 @@ func _register_fixed_keys() -> void:
 	_register(&"prepare.resource.gold", "金幣", "Gold")
 	_register(&"prepare.resource.hp", "遠征生命", "Expedition HP")
 	_register(&"prepare.resource.level_xp", "等級／經驗", "Level / XP")
+	# in-run-hud T14（IRH-REQ-011）：經濟資訊列多出來的三個欄位標籤與一個值 token。
+	# 命名沿用同一條資源列的 prepare.resource.*（gold／level_xp 就在上面兩行），
+	# 語意對應 ShopEconomySnapshot 的 win_streak／loss_streak／odds_*／at_max_level；
+	# 各費率的百分比數字由呈現層直接格式化 basis points，不進 catalog。
+	_register(&"prepare.resource.win_streak", "連勝", "Win Streak")
+	_register(&"prepare.resource.loss_streak", "連敗", "Loss Streak")
+	_register(&"prepare.resource.shop_odds", "費用機率", "Shop Odds")
+	_register(&"prepare.resource.level_xp_max", "已達上限", "Max")
 	_register(&"choice.begin", "確認所選事件", "Confirm Selected Choice")
 	_register(&"choice.confirm", "確認選擇", "Confirm Choice")
 	_register(&"choice.cancel", "取消選擇", "Cancel Choice")
@@ -332,6 +340,48 @@ func _register_fixed_keys() -> void:
 		&"error.board.population_invalid",
 		"人口上限數值無效",
 		"Population capacity value is invalid"
+	)
+	# in-run-hud T14（IRH-REQ-011）：商店報價停用原因的文案。來源是
+	# ShopQuoteSnapshot.rejection_code／CommandApplyError 診斷 key `source_code`
+	# 的 ShopError 具名碼（HANDOFF §2 第 6 條）。命名比照 SETTINGS_*→error.settings.*
+	# 的既有映射：去掉與 key 前綴重複的 SHOP_ 後轉小寫，即 error.shop.<code>。
+	# 只收玩家在報價／購買路徑撞得到的碼；RNG／KEY／DIGEST／CONFIG／SERIAL／MERGE
+	# 六個是不變量失效（玩家無從處置、也分辨不出差異），共用 internal_failure 一句，
+	# 比照 error.settings.activation_diagnostic 的既有作法。
+	_register(&"error.shop.gold_insufficient", "金幣不足", "Not enough gold")
+	_register(&"error.shop.level_max", "等級已達上限", "Level is already at maximum")
+	_register(&"error.shop.offer_stale", "這筆報價已失效", "That offer is no longer available")
+	_register(&"error.shop.roster_full", "隊伍已滿", "The party is full")
+	_register(&"error.shop.unit_missing", "找不到指定棋子", "That unit could not be found")
+	_register(
+		&"error.shop.unit_rule_missing",
+		"這個棋子無法交易",
+		"That unit cannot be traded"
+	)
+	_register(
+		&"error.shop.unit_pool_invalid",
+		"棋子牌庫狀態不符",
+		"The unit pool is out of sync"
+	)
+	_register(
+		&"error.shop.reservation_invalid",
+		"商店保留狀態已失效",
+		"The shop reservation is no longer valid"
+	)
+	_register(
+		&"error.shop.generation_mismatch",
+		"內容版本不符，商店暫停",
+		"Content version mismatch; the shop is unavailable"
+	)
+	_register(
+		&"error.shop.input_invalid",
+		"目前無法進行這項商店操作",
+		"This shop action is not available right now"
+	)
+	_register(
+		&"error.shop.internal_failure",
+		"商店運算失敗，請稍後再試",
+		"The shop could not complete this action"
 	)
 	_register(&"map.node_kind.normal", "一般戰鬥", "Battle")
 	_register(&"map.node_kind.elite", "菁英戰鬥", "Elite Battle")

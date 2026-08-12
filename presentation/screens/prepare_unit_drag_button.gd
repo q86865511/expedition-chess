@@ -12,6 +12,8 @@ signal equipment_dropped(item_instance_id: String, unit_instance_id: String)
 const PREVIEW_CUE_COLOR := Color8(244, 229, 153, 255)
 
 var _drop_preview: Dictionary = {}
+var _rejection_tooltip_restore: String = ""
+var _has_rejection_tooltip_restore: bool = false
 
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
@@ -72,6 +74,11 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 			_clear_drop_preview()
 		return legal
 	if kind == &"prepare_equipment":
+		if bool(payload.get("is_component", false)):
+			_set_component_rejection(
+				String(payload.get("component_rejection_text", ""))
+			)
+			return false
 		_clear_drop_preview()
 		return not String(get_meta(&"unit_instance_id", "")).is_empty()
 	_clear_drop_preview()
@@ -83,6 +90,8 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	var payload := data as Dictionary
 	var kind := StringName(payload.get("kind", &""))
 	if kind == &"prepare_equipment":
+		if bool(payload.get("is_component", false)):
+			return
 		equipment_dropped.emit(
 			String(payload.get("item_instance_id", "")),
 			String(get_meta(&"unit_instance_id", ""))
@@ -110,6 +119,17 @@ func _notification(what: int) -> void:
 
 func _draw() -> void:
 	if _drop_preview.is_empty():
+		return
+	if bool(_drop_preview.get("rejected", false)):
+		var inset := Vector2(10.0, 10.0)
+		draw_line(inset, size - inset, PREVIEW_CUE_COLOR, 3.0, true)
+		draw_line(
+			Vector2(size.x - inset.x, inset.y),
+			Vector2(inset.x, size.y - inset.y),
+			PREVIEW_CUE_COLOR,
+			3.0,
+			true
+		)
 		return
 	var center_y := size.y * 0.5
 	var source := Vector2(size.x * 0.24, center_y)
@@ -144,7 +164,23 @@ func _draw_arrow(from: Vector2, to: Vector2) -> void:
 
 
 func _clear_drop_preview() -> void:
+	if _has_rejection_tooltip_restore:
+		tooltip_text = _rejection_tooltip_restore
+		_rejection_tooltip_restore = ""
+		_has_rejection_tooltip_restore = false
 	if _drop_preview.is_empty():
 		return
 	_drop_preview.clear()
+	queue_redraw()
+
+
+func _set_component_rejection(rejection_text: String) -> void:
+	if not _has_rejection_tooltip_restore:
+		_rejection_tooltip_restore = tooltip_text
+		_has_rejection_tooltip_restore = true
+	_drop_preview = {
+		"rejected": true,
+		"rejection_text": rejection_text,
+	}
+	tooltip_text = rejection_text
 	queue_redraw()

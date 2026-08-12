@@ -1,0 +1,43 @@
+T20 — 合成配方預覽／雙路徑 canonical 等價
+日期：2026-08-12（Asia/Taipei）
+
+Focused unit
+command: tools/run-tests.ps1 -Suite Gut -TestPath res://tests/unit/presentation_ui_run_screens/test_prepare_equipment_drag_semantics.gd
+exit_code: 0
+excerpt:
+  Scripts 1
+  Tests 2
+  Passing Tests 2
+  Asserts 15
+  ---- All tests passed! ----
+
+Focused integration（headless）
+command: tools/run-tests.ps1 -Suite Gut -TestPath res://tests/integration/presentation_ui_in_run_drag_canonical/test_forge_drag_matches_button_canonical_state.gd
+exit_code: 0
+excerpt:
+  Scripts 1
+  Tests 1
+  Passing Tests 1
+  Asserts 36
+  ---- All tests passed! ----
+
+Visible OpenGL evidence run（隔離 APPDATA）
+command: Godot --resolution 1920x1080 --script res://tests/runners/gut_runner.gd -- --test-path res://tests/integration/presentation_ui_in_run_drag_canonical/test_forge_drag_matches_button_canonical_state.gd
+exit_code: 0
+renderer: OpenGL 3.3 / NVIDIA GeForce RTX 4070
+excerpt:
+  Scripts 1
+  Tests 1
+  Passing Tests 1
+  Asserts 37
+  ---- All tests passed! ----
+
+Screenshot:
+  t20-forge-recipe-preview.png
+  sha256: 802EA16EC6C2D9B5C8762C92F482388E142721EE89AF4E72B3DE9617D298FE8B
+
+Contract probes:
+- inventory component→component hover calls the lease-protected supply port's try_forge_pair_recipe().
+- invalid pairs remain non-droppable; component→unit is rejected with an X cue and localized action-unavailable copy.
+- both drag and existing prepare.forge paths leave canonical RunState untouched until prepare.forge.confirm.
+- after exactly one confirmation, complete encoded RunState plus explicit inventory/overflow arrays are identical.

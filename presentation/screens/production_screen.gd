@@ -1851,7 +1851,8 @@ func _compose_production_child(
 			return (composition as RunPrepareScreen).compose(
 				prepare_snapshot,
 				report,
-				context.intent_port
+				context.intent_port,
+				context.supply_port
 			)
 		&"RUN_COMBAT":
 			if not composition is RunCombatScreen:

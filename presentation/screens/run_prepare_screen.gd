@@ -39,6 +39,7 @@ var _pending_forge_confirmation: ConfirmationDraft
 var _pending_node_choice_confirmation: ConfirmationDraft
 var _selected_node_choice_id: StringName
 var _hud_shell: InRunHudShell
+var _supply_port: LiveScreenSupplyPort
 var _world_snapshot_factory := WorldBoardSnapshotFactory.new()
 var _draft_move_adapter := BoardDraftMoveAdapter.new()
 var _quick_toggle_unit_id: String = ""
@@ -60,12 +61,14 @@ func _notification(what: int) -> void:
 func compose(
 	snapshot: RunPresentationSnapshot,
 	report: BoardValidationReport,
-	intent_port: LiveScreenIntentPort
+	intent_port: LiveScreenIntentPort,
+	supply_port: LiveScreenSupplyPort = null
 ) -> StringName:
 	if snapshot == null or report == null or intent_port == null:
 		return COMPOSE_INVALID
 	_model = RunPrepareScreenModel.new(snapshot, report)
 	_presenter = RunScreenPresenter.new(&"RUN_PREPARE", intent_port)
+	_supply_port = supply_port
 	_reset_consumer_draft(snapshot)
 	_build_prepare_controls()
 	return &""
@@ -580,7 +583,7 @@ func _build_prepare_controls() -> void:
 		&"BuildUnitSelector",
 		# min 72：清單內部可捲動、EXPAND 會吃滿剩餘高；min 過大會在 150%
 		# 讓左欄 combined min 超出區域預算（見 refresh_layout_rects 註解）。
-		Vector2(0.0, 108.0),
+		Vector2(0.0, 84.0),
 		&"unit_instance"
 	)
 	var build_selector := left.get_node(^"BuildUnitSelector") as ItemList
@@ -602,13 +605,23 @@ func _build_prepare_controls() -> void:
 	_add_selector(
 		left,
 		&"InventorySelector",
-		Vector2(0.0, 168.0),
+		Vector2(0.0, 108.0),
 		&"item_instance",
 		true
 	)
 	var inventory_selector := left.get_node(^"InventorySelector") as ItemList
 	if inventory_selector != null:
 		left.move_child(inventory_selector, inventory_index)
+	var forge_preview := Label.new()
+	forge_preview.name = "ForgeRecipePreview"
+	forge_preview.text = _localized_ui_text(&"collection.category.recipe")
+	forge_preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	forge_preview.theme_type_variation = &"ExpeditionDetail"
+	forge_preview.set_meta(&"forge_preview_state", &"idle")
+	forge_preview.set_meta(&"accessible_text", forge_preview.text)
+	ExpeditionLayoutMetrics.set_reference_min(forge_preview, Vector2(0.0, 78.0))
+	left.add_child(forge_preview)
+	left.move_child(forge_preview, inventory_index)
 
 	var center_scroll := ScrollContainer.new()
 	center_scroll.name = "PrepareCenterScroll"
@@ -1043,6 +1056,19 @@ func _refresh_draft_selectors() -> void:
 				item.instance_id
 			)
 			appended_ids[item_id] = true
+		if inventory is PrepareEquipmentDragList:
+			var component_ids: Array[String] = []
+			if _supply_port != null:
+				for component: ItemInstanceState in (
+					_supply_port.forge_inventory_components()
+				):
+					if component != null and not component.instance_id.is_empty():
+						component_ids.append(component.instance_id)
+			(inventory as PrepareEquipmentDragList).configure_forge_components(
+				component_ids,
+				Callable(self, &"_preview_forge_pair"),
+				_component_equip_rejection_text()
+			)
 	if units != null:
 		units.clear()
 		for unit: UnitInstance in snapshot.roster.unit_instances:
@@ -1476,6 +1502,17 @@ func _on_equipment_dropped(item_id: String, unit_id: String) -> void:
 func _on_forge_pair_dropped(first_item_id: String, second_item_id: String) -> void:
 	if _background_input_blocked():
 		return
+	if (
+		_supply_port == null
+		or _supply_port.try_forge_pair_recipe(
+			first_item_id, second_item_id
+		) == null
+	):
+		var rejected := ConfirmationDraftResult.failure(_selection_error())
+		var rejected_parent := get_parent() as ProductionScreen
+		if rejected_parent != null:
+			rejected_parent.report_composition_result(rejected)
+		return
 	var inventory := _control(&"InventorySelector") as ItemList
 	if inventory == null:
 		return
@@ -1489,6 +1526,52 @@ func _on_forge_pair_dropped(first_item_id: String, second_item_id: String) -> vo
 	if parent_screen != null:
 		parent_screen.report_composition_result(result)
 		parent_screen.refresh_interaction_state()
+
+
+func _preview_forge_pair(first_item_id: String, second_item_id: String) -> bool:
+	var preview := _control(&"ForgeRecipePreview") as Label
+	if preview == null:
+		return false
+	var heading := _localized_ui_text(&"collection.category.recipe")
+	if first_item_id.is_empty() or second_item_id.is_empty():
+		preview.text = heading
+		preview.set_meta(&"forge_preview_state", &"idle")
+		preview.set_meta(&"result_equipment_id", &"")
+		preview.set_meta(&"accessible_text", preview.text)
+		return false
+	var recipe := (
+		_supply_port.try_forge_pair_recipe(first_item_id, second_item_id)
+		if _supply_port != null
+		else null
+	)
+	if recipe == null:
+		preview.text = "✕ %s · %s" % [
+			heading,
+			_localized_ui_text(&"error.presentation.action_not_available"),
+		]
+		preview.set_meta(&"forge_preview_state", &"invalid")
+		preview.set_meta(&"result_equipment_id", &"")
+		preview.set_meta(&"accessible_text", preview.text)
+		return false
+	var snapshot := _model.snapshot_clone() if _model != null else null
+	preview.text = "✓ %s: %s + %s → %s · %s" % [
+		heading,
+		_item_display_name(first_item_id, snapshot),
+		_item_display_name(second_item_id, snapshot),
+		_localized_content_text(recipe.equipment_id),
+		_localized_ui_text(&"prepare.forge.confirm"),
+	]
+	preview.set_meta(&"forge_preview_state", &"valid")
+	preview.set_meta(&"result_equipment_id", recipe.equipment_id)
+	preview.set_meta(&"accessible_text", preview.text)
+	return true
+
+
+func _component_equip_rejection_text() -> String:
+	return "✕ %s · %s" % [
+		_localized_ui_text(&"prepare.equip"),
+		_localized_ui_text(&"error.presentation.action_not_available"),
+	]
 
 
 func _apply_adapter_draft() -> void:

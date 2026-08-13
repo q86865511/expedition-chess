@@ -55,3 +55,10 @@ Artifact SHA-256:
 runner-execution.json=56EA3B6EA5163696C5268819E8F246D6103BDFCB00FD542386A2EDB9602BA6AB
 gut.godot.log=9C8CFE1566BE742CDD11A19154DDA9426793EE9811870443294BD360ECD0F386
 spec-contract.json=9D6E7A6A1AAF3D242422EDDC144D8CC12271AF2C8A2A3A96693B5CCEAC8C6EBD
+
+Post-document read-back:
+- After the T31 checkbox, manifest, and PROGRESS updates, `-Suite Spec` ran
+  from 2026-08-13T09:23:22Z to 09:23:26Z.
+- exit_code=0; case_count=4092; passed=true; failures=[].
+- Final process probe (excluding the probe itself): 0 Godot, old run-tests,
+  Get-Content, Select-String, or rg background processes remained.

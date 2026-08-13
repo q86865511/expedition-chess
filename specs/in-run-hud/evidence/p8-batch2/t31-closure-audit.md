@@ -1,6 +1,6 @@
 # in-run-hud T31 closure audit
 
-日期：2026-08-13  
+日期：2026-08-13
 接線前 baseline：`23c7666fdfaf80da5f35088da81c2f386bbe75d1`
 
 ## 結論
@@ -64,4 +64,5 @@
 - `-Suite All`：2026-08-13T09:02:43Z～09:18:57Z，exit 0。
 - GUT：345 scripts、1428／1428 passing、38825 assertions、0 failures／errors／orphans。
 - Spec：4092 cases、`passed=true`、`failures=[]`。
+- tasks／manifest／PROGRESS 回填後另跑 `-Suite Spec`：4092 cases、0 failures、exit 0。
 - 完整摘錄與 artifact hashes：`t31-all-suite-output.txt`。

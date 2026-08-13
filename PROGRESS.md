@@ -13,6 +13,17 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-13] ✅ `in-run-hud` T31 總收斂 — commit `0d120ea` 將 pinned
+  `SummonedUnitRuleSnapshot` 經 lease-protected supply port 注入 `RunCombatScreen` 的
+  `CombatWorldEventProjection`，再由 production `WorldBoardRenderer` 形成 summon body；缺供給、
+  模板、sprite 或非法模板仍 fail closed。Claude 契約測試 5／5（78）與新增 screen renderer
+  seam 2／2（15）皆 exit 0。正式內容目前無 summon effect，故使用 typed pinned-template／
+  spawn-event fixture 驅動正式 renderer，限制已落證據。Fresh current-source `-Suite All`
+  2026-08-13T09:02:43Z～09:18:57Z exit 0：345 scripts、1428／1428、38825 assertions、
+  0 failures／errors／orphans，Spec 4092／0；visual report 146／146、`issues=[]`，四 route
+  各 9 張的 36 張核心矩陣逐檔 SHA-256 與尺寸 read-back 通過。需求台帳最終為
+  **PASS 17／PARTIAL 0／BLOCKED 0**，T00～T32 全數完成。
+
 - [2026-08-13] ✅ `in-run-hud` 批次 2＋3 閉環 — 台帳自 PASS 8／PARTIAL 7／BLOCKED 2
   收斂至 **PASS 16／PARTIAL 1／BLOCKED 0**（唯一 PARTIAL＝IRH-REQ-007 動態 summon
   visual authority）。里程：S0 供給埠、T20 合成拖曳（含零件不可裝備語意勘誤）、
@@ -337,22 +348,6 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 進行中
 
-- [2026-08-13] 🟡 `in-run-hud` T31 未閉合產品需求：
-  `specs/in-run-hud/evidence/p8-batch2/evidence-report.json` 為 `ok=true`、exit 0、
-  146／146 cases（baseline 128＋shop-tier 9＋board-draft-preview 9）、`issues=[]`；三尺寸 × 三 UI scale 矩陣與
-  prepare／combat／map／reward 各九圖已重建，real APPDATA before／after SHA-256 均為
-  `b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867`，完成後 Godot 0。
-  逐條判定為 **PASS 16／PARTIAL 1／BLOCKED 0**，見 `irh-requirements-manifest.md`。
-  2026-08-12T16:13:48Z～16:36:07Z current-source `-Suite All` exit 0：GUT
-  343 scripts／1421／1421 tests／38732 assertions／0 failures／0 errors；Spec 4092 cases，
-  Import／Smoke／Gut／Content／Canonical／Combat／Expedition／ActEliminationGate／Spec 全部取得
-  預期 exit 0；此 run 已涵蓋修正後 evidence runner contract。
-  原 external Opus review verdict 為 `CHANGES_REQUESTED`；修正後 closure re-review 已
-  `APPROVED`，13 項 findings 為 10 項 `CLOSED`、3 項 `ACCEPTED`、0 項 `OPEN`，原文與
-  decision table 均落於 `evidence/p7-final/`，T32 已關閉。
-  本片僅剩 IRH-REQ-007 的 dynamic summon visual／max-stat typed authority；presentation 不能虛構
-  sprite 或最大值。REWARD 九圖仍是 typed `PendingRewardState` fixture。T31 維持未勾，
-  不得宣稱整片完成。
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
@@ -369,9 +364,6 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
   局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
   其後仍為 Phase C 資產接線、Phase D 中文化收尾。
-- `in-run-hud`：T00～T30、T32 已交付；p8 evidence 為 146 cases／0 issues，需求台帳
-  PASS 16／PARTIAL 1／BLOCKED 0，current-source All 已綠。下一步只補 dynamic summon
-  visual／max-stat typed authority並完成 T31；T32 已由 external Opus re-review `APPROVED` 關閉。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -379,9 +371,6 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已知問題
 
-- `in-run-hud` 尚有一項產品邊界：dynamic summon 缺 visual／max-stat typed authority；目前只能
-  fail closed 為 unrenderable，不得由 presentation 虛構。REWARD 九圖為 typed
-  `PendingRewardState` fixture，非 fresh-profile 自然路徑。
 - Combat／Expedition／Build／Camp／Run／Results Lab 仍是開發用灰盒，不是正式產品 UI；正式 production 美術與音訊已由 content-production 閉環，後續產品化 UX 依 roadmap 的剩餘切片處理。
 - Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。

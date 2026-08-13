@@ -133,27 +133,34 @@
 
 ## P7 收尾
 
-- [ ] **T31 HARD**：全 gate 與證據收斂——`-Suite All` exit 0、9 組解析度×縮放截圖、
+- [x] **T31 HARD**：全 gate 與證據收斂——`-Suite All` exit 0、9 組解析度×縮放截圖、
   IRH-REQ-001 至 IRH-REQ-017 逐條對應證據表（含 IRH-REQ-017 既有 gate 不回歸）；
   `PROGRESS.md` 回填。
+  交付：commit `0d120ea`；證據：`evidence/p8-batch2/t31-closure-audit.md`、
+  `evidence/p8-batch2/t31-all-suite-output.txt`、
+  `evidence/p8-batch2/t31-summon-renderer-focused.txt`、
+  `evidence/p7-final/irh-requirements-manifest.md`。
 - [x] **T32 HARD**：雙審——`reviewer`（opus）＋ codex MCP 第二審；findings closure 落
   `.pipeline/reviews/`。External Opus closure re-review 原文與 `APPROVED` verdict 保存於
   `.pipeline/reviews/in-run-hud-opus-re-review-approved.md`，並鏡像至
   `specs/in-run-hud/evidence/p7-final/in-run-hud-opus-re-review-approved.md`。
 
-### 2026-08-13 batch 3 closure checkpoint
+### 2026-08-13 T31 final closure checkpoint
 
-- Task boxes：已完成 `T00～T30、T32`（32／33）；僅 `T31` 未完成。
+- Task boxes：已完成 `T00～T32`（33／33）。
 - Fresh formal evidence：146／146 cases（baseline 128＋shop-tier 9＋board-draft-preview 9）、
   `issues=[]`、exit 0；
   三尺寸 × 三 UI scale 產物已重建，real APPDATA before／after SHA-256 相同，Godot process 0。
 - Codex 以 `905e664` 為 baseline 獨立審核 T14／T17／T19；產品 finding 0，文件 finding 2
   （T16 assertion 計數、T19 漏列 canonical 等價測試）已更正，詳見
   `evidence/p8-batch2/batch3-codex-audit.md`。
-- 2026-08-13T06:17:42Z～06:35:04Z current-source `-Suite All` 為 exit 0：343 scripts、
-  1421／1421 tests、38732 assertions、0 failures／errors，Spec 4092 cases；此 fresh run 已涵蓋
-  baseline `905e664` 與本次文件 read-back。
-  T31 因 IRH-REQ-007 dynamic summon typed visual／max-stat authority 仍有缺口而不勾。
+- 2026-08-13T09:02:43Z～09:18:57Z current-source `-Suite All` 為 exit 0：345 scripts、
+  1428／1428 tests、38825 assertions、0 failures／errors／orphans，Spec 4092 cases；
+  Import／GUT 無 `Parse Error`／`Failed to load`。
+- IRH-REQ-007 dynamic summon 已由 pinned template→supply port→screen→projection→renderer
+  單一路徑閉合；Claude 契約 5／5（78）與 screen renderer seam 2／2（15）皆 exit 0。
+  正式內容無 summon effect，依交付約束以 typed fixture 驅動正式 renderer 並明示限制。
+- 需求台帳：PASS 17／PARTIAL 0／BLOCKED 0；T31 關閉。
 - 原外部 Opus review 為 `CHANGES_REQUESTED`；13 項 decision table 與使用者轉交的 external
   Opus closure re-review `APPROVED` 原文均已落
   `evidence/p7-final/in-run-hud-opus-re-review-approved.md`，無 OPEN finding，故 T32 關閉。

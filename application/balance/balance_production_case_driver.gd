@@ -6,6 +6,24 @@ const PREPARE_ACTION_LIMIT: int = 3
 const REWARD_STEP_LIMIT: int = 32
 const BOSS_RETRY_LIMIT: int = 100
 const EXPECTED_FULL_ROUTE_NODES: int = 21
+const BENCH_CAPACITY: int = 9
+## G2 Phase 2 R0（roadmap 軌 A）：3k screening 實測三策略 reroll_count／sell_unit_count
+## 全 0，reroll_cost 與賣出退款這兩類 TUNE 值因此量不到任何效果。以下常數是三策略
+## reroll／sell 觸發條件的門檻，全部只讀 snapshot 與 pinned catalog（無 rand*／時間），
+## 且各自貼合策略語意；balance_bot_strategy.gd 的三軸權重完全不動。
+## 板凳溢出達此隻數才視為「有冗員可賣」（1 隻是正常換血雜訊，見 bench_pressure_score）。
+const SELL_BENCH_PRESSURE: int = 2
+## reroll 需保留的金幣水位倍數：滾完至少還能再撐兩次，避免把最後一塊錢滾掉。
+const REROLL_GOLD_RESERVE_MULTIPLIER: int = 3
+const REROLL_TEMPO_BASE: int = 80
+## 讓 tempo 的 reroll 蓋過「只買得起最低費牌」的 BUY_UNIT，但仍輸給更高費的候選。
+const REROLL_TEMPO_UPGRADE_BONUS: int = 80
+const REROLL_SYNERGY_BASE: int = 35
+## 讓 synergy 的 reroll 蓋過「與現有羈絆無關」的 BUY_UNIT。
+const REROLL_SYNERGY_OFF_TRAIT_BONUS: int = 60
+## 金幣已在「花掉仍保得住滿額利息」的水位時，reroll 對 economy 是免費的資訊價值。
+const REROLL_ECONOMY_INTEREST_SURPLUS: int = 120
+const SELL_TRIGGER_SCORE: int = 150
 
 var _content: ProjectContentBootstrapResult
 var _storage_factory: Callable
@@ -423,9 +441,18 @@ func _shop_actions(
 	var actions: Array[BalanceBotAction] = []
 	var unit_count := snapshot.roster.unit_instances.size()
 	var level := snapshot.economy.level
+	var gold := snapshot.economy.gold
 	var has_affordable_buy := false
 	var bench_count := snapshot.roster.bench_unit_instance_ids.size()
-	var bench_is_full := bench_count >= 9
+	var bench_is_full := bench_count >= BENCH_CAPACITY
+	var config := _content.economy_catalog.config()
+	var trait_counts := _roster_trait_counts(snapshot.roster)
+	# reroll／sell 的觸發條件需要「商店現況」的三個聚合值：買得起的最高費階、
+	# 買得起且接得上現有羈絆的最高重疊數、以及不論買不買得起的最高費階（賣冗員
+	# 換得起的候選）。三者都在同一趟 offer 迴圈算完，不另外掃第二次。
+	var best_affordable_cost_tier := 0
+	var best_affordable_trait_overlap := 0
+	var best_offer_cost_tier := 0
 	if bench_is_full:
 		for instance_id: String in snapshot.roster.bench_unit_instance_ids:
 			actions.append(BalanceBotAction.new(
@@ -441,14 +468,25 @@ func _shop_actions(
 				# "unit is legitimately rare per its drop rate".
 				result.null_offer_rule_count += 1
 				continue
-			has_affordable_buy = has_affordable_buy \
-				or offer.cost <= snapshot.economy.gold
+			var affordable := offer.cost <= gold
+			has_affordable_buy = has_affordable_buy or affordable
+			best_offer_cost_tier = maxi(best_offer_cost_tier, rule.cost_tier)
+			if affordable:
+				best_affordable_cost_tier = maxi(best_affordable_cost_tier, rule.cost_tier)
+				best_affordable_trait_overlap = maxi(
+					best_affordable_trait_overlap,
+					trait_overlap_count(rule.trait_ids, trait_counts, 0)
+				)
 			actions.append(BalanceBotAction.new(
 				BalanceBotAction.Kind.BUY_UNIT, StringName(offer.offer_id), offer.cost,
 				100 + rule.cost_tier * 20, 20 - offer.cost * 5,
 				rule.trait_ids.size() * 30 + rule.effect_ids.size() * 5
 			))
-	var config := _content.economy_catalog.config()
+		var sell_action := _try_bench_sell_action(
+			snapshot, strategy_id, config, trait_counts, best_offer_cost_tier
+		)
+		if sell_action != null:
+			actions.append(sell_action)
 	var xp_legal := level < 9
 	var xp_economy_score := 90
 	if strategy_id == BalanceBotStrategy.ECONOMY:
@@ -463,9 +501,23 @@ func _shop_actions(
 		BalanceBotAction.Kind.BUY_XP, &"action.buy_xp", config.xp_buy_cost,
 		40 + xp_pressure, xp_economy_score + xp_pressure, 20 + xp_pressure, xp_legal
 	))
+	var odds := config.try_odds_for_level(level)
+	var reachable_cost_tier := max_reachable_cost_tier(
+		odds.tier_basis_points if odds != null else ([] as Array[int])
+	)
 	actions.append(BalanceBotAction.new(
 		BalanceBotAction.Kind.REROLL, &"action.refresh_shop", config.reroll_cost,
-		80, economy_reroll_score(unit_count, level, has_affordable_buy), 35
+		reroll_tempo_score(
+			unit_count, level, gold, config.reroll_cost,
+			best_affordable_cost_tier, reachable_cost_tier
+		),
+		reroll_economy_score(
+			unit_count, level, has_affordable_buy, gold, config.reroll_cost,
+			config.interest_step_gold, config.interest_per_step, config.max_interest
+		),
+		reroll_synergy_score(
+			unit_count, level, gold, config.reroll_cost, best_affordable_trait_overlap
+		)
 	))
 	actions.append(BalanceBotAction.new(
 		BalanceBotAction.Kind.HOLD, &"action.hold", 0, 0,
@@ -504,12 +556,232 @@ static func economy_xp_allowed(
 	unit_count: int,
 	level: int
 ) -> bool:
-	if level >= 9 or unit_count < level or cost < 0 or gold < cost \
-		or interest_step_gold <= 0 or interest_per_step <= 0 or max_interest < 0:
+	if level >= 9 or unit_count < level:
+		return false
+	return interest_preserved_after_spend(
+		gold, cost, interest_step_gold, interest_per_step, max_interest
+	)
+
+
+## 花掉 `cost` 之後金幣仍在滿額利息水位以上＝這筆消費對 economy 是「免費」的。
+## 由 economy 的 BUY_XP／REROLL／SELL_UNIT 三個觸發條件共用，避免利息門檻的
+## 算法在三處各寫一份而漂移。
+static func interest_preserved_after_spend(
+	gold: int,
+	cost: int,
+	interest_step_gold: int,
+	interest_per_step: int,
+	max_interest: int
+) -> bool:
+	if cost < 0 or gold < cost or interest_step_gold <= 0 or interest_per_step <= 0 \
+		or max_interest < 0:
 		return false
 	@warning_ignore("integer_division")
 	var steps_for_max := (max_interest + interest_per_step - 1) / interest_per_step
 	return gold - cost >= steps_for_max * interest_step_gold
+
+
+## 本等級的商店機率表最高開放到第幾費階（1-based；0＝沒有任何開放費階）。
+## tempo 的 reroll 觸發要靠它區分「商店只有低費牌」與「這一級本來就只出低費牌」，
+## 後者滾再多次也不會變好。
+static func max_reachable_cost_tier(tier_basis_points: Array[int]) -> int:
+	var result := 0
+	for index: int in range(tier_basis_points.size()):
+		if tier_basis_points[index] > 0:
+			result = index + 1
+	return result
+
+
+## tempo：板面已鋪滿、金幣有餘裕、商店買得起的最高費階低於本級能出到的費階時，
+## 滾一手找立刻能上場的更強戰力（tempo 語意的 roll for power）。其餘情況維持
+## 既有的固定分數，不改變原有偏好。
+static func reroll_tempo_score(
+	unit_count: int,
+	level: int,
+	gold: int,
+	reroll_cost: int,
+	best_affordable_cost_tier: int,
+	reachable_cost_tier: int
+) -> int:
+	if reroll_cost <= 0 or gold < reroll_cost * REROLL_GOLD_RESERVE_MULTIPLIER \
+		or unit_count < level or best_affordable_cost_tier >= reachable_cost_tier:
+		return REROLL_TEMPO_BASE
+	return REROLL_TEMPO_BASE + REROLL_TEMPO_UPGRADE_BONUS
+
+
+## synergy：板面已鋪滿、金幣有餘裕、商店裡買得起的牌沒有一張接得上現有羈絆時，
+## 滾掉這批無關的牌。有任何一張接得上就維持既有分數，讓 BUY_UNIT 贏。
+static func reroll_synergy_score(
+	unit_count: int,
+	level: int,
+	gold: int,
+	reroll_cost: int,
+	best_affordable_trait_overlap: int
+) -> int:
+	if reroll_cost <= 0 or gold < reroll_cost * REROLL_GOLD_RESERVE_MULTIPLIER \
+		or unit_count < level or best_affordable_trait_overlap > 0:
+		return REROLL_SYNERGY_BASE
+	return REROLL_SYNERGY_BASE + REROLL_SYNERGY_OFF_TRAIT_BONUS
+
+
+## economy：還缺人又買得起時先鋪場（維持既有分數）；否則只要金幣在「滾一次仍
+## 保得住滿額利息」的水位，reroll 就是不花代價的資訊價值。
+static func reroll_economy_score(
+	unit_count: int,
+	level: int,
+	has_affordable_buy: bool,
+	gold: int,
+	reroll_cost: int,
+	interest_step_gold: int,
+	interest_per_step: int,
+	max_interest: int
+) -> int:
+	if unit_count < level and has_affordable_buy:
+		return economy_reroll_score(unit_count, level, has_affordable_buy)
+	if interest_preserved_after_spend(
+		gold, reroll_cost, interest_step_gold, interest_per_step, max_interest
+	):
+		return REROLL_ECONOMY_INTEREST_SURPLUS
+	return economy_reroll_score(unit_count, level, has_affordable_buy)
+
+
+## 該單位的羈絆有幾條在隊伍其他成員身上也出現。`self_count` 是要從計數裡扣掉的
+## 自身份額（板凳冗員傳 1、還沒買下的商店候選傳 0）。
+static func trait_overlap_count(
+	trait_ids: Array[StringName], trait_counts: Dictionary, self_count: int
+) -> int:
+	var result := 0
+	for trait_id: StringName in trait_ids:
+		if int(trait_counts.get(trait_id, 0)) - self_count > 0:
+			result += 1
+	return result
+
+
+## 板凳裡「最該賣」的候選 index：primary 最低者優先，平手比 secondary，
+## 再平手比 instance_id 字串序——全程決定性，無 rand*／時間。-1＝沒有候選。
+## 各策略用不同的 primary（tempo／economy 看費階、synergy 看羈絆重疊）。
+static func worst_bench_index(
+	instance_ids: Array[String], primary: Array[int], secondary: Array[int]
+) -> int:
+	if instance_ids.size() != primary.size() or instance_ids.size() != secondary.size():
+		return -1
+	var best := -1
+	for index: int in range(instance_ids.size()):
+		if best < 0:
+			best = index
+			continue
+		if primary[index] < primary[best] \
+			or (primary[index] == primary[best] and (secondary[index] < secondary[best] \
+			or (secondary[index] == secondary[best] \
+			and instance_ids[index] < instance_ids[best]))):
+			best = index
+	return best
+
+
+## tempo：板凳有真的溢出戰力，而商店裡站著比這隻冗員更高費的候選時，把它換成
+## 能立刻上場的戰力。商店沒有更高費的候選就不賣（賣了也買不到更好的）。
+static func sell_tempo_score(
+	bench_count: int, worst_cost_tier: int, best_offer_cost_tier: int
+) -> int:
+	if bench_count < SELL_BENCH_PRESSURE or best_offer_cost_tier <= worst_cost_tier:
+		return 0
+	return SELL_TRIGGER_SCORE
+
+
+## economy：板凳有溢出且金幣尚未到滿額利息水位時，把冗員換成利息本金；
+## 已經在水位以上就沒有理由賣（多的金幣本來就生不出更多利息）。
+static func sell_economy_score(
+	bench_count: int,
+	gold: int,
+	interest_step_gold: int,
+	interest_per_step: int,
+	max_interest: int
+) -> int:
+	if bench_count < SELL_BENCH_PRESSURE:
+		return 0
+	if interest_preserved_after_spend(
+		gold, 0, interest_step_gold, interest_per_step, max_interest
+	):
+		return 0
+	return SELL_TRIGGER_SCORE
+
+
+## synergy：板凳有溢出且該冗員與隊伍其他成員沒有任何共通羈絆時賣掉；
+## 只要還有一條共通羈絆就留著（可能是下一階羈絆的第 N 隻）。
+static func sell_synergy_score(bench_count: int, worst_trait_overlap: int) -> int:
+	if bench_count < SELL_BENCH_PRESSURE or worst_trait_overlap > 0:
+		return 0
+	return SELL_TRIGGER_SCORE
+
+
+## 板凳溢出時最多提出一個 SELL_UNIT 候選（下一個 prepare 步驟會用更新後的 snapshot
+## 重算，賣掉一隻後溢出量掉到門檻以下就自動停手）。三軸分數各自由對應策略的觸發
+## 條件決定，全部不成立時不提出動作，避免污染 action 清單。
+func _try_bench_sell_action(
+	snapshot: RunPresentationSnapshot,
+	strategy_id: StringName,
+	config: EconomyConfigRule,
+	trait_counts: Dictionary,
+	best_offer_cost_tier: int
+) -> BalanceBotAction:
+	var bench_count := snapshot.roster.bench_unit_instance_ids.size()
+	if bench_count < SELL_BENCH_PRESSURE:
+		return null
+	var instance_ids: Array[String] = []
+	var cost_tiers: Array[int] = []
+	var overlaps: Array[int] = []
+	for instance_id: String in snapshot.roster.bench_unit_instance_ids:
+		var unit := _try_roster_unit(snapshot.roster, instance_id)
+		if unit == null:
+			continue
+		var rule := _content.battle_catalog.try_unit_rule(unit.def_id)
+		if rule == null:
+			continue
+		instance_ids.append(instance_id)
+		cost_tiers.append(rule.cost_tier)
+		overlaps.append(trait_overlap_count(rule.trait_ids, trait_counts, 1))
+	var synergy_ranked := strategy_id == BalanceBotStrategy.SYNERGY
+	var index := worst_bench_index(
+		instance_ids,
+		overlaps if synergy_ranked else cost_tiers,
+		cost_tiers if synergy_ranked else overlaps
+	)
+	if index < 0:
+		return null
+	var tempo_score := sell_tempo_score(
+		bench_count, cost_tiers[index], best_offer_cost_tier
+	)
+	var economy_score := sell_economy_score(
+		bench_count, snapshot.economy.gold, config.interest_step_gold,
+		config.interest_per_step, config.max_interest
+	)
+	var synergy_score := sell_synergy_score(bench_count, overlaps[index])
+	if tempo_score <= 0 and economy_score <= 0 and synergy_score <= 0:
+		return null
+	return BalanceBotAction.new(
+		BalanceBotAction.Kind.SELL_UNIT, StringName(instance_ids[index]), 0,
+		tempo_score, economy_score, synergy_score
+	)
+
+
+func _try_roster_unit(roster: RosterState, instance_id: String) -> UnitInstance:
+	for unit: UnitInstance in roster.unit_instances:
+		if unit.instance_id == instance_id:
+			return unit
+	return null
+
+
+## 隊伍（板面＋板凳）每條羈絆的持有數。build id 推導與 reroll／sell 的羈絆重疊
+## 判斷共用同一份計數，避免兩處對「隊伍羈絆」的定義漂移。
+func _roster_trait_counts(roster: RosterState) -> Dictionary:
+	var trait_counts: Dictionary = {}
+	for unit: UnitInstance in roster.unit_instances:
+		var rule := _content.battle_catalog.try_unit_rule(unit.def_id)
+		if rule == null:
+			continue
+		for trait_id: StringName in rule.trait_ids:
+			trait_counts[trait_id] = int(trait_counts.get(trait_id, 0)) + 1
+	return trait_counts
 
 
 func _unit_def_id_for_offer(snapshot: RunPresentationSnapshot, offer_id: String) -> StringName:
@@ -844,14 +1116,7 @@ static func _build_act_snapshot(
 
 
 func _derive_build_id(roster: RosterState, run_id: StringName) -> StringName:
-	var trait_counts: Dictionary = {}
-	for unit: UnitInstance in roster.unit_instances:
-		var rule := _content.battle_catalog.try_unit_rule(unit.def_id)
-		if rule == null:
-			continue
-		for trait_id: StringName in rule.trait_ids:
-			trait_counts[trait_id] = int(trait_counts.get(trait_id, 0)) + 1
-	return build_id_from_trait_counts(trait_counts, run_id)
+	return build_id_from_trait_counts(_roster_trait_counts(roster), run_id)
 
 
 static func build_id_from_trait_counts(

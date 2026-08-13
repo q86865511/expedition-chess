@@ -16,6 +16,10 @@ $ErrorActionPreference = 'Stop'
 # Per-act elimination gate (DC-REQ-008) is shared with the golden test so the
 # aggregate cannot drift from domain/balance/balance_bot_report.gd.
 . (Join-Path $PSScriptRoot 'act-elimination-gate.ps1')
+# Section 6.3b convergence signals (win-rate band, win HP spread) are shared with
+# the same golden as domain/balance/balance_bot_report.gd. WARN only: they are
+# published as report fields and never appended to $gateReasons.
+. (Join-Path $PSScriptRoot 'convergence-warnings.ps1')
 if ($ShardCount -gt $SeedCount) { throw 'ShardCount cannot exceed SeedCount.' }
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $artifactRoot = Join-Path $repoRoot 'artifacts\test'
@@ -459,6 +463,9 @@ $actCurve = Get-BalanceActCurve -CaseProofs $caseProofs.ToArray() -SeedCount $Se
 foreach ($reason in @(Get-BalanceActEliminationGateReasons -ActCurve $actCurve)) {
     Add-GateReason $reason
 }
+# Deliberately not fed into Add-GateReason: section 6.3b's win-rate band and win-HP
+# spread are convergence signals for the TUNE iteration loop, not pass/fail gates.
+$convergence = Get-BalanceConvergenceReport -CaseProofs $caseProofs.ToArray()
 
 $strategyRank = @{ tempo = 0; economy = 1; synergy = 2 }
 $canonicalCases = @($caseProofs | Sort-Object `
@@ -503,6 +510,7 @@ $payload = [ordered]@{
     }
     battle_outcomes = [ordered]@{ wins = $battleWins; losses = $battleLosses }
     act_curve = $actCurve
+    convergence = $convergence
     case_proofs = $orderedProofs
     failed_seeds = $failedSeeds.ToArray()
     regression_proof = [ordered]@{

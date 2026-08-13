@@ -1483,12 +1483,28 @@ try {
                 # DC-REQ-008：GDScript／PowerShell 雙實作的 golden 必須逐字相同；這一步
                 # 讓 PS 半邊（tools/balance/act-elimination-gate.ps1）接進 -Suite All，
                 # 不再只能靠人工單獨執行才會發現雙實作漂移（review A F4／review B #4 相關）。
-                $goldenScriptPath = Join-Path $repoRoot 'tools\balance\tests\test-act-elimination-gate.ps1'
-                $goldenLogPath = Join-Path $artifactRoot 'act-elimination-gate.log'
+                # Phase 2 R0：tools\balance\tests\ 下的鏡射 golden 已不只一份
+                # （另有 convergence-warnings），改成掃描整個目錄，之後新增鏡射不必再改本檔。
+                # 步驟名維持 ActEliminationGate（既有 evidence 以此名索引）。
                 $goldenRunStarted = [DateTime]::UtcNow
-                $goldenOutput = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $goldenScriptPath 2>&1
-                $code = $LASTEXITCODE
-                ($goldenOutput | Out-String) | Out-File -LiteralPath $goldenLogPath -Encoding utf8
+                $code = 0
+                $goldenScripts = @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tools\balance\tests') `
+                        -Filter 'test-*.ps1' -File | Sort-Object -Property Name)
+                if ($goldenScripts.Count -eq 0) {
+                    $code = 3
+                    $failureMessage = 'No PowerShell mirror golden scripts found under tools\balance\tests.'
+                }
+                foreach ($goldenScript in $goldenScripts) {
+                    $goldenLogPath = Join-Path $artifactRoot ($goldenScript.BaseName -replace '^test-', '')
+                    $goldenLogPath = $goldenLogPath + '.log'
+                    $goldenOutput = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $goldenScript.FullName 2>&1
+                    $goldenCode = $LASTEXITCODE
+                    ($goldenOutput | Out-String) | Out-File -LiteralPath $goldenLogPath -Encoding utf8
+                    if ($goldenCode -ne 0 -and $code -eq 0) {
+                        $code = $goldenCode
+                        $failureMessage = "$($goldenScript.Name) failed with exit code $goldenCode."
+                    }
+                }
                 $runs.Add([pscustomobject]@{
                         name = $name
                         exit_code = $code

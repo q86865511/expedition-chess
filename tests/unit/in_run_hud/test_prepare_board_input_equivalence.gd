@@ -6,6 +6,7 @@ class CapturingIntentPort:
 
 	var intents: Array[RunPresentationIntent] = []
 	var _response: RunPresentationSnapshot
+	var preview_supply: Variant
 
 
 	func _init(snapshot: RunPresentationSnapshot) -> void:
@@ -21,7 +22,56 @@ class CapturingIntentPort:
 				intent.bench_unit_instance_ids
 			)
 		_response = canonical.deep_clone()
+		if preview_supply != null:
+			preview_supply.replace_committed(canonical)
 		return RunPresentationResult.success(canonical)
+
+
+class PreviewSupplyPort:
+	extends LiveScreenSupplyPort
+
+	var committed: BoardDraftPreviewSnapshot
+	var preview_call_count: int = 0
+
+
+	func _init(snapshot: RunPresentationSnapshot) -> void:
+		committed = _preview_for(snapshot.roster.board.placements)
+
+
+	func try_committed_board_preview() -> BoardDraftPreviewSnapshot:
+		return committed.deep_clone()
+
+
+	func replace_committed(snapshot: RunPresentationSnapshot) -> void:
+		committed = _preview_for(snapshot.roster.board.placements)
+
+
+	func try_board_draft_preview(
+		draft_placements: Array[BoardPlacementState],
+		_draft_bench_unit_instance_ids: Array[String]
+	) -> BoardDraftPreviewSnapshot:
+		preview_call_count += 1
+		return _preview_for(draft_placements)
+
+
+	func _preview_for(
+		placements: Array[BoardPlacementState]
+	) -> BoardDraftPreviewSnapshot:
+		var preview := BoardDraftPreviewSnapshot.new()
+		preview.used_population = placements.size()
+		preview.derived_capacity = 2
+		preview.valid = placements.size() <= preview.derived_capacity
+		if not preview.valid:
+			preview.issues.append(BoardValidationIssue.new(
+				BoardValidationIssue.OVER_CAPACITY
+			))
+		var progress := TraitProgressSnapshot.new()
+		progress.trait_id = &"unit.board"
+		progress.distinct_count = mini(placements.size(), 2)
+		progress.active_tier = 1 if placements.size() >= 2 else 0
+		progress.next_required_count = 2 if progress.active_tier == 0 else -1
+		preview.trait_progress.append(progress)
+		return preview
 
 
 func test_drag_button_and_stable_focus_w_commit_the_same_canonical_layout() -> void:
@@ -425,6 +475,12 @@ func test_prepare_button_preview_exposes_source_target_and_non_color_swap_cue() 
 	target.set_meta(&"unit_instance_id", "bench_b")
 	target.set_meta(&"drag_target_kind", &"bench")
 	target.set_meta(&"bench_slot", 1)
+	target.configure_unit_drop_resolver(func(
+		_unit_id: String,
+		_target_kind: StringName,
+		_target_cell: Vector2i,
+		_target_slot: int
+	) -> Dictionary: return {"legal": true})
 	var payload: Variant = source.unit_drag_payload()
 	assert_true(target._can_drop_data(Vector2.ZERO, payload))
 	var preview := target.preview_state()
@@ -433,6 +489,177 @@ func test_prepare_button_preview_exposes_source_target_and_non_color_swap_cue() 
 	assert_eq(preview.get("target_kind"), &"bench")
 	assert_eq(preview.get("target_slot"), 1)
 	assert_true(bool(preview.get("swap", false)))
+
+
+func test_typed_drop_preview_drives_population_trait_legality_and_clear() -> void:
+	var legal_fixture := _fixture()
+	var legal_screen := legal_fixture["screen"] as RunPrepareScreen
+	var legal: Dictionary = legal_screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	assert_true(bool(legal.get("legal", false)))
+	var preview := legal.get("preview") as BoardDraftPreviewSnapshot
+	assert_not_null(preview)
+	if preview == null:
+		return
+	assert_eq(preview.used_population, 2)
+	assert_eq(preview.derived_capacity, 2)
+	assert_eq(preview.trait_progress[0].distinct_count, 2)
+	assert_eq(preview.trait_progress[0].active_tier, 1)
+	var panel := legal_screen.find_child(
+		"BoardDraftPreview", true, false
+	) as Label
+	assert_not_null(panel)
+	if panel == null:
+		return
+	assert_true(panel.visible)
+	assert_true(bool(panel.get_meta(&"preview_valid")))
+	preview.used_population = 99
+	var isolated: Dictionary = legal_screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	assert_eq(
+		(isolated.get("preview") as BoardDraftPreviewSnapshot).used_population,
+		2,
+		"caller mutation must not escape the supply clone-out boundary"
+	)
+	legal_screen.call(&"_clear_board_draft_preview")
+	assert_false(panel.visible)
+
+	var illegal_fixture := _fixture(false, _over_capacity_snapshot())
+	var illegal_screen := illegal_fixture["screen"] as RunPrepareScreen
+	var illegal_port := illegal_fixture["port"] as CapturingIntentPort
+	var before_digest := _snapshot_layout_digest(illegal_port._response)
+	var illegal: Dictionary = illegal_screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(2, 0), -1
+	)
+	assert_false(bool(illegal.get("legal", true)))
+	var rejected := illegal.get("preview") as BoardDraftPreviewSnapshot
+	assert_not_null(rejected)
+	if rejected == null:
+		return
+	assert_true(rejected.issue_codes().has(BoardValidationIssue.OVER_CAPACITY))
+	illegal_screen.call(
+		&"_on_unit_dropped", "bench_a", &"board", Vector2i(2, 0), -1
+	)
+	assert_true(illegal_port.intents.is_empty())
+	assert_eq(_snapshot_layout_digest(illegal_port._response), before_digest)
+
+
+func test_preview_cache_keys_revision_target_and_authoritative_drop_recheck() -> void:
+	var fixture := _fixture()
+	var screen := fixture["screen"] as RunPrepareScreen
+	var port := fixture["port"] as CapturingIntentPort
+	var supply := fixture["supply"] as PreviewSupplyPort
+	assert_eq(supply.preview_call_count, 0)
+	for probe: int in range(3):
+		var same: Dictionary = screen.call(
+			&"_resolve_unit_drop", "bench_a", &"board", Vector2i(1, 0), -1
+		)
+		assert_true(bool(same.get("legal", false)), "probe %d" % probe)
+	assert_eq(supply.preview_call_count, 1, "same revision/target uses one query")
+	screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(2, 0), -1
+	)
+	assert_eq(supply.preview_call_count, 2, "target change misses cache")
+	screen.call(&"_reset_consumer_draft", port._response.deep_clone())
+	screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	assert_eq(supply.preview_call_count, 3, "draft revision invalidates cache")
+	screen.call(
+		&"_on_unit_dropped", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	assert_eq(supply.preview_call_count, 4, "drop always rechecks authority")
+	assert_eq(port.intents.size(), 1)
+
+
+func test_public_commit_resets_draft_cache_and_next_preview_uses_new_canonical() -> void:
+	var fixture := _fixture()
+	var screen := fixture["screen"] as RunPrepareScreen
+	var supply := fixture["supply"] as PreviewSupplyPort
+	var bench := screen.find_child("BenchSelector", true, false) as ItemList
+	assert_not_null(bench)
+	if bench == null:
+		return
+	bench.select(0)
+	assert_true(screen.move_selected_to_board().ok)
+	var staged_revision: int = screen.get(&"_draft_revision")
+	assert_true(screen.commit_board_draft().ok)
+	assert_gt(
+		int(screen.get(&"_draft_revision")),
+		staged_revision,
+		"public prepare.unit commit must advance and clear the staged revision"
+	)
+	assert_eq(supply.committed.used_population, 2)
+	var calls_before := supply.preview_call_count
+	var next: Dictionary = screen.call(
+		&"_resolve_unit_drop", "board_a", &"bench", Vector2i(-1, -1), 0
+	)
+	assert_true(bool(next.get("legal", false)))
+	assert_eq(supply.preview_call_count, calls_before + 1)
+	var next_preview := next.get("preview") as BoardDraftPreviewSnapshot
+	assert_not_null(next_preview)
+	if next_preview == null:
+		return
+	assert_eq(next_preview.used_population, 1)
+	var panel := screen.find_child("BoardDraftPreview", true, false) as Label
+	assert_not_null(panel)
+	if panel != null:
+		assert_true(
+			panel.text.contains("2 / 2 → 1 / 2"),
+			"next drag baseline must be the newly committed canonical layout"
+		)
+
+
+func test_system_menu_blocks_preview_query_clears_panel_and_never_dispatches() -> void:
+	var fixture := _fixture(true)
+	var screen := fixture["screen"] as RunPrepareScreen
+	var port := fixture["port"] as CapturingIntentPort
+	var supply := fixture["supply"] as PreviewSupplyPort
+	var overlay := fixture["overlay"] as SystemMenuOverlay
+	screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	var panel := screen.find_child("BoardDraftPreview", true, false) as Label
+	assert_not_null(panel)
+	if panel == null:
+		return
+	assert_true(panel.visible)
+	assert_eq(supply.preview_call_count, 1)
+	assert_true(overlay.open())
+	var blocked: Dictionary = screen.call(
+		&"_resolve_unit_drop", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	assert_false(bool(blocked.get("legal", true)))
+	assert_false(panel.visible)
+	assert_eq(supply.preview_call_count, 1)
+	screen.call(
+		&"_on_unit_dropped", "bench_a", &"board", Vector2i(1, 0), -1
+	)
+	assert_true(port.intents.is_empty())
+	assert_eq(supply.preview_call_count, 1)
+
+
+func test_preview_panel_preserves_scaled_minimum_and_clips_overflow() -> void:
+	var fixture := _fixture()
+	var screen := fixture["screen"] as RunPrepareScreen
+	var panel := screen.find_child("BoardDraftPreview", true, false) as Label
+	assert_not_null(panel)
+	if panel == null:
+		return
+	assert_eq(
+		panel.get_meta(ExpeditionLayoutMetrics.META_BASE_MINIMUM),
+		Vector2(472.0, 96.0)
+	)
+	ExpeditionLayoutMetrics.set_runtime_min(panel, Vector2(472.0, 144.0))
+	screen.refresh_layout_rects()
+	assert_gte(panel.size.y, 144.0)
+	assert_true(panel.clip_text)
+	assert_eq(
+		panel.text_overrun_behavior,
+		TextServer.OVERRUN_TRIM_ELLIPSIS
+	)
 
 
 func _fixture(
@@ -445,6 +672,8 @@ func _fixture(
 		else _snapshot()
 	)
 	var port := CapturingIntentPort.new(snapshot)
+	var supply := PreviewSupplyPort.new(snapshot)
+	port.preview_supply = supply
 	var screen := RunPrepareScreen.new()
 	var route_screen: ProductionScreen
 	var overlay: SystemMenuOverlay
@@ -463,7 +692,12 @@ func _fixture(
 		add_child_autofree(screen)
 	var issues: Array[BoardValidationIssue] = []
 	assert_eq(
-		screen.compose(snapshot, BoardValidationReport.new(2, issues), port),
+		screen.compose(
+			snapshot,
+			BoardValidationReport.new(2, issues),
+			port,
+			supply
+		),
 		&""
 	)
 	return {
@@ -471,6 +705,7 @@ func _fixture(
 		"route_screen": route_screen,
 		"overlay": overlay,
 		"port": port,
+		"supply": supply,
 	}
 
 
@@ -561,6 +796,12 @@ func _inventory_membership_snapshot() -> RunPresentationSnapshot:
 		"missing_resolver_item",
 	])
 	snapshot.roster.pending_item_overflow.assign(["overflow_item"])
+	return snapshot
+
+
+func _over_capacity_snapshot() -> RunPresentationSnapshot:
+	var snapshot := _swap_snapshot()
+	# _swap_snapshot adds board_b at (1, 0); bench_a would become population 3.
 	return snapshot
 
 

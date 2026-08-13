@@ -121,6 +121,151 @@ func test_empty_selection_clears_previous_inspector_state() -> void:
 	assert_not_null(shell.find_child("InspectorEmptyState", true, false))
 
 
+func test_sell_quote_uses_authoritative_gain_and_named_rejection() -> void:
+	var shell := _bound_shell(_projected_snapshot())
+	var quote := ShopQuoteSnapshot.new()
+	quote.action = &"sell"
+	quote.available = true
+	quote.affordable = true
+	quote.quotable = true
+	quote.gold_gain = 17
+	shell.show_prepare_unit(BOARD_ID, quote)
+	var value := shell.find_child(
+		"PrepareUnitSellQuote", true, false
+	) as Label
+	assert_not_null(value)
+	assert_true(value.text.contains("17"))
+	assert_eq(value.get_meta(&"shop_quote_gold_gain"), 17)
+	assert_true(value.get_meta(&"shop_quote_available"))
+
+	var rejected := ShopQuoteSnapshot.new()
+	rejected.action = &"sell"
+	rejected.rejection_code = &"SHOP_UNIT_MISSING"
+	shell.show_prepare_unit(BOARD_ID, rejected)
+	value = shell.find_child("PrepareUnitSellQuote", true, false) as Label
+	assert_not_null(value)
+	assert_eq(
+		value.get_meta(&"shop_quote_message_key"),
+		&"error.shop.unit_missing"
+	)
+	assert_eq(value.get_meta(&"shop_quote_rejection_code"), &"SHOP_UNIT_MISSING")
+	assert_false(value.get_meta(&"shop_quote_available"))
+
+	shell.show_inspector_empty()
+	assert_null(shell.find_child("PrepareUnitSellQuote", true, false))
+
+
+func test_relocalize_redraws_visible_inspector_from_saved_clone_only_state() -> void:
+	var shell := _bound_shell(_projected_snapshot())
+	var quote := ShopQuoteSnapshot.new()
+	quote.action = &"sell"
+	quote.available = true
+	quote.affordable = true
+	quote.quotable = true
+	quote.gold_gain = 17
+	shell.show_prepare_unit(BOARD_ID, quote)
+	quote.gold_gain = 999
+	shell.relocalize(
+		Callable(self, "_ui_text_en"), Callable(self, "_content_text")
+	)
+	var sell := shell.find_child("PrepareUnitSellQuote", true, false) as Label
+	assert_not_null(sell)
+	assert_true(sell.text.begins_with("Sell"))
+	assert_true(sell.text.contains("17"))
+	assert_false(sell.text.contains("999"))
+	assert_eq(
+		(shell.find_child("PrepareUnitName", true, false) as Label).text,
+		"棋士甲"
+	)
+
+	shell.show_inspector_empty()
+	shell.relocalize(
+		Callable(self, "_ui_text_en"), Callable(self, "_content_text")
+	)
+	assert_null(shell.find_child("PrepareUnitSellQuote", true, false))
+	assert_eq(
+		(shell.find_child("InspectorEmptyState", true, false) as Label).text,
+		"None"
+	)
+
+
+func test_relocalize_preserves_combat_inspector_clone_and_identity() -> void:
+	var shell := _bound_shell(_projected_snapshot())
+	var inspection := CombatUnitInspectionSnapshot.new()
+	inspection.unit_serial = 7
+	inspection.source_id = &"unit.combat_t17"
+	inspection.stats = {"health": 41, "attack": 17}
+	shell.show_combat_unit(inspection)
+	inspection.unit_serial = 99
+	inspection.source_id = &"unit.mutated_after_show"
+	inspection.stats["health"] = 999
+
+	shell.relocalize(
+		Callable(self, "_ui_text_en"), Callable(self, "_content_text")
+	)
+	var panel := shell.find_child("UnitInspector", true, false) as VBoxContainer
+	assert_not_null(panel)
+	assert_eq(panel.get_meta(&"combat_unit_serial"), 7)
+	assert_eq(panel.get_meta(&"combat_source_id"), &"unit.combat_t17")
+	assert_false(panel.has_meta(&"unit_instance_id"))
+	assert_eq(
+		(shell.find_child("CombatUnitName", true, false) as Label).text,
+		"Combat Knight"
+	)
+	# Combat rows predate stable node names; retain the identity/copy assertion
+	# through the rendered text without querying any ViewModel again.
+	var rendered := ""
+	for node: Node in panel.find_children("*", "Label", true, false):
+		rendered += (node as Label).text
+	assert_true(rendered.contains("41"))
+	assert_false(rendered.contains("999"))
+
+
+func test_sell_confirmation_query_uses_inspection_snapshot_only() -> void:
+	var screen := RunPrepareScreen.new()
+	add_child_autofree(screen)
+	var snapshot := _projected_snapshot()
+	var issues: Array[BoardValidationIssue] = []
+	assert_eq(screen.compose(
+		snapshot,
+		BoardValidationReport.new(2, issues),
+		LiveScreenIntentPort.new()
+	), &"")
+	var selector := screen.find_child(
+		"BuildUnitSelector", true, false
+	) as ItemList
+	assert_not_null(selector)
+	if selector == null:
+		return
+	var board_index := _index_for_metadata(selector, BOARD_ID)
+	var bench_index := _index_for_metadata(selector, BENCH_ID)
+	assert_gte(board_index, 0)
+	assert_gte(bench_index, 0)
+	selector.select(board_index)
+	selector.item_selected.emit(board_index)
+	assert_true(
+		screen.selected_unit_requires_sell_confirmation(),
+		"1-star equipped unit must require confirmation"
+	)
+	selector.select(bench_index)
+	selector.item_selected.emit(bench_index)
+	assert_true(
+		screen.selected_unit_requires_sell_confirmation(),
+		"2-star unequipped unit must require confirmation"
+	)
+
+	# Mutate only the screen's cloned presentation snapshot into the direct-sale
+	# case; no roster/domain formula is consulted by this query.
+	var model: RunPrepareScreenModel = screen.get("_model")
+	var cloned := model.snapshot_clone()
+	for inspection: PrepareUnitInspectionSnapshot in cloned.prepare_unit_inspections:
+		if inspection != null and inspection.unit_instance_id == BENCH_ID:
+			inspection.star = 1
+			inspection.equipment_instance_ids.clear()
+	model.replace_snapshot(cloned)
+	assert_false(screen.selected_unit_requires_sell_confirmation())
+
+
 func test_prepare_composition_updates_the_single_mounted_inspector() -> void:
 	var screen := RunPrepareScreen.new()
 	add_child_autofree(screen)
@@ -375,6 +520,13 @@ func _projected_snapshot() -> RunPresentationSnapshot:
 	return source
 
 
+func _index_for_metadata(selector: ItemList, expected: String) -> int:
+	for index: int in range(selector.item_count):
+		if String(selector.get_item_metadata(index)) == expected:
+			return index
+	return -1
+
+
 func _world_snapshot_for_hover() -> WorldBoardSnapshot:
 	var snapshot := WorldBoardSnapshot.new()
 	var unit := WorldBoardUnitSnapshot.new()
@@ -550,6 +702,9 @@ func _ui_text(key: StringName) -> String:
 		&"combat.stat.move_speed_milli": "移速",
 		&"prepare.panel.expedition": "遠征",
 		&"prepare.resource.hp": "遠征生命",
+		&"prepare.sell": "出售",
+		&"error.shop.input_invalid": "目前無法進行這項商店操作",
+		&"error.shop.unit_missing": "找不到指定棋子",
 	}.get(key, String(key))
 
 
@@ -566,4 +721,20 @@ func _content_text(key: StringName) -> String:
 		&"effect.trait_1": "階段一",
 		&"effect.trait_2": "階段二",
 		&"effect.trait_3": "階段三",
+		&"unit.combat_t17": "Combat Knight",
+	}.get(key, String(key))
+
+
+func _ui_text_en(key: StringName) -> String:
+	return {
+		&"prepare.panel.units": "Units",
+		&"prepare.panel.synergies": "Traits",
+		&"prepare.panel.party": "Party",
+		&"prepare.group.forge_equipment": "Equipment",
+		&"combat.inspect": "Inspect",
+		&"combat.inspection.none": "None",
+		&"combat.stat.star": "Star",
+		&"tooltip.cost": "Cost",
+		&"prepare.sell": "Sell",
+		&"error.shop.input_invalid": "Unavailable",
 	}.get(key, String(key))

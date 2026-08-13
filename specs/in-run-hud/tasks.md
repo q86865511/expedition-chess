@@ -70,25 +70,40 @@
 
 - [x] **T13 HARD**：`RUN_PREPARE` 版面重製——依 `design.md` §2 區域編制與
   `layout-reference-1920.json` 比例參考。（IRH-REQ-003）
-- [ ] **T14 NORMAL**：經濟資訊列——金幣、等級與經驗、費用機率、連勝／連敗；
+- [x] **T14 NORMAL**：經濟資訊列——金幣、等級與經驗、費用機率、連勝／連敗；
   成本一律 `ShopService.quote_*`，停用原因讀 `source_code`。（IRH-REQ-011／測試 #9）
+  交付：上游 localization commit `7f6ce69`；`ShopEconomySnapshot`／quote clone-out 接線、16 個
+  `SHOP_*` 錯誤映射、MAX／連勝敗／五階費率與可存取停用原因；focused
+  `test_prepare_economy_hud_t14.gd` 4／4、71 assertions。
 - [x] **T15 NORMAL**：商店卡片列——立繪、羈絆標籤、名稱、費用；費用等級同時以形狀或文字標示；
   已持有副本與升星預覽可見。（IRH-REQ-012）
-- [ ] **T16 HARD**：羈絆列接線＋詳情浮層——接 `TraitPreviewViewModel.trait_snapshots()`，
+- [x] **T16 HARD**：羈絆列接線＋詳情浮層——接 `TraitPreviewViewModel.trait_snapshots()`，
   取代現有空 Label；階級非色彩訊號；浮層邊緣翻轉。（IRH-REQ-013／測試 #10）
-- [ ] **T17 HARD**：單位檢視面板（備戰）——依 T01 的 API；T01 未到位前屬性格顯示
+  交付：commit `9d9be78`；inactive／active、distinct progress、門檻、成員縮圖、非色彩階級、
+  safe-area 翻轉；focused 2／2、38 assertions，證據 `p8-batch2/t16-trait-detail-popover.*`。
+- [x] **T17 HARD**：單位檢視面板（備戰）——依 T01 的 API；T01 未到位前屬性格顯示
   「尚未可用」，**不得以呈現層自行計算的數值填充**。（IRH-REQ-014／測試 #11）
+  交付：備戰／戰鬥 inspector clone、權威 sell quote、2★／帶裝確認、captured identity、
+  cancel 零 dispatch／confirm exactly once；focused inspector 12／12（127 assertions）、
+  sell confirmation 6／6（47 assertions）。
 - [x] **T18 NORMAL**：裝備庫與遺物槽——`InventoryViewModel` 與 `RelicSlotViewModel` 接線，
   overflow 可見。（IRH-REQ-003）
 
 ## P4 拖曳互動
 
-- [ ] **T19 HARD**：棋子拖曳——備戰席↔棋盤、換位；合法格提示、交換預覽、人口與羈絆變化預覽。
+- [x] **T19 HARD**：棋子拖曳——備戰席↔棋盤、換位；合法格提示、交換預覽、人口與羈絆變化預覽。
   只映射既有 intent，不新增 domain command。（IRH-REQ-008／測試 #7）
-- [ ] **T20 HARD**：裝備拖曳與合成——配戴走 `prepare.equip`；合成走
+  交付：typed draft preview、revision cache、route／resize resolver lifecycle、commit 後刷新與
+  canonical full-chain；focused 1／1（29 assertions），九組
+  `p8-batch2/prepare-board-draft-preview-*` 證據。
+- [x] **T20 HARD**：裝備拖曳與合成——配戴走 `prepare.equip`；合成走
   `recipe_preview()` → `prepare.forge` → `prepare.forge.confirm`，二次確認不得省略。（IRH-REQ-009）
-- [ ] **T21 NORMAL/TDD**：鍵盤等價——保留按鈕路徑，新增 `W` 快捷（懸停切換上場／收回）；
+  交付：commit `bf2f3f5`；focused unit 2／2（15 assertions）、canonical integration
+  1／1（36 assertions），證據 `p8-batch2/t20-forge-recipe-preview.*`。
+- [x] **T21 NORMAL/TDD**：鍵盤等價——保留按鈕路徑，新增 `W` 快捷（懸停切換上場／收回）；
   純鍵盤可完成「買棋→上場→配裝→開始戰鬥」。（IRH-REQ-010／測試 #8）
+  交付：commits `993e511`、`e15b783`；正式純鍵盤 E2E 1／1（本批 current-source
+  39 assertions），證據 `p8-batch2/t21-keyboard-only-e2e.txt`。
 
 ## P5 戰鬥、地圖、獎勵
 
@@ -99,8 +114,10 @@
   新增戰鬥期常駐資源列（金幣／等級／遠征 HP，唯讀）；商店與備戰席轉唯讀而非消失。（IRH-REQ-003／對照表末列）
 - [x] **T24 NORMAL**：單位檢視面板（戰鬥）——`inspect_combat_unit()` 接線，
   空狀態不殘留前一單位。（IRH-REQ-014）
-- [ ] **T25 NORMAL**：頂部進度列與轉場大字——幕／層／節點、遠征 HP、節點類型非色彩訊號；
+- [x] **T25 NORMAL**：頂部進度列與轉場大字——幕／層／節點、遠征 HP、節點類型非色彩訊號；
   大字提示不阻擋輸入。（IRH-REQ-015／測試 #12）
+  交付：commit `29ffb11`；progress 6／6（40 assertions）、accessibility localization
+  1／1（7 assertions），證據 `p8-batch2/t25-progress-accessibility-localization.txt`。
 - [x] **T26 NORMAL**：`RUN_MAP` 與 `RUN_REWARD` 版面納入同一骨架。（IRH-REQ-003）
 
 ## P6 棋盤世界層
@@ -123,18 +140,17 @@
   `.pipeline/reviews/in-run-hud-opus-re-review-approved.md`，並鏡像至
   `specs/in-run-hud/evidence/p7-final/in-run-hud-opus-re-review-approved.md`。
 
-### 2026-08-12 closure checkpoint
+### 2026-08-13 batch 3 closure checkpoint
 
-- Task boxes：已完成 `T00～T09、T11～T13、T15、T18、T22～T24、T26～T30、T32`
-  （24／33）；未完成 `T10、T14、T16、T17、T19～T21、T25、T31`（9／33）。
-- Fresh formal evidence：137／137 cases（baseline 128＋shop-tier 9）、`issues=[]`、exit 0；
+- Task boxes：已完成 `T00～T30、T32`（32／33）；僅 `T31` 未完成。
+- Fresh formal evidence：146／146 cases（baseline 128＋shop-tier 9＋board-draft-preview 9）、
+  `issues=[]`、exit 0；
   三尺寸 × 三 UI scale 產物已重建，real APPDATA before／after SHA-256 相同，Godot process 0。
-- 18:27:27Z～18:49:46Z final current-source `-Suite All` 為 exit 0：326 scripts、
-  1354／1354 tests、37956／37956 assertions、Spec 4076 cases；此 run 已涵蓋修正後
-  evidence runner contract。T31 因正式 requirements 仍有缺口而不勾。
+- 2026-08-12T16:13:48Z～16:36:07Z current-source `-Suite All` 為 exit 0：343 scripts、
+  1421／1421 tests、38732 assertions、Spec 4092 cases；此 run 已涵蓋批次 3 修正。
+  T31 因 IRH-REQ-007 dynamic summon typed visual／max-stat authority 仍有缺口而不勾。
 - 原外部 Opus review 為 `CHANGES_REQUESTED`；13 項 decision table 與使用者轉交的 external
   Opus closure re-review `APPROVED` 原文均已落
   `evidence/p7-final/in-run-hud-opus-re-review-approved.md`，無 OPEN finding，故 T32 關閉。
-- 未勾 tasks 不得由 finding closure 代替：settings port、odds／quote、inactive／distinct trait
-  authority、forge preview、人口／羈絆 drag preview、keyboard E2E、sell confirmation 與
-  progress accessibility localization 仍是正式缺口。
+- T14／T16／T17／T19／T20／T21／T25 已依 production、focused、Fresh All 與 p8 證據關閉；
+  不回退或重做既有 T16／T21／T25 實作。

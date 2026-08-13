@@ -68,6 +68,11 @@ func mount_board_snapshot(
 	overlay_mount: Control = null,
 	cell_validator: Callable = Callable()
 ) -> StringName:
+	# A direct mount is a route snapshot boundary, even when the same persistent
+	# surface and overlay nodes are reused. Mapper-only refresh_overlay() calls do
+	# not pass here and therefore retain the current route's resolver.
+	if _ui_overlay_available():
+		_ui_overlay.clear_unit_drop_resolver()
 	if snapshot == null or not snapshot.is_valid():
 		clear_board_snapshot()
 		return INVALID_SNAPSHOT
@@ -388,6 +393,8 @@ func _set_drag_target_enabled(enabled: bool) -> void:
 	var drag_target := _ui_overlay.drag_target()
 	if drag_target == null:
 		return
+	if not enabled:
+		drag_target.clear_unit_drop_resolver()
 	drag_target.visible = enabled
 	drag_target.mouse_filter = (
 		Control.MOUSE_FILTER_STOP

@@ -29,6 +29,15 @@ func test_keyboard_only_purchase_deploy_equip_and_start_combat() -> void:
 	if not bool(seeded.get("ok", false)):
 		return
 	var equipment_instance_id := String(seeded.get("item_instance_id", ""))
+	var seed_reload_error := Support.reload_current_route(harness)
+	assert_eq(
+		seed_reload_error,
+		&"",
+		"the production route must rebuild after the fixture commits gold/equipment"
+	)
+	if not seed_reload_error.is_empty():
+		return
+	await wait_process_frames(4)
 	var before_purchase := _snapshot(harness)
 	assert_not_null(before_purchase)
 	if before_purchase == null:
@@ -44,6 +53,24 @@ func test_keyboard_only_purchase_deploy_equip_and_start_combat() -> void:
 		await _tab_to_action(harness, &"prepare.refresh"),
 		_focus_diagnostic(harness, &"prepare.refresh")
 	)
+	var focused_refresh := _focus_owner(harness) as Button
+	assert_not_null(focused_refresh)
+	if focused_refresh == null:
+		return
+	if focused_refresh.disabled:
+		assert_false(
+			focused_refresh.tooltip_text.is_empty(),
+			"a rejected typed refresh quote must expose its localized reason"
+		)
+		var direct_refresh := Support.active_screen(harness).request_intent(
+			RunPresentationIntent.new(RunPresentationIntent.Kind.REFRESH_SHOP)
+		)
+		assert_true(
+			direct_refresh.ok,
+			"the fixture's committed gold must make the canonical refresh succeed"
+		)
+		await wait_process_frames(4)
+		assert_true(await _tab_to_action(harness, &"prepare.refresh"))
 	await _press_action(&"ui_accept")
 	assert_true(await _wait_for_prepare_inventory(harness, equipment_instance_id))
 
@@ -126,6 +153,11 @@ func _seed_production_equipment(harness: Variant) -> Dictionary:
 	if run_session == null or battle_catalog == null:
 		return {"ok": false, "error": &"T21_PRODUCTION_SUPPLY_MISSING"}
 	var draft := run_session.run_snapshot()
+	# T14 now correctly removes unaffordable refresh from the focus cycle.
+	# This keyboard E2E fixture therefore seeds enough canonical gold together
+	# with its test-only equipment so Refresh remains a legitimate focus target;
+	# all subsequent spending still goes through production commands/quotes.
+	draft.economy_state.gold = 99
 	var receipt := harness.registry.call(
 		&"_receipt_for_digest", draft.content_snapshot.manifest_digest_value()
 	) as PinnedCatalogBuildReceipt

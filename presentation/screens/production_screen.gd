@@ -58,6 +58,26 @@ const PREPARE_PINNED_ACTIONS: Array[StringName] = [
 const ACTION_VISUAL_LOCALIZATION_KEYS: Dictionary = {
 	&"service.dismantle": &"prepare.dismantle",
 }
+## ShopQuoteSnapshot.rejection_code 是尚未 dispatch 的停用原因，不經
+## PresentationErrorMapper；面板直接把 domain ShopError 具名碼對到玩家文案。
+const _SHOP_REJECTION_MESSAGE_KEYS: Dictionary = {
+	&"SHOP_GOLD_INSUFFICIENT": &"error.shop.gold_insufficient",
+	&"SHOP_LEVEL_MAX": &"error.shop.level_max",
+	&"SHOP_OFFER_STALE": &"error.shop.offer_stale",
+	&"SHOP_ROSTER_FULL": &"error.shop.roster_full",
+	&"SHOP_UNIT_MISSING": &"error.shop.unit_missing",
+	&"SHOP_UNIT_RULE_MISSING": &"error.shop.unit_rule_missing",
+	&"SHOP_UNIT_POOL_INVALID": &"error.shop.unit_pool_invalid",
+	&"SHOP_RESERVATION_INVALID": &"error.shop.reservation_invalid",
+	&"SHOP_CATALOG_GENERATION_MISMATCH": &"error.shop.generation_mismatch",
+	&"SHOP_INPUT_INVALID": &"error.shop.input_invalid",
+	&"SHOP_RNG_FAILED": &"error.shop.internal_failure",
+	&"SHOP_KEY_FAILED": &"error.shop.internal_failure",
+	&"SHOP_DIGEST_FAILED": &"error.shop.internal_failure",
+	&"SHOP_CONFIG_INVALID": &"error.shop.internal_failure",
+	&"SHOP_SERIAL_EXHAUSTED": &"error.shop.internal_failure",
+	&"SHOP_MERGE_FAILED": &"error.shop.internal_failure",
+}
 
 ## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
 ## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
@@ -91,10 +111,15 @@ var _modal_confirm_action: StringName = &""
 var _modal_cancel_action: StringName = &""
 ## 非空＝呈現層確認：confirm 之前完全不 dispatch，confirm 時才送出這個動作。
 var _modal_deferred_action: StringName = &""
+var _modal_deferred_payload: Dictionary = {}
 var _modal_status_key: StringName = &""
 var _modal_trigger: Button
 var _modal_background_disabled: Dictionary[int, bool] = {}
 var _modal_background_focus: Dictionary[int, int] = {}
+var _modal_background_mouse: Dictionary[int, int] = {}
+var _modal_background_controls: Dictionary[int, Control] = {}
+var _modal_composition_focus_behavior: int = Control.FOCUS_BEHAVIOR_INHERITED
+var _modal_composition_process_mode: int = Node.PROCESS_MODE_INHERIT
 var _prepare_action_group_selector: OptionButton
 var _prepare_action_group_pages: Array[GridContainer] = []
 var _layout_shell: ProductionLayoutShell
@@ -105,6 +130,8 @@ var _system_menu_settings_port: SettingsApplicationPort
 var _system_menu_exit_handler: Callable
 var _system_menu_pause_captured: bool = false
 var _system_menu_previous_paused: bool = false
+var _prepare_refresh_quote: ShopQuoteSnapshot
+var _prepare_xp_quote: ShopXpQuoteSnapshot
 
 
 func _ready() -> void:
@@ -172,6 +199,7 @@ func open_system_menu() -> bool:
 	if (
 		route_kind not in RUN_ROUTES
 		or not _live_active
+		or _modal_open
 		or _system_menu_overlay == null
 		or _system_menu_overlay.is_open()
 	):
@@ -228,11 +256,29 @@ func prepare_live_binding(
 		or context.route_kind != route_kind
 	):
 		return SCREEN_LIVE_CONTEXT_INVALID
+	_capture_prepare_shop_quotes(context)
 	var composition_error := _compose_production_child(context)
 	if not composition_error.is_empty():
 		return composition_error
+	_apply_prepare_shop_quote_controls()
 	_live_context = context
 	return &""
+
+
+## Live lease 只在 bind 事件讀一次；控制項後續只持 DTO clone，不逐幀查 supply。
+func _capture_prepare_shop_quotes(context: ProductionLiveScreenContext) -> void:
+	_prepare_refresh_quote = null
+	_prepare_xp_quote = null
+	if (
+		route_kind != &"RUN_PREPARE"
+		or context == null
+		or context.supply_port == null
+	):
+		return
+	var refresh := context.supply_port.shop_refresh_quote()
+	var xp := context.supply_port.shop_buy_xp_quote()
+	_prepare_refresh_quote = refresh.deep_clone() if refresh != null else null
+	_prepare_xp_quote = xp.deep_clone() if xp != null else null
 
 
 func activate_live() -> void:
@@ -1170,8 +1216,195 @@ func _build_prepare_shop_controls(
 		if action_ids.has(action_id):
 			var action := _new_action_button(action_id)
 			action.theme_type_variation = &"ExpeditionBottomAction"
+			# staged bind 尚未取得 live supply；報價套用前先 fail-closed。
+			action.disabled = true
+			action.set_meta(&"shop_quote_owned", true)
 			ExpeditionLayoutMetrics.set_fixed_min(action, 210.0, 72.0)
 			shop_actions.add_child(action)
+			var reason := Label.new()
+			reason.name = (
+				"RefreshShopReason"
+				if action_id == &"prepare.refresh"
+				else "BuyXpReason"
+			)
+			reason.theme_type_variation = &"ExpeditionAuxiliary"
+			reason.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			reason.focus_mode = Control.FOCUS_NONE
+			reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			reason.visible = false
+			reason.set_meta(&"accessibility_role", &"status")
+			reason.set_meta(&"shop_quote_reason_for", action_id)
+			shop_actions.add_child(reason)
+
+
+func _apply_prepare_shop_quote_controls() -> void:
+	if route_kind != &"RUN_PREPARE" or _context == null:
+		return
+	var refresh := _action_button(&"prepare.refresh")
+	if refresh != null:
+		_apply_shop_quote_button(
+			refresh, &"prepare.refresh", _prepare_refresh_quote
+		)
+	var xp := _action_button(&"prepare.xp")
+	if xp != null:
+		_apply_xp_quote_button(xp, _prepare_xp_quote)
+	var sell := _action_button(&"prepare.sell")
+	var composition := get_node_or_null("Composition") as RunPrepareScreen
+	if sell != null:
+		_apply_sell_quote_button(
+			sell,
+			composition.selected_unit_sell_quote()
+			if composition != null
+			else null,
+			composition.selected_unit_inspection_available()
+			if composition != null
+			else false
+		)
+
+
+func _apply_shop_quote_button(
+	button: Button,
+	action_key: StringName,
+	quote: ShopQuoteSnapshot
+) -> void:
+	var valid := (
+		quote != null
+		and quote.available
+		and quote.affordable
+		and quote.quotable
+		and quote.rejection_code.is_empty()
+	)
+	var action_text := _context.resolve_text(action_key)
+	button.text = (
+		"%s · %d" % [action_text, quote.gold_cost]
+		if quote != null and quote.quotable
+		else action_text
+	)
+	button.disabled = not valid
+	_apply_shop_quote_metadata(button, action_text, quote, valid)
+
+
+func _apply_xp_quote_button(
+	button: Button,
+	quote: ShopXpQuoteSnapshot
+) -> void:
+	var valid := (
+		quote != null
+		and quote.available
+		and quote.affordable
+		and quote.quotable
+		and not quote.at_max_level
+		and quote.rejection_code.is_empty()
+	)
+	var action_text := _context.resolve_text(&"prepare.xp")
+	if quote != null and quote.at_max_level:
+		button.text = "%s · %s" % [
+			action_text,
+			_context.resolve_text(&"prepare.resource.level_xp_max"),
+		]
+	elif quote != null and quote.quotable:
+		button.text = "%s · %d" % [action_text, quote.gold_cost]
+	else:
+		button.text = action_text
+	button.disabled = not valid
+	_apply_shop_quote_metadata(button, action_text, quote, valid)
+
+
+func _apply_sell_quote_button(
+	button: Button,
+	quote: ShopQuoteSnapshot,
+	inspection_available: bool
+) -> void:
+	var valid := (
+		inspection_available
+		and quote != null
+		and quote.available
+		and quote.affordable
+		and quote.quotable
+		and quote.rejection_code.is_empty()
+	)
+	var action_text := _context.resolve_text(&"prepare.sell")
+	button.text = (
+		"%s · %d" % [action_text, quote.gold_gain]
+		if quote != null and quote.quotable
+		else action_text
+	)
+	button.disabled = not valid
+	_apply_shop_quote_metadata(button, action_text, quote, valid)
+	if not inspection_available:
+		var message_key := &"error.presentation.action_not_available"
+		var reason := _context.resolve_text(message_key)
+		button.disabled = true
+		button.set_meta(&"shop_quote_available", false)
+		button.set_meta(&"shop_quote_message_key", message_key)
+		button.tooltip_text = "%s · %s" % [action_text, reason]
+		button.set_meta(&"accessible_text", button.tooltip_text)
+
+
+func _apply_shop_quote_metadata(
+	button: Button,
+	action_text: String,
+	quote: Variant,
+	valid: bool
+) -> void:
+	var rejection_code: StringName = (
+		StringName(quote.rejection_code) if quote != null else &""
+	)
+	var message_key := &""
+	if not valid:
+		# SCREEN_NOT_ACTIVE／未知／不一致 DTO 都採中性的 input_invalid；不從
+		# SHOP_INPUT_INVALID 猜測 phase，且 revoked supply 絕不復活按鈕。
+		message_key = StringName(_SHOP_REJECTION_MESSAGE_KEYS.get(
+			rejection_code, &"error.shop.input_invalid"
+		))
+	button.set_meta(&"shop_quote_available", valid)
+	button.set_meta(&"shop_quote_rejection_code", rejection_code)
+	button.set_meta(&"shop_quote_message_key", message_key)
+	if quote != null:
+		button.set_meta(&"shop_quote_gold_cost", int(quote.gold_cost))
+		if quote is ShopQuoteSnapshot:
+			button.set_meta(
+				&"shop_quote_gold_gain",
+				(quote as ShopQuoteSnapshot).gold_gain
+			)
+		else:
+			button.remove_meta(&"shop_quote_gold_gain")
+	else:
+		button.remove_meta(&"shop_quote_gold_cost")
+		button.remove_meta(&"shop_quote_gold_gain")
+	var accessible_text := action_text
+	if not message_key.is_empty():
+		accessible_text = "%s · %s" % [
+			action_text, _context.resolve_text(message_key),
+		]
+	button.tooltip_text = accessible_text
+	button.set_meta(&"accessible_text", accessible_text)
+	var reason := _shop_quote_reason_label(button)
+	if reason != null:
+		reason.visible = not message_key.is_empty()
+		reason.text = (
+			_context.resolve_text(message_key)
+			if not message_key.is_empty()
+			else ""
+		)
+		reason.set_meta(&"localization_key", message_key)
+		reason.set_meta(&"accessible_text", reason.text)
+
+
+func _shop_quote_reason_label(button: Button) -> Label:
+	if button == null or button.get_parent() == null:
+		return null
+	var action_id := StringName(button.get_meta(&"action_id", &""))
+	var reason_name := (
+		"RefreshShopReason"
+		if action_id == &"prepare.refresh"
+		else "BuyXpReason" if action_id == &"prepare.xp" else ""
+	)
+	return (
+		button.get_parent().get_node_or_null(reason_name) as Label
+		if not reason_name.is_empty()
+		else null
+	)
 
 
 func _build_shop_card_row(
@@ -1725,7 +1958,7 @@ func _ensure_prepare_action_visible_in_outer(
 	)
 	if outer_scroll == null:
 		return
-	outer_scroll.ensure_control_visible(inner_scroll)
+	outer_scroll.ensure_control_visible(action)
 	call_deferred(
 		&"_finalize_prepare_action_visibility",
 		inner_scroll,
@@ -1751,7 +1984,7 @@ func _finalize_prepare_action_visibility(
 	# range after that movement, then settle the outer range against the final
 	# action rect so both nested viewports contain the focused control.
 	inner_scroll.ensure_control_visible(action)
-	outer_scroll.ensure_control_visible(inner_scroll)
+	outer_scroll.ensure_control_visible(action)
 
 
 func _prepare_action_focus_is_valid(
@@ -1927,15 +2160,50 @@ func _on_action_pressed(button: Button) -> void:
 		if not _modal_deferred_action.is_empty():
 			# 呈現層確認：取消是零 dispatch，確認才把原動作送出去。
 			var deferred := _modal_deferred_action
+			var deferred_payload := _modal_deferred_payload.duplicate(true)
 			var confirmed := action_id == _modal_confirm_action
 			_close_confirmation_modal()
 			if confirmed:
-				_dispatch_action(deferred, null)
+				if (
+					deferred == &"prepare.sell"
+					and deferred_payload.has(&"unit_instance_id")
+				):
+					_dispatch_sell_unit_payload(deferred_payload)
+				else:
+					_dispatch_action(deferred, null)
 			return
 	elif _PRESENTATION_CONFIRMATIONS.has(action_id):
 		_open_presentation_confirmation(action_id, button)
 		return
+	elif action_id == &"prepare.sell":
+		var prepare := get_node_or_null("Composition") as RunPrepareScreen
+		if prepare == null or not prepare.selected_unit_inspection_available():
+			_apply_prepare_shop_quote_controls()
+			return
+		if prepare != null and prepare.selected_unit_requires_sell_confirmation():
+			var captured_unit_id := prepare.selected_unit_instance_id()
+			_show_confirmation_modal(
+				"SellUnitConfirmation",
+				&"prepare.sell",
+				&"run.menu.confirm",
+				&"run.menu.cancel",
+				action_id,
+				button,
+				{&"unit_instance_id": captured_unit_id}
+			)
+			return
 	_dispatch_action(action_id, button)
+
+
+func _dispatch_sell_unit_payload(payload: Dictionary) -> void:
+	var prepare := get_node_or_null("Composition") as RunPrepareScreen
+	var unit_id := String(payload.get(&"unit_instance_id", ""))
+	if prepare == null or unit_id.is_empty():
+		return
+	_last_control_result = prepare.sell_unit_by_instance_id(unit_id)
+	_status_view.show_result(_last_control_result, _text_resolver())
+	_sync_status_band_visibility()
+	refresh_interaction_state()
 
 
 func _dispatch_action(action_id: StringName, trigger: Button) -> void:
@@ -2166,6 +2434,17 @@ func relocalize(locale: StringName, localized_text: Dictionary) -> void:
 			button.set_meta(&"accessible_text", accessible_text)
 			if visual_key != action_id:
 				button.tooltip_text = accessible_text
+	_apply_prepare_shop_quote_controls()
+	var composition := get_node_or_null(^"Composition")
+	if composition != null:
+		var hud_shell := composition.find_child(
+			"InRunHudShell", true, false
+		) as InRunHudShell
+		if hud_shell != null:
+			hud_shell.relocalize(
+				Callable(self, &"localized_ui_text"),
+				Callable(self, &"localized_content_text")
+			)
 	# Shop cards are direct-owned controls, not generic action-band buttons.
 	# Recompose active and empty card copy from immutable snapshot metadata so a
 	# locale switch updates every visible/accessibility string without changing
@@ -2298,6 +2577,10 @@ func refresh_interaction_state() -> void:
 				var blocked_button := _action_button(blocked_action)
 				if blocked_button != null:
 					blocked_button.disabled = true
+		else:
+			# refresh/xp 的 enabled 狀態只有 typed quote 能決定；一般 refresh
+			# 不可沿用舊 generic action 邏輯把 fail-closed 控制項重新打開。
+			_apply_prepare_shop_quote_controls()
 	_refresh_node_choice_result_view()
 	_apply_keyboard_focus_graph()
 
@@ -2377,7 +2660,8 @@ func _show_confirmation_modal(
 	confirm_action: StringName,
 	cancel_action: StringName,
 	deferred_action: StringName,
-	trigger: Button
+	trigger: Button,
+	deferred_payload: Dictionary = {}
 ) -> void:
 	# G2 L4：舊寫法在「節點還在（queue_free 尚未生效）」時直接 return 而不設旗標，
 	# 同幀二次觸發就會留下「app 層 confirmation 開著、畫面卻沒有 modal」的狀態。
@@ -2390,8 +2674,17 @@ func _show_confirmation_modal(
 	_modal_confirm_action = confirm_action
 	_modal_cancel_action = cancel_action
 	_modal_deferred_action = deferred_action
+	_modal_deferred_payload = deferred_payload.duplicate(true)
 	_modal_trigger = trigger
 	_disable_modal_background()
+	var blocker := ColorRect.new()
+	blocker.name = "ModalInputBlocker"
+	blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	blocker.color = Color(0.0, 0.0, 0.0, 0.72)
+	blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	blocker.focus_mode = Control.FOCUS_NONE
+	blocker.z_index = 99
+	add_child(blocker)
 	var dialog := PanelContainer.new()
 	dialog.name = node_name
 	# P10：PRESET_CENTER 的錨點在中心，但預設 grow 會讓左上角落在畫面中心；
@@ -2490,6 +2783,12 @@ func _close_confirmation_modal() -> void:
 	_modal_confirm_action = &""
 	_modal_cancel_action = &""
 	_modal_deferred_action = &""
+	_modal_deferred_payload.clear()
+	var blocker := get_node_or_null(^"ModalInputBlocker")
+	if blocker != null:
+		(blocker as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		blocker.name = "ModalInputBlockerRetired"
+		blocker.queue_free()
 	_restore_modal_background()
 	refresh_interaction_state()
 	call_deferred(&"_restore_modal_trigger_focus")
@@ -2498,43 +2797,52 @@ func _close_confirmation_modal() -> void:
 func _disable_modal_background() -> void:
 	_modal_background_disabled.clear()
 	_modal_background_focus.clear()
-	var actions := find_child("Actions", true, false)
-	if actions == null:
-		return
-	for node: Node in actions.find_children("*", "Button", true, false):
-		var button := node as Button
-		if button == null:
+	_modal_background_mouse.clear()
+	_modal_background_controls.clear()
+	for node: Node in find_children("*", "Control", true, false):
+		var control := node as Control
+		if control == null or control == _system_menu_overlay:
 			continue
-		var identity := button.get_instance_id()
-		_modal_background_disabled[identity] = button.disabled
-		_modal_background_focus[identity] = button.focus_mode
-		button.disabled = true
-		button.focus_mode = Control.FOCUS_NONE
+		var identity := control.get_instance_id()
+		_modal_background_controls[identity] = control
+		_modal_background_focus[identity] = control.focus_mode
+		_modal_background_mouse[identity] = control.mouse_filter
+		control.focus_mode = Control.FOCUS_NONE
+		control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if control is BaseButton:
+			_modal_background_disabled[identity] = (control as BaseButton).disabled
+			(control as BaseButton).disabled = true
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		_modal_composition_focus_behavior = composition.focus_behavior_recursive
+		_modal_composition_process_mode = composition.process_mode
+		composition.focus_behavior_recursive = Control.FOCUS_BEHAVIOR_DISABLED
+		composition.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _restore_modal_background() -> void:
-	var actions := find_child("Actions", true, false)
-	if actions != null:
-		for node: Node in actions.find_children(
-			"*",
-			"Button",
-			true,
-			false
-		):
-			var button := node as Button
-			if button == null:
-				continue
-			var identity := button.get_instance_id()
-			if _modal_background_disabled.has(identity):
-				button.disabled = bool(
-					_modal_background_disabled[identity]
-				)
-			if _modal_background_focus.has(identity):
-				button.focus_mode = int(
-					_modal_background_focus[identity]
-				)
+	for identity: int in _modal_background_controls:
+		var control := _modal_background_controls[identity]
+		if control == null or not is_instance_valid(control):
+			continue
+		control.focus_mode = int(_modal_background_focus.get(
+			identity, Control.FOCUS_NONE
+		))
+		control.mouse_filter = int(_modal_background_mouse.get(
+			identity, Control.MOUSE_FILTER_IGNORE
+		))
+		if control is BaseButton and _modal_background_disabled.has(identity):
+			(control as BaseButton).disabled = bool(
+				_modal_background_disabled[identity]
+			)
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		composition.focus_behavior_recursive = _modal_composition_focus_behavior
+		composition.process_mode = _modal_composition_process_mode
 	_modal_background_disabled.clear()
 	_modal_background_focus.clear()
+	_modal_background_mouse.clear()
+	_modal_background_controls.clear()
 
 
 ## 延後取得焦點的統一入口：目標可能在同一影格內被關閉／換場而離開場景樹，
@@ -2695,7 +3003,13 @@ func _control_is_focusable(control: Control) -> bool:
 	):
 		return false
 	if control is BaseButton and (control as BaseButton).disabled:
-		return false
+		# Quote-owned shop actions stay in the authored keyboard cycle even
+		# while rejected. Their adjacent status label carries the localized
+		# reason, and keeping the stable stop lets keyboard/assistive users
+		# discover that reason instead of silently losing the action.
+		var action_id := StringName(control.get_meta(&"action_id", &""))
+		if action_id not in [&"prepare.refresh", &"prepare.xp"]:
+			return false
 	return true
 
 

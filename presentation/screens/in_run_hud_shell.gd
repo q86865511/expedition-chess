@@ -15,6 +15,7 @@ const REGION_NAMES: Array[StringName] = [
 const PROGRESS_STATE_COMPLETED: StringName = &"completed"
 const PROGRESS_STATE_CURRENT: StringName = &"current"
 const PROGRESS_STATE_UNREACHED: StringName = &"unreached"
+enum InspectorMode { EMPTY, PREPARE, COMBAT }
 const PROGRESS_STATE_SIGNALS := {
 	PROGRESS_STATE_COMPLETED: "✓",
 	PROGRESS_STATE_CURRENT: "▶",
@@ -29,6 +30,26 @@ const NODE_KIND_SIGNALS := {
 	&"treasure": "◇",
 	&"boss": "★",
 }
+## ShopQuoteSnapshot.rejection_code 是尚未 dispatch 的停用原因，不經
+## PresentationErrorMapper；inspector 直接把 domain ShopError 具名碼對到玩家文案。
+const _SHOP_REJECTION_MESSAGE_KEYS: Dictionary = {
+	&"SHOP_GOLD_INSUFFICIENT": &"error.shop.gold_insufficient",
+	&"SHOP_LEVEL_MAX": &"error.shop.level_max",
+	&"SHOP_OFFER_STALE": &"error.shop.offer_stale",
+	&"SHOP_ROSTER_FULL": &"error.shop.roster_full",
+	&"SHOP_UNIT_MISSING": &"error.shop.unit_missing",
+	&"SHOP_UNIT_RULE_MISSING": &"error.shop.unit_rule_missing",
+	&"SHOP_UNIT_POOL_INVALID": &"error.shop.unit_pool_invalid",
+	&"SHOP_RESERVATION_INVALID": &"error.shop.reservation_invalid",
+	&"SHOP_CATALOG_GENERATION_MISMATCH": &"error.shop.generation_mismatch",
+	&"SHOP_INPUT_INVALID": &"error.shop.input_invalid",
+	&"SHOP_RNG_FAILED": &"error.shop.internal_failure",
+	&"SHOP_KEY_FAILED": &"error.shop.internal_failure",
+	&"SHOP_DIGEST_FAILED": &"error.shop.internal_failure",
+	&"SHOP_CONFIG_INVALID": &"error.shop.internal_failure",
+	&"SHOP_SERIAL_EXHAUSTED": &"error.shop.internal_failure",
+	&"SHOP_MERGE_FAILED": &"error.shop.internal_failure",
+}
 
 var _snapshot: RunPresentationSnapshot
 var _route_kind: StringName = &""
@@ -40,6 +61,13 @@ var _unit_visuals := ProductionUnitVisualCatalog.new()
 var _unit_inspector: VBoxContainer
 var _trait_models: Array[Dictionary] = []
 var _trait_popover: PanelContainer
+var _shop_economy: ShopEconomySnapshot
+var _shop_refresh_quote: ShopQuoteSnapshot
+var _shop_xp_quote: ShopXpQuoteSnapshot
+var _visible_prepare_unit_id: String = ""
+var _visible_prepare_sell_quote: ShopQuoteSnapshot
+var _visible_combat_inspection: CombatUnitInspectionSnapshot
+var _visible_inspector_mode: InspectorMode = InspectorMode.EMPTY
 
 
 func _ready() -> void:
@@ -61,6 +89,7 @@ func bind(
 	_ui_text = ui_text
 	_content_text = content_text
 	_region_rect_provider = region_rect_provider
+	_capture_shop_supply(supply_port)
 	_trait_models = _trait_popover_models(
 		supply_port.trait_progress()
 		if supply_port != null
@@ -76,6 +105,29 @@ func bind(
 	show_inspector_empty()
 	refresh_layout_rects()
 	return &""
+
+
+## T14：live supply 僅在 bind 邊界讀一次，之後 HUD 只持 clone。若 lease 已撤銷，
+## quote 會以 SCREEN_NOT_ACTIVE fail-closed；此時不把全零 economy 當成真實資料顯示。
+func _capture_shop_supply(supply_port: LiveScreenSupplyPort) -> void:
+	_shop_economy = null
+	_shop_refresh_quote = null
+	_shop_xp_quote = null
+	if _route_kind != &"RUN_PREPARE" or supply_port == null:
+		return
+	var refresh := supply_port.shop_refresh_quote()
+	var xp := supply_port.shop_buy_xp_quote()
+	_shop_refresh_quote = refresh.deep_clone() if refresh != null else null
+	_shop_xp_quote = xp.deep_clone() if xp != null else null
+	if (
+		_shop_refresh_quote == null
+		or _shop_xp_quote == null
+		or _shop_refresh_quote.rejection_code == &"SCREEN_NOT_ACTIVE"
+		or _shop_xp_quote.rejection_code == &"SCREEN_NOT_ACTIVE"
+	):
+		return
+	var economy := supply_port.shop_economy_status()
+	_shop_economy = economy.deep_clone() if economy != null else null
 
 
 func host(region: StringName) -> Control:
@@ -103,6 +155,42 @@ func mount_unit_inspector(target: VBoxContainer) -> bool:
 
 func snapshot_clone() -> RunPresentationSnapshot:
 	return _snapshot.deep_clone() if _snapshot != null else null
+
+
+## Locale 切換只更新 resolver 並重畫 top HUD。供給快照仍是 bind 時 clone，
+## 不重取 live supply；left/right/overlay 不重建，因此 inspector 選取與 trait 浮層
+## identity 都不受影響。
+func relocalize(
+	ui_text: Callable,
+	content_text: Callable
+) -> void:
+	var visible_mode := _visible_inspector_mode
+	var visible_unit_id := _visible_prepare_unit_id
+	var visible_sell_quote := (
+		_visible_prepare_sell_quote.deep_clone()
+		if _visible_prepare_sell_quote != null
+		else null
+	)
+	var visible_combat := (
+		_visible_combat_inspection.deep_clone()
+		if _visible_combat_inspection != null
+		else null
+	)
+	_ui_text = ui_text
+	_content_text = content_text
+	var top := host(ProductionLayoutShell.REGION_TOP)
+	if top == null:
+		return
+	_clear_children(top)
+	_render_top_hud()
+	match visible_mode:
+		InspectorMode.PREPARE:
+			show_prepare_unit(visible_unit_id, visible_sell_quote)
+		InspectorMode.COMBAT:
+			show_combat_unit(visible_combat)
+		_:
+			show_inspector_empty()
+	refresh_layout_rects()
 
 
 ## Layout changes are event-driven by ProductionScreen after shell scale/status
@@ -133,7 +221,10 @@ func refresh_layout_rects() -> void:
 		)
 
 
-func show_prepare_unit(unit_instance_id: String) -> void:
+func show_prepare_unit(
+	unit_instance_id: String,
+	sell_quote: ShopQuoteSnapshot = null
+) -> void:
 	var panel := _inspector_panel()
 	if panel == null:
 		return
@@ -142,6 +233,14 @@ func show_prepare_unit(unit_instance_id: String) -> void:
 	if inspection == null:
 		show_inspector_empty()
 		return
+	_visible_prepare_unit_id = unit_instance_id
+	_visible_prepare_sell_quote = (
+		sell_quote.deep_clone() if sell_quote != null else null
+	)
+	_visible_combat_inspection = null
+	_visible_inspector_mode = InspectorMode.PREPARE
+	panel.remove_meta(&"combat_unit_serial")
+	panel.remove_meta(&"combat_source_id")
 	panel.set_meta(&"unit_instance_id", inspection.unit_instance_id)
 	panel.add_child(_heading(&"prepare.panel.units"))
 	panel.add_child(_prepare_portrait(inspection))
@@ -191,6 +290,7 @@ func show_prepare_unit(unit_instance_id: String) -> void:
 		slot.name = "PrepareEquipmentSlot%d" % slot_index
 		slot.set_meta(&"slot_index", slot_index)
 		panel.add_child(slot)
+	_render_prepare_sell_quote(panel, sell_quote)
 	panel.add_child(_heading(&"combat.inspect"))
 	if inspection.stats == null:
 		var unavailable := _value_label(_text(&"combat.inspection.none"))
@@ -213,6 +313,40 @@ func show_prepare_unit(unit_instance_id: String) -> void:
 		panel.add_child(stat)
 
 
+func _render_prepare_sell_quote(
+	panel: VBoxContainer,
+	quote: ShopQuoteSnapshot
+) -> void:
+	var value := _text(&"error.shop.input_invalid")
+	var message_key := &"error.shop.input_invalid"
+	var available := (
+		quote != null
+		and quote.available
+		and quote.affordable
+		and quote.quotable
+		and quote.rejection_code.is_empty()
+	)
+	if available:
+		value = str(quote.gold_gain)
+		message_key = &""
+	elif quote != null:
+		message_key = StringName(_SHOP_REJECTION_MESSAGE_KEYS.get(
+			quote.rejection_code, &"error.shop.input_invalid"
+		))
+		value = _text(message_key)
+	var sell := _metric(&"prepare.sell", value)
+	sell.name = "PrepareUnitSellQuote"
+	sell.set_meta(&"shop_quote_available", available)
+	sell.set_meta(
+		&"shop_quote_rejection_code",
+		quote.rejection_code if quote != null else &""
+	)
+	sell.set_meta(&"shop_quote_message_key", message_key)
+	if quote != null and quote.quotable:
+		sell.set_meta(&"shop_quote_gold_gain", quote.gold_gain)
+	panel.add_child(sell)
+
+
 func show_combat_unit(inspection: CombatUnitInspectionSnapshot) -> void:
 	var panel := _inspector_panel()
 	if panel == null:
@@ -221,8 +355,17 @@ func show_combat_unit(inspection: CombatUnitInspectionSnapshot) -> void:
 	if inspection == null:
 		show_inspector_empty()
 		return
+	_visible_prepare_unit_id = ""
+	_visible_prepare_sell_quote = null
+	_visible_combat_inspection = inspection.deep_clone()
+	_visible_inspector_mode = InspectorMode.COMBAT
+	panel.remove_meta(&"unit_instance_id")
+	panel.set_meta(&"combat_unit_serial", inspection.unit_serial)
+	panel.set_meta(&"combat_source_id", inspection.source_id)
 	panel.add_child(_heading(&"prepare.panel.units"))
-	panel.add_child(_value_label(_content(inspection.source_id)))
+	var unit_name := _value_label(_content(inspection.source_id))
+	unit_name.name = "CombatUnitName"
+	panel.add_child(unit_name)
 	for stat_key: String in RunCombatScreen.INSPECTION_STAT_ORDER:
 		if inspection.stats.has(stat_key):
 			panel.add_child(_metric(
@@ -236,7 +379,13 @@ func show_inspector_empty() -> void:
 	if panel == null:
 		return
 	_clear_children(panel)
+	_visible_prepare_unit_id = ""
+	_visible_prepare_sell_quote = null
+	_visible_combat_inspection = null
+	_visible_inspector_mode = InspectorMode.EMPTY
 	panel.remove_meta(&"unit_instance_id")
+	panel.remove_meta(&"combat_unit_serial")
+	panel.remove_meta(&"combat_source_id")
 	panel.add_child(_heading(&"prepare.panel.units"))
 	var empty := _value_label(_text(&"combat.inspection.none"))
 	empty.name = "InspectorEmptyState"
@@ -307,17 +456,40 @@ func _render_top_hud() -> void:
 	hp.theme_type_variation = &"ExpeditionSection"
 	hp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	metrics.add_child(hp)
-	if _snapshot.economy != null:
+	var economy_gold := (
+		_shop_economy.gold
+		if _shop_economy != null
+		else _snapshot.economy.gold if _snapshot.economy != null else 0
+	)
+	var has_economy := _shop_economy != null or _snapshot.economy != null
+	if has_economy:
 		var gold := _metric(
-			&"prepare.resource.gold", str(_snapshot.economy.gold)
+			&"prepare.resource.gold", str(economy_gold)
 		)
 		gold.name = "GoldValue"
 		gold.theme_type_variation = &"ExpeditionSection"
 		gold.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		metrics.add_child(gold)
+		var level_xp_value := ""
+		if _shop_economy != null:
+			level_xp_value = (
+				"%d · %s" % [
+					_shop_economy.level,
+					_text(&"prepare.resource.level_xp_max"),
+				]
+				if _shop_economy.at_max_level
+				else "%d · %d / %d" % [
+					_shop_economy.level,
+					_shop_economy.xp,
+					_shop_economy.xp_required_for_next_level,
+				]
+			)
+		else:
+			level_xp_value = "%s / %s" % [
+				_snapshot.economy.level, _snapshot.economy.xp,
+			]
 		var level_xp := _metric(
-			&"prepare.resource.level_xp",
-			"%s / %s" % [_snapshot.economy.level, _snapshot.economy.xp]
+			&"prepare.resource.level_xp", level_xp_value
 		)
 		level_xp.name = "LevelXpValue"
 		level_xp.theme_type_variation = &"ExpeditionSection"
@@ -338,6 +510,8 @@ func _render_top_hud() -> void:
 		population.theme_type_variation = &"ExpeditionSection"
 		population.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		metrics.add_child(population)
+	if _route_kind == &"RUN_PREPARE":
+		_render_prepare_economy_details(row)
 	var progress_row := HBoxContainer.new()
 	progress_row.name = "RunProgressRow"
 	progress_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -359,6 +533,59 @@ func _render_top_hud() -> void:
 	sequence.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	progress_row.add_child(sequence)
 	_layout_top_hud()
+
+
+func _render_prepare_economy_details(row: VBoxContainer) -> void:
+	var details := HBoxContainer.new()
+	details.name = "PrepareEconomyDetails"
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	details.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(details)
+	if _shop_economy == null:
+		var unavailable := _metric(
+			&"prepare.resource.shop_odds", _text(&"error.shop.input_invalid")
+		)
+		unavailable.name = "ShopEconomyUnavailable"
+		unavailable.set_meta(&"quote_fail_closed", true)
+		details.add_child(unavailable)
+		return
+	var win_streak := _metric(
+		&"prepare.resource.win_streak", str(_shop_economy.win_streak)
+	)
+	win_streak.name = "WinStreakValue"
+	details.add_child(win_streak)
+	var loss_streak := _metric(
+		&"prepare.resource.loss_streak", str(_shop_economy.loss_streak)
+	)
+	loss_streak.name = "LossStreakValue"
+	details.add_child(loss_streak)
+	var odds := _metric(
+		&"prepare.resource.shop_odds",
+		_shop_odds_text(_shop_economy.odds_tier_basis_points)
+	)
+	odds.name = "ShopOddsValue"
+	odds.set_meta(&"odds_level", _shop_economy.odds_level)
+	odds.set_meta(
+		&"odds_tier_basis_points",
+		_shop_economy.odds_tier_basis_points.duplicate()
+	)
+	odds.size_flags_stretch_ratio = 2.0
+	details.add_child(odds)
+
+
+## basis points → percent 僅為文字格式化；機率權重本身完全沿用 pinned catalog 投影。
+func _shop_odds_text(tier_basis_points: Array[int]) -> String:
+	var tokens: Array[String] = []
+	for index: int in tier_basis_points.size():
+		var basis_points := tier_basis_points[index]
+		var percent := (
+			"%d%%" % (basis_points / 100)
+			if basis_points % 100 == 0
+			else "%.2f%%" % (float(basis_points) / 100.0)
+		)
+		tokens.append("◆%d %s" % [index + 1, percent])
+	return " · ".join(tokens)
 
 
 func _layout_top_hud() -> void:

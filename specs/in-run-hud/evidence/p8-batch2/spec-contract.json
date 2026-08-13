@@ -1,0 +1,198 @@
+{
+	"artifact_schema_version": 1,
+	"runner": "spec-contract",
+	"started_at_utc": "2026-08-12T16:57:14Z",
+	"finished_at_utc": "2026-08-12T16:57:17Z",
+	"versions": {
+		"engine_version": "4.7-stable (official)",
+		"app_version": "0.2.0",
+		"schema_version": 4,
+		"content_codec_version": 3,
+		"rng_version": 1,
+		"hash_version": 1,
+		"simulation_version": 1,
+		"battle_event_codec_version": 1,
+		"battle_result_codec_version": 1
+	},
+	"completed_scopes": [
+		"manifest",
+		"links",
+		"ids",
+		"traceability",
+		"aggregate_hash",
+		"source_contracts"
+	],
+	"deferred_scopes": [
+		"full_run_gameplay_ac"
+	],
+	"case_count": 4092,
+	"failures": [],
+	"passed": true,
+	"foundation_classification": [
+		{
+			"acceptance_id": "AC-025",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-026",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-036",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-039",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-040",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-051",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-052",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-054",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-055",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-063",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-064",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-068",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-069",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-070",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-078",
+			"classification": "F",
+			"status": "contract_verified_requires_all_suites"
+		},
+		{
+			"acceptance_id": "AC-016",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-027",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-034",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-047",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-065",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-073",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-075",
+			"classification": "X",
+			"status": "foundation_contract_verified_downstream_pending"
+		},
+		{
+			"acceptance_id": "AC-007",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-020",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-023",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-024",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-035",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-041",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-046",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-058",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-066",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-072",
+			"classification": "D",
+			"status": "downstream_deferred"
+		},
+		{
+			"acceptance_id": "AC-076",
+			"classification": "D",
+			"status": "downstream_deferred"
+		}
+	]
+}

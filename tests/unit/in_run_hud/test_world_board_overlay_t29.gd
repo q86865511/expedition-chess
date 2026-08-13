@@ -343,6 +343,7 @@ func test_persistent_surface_prepare_to_combat_reparents_and_disables_drag() -> 
 		"kind": &"prepare_unit",
 		"unit_instance_id": "visible",
 	}
+	target.configure_unit_drop_resolver(_allow_unit_drop_resolver())
 	assert_true(target._can_drop_data(target_local, payload))
 
 	var combat_route := Control.new()
@@ -482,6 +483,7 @@ func test_projected_drag_uses_inverse_mapping_and_relays_one_typed_drop() -> voi
 		"source_cell": Vector2i(2, 1),
 		"source_slot": -1,
 	}
+	target.configure_unit_drop_resolver(_allow_unit_drop_resolver())
 	assert_true(target._can_drop_data(target_local, payload))
 	assert_true(surface.ui_overlay().drag_preview_visible())
 	var preview := surface.ui_overlay().mapped_snapshot_clone()
@@ -558,6 +560,11 @@ func test_resize_in_place_refreshes_overlay_and_projected_drag_mapper() -> void:
 		return
 	var before := overlay.placement_for(&"visible").screen_foot_position
 	var same_overlay_instance_id := overlay.get_instance_id()
+	var target := overlay.drag_target()
+	assert_not_null(target)
+	if target == null:
+		return
+	target.configure_unit_drop_resolver(_allow_unit_drop_resolver())
 
 	assert_eq(coordinator.synchronize(Vector2i(2560, 1440)), &"")
 	assert_eq(surface.ui_overlay().get_instance_id(), same_overlay_instance_id)
@@ -571,10 +578,6 @@ func test_resize_in_place_refreshes_overlay_and_projected_drag_mapper() -> void:
 	assert_ne(after, before)
 	assert_eq(after, expected_after)
 
-	var target := surface.ui_overlay().drag_target()
-	assert_not_null(target)
-	if target == null:
-		return
 	var target_screen := resized_mapper.world_to_screen(
 		BoardProjection.new().project_cell(Vector2i(3, 2))
 	)
@@ -586,7 +589,10 @@ func test_resize_in_place_refreshes_overlay_and_projected_drag_mapper() -> void:
 		"kind": &"prepare_unit",
 		"unit_instance_id": "visible",
 	}
-	assert_true(target._can_drop_data(target_local, payload))
+	assert_true(
+		target._can_drop_data(target_local, payload),
+		"resize refresh must retain the route-bound resolver"
+	)
 	watch_signals(surface)
 	target._drop_data(target_local, payload)
 	assert_signal_emitted_with_parameters(
@@ -605,6 +611,41 @@ func test_resize_in_place_refreshes_overlay_and_projected_drag_mapper() -> void:
 		scaled_mapper.world_to_screen(
 			BoardProjection.new().project_cell(Vector2i(2, 1))
 		).round()
+	)
+	var scaled_screen := scaled_mapper.world_to_screen(
+		BoardProjection.new().project_cell(Vector2i(3, 2))
+	)
+	var scaled_local := (
+		target.get_global_transform_with_canvas().affine_inverse()
+		* scaled_screen
+	)
+	assert_true(
+		target._can_drop_data(scaled_local, payload),
+		"UI scale refresh must retain the route-bound resolver"
+	)
+
+	# A direct route snapshot mount is different from a mapper refresh: it must
+	# invalidate the prior route resolver without requiring an explicit clear.
+	assert_eq(
+		surface.mount_board_snapshot(
+			_snapshot(),
+			scaled_mapper,
+			overlay_mount,
+			player_half_validator
+		),
+		&""
+	)
+	target = surface.ui_overlay().drag_target()
+	var remounted_screen := scaled_mapper.world_to_screen(
+		BoardProjection.new().project_cell(Vector2i(3, 2))
+	)
+	var remounted_local := (
+		target.get_global_transform_with_canvas().affine_inverse()
+		* remounted_screen
+	)
+	assert_false(
+		target._can_drop_data(remounted_local, payload),
+		"route clear/remount must not revive a stale Callable"
 	)
 
 	# A failed overlay re-projection must be observable and must disable the
@@ -717,3 +758,12 @@ func _unit(
 	unit.mana = 20
 	unit.max_mana = 80
 	return unit
+
+
+func _allow_unit_drop_resolver() -> Callable:
+	return func(
+		_unit_id: String,
+		_target_kind: StringName,
+		_target_cell: Vector2i,
+		_target_slot: int
+	) -> bool: return true

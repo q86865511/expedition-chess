@@ -13,6 +13,20 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-13] ✅ `in-run-hud` 批次 3（T14／T16／T17／T19／T20／T21／T25）—
+  T14 接上 quote-owned 經濟列、MAX／連勝敗／五階費率、16 個 `SHOP_*` 分流與可存取停用原因；
+  T16 接上 inactive／active distinct progress、門檻、成員與 safe-area trait popover；T17 完成
+  prepare／combat inspector、權威 sell quote、captured-id 2★／帶裝出售確認；T19 完成 typed
+  人口／羈絆草稿預覽、revision cache、resolver route／resize lifecycle 與 canonical full-chain；
+  T20／T21／T25 沿用 commits `bf2f3f5`／`993e511`＋`e15b783`／`29ffb11`，未重做。
+  Focused：T14 4／4（71）、T17 inspector 12／12（127）＋sell 6／6（47）、T19 full-chain
+  1／1（29）、T21 keyboard E2E 1／1（39）；Fresh `-Suite All` 於
+  2026-08-12T16:13:48Z～16:36:07Z exit 0，343 scripts、1421／1421 tests、38732 assertions，
+  Spec 4092。Fresh p8 evidence 146／146、`issues=[]`、exit 0，report SHA-256
+  `6BB13FC1EAC9D8F429731C1A41C3CD508E4E3F7D52F00F00B7A36EDF1EBDC5D7`。需求台帳收斂為
+  **PASS 16／PARTIAL 1／BLOCKED 0**；僅 IRH-REQ-007 dynamic summon authority 尚未閉合，
+  因此 T31 維持未勾。
+
 - [2026-08-12] ✅ `in-run-hud` 上游批次 2＋Codex gate 批次（Claude）— 解除台帳
   IRH-REQ-011/013 BLOCKED 與 008/014 部分 PARTIAL 的上游缺口，並完成 T10。
   (1) 三個 API：`ShopEconomyViewModel`（quote 轉發＋gold_cap 探針差額法，金幣不足仍回
@@ -40,7 +54,7 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   3 項 `ACCEPTED`、0 項 `OPEN`，原文與 SHA-256 已保存於
   `specs/in-run-hud/evidence/p7-final/in-run-hud-opus-re-review-approved.md`，codex 第二審亦已落檔。
   此核可只涵蓋 findings closure：T32 已關閉，T31 仍未關；需求台帳維持
-  **PASS 8／PARTIAL 7／BLOCKED 2**，不宣稱整片完成。
+  **當時 PASS 8／PARTIAL 7／BLOCKED 2**；後續批次 3 已更新台帳，不宣稱整片完成。
 - [2026-08-09] ✅ `in-run-hud` T01 備戰期單位屬性預覽 API（IRH-REQ-016）— 新增
   `BattleSetupSourceCompiler.try_compile_unit_stats()`（與 `compile()` 共用
   `_apply_stats`／`_find_scaling`，不需 `BoardPlacementState`，板凳單位同樣適用）、
@@ -306,23 +320,22 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 進行中
 
-- [2026-08-12] 🟡 `in-run-hud` P7 未閉合產品需求：
-  `specs/in-run-hud/evidence/p7-final/evidence-report.json` 為 `ok=true`、exit 0、
-  137／137 cases（baseline 128＋shop-tier 9）、`issues=[]`；三尺寸 × 三 UI scale 矩陣與
+- [2026-08-13] 🟡 `in-run-hud` T31 未閉合產品需求：
+  `specs/in-run-hud/evidence/p8-batch2/evidence-report.json` 為 `ok=true`、exit 0、
+  146／146 cases（baseline 128＋shop-tier 9＋board-draft-preview 9）、`issues=[]`；三尺寸 × 三 UI scale 矩陣與
   prepare／combat／map／reward 各九圖已重建，real APPDATA before／after SHA-256 均為
   `b68bfb1afb4ab0ed9b90a1089ab3b1550ea318dcd4cde3c42b58a85866b22867`，完成後 Godot 0。
-  逐條判定仍為 **PASS 8／PARTIAL 7／BLOCKED 2**，見 `irh-requirements-manifest.md`。
-  2026-08-11T18:27:27Z～18:49:46Z final current-source `-Suite All` exit 0（1339 秒）：GUT
-  326 scripts／1354／1354 tests／37956 assertions／0 failures／0 errors；Spec 4076 cases，
+  逐條判定為 **PASS 16／PARTIAL 1／BLOCKED 0**，見 `irh-requirements-manifest.md`。
+  2026-08-12T16:13:48Z～16:36:07Z current-source `-Suite All` exit 0：GUT
+  343 scripts／1421／1421 tests／38732 assertions／0 failures／0 errors；Spec 4092 cases，
   Import／Smoke／Gut／Content／Canonical／Combat／Expedition／ActEliminationGate／Spec 全部取得
   預期 exit 0；此 run 已涵蓋修正後 evidence runner contract。
   原 external Opus review verdict 為 `CHANGES_REQUESTED`；修正後 closure re-review 已
   `APPROVED`，13 項 findings 為 10 項 `CLOSED`、3 項 `ACCEPTED`、0 項 `OPEN`，原文與
   decision table 均落於 `evidence/p7-final/`，T32 已關閉。
-  本片仍未完成：正式 settings port；shop odds／quote；inactive／distinct trait authority（active
-  authored threshold ladder 已完成）；forge recipe preview；dynamic summon visual/max-stat authority；
-  人口／羈絆 drag preview；sell confirmation；progress accessibility localization；完整 keyboard E2E。
-  REWARD 九圖仍是 typed `PendingRewardState` fixture。T31 維持未勾，不得宣稱整片完成。
+  本片僅剩 IRH-REQ-007 的 dynamic summon visual／max-stat typed authority；presentation 不能虛構
+  sprite 或最大值。REWARD 九圖仍是 typed `PendingRewardState` fixture。T31 維持未勾，
+  不得宣稱整片完成。
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
@@ -339,13 +352,9 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
   局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
   其後仍為 Phase C 資產接線、Phase D 中文化收尾。
-- `in-run-hud`：T01 已交付，世界層已採 640×360，T22 最短可見播放契約已落地；P7
-  evidence candidate 現為 137 cases／0 issues、PASS 8／PARTIAL 7／BLOCKED 2；final
-  current-source All 已綠並涵蓋修正後 evidence runner contract。下一步依
-  `specs/in-run-hud/evidence/p7-final/irh-requirements-manifest.md` 補正式 settings port、
-  inactive／distinct trait authority 與 shop odds／quote typed API、forge recipe preview、
-  拖曳預覽／鍵盤 E2E，再完成未閉合 requirements 與 T31 closure；T32 已由 external
-  Opus re-review `APPROVED` 關閉。
+- `in-run-hud`：T00～T30、T32 已交付；p8 evidence 為 146 cases／0 issues，需求台帳
+  PASS 16／PARTIAL 1／BLOCKED 0，current-source All 已綠。下一步只補 dynamic summon
+  visual／max-stat typed authority並完成 T31；T32 已由 external Opus re-review `APPROVED` 關閉。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -353,11 +362,9 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已知問題
 
-- `in-run-hud` P7 尚有產品邊界與上游缺口：正式 settings port 未注入；shop odds／quote 與
-  inactive／distinct trait authority 未到位；forge recipe preview、拖曳人口／羈絆預覽及
-  純鍵盤完整 E2E 尚缺；dynamic summon 缺 visual/max-stat authority；sell quote／高星或帶裝
-  出售確認、進度狀態 accessibility 在地化文字亦未閉合。Button／projected-DnD persisted
-  canonical 等價已驗。REWARD 九圖為 typed `PendingRewardState` fixture，非 fresh-profile 自然路徑。
+- `in-run-hud` 尚有一項產品邊界：dynamic summon 缺 visual／max-stat typed authority；目前只能
+  fail closed 為 unrenderable，不得由 presentation 虛構。REWARD 九圖為 typed
+  `PendingRewardState` fixture，非 fresh-profile 自然路徑。
 - Combat／Expedition／Build／Camp／Run／Results Lab 仍是開發用灰盒，不是正式產品 UI；正式 production 美術與音訊已由 content-production 閉環，後續產品化 UX 依 roadmap 的剩餘切片處理。
 - Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。

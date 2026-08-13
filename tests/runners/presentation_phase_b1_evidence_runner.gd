@@ -25,8 +25,11 @@ const EVIDENCE_ROOT := "res://specs/in-run-hud/evidence"
 const DEFAULT_OUTPUT_DIR := EVIDENCE_ROOT + "/phase-b1"
 const BASELINE_REPORT_CASE_COUNT := 128
 const SHOP_TIER_EVIDENCE_CASE_COUNT := 9
+const BOARD_DRAFT_PREVIEW_EVIDENCE_CASE_COUNT := 9
 const EXPECTED_REPORT_CASE_COUNT := (
-	BASELINE_REPORT_CASE_COUNT + SHOP_TIER_EVIDENCE_CASE_COUNT
+	BASELINE_REPORT_CASE_COUNT
+	+ SHOP_TIER_EVIDENCE_CASE_COUNT
+	+ BOARD_DRAFT_PREVIEW_EVIDENCE_CASE_COUNT
 )
 
 var _harness: Support.BootHarness
@@ -113,6 +116,7 @@ func _run() -> void:
 	await _capture_focus(output_dir)
 	await _capture_remaining_run_routes(output_dir)
 	await _capture_prepare_shop_tiers(output_dir)
+	await _capture_board_draft_preview(output_dir)
 	await _finish(output_dir)
 
 
@@ -476,6 +480,229 @@ func _capture_prepare_shop_tiers(output_dir: String) -> void:
 		))
 
 
+func _capture_board_draft_preview(output_dir: String) -> void:
+	var built := _build_prepare_shop_tier_fixture()
+	var snapshot := built.get("snapshot") as RunPresentationSnapshot
+	var session_result := _harness.root.current_run_presentation()
+	if not bool(built.get("ok", false)) or snapshot == null:
+		_issues.append(
+			"board_draft_preview_fixture_failed:%s"
+			% String(built.get("error", "unknown"))
+		)
+		return
+	if not session_result.ok or session_result.session == null:
+		_issues.append("board_draft_preview_typed_session_missing")
+		return
+	# The tier fixture's canonical unit starts on the board. Stage that same
+	# known roster instance on the bench so the formal PrepareUnitDragButton
+	# can originate a real DnD payload; the candidate preview itself still
+	# comes exclusively from the live typed supply/session below.
+	snapshot = snapshot.deep_clone()
+	if (
+		snapshot.roster != null
+		and snapshot.roster.bench_unit_instance_ids.is_empty()
+		and not snapshot.roster.board.placements.is_empty()
+	):
+		var staged := (
+			snapshot.roster.board.placements.pop_front()
+			as BoardPlacementState
+		)
+		if staged != null:
+			snapshot.roster.bench_unit_instance_ids.append(
+				staged.unit_instance_id
+			)
+	_write_json("%s/board-draft-preview-source.json" % output_dir, {
+		"route": "RUN_PREPARE",
+		"source": "typed-live-screen-supply-port-board-draft-preview",
+		"manifest_digest": snapshot.manifest_digest,
+		"case_count": CASES.size(),
+	})
+	for case_index: int in CASES.size():
+		var case: Dictionary = CASES[case_index]
+		_configure_window(case["size"])
+		var settings := Support.candidate(int(case["ui"]), &"default")
+		settings.locale = &"zh_TW"
+		var applied := _harness.root.settings_application_port().apply(settings)
+		if not applied.ok:
+			_issues.append(
+				"board_draft_preview_settings_failed:%s" % case["name"]
+			)
+			continue
+		await process_frame
+		await process_frame
+		var mounted := _mount_formal_prepare_shop_tier_screen(
+			snapshot, 1100 + case_index, session_result.session
+		)
+		if mounted == null:
+			_issues.append(
+				"board_draft_preview_mount_failed:%s" % case["name"]
+			)
+			continue
+		await process_frame
+		await process_frame
+		await process_frame
+		var composition := mounted.get_node_or_null(
+			^"Composition"
+		) as RunPrepareScreen
+		var source := _first_board_draft_preview_source(composition)
+		var target := _first_board_draft_preview_target(composition, source)
+		var payload: Variant = source.unit_drag_payload() if source != null else null
+		var accepted := (
+			bool(target.call(&"_can_drop_data", Vector2.ZERO, payload))
+			if target != null and payload is Dictionary
+			else false
+		)
+		await process_frame
+		var panel := (
+			composition.find_child("BoardDraftPreview", true, false) as Label
+			if composition != null
+			else null
+		)
+		_validate_board_draft_preview(
+			mounted, panel, accepted, String(case["name"])
+		)
+		_reports.append(_save_viewport(
+			"%s/prepare-board-draft-preview-%s.png" % [
+				output_dir, case["name"],
+			],
+			"prepare-board-draft-preview",
+			case
+		))
+
+
+func _first_board_draft_preview_source(
+	composition: RunPrepareScreen
+) -> PrepareUnitDragButton:
+	if composition == null:
+		return null
+	for node: Node in composition.find_children(
+		"BuildUnitDrag*", "Button", true, false
+	):
+		var source := node as PrepareUnitDragButton
+		if (
+			source != null
+			and not String(source.get_meta(&"unit_instance_id", "")).is_empty()
+		):
+			return source
+	for node: Node in composition.find_children(
+		"BenchCell*", "Button", true, false
+	):
+		var source := node as PrepareUnitDragButton
+		if (
+			source != null
+			and not String(source.get_meta(&"unit_instance_id", "")).is_empty()
+		):
+			return source
+	return null
+
+
+func _first_board_draft_preview_target(
+	composition: RunPrepareScreen,
+	source: PrepareUnitDragButton
+) -> PrepareUnitDragButton:
+	if composition == null or source == null:
+		return null
+	var source_slot := int(source.get_meta(&"bench_slot", -1))
+	for node: Node in composition.find_children(
+		"BenchCell*", "Button", true, false
+	):
+		var target := node as PrepareUnitDragButton
+		if (
+			target != null
+			and int(target.get_meta(&"bench_slot", -1)) != source_slot
+		):
+			return target
+	return null
+
+
+func _validate_board_draft_preview(
+	screen: ProductionScreen,
+	panel: Label,
+	accepted: bool,
+	case_name: String
+) -> void:
+	if screen == null or panel == null:
+		_issues.append("board_draft_preview_missing:%s" % case_name)
+		return
+	var shell := screen.get("_layout_shell") as ProductionLayoutShell
+	var bench := screen.find_child("BenchRow", true, false) as Control
+	var bottom := screen.find_child("BottomRegion", true, false) as Control
+	var status := screen.find_child("StatusRegion", true, false) as Control
+	var canvas := Rect2(Vector2.ZERO, ProductionLayoutShell.REFERENCE_SIZE)
+	var margin := Vector2.ONE * ProductionLayoutShell.SAFE_MARGIN
+	var safe_region := Rect2(
+		margin,
+		ProductionLayoutShell.REFERENCE_SIZE - margin * 2.0
+	)
+	var panel_rect := panel.get_global_rect()
+	if (
+		not accepted
+		or not panel.visible
+		or not panel.is_visible_in_tree()
+		or not panel_rect.has_area()
+		or not canvas.encloses(panel_rect)
+		or not safe_region.encloses(panel_rect)
+	):
+		_issues.append("board_draft_preview_visibility:%s:%s" % [
+			case_name, panel_rect,
+		])
+	if shell == null:
+		_issues.append("board_draft_preview_shell_missing:%s" % case_name)
+	else:
+		var center_rect := shell.current_region_rect(
+			ProductionLayoutShell.REGION_CENTER
+		)
+		if not center_rect.encloses(panel_rect):
+			_issues.append("board_draft_preview_outside_center:%s:%s" % [
+				case_name, panel_rect,
+			])
+	for entry: Dictionary in [
+		{"name": "bench", "control": bench},
+		{"name": "status", "control": status},
+		{"name": "bottom", "control": bottom},
+	]:
+		var control := entry["control"] as Control
+		if (
+			control != null
+			and control.is_visible_in_tree()
+			and panel_rect.intersects(control.get_global_rect())
+		):
+			_issues.append("board_draft_preview_over_%s:%s" % [
+				String(entry["name"]), case_name,
+			])
+	var accessible := String(panel.get_meta(&"accessible_text", ""))
+	var audited := "\n".join([panel.text, panel.tooltip_text, accessible])
+	if (
+		StringName(panel.get_meta(&"typed_data_kind", &""))
+			!= &"board_draft_preview"
+		or panel.text.is_empty()
+		or panel.tooltip_text != panel.text
+		or accessible != panel.text
+		or not panel.text.contains(
+			String(_prepare_fixture_localized_text.get(
+				&"prepare.resource.capacity", ""
+			))
+		)
+	):
+		_issues.append("board_draft_preview_localized_copy:%s" % case_name)
+	var raw_ids := PackedStringArray()
+	var source_snapshot := (
+		_prepare_fixture_snapshot
+		if _prepare_fixture_snapshot != null
+		else null
+	)
+	if source_snapshot != null and source_snapshot.roster != null:
+		for unit: UnitInstance in source_snapshot.roster.unit_instances:
+			if unit != null:
+				raw_ids.append(unit.instance_id)
+				raw_ids.append(String(unit.def_id))
+	for raw_id: String in raw_ids:
+		if not raw_id.is_empty() and audited.contains(raw_id):
+			_issues.append("board_draft_preview_raw_identity:%s:%s" % [
+				case_name, raw_id,
+			])
+
+
 func _build_prepare_shop_tier_fixture() -> Dictionary:
 	if (
 		_prepare_fixture_snapshot == null
@@ -599,7 +826,8 @@ func _build_prepare_shop_tier_fixture() -> Dictionary:
 
 func _mount_formal_prepare_shop_tier_screen(
 	snapshot: RunPresentationSnapshot,
-	generation: int
+	generation: int,
+	typed_session: RunPresentationSession = null
 ) -> ProductionScreen:
 	if snapshot == null or _prepare_fixture_localized_text.is_empty():
 		return null
@@ -619,8 +847,11 @@ func _mount_formal_prepare_shop_tier_screen(
 	if not screen.bind(staged).is_empty():
 		screen.free()
 		return null
-	var session := CompositionSupport.SpyRunPresentationSession.new()
-	session.current_snapshot = snapshot.deep_clone()
+	var session: RunPresentationSession = typed_session
+	if session == null:
+		var spy := CompositionSupport.SpyRunPresentationSession.new()
+		spy.current_snapshot = snapshot.deep_clone()
+		session = spy
 	var registry := LiveScreenLeaseRegistry.new()
 	var lease := registry.activate(AppStateMachine.State.RUN, generation)
 	var live := ProductionLiveScreenContext.new(
@@ -650,6 +881,7 @@ func _validate_prepare_shop_tier_cards(
 		return
 	var variations: Dictionary = {}
 	var style_signatures: Dictionary = {}
+	var canvas := Rect2(Vector2.ZERO, ProductionLayoutShell.REFERENCE_SIZE)
 	for slot_index: int in range(5):
 		var card := cards.get_child(slot_index) as Button
 		var entry := expected[slot_index]
@@ -729,10 +961,14 @@ func _validate_prepare_shop_tier_cards(
 			_issues.append("prepare_shop_tier_shape_geometry:%s:%d" % [
 				case_name, slot_index,
 			])
+		var card_rect := card.get_global_rect()
+		var effective_visible := card_rect.intersection(
+			_scroll_effective_rect(_scroll_ancestor_chain(card), canvas)
+		)
 		if (
 			not card.is_visible_in_tree()
-			or not card.get_global_rect().has_area()
-			or not get_root().get_visible_rect().encloses(card.get_global_rect())
+			or not card_rect.has_area()
+			or not effective_visible.has_area()
 		):
 			_issues.append("prepare_shop_tier_not_visible:%s:%d" % [
 				case_name, slot_index,

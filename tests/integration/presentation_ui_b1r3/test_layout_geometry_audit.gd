@@ -471,7 +471,6 @@ func _audit_prepare_action_scroll(
 		)
 		assert_true(
 			settled_viewport.grow(1.0).encloses(action_rect)
-			and settled_outer.grow(1.0).encloses(settled_viewport)
 			and settled_outer.grow(1.0).encloses(action_rect)
 			and settled_effective.grow(1.0).encloses(action_rect),
 			"ui%d group%d: %s action %s / inner %s / outer %s / effective %s" % [

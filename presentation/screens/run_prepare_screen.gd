@@ -60,8 +60,13 @@ var _draft_move_adapter := BoardDraftMoveAdapter.new()
 var _quick_toggle_unit_id: String = ""
 var _keyboard_move_unit_id: String = ""
 var _selected_inspector_unit_id: String = ""
+var _selected_sell_quote: ShopQuoteSnapshot
 var _world_board_mount_error: StringName = &""
 var _world_board_mount_deferred_pending: bool = false
+var _committed_board_preview: BoardDraftPreviewSnapshot
+var _candidate_board_preview: BoardDraftPreviewSnapshot
+var _draft_revision: int = 0
+var _board_preview_cache: Dictionary = {}
 
 
 func _notification(what: int) -> void:
@@ -182,7 +187,10 @@ func commit_board_draft() -> RunPresentationResult:
 		intent.bench_unit_instance_ids.assign(
 			_draft_bench_unit_instance_ids
 		)
-	return request(intent)
+	var result := request(intent)
+	if result != null and result.ok and result.snapshot != null:
+		_post_commit_board_draft(result.snapshot)
+	return result
 
 
 func start_combat() -> RunPresentationResult:
@@ -219,14 +227,61 @@ func buy_xp() -> RunPresentationResult:
 
 
 func sell_selected_unit() -> RunPresentationResult:
-	var unit_id := _single_selected_metadata(&"BuildUnitSelector")
+	return sell_unit_by_instance_id(selected_unit_instance_id())
+
+
+func sell_unit_by_instance_id(unit_id: String) -> RunPresentationResult:
 	if unit_id.is_empty():
+		return _selection_failure()
+	if _prepare_inspection_for(unit_id) == null:
 		return _selection_failure()
 	var intent := RunPresentationIntent.new(
 		RunPresentationIntent.Kind.SELL_UNIT
 	)
 	intent.unit_instance_id = unit_id
 	return request(intent)
+
+
+func selected_unit_instance_id() -> String:
+	return _single_selected_metadata(&"BuildUnitSelector")
+
+
+func selected_unit_sell_quote() -> ShopQuoteSnapshot:
+	return (
+		_selected_sell_quote.deep_clone()
+		if _selected_sell_quote != null
+		else null
+	)
+
+
+func selected_unit_requires_sell_confirmation() -> bool:
+	var unit_id := selected_unit_instance_id()
+	var inspection := _prepare_inspection_for(unit_id)
+	return (
+		inspection != null
+		and (
+			inspection.star >= 2
+			or not inspection.equipment_instance_ids.is_empty()
+		)
+	)
+
+
+func selected_unit_inspection_available() -> bool:
+	return _prepare_inspection_for(selected_unit_instance_id()) != null
+
+
+func _prepare_inspection_for(
+	unit_id: String
+) -> PrepareUnitInspectionSnapshot:
+	if unit_id.is_empty() or _model == null:
+		return null
+	var snapshot := _model.snapshot_clone()
+	if snapshot == null:
+		return null
+	for inspection: PrepareUnitInspectionSnapshot in snapshot.prepare_unit_inspections:
+		if inspection != null and inspection.unit_instance_id == unit_id:
+			return inspection.deep_clone()
+	return null
 
 
 func begin_forge_selected() -> ConfirmationDraftResult:
@@ -471,9 +526,7 @@ func _stage_adapter_move(unit_id: String, operation: Callable) -> AppActionResul
 	var error_code: StringName = operation.call()
 	if not error_code.is_empty():
 		return AppActionResult.failure(_draft_move_error(error_code))
-	_draft_board = _draft_move_adapter.board_clone()
-	_draft_bench_unit_instance_ids.assign(_draft_move_adapter.bench_clone())
-	_refresh_draft_selectors()
+	_apply_adapter_draft()
 	return AppActionResult.success(false)
 
 
@@ -673,6 +726,7 @@ func _build_prepare_controls() -> void:
 	# projection without shrinking any of the board's 64 legal hit cells.
 	_build_bench_row(layout)
 	_place_bench_row()
+	_build_board_draft_preview(layout)
 
 	var right_scroll := ScrollContainer.new()
 	right_scroll.name = "PrepareRightScroll"
@@ -794,6 +848,10 @@ func _build_bench_row(parent: Control) -> void:
 		cell.set_meta(&"bench_slot", index)
 		cell.pressed.connect(_on_bench_cell_pressed.bind(cell))
 		cell.unit_dropped.connect(_on_unit_dropped)
+		cell.configure_unit_drop_resolver(
+			Callable(self, &"_resolve_unit_drop")
+		)
+		cell.unit_preview_cleared.connect(_clear_board_draft_preview)
 		cell.equipment_dropped.connect(_on_equipment_dropped)
 		cell.mouse_entered.connect(_on_unit_interaction_targeted.bind(cell))
 		cell.focus_entered.connect(_on_unit_interaction_targeted.bind(cell))
@@ -823,6 +881,206 @@ func _place_bench_row() -> void:
 		authored_bottom - rendered_height
 	).round()
 	row.size = Vector2(center_rect.size.x, rendered_height).round()
+
+
+func _build_board_draft_preview(parent: Control) -> void:
+	var panel := Label.new()
+	panel.name = "BoardDraftPreview"
+	panel.visible = false
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.theme_type_variation = &"ExpeditionDetail"
+	panel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	panel.clip_text = true
+	panel.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	panel.z_index = 45
+	# Keep the typed drag summary clear of the fixed bench strip at 150%.
+	# It intentionally overlays the world board: drag feedback belongs to the
+	# UI overlay layer and must remain above sprites without moving board cells.
+	panel.position = Vector2(724.0, 330.0)
+	ExpeditionLayoutMetrics.set_reference_min(panel, Vector2(472.0, 96.0))
+	panel.size = panel.custom_minimum_size
+	panel.set_meta(&"typed_data_kind", &"board_draft_preview")
+	parent.add_child(panel)
+	_committed_board_preview = (
+		_supply_port.try_committed_board_preview()
+		if _supply_port != null
+		else null
+	)
+
+
+func _resolve_unit_drop(
+	unit_id: String,
+	target_kind: StringName,
+	target_cell: Vector2i,
+	target_slot: int,
+	force_refresh: bool = false
+) -> Dictionary:
+	var result := {"legal": false, "preview": null}
+	if (
+		_background_input_blocked()
+		or unit_id.is_empty()
+		or _draft_board == null
+		or _supply_port == null
+	):
+		_clear_board_draft_preview()
+		return result
+	var cache_key := _board_preview_cache_key(
+		unit_id, target_kind, target_cell, target_slot
+	)
+	if not force_refresh and _board_preview_cache.has(cache_key):
+		var cached: Variant = _board_preview_cache[cache_key]
+		_candidate_board_preview = (
+			(cached as BoardDraftPreviewSnapshot).deep_clone()
+			if cached is BoardDraftPreviewSnapshot
+			else null
+		)
+		result["preview"] = (
+			_candidate_board_preview.deep_clone()
+			if _candidate_board_preview != null
+			else null
+		)
+		result["legal"] = (
+			_candidate_board_preview != null
+			and _candidate_board_preview.valid
+		)
+		_render_board_draft_preview()
+		return result
+	_draft_move_adapter.reset(_draft_board, _draft_bench_unit_instance_ids)
+	var move_error := (
+		_draft_move_adapter.move_to_board(unit_id, target_cell)
+		if target_kind == &"board"
+		else _draft_move_adapter.move_to_bench(unit_id, target_slot)
+		if target_kind == &"bench"
+		else BoardDraftMoveAdapter.TARGET_INVALID
+	)
+	if not move_error.is_empty():
+		_clear_board_draft_preview()
+		return result
+	var candidate_board := _draft_move_adapter.board_clone()
+	var candidate_bench := _draft_move_adapter.bench_clone()
+	if candidate_board == null:
+		_clear_board_draft_preview()
+		return result
+	_candidate_board_preview = _supply_port.try_board_draft_preview(
+		candidate_board.placements,
+		candidate_bench
+	)
+	_board_preview_cache[cache_key] = (
+		_candidate_board_preview.deep_clone()
+		if _candidate_board_preview != null
+		else null
+	)
+	result["preview"] = (
+		_candidate_board_preview.deep_clone()
+		if _candidate_board_preview != null
+		else null
+	)
+	result["legal"] = (
+		_candidate_board_preview != null and _candidate_board_preview.valid
+	)
+	_render_board_draft_preview()
+	return result
+
+
+func _board_preview_cache_key(
+	unit_id: String,
+	target_kind: StringName,
+	target_cell: Vector2i,
+	target_slot: int
+) -> String:
+	return "%d|%s|%s|%d|%d|%d" % [
+		_draft_revision,
+		unit_id,
+		String(target_kind),
+		target_cell.x,
+		target_cell.y,
+		target_slot,
+	]
+
+
+func _advance_draft_revision() -> void:
+	_draft_revision += 1
+	_board_preview_cache.clear()
+	_clear_board_draft_preview()
+
+
+func _world_unit_drop_is_legal(
+	unit_id: String,
+	target_kind: StringName,
+	target_cell: Vector2i,
+	target_slot: int
+) -> bool:
+	return bool(_resolve_unit_drop(
+		unit_id, target_kind, target_cell, target_slot
+	).get("legal", false))
+
+
+func _render_board_draft_preview() -> void:
+	var panel := _control(&"BoardDraftPreview") as Label
+	if panel == null or _candidate_board_preview == null:
+		return
+	var before := _committed_board_preview
+	var lines := PackedStringArray()
+	lines.append("%s  %d / %d → %d / %d" % [
+		_localized_ui_text(&"prepare.resource.capacity"),
+		before.used_population if before != null else 0,
+		before.derived_capacity if before != null else 0,
+		_candidate_board_preview.used_population,
+		_candidate_board_preview.derived_capacity,
+	])
+	for after_trait: TraitProgressSnapshot in _candidate_board_preview.trait_progress:
+		if after_trait == null:
+			continue
+		var before_trait := _trait_progress_for(
+			before, after_trait.trait_id
+		)
+		if (
+			before_trait == null
+			or before_trait.distinct_count != after_trait.distinct_count
+			or before_trait.active_tier != after_trait.active_tier
+		):
+			lines.append("%s  %d / %d → %d / %d" % [
+				_localized_content_text(after_trait.trait_id),
+				before_trait.distinct_count if before_trait != null else 0,
+				before_trait.active_tier if before_trait != null else 0,
+				after_trait.distinct_count,
+				after_trait.active_tier,
+			])
+	var issue_keys: Array[StringName] = []
+	for issue_code: StringName in _candidate_board_preview.issue_codes():
+		var key := StringName("error.board.%s" % String(issue_code).to_lower())
+		issue_keys.append(key)
+		lines.append(_localized_ui_text(key))
+	panel.text = "\n".join(lines)
+	panel.tooltip_text = panel.text
+	panel.set_meta(&"accessible_text", panel.text)
+	panel.set_meta(&"preview_valid", _candidate_board_preview.valid)
+	panel.set_meta(&"issue_codes", _candidate_board_preview.issue_codes())
+	panel.set_meta(&"issue_message_keys", issue_keys)
+	panel.visible = true
+
+
+func _trait_progress_for(
+	preview: BoardDraftPreviewSnapshot,
+	trait_id: StringName
+) -> TraitProgressSnapshot:
+	if preview != null:
+		for progress: TraitProgressSnapshot in preview.trait_progress:
+			if progress != null and progress.trait_id == trait_id:
+				return progress
+	return null
+
+
+func _clear_board_draft_preview() -> void:
+	_candidate_board_preview = null
+	var panel := _control(&"BoardDraftPreview") as Label
+	if panel != null:
+		panel.visible = false
+		panel.text = ""
+		panel.tooltip_text = ""
+		panel.remove_meta(&"preview_valid")
+		panel.remove_meta(&"issue_codes")
+		panel.remove_meta(&"issue_message_keys")
 
 
 func _build_keyboard_placement_targets(parent: VBoxContainer) -> void:
@@ -903,6 +1161,9 @@ func refresh_layout_rects() -> void:
 		var right_rect := _region_content_rect(ProductionLayoutShell.REGION_RIGHT)
 		right_scroll.position = right_rect.position
 		right_scroll.size = right_rect.size
+	var draft_preview := _control(&"BoardDraftPreview") as Label
+	if draft_preview != null:
+		draft_preview.size = draft_preview.custom_minimum_size
 
 
 func _metric_label(key: StringName, value: String) -> Label:
@@ -1119,7 +1380,12 @@ func _schedule_world_board_mount() -> void:
 
 func _mount_world_board() -> void:
 	_world_board_mount_deferred_pending = false
-	if not is_inside_tree() or _model == null or _draft_board == null:
+	if (
+		not is_inside_tree()
+		or not can_process()
+		or _model == null
+		or _draft_board == null
+	):
 		return
 	var overlay_mount: Control = (
 		_hud_shell.host(ProductionLayoutShell.REGION_OVERLAY)
@@ -1177,6 +1443,19 @@ func _connect_world_surface_inputs() -> void:
 			surface.unit_targeted.connect(_on_world_unit_targeted)
 		if not surface.unit_hovered.is_connected(_on_world_unit_hovered):
 			surface.unit_hovered.connect(_on_world_unit_hovered)
+		var overlay := surface.ui_overlay()
+		if overlay != null:
+			_clear_board_draft_preview()
+			var drag_target := overlay.drag_target()
+			drag_target.configure_unit_drop_resolver(
+				Callable(self, &"_world_unit_drop_is_legal")
+			)
+			if not drag_target.preview_cleared.is_connected(
+				_clear_board_draft_preview
+			):
+				drag_target.preview_cleared.connect(
+					_clear_board_draft_preview
+				)
 
 
 func _world_cell_is_draft_eligible(cell: Vector2i) -> bool:
@@ -1432,7 +1711,9 @@ func _on_bench_cell_pressed(cell: Button) -> void:
 
 func _select_inspector_unit(unit_id: String) -> void:
 	_selected_inspector_unit_id = unit_id
+	_selected_sell_quote = _sell_quote_for(unit_id)
 	_restore_selected_inspector()
+	_update_parent_action_state()
 
 
 func _preview_inspector_unit(unit_id: String) -> void:
@@ -1441,7 +1722,7 @@ func _preview_inspector_unit(unit_id: String) -> void:
 	if unit_id.is_empty():
 		_restore_selected_inspector()
 	else:
-		_hud_shell.show_prepare_unit(unit_id)
+		_hud_shell.show_prepare_unit(unit_id, _sell_quote_for(unit_id))
 
 
 func _restore_selected_inspector() -> void:
@@ -1450,7 +1731,16 @@ func _restore_selected_inspector() -> void:
 	if _selected_inspector_unit_id.is_empty():
 		_hud_shell.show_inspector_empty()
 	else:
-		_hud_shell.show_prepare_unit(_selected_inspector_unit_id)
+		_hud_shell.show_prepare_unit(
+			_selected_inspector_unit_id, _selected_sell_quote
+		)
+
+
+func _sell_quote_for(unit_id: String) -> ShopQuoteSnapshot:
+	if unit_id.is_empty() or _supply_port == null:
+		return null
+	var quote := _supply_port.shop_sell_quote(unit_id)
+	return quote.deep_clone() if quote != null else null
 
 
 func _on_unit_interaction_targeted(cell: Button) -> void:
@@ -1507,6 +1797,11 @@ func _on_unit_dropped(
 ) -> void:
 	if _background_input_blocked():
 		return
+	var preview_result := _resolve_unit_drop(
+		unit_id, target_kind, target_cell, target_slot, true
+	)
+	if not bool(preview_result.get("legal", false)):
+		return
 	_draft_move_adapter.reset(_draft_board, _draft_bench_unit_instance_ids)
 	var error_code := (
 		_draft_move_adapter.move_to_board(unit_id, target_cell)
@@ -1524,6 +1819,7 @@ func _on_unit_dropped(
 	var parent_screen := get_parent() as ProductionScreen
 	if parent_screen != null:
 		parent_screen.report_composition_result(result)
+	_clear_board_draft_preview()
 
 
 func _on_equipment_dropped(item_id: String, unit_id: String) -> void:
@@ -1618,19 +1914,22 @@ func _component_equip_rejection_text() -> String:
 func _apply_adapter_draft() -> void:
 	_draft_board = _draft_move_adapter.board_clone()
 	_draft_bench_unit_instance_ids.assign(_draft_move_adapter.bench_clone())
+	_advance_draft_revision()
 	_refresh_draft_selectors()
 
 
 func _commit_immediate_draft() -> RunPresentationResult:
-	var result := commit_board_draft()
-	var canonical := (
-		result.snapshot.deep_clone()
-		if result != null and result.snapshot != null
-		else _model.snapshot_clone()
-	)
+	return commit_board_draft()
+
+
+func _post_commit_board_draft(canonical: RunPresentationSnapshot) -> void:
 	_reset_consumer_draft(canonical)
+	_committed_board_preview = (
+		_supply_port.try_committed_board_preview()
+		if _supply_port != null
+		else null
+	)
 	_refresh_draft_selectors()
-	return result
 
 
 func _unit_is_on_board(unit_id: String) -> bool:
@@ -1667,6 +1966,7 @@ func _append_typed_item(
 
 
 func _reset_consumer_draft(snapshot: RunPresentationSnapshot) -> void:
+	_advance_draft_revision()
 	_draft_board = null
 	_draft_bench_unit_instance_ids.clear()
 	_quick_toggle_unit_id = ""
@@ -1675,6 +1975,8 @@ func _reset_consumer_draft(snapshot: RunPresentationSnapshot) -> void:
 	_pending_forge_confirmation = null
 	_pending_node_choice_confirmation = null
 	_selected_node_choice_id = &""
+	_committed_board_preview = null
+	_candidate_board_preview = null
 	if snapshot == null or snapshot.roster == null:
 		return
 	_draft_board = snapshot.roster.board.deep_clone()

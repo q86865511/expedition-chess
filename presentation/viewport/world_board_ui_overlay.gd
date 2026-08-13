@@ -85,6 +85,7 @@ func clear_snapshot() -> void:
 	_coordinate_mapper = null
 	_cell_validator = Callable()
 	if is_instance_valid(_drag_target):
+		_drag_target.clear_unit_drop_resolver()
 		_drag_target.visible = false
 		_drag_target.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	queue_redraw()
@@ -121,6 +122,11 @@ func drag_preview_visible() -> bool:
 func drag_target() -> WorldBoardDragTarget:
 	_ensure_drag_target()
 	return _drag_target
+
+
+func clear_unit_drop_resolver() -> void:
+	if is_instance_valid(_drag_target):
+		_drag_target.clear_unit_drop_resolver()
 
 
 func _draw() -> void:

@@ -23,6 +23,7 @@ var _snapshot := WorldBoardSnapshot.new()
 var _projection: BoardProjection
 var _coordinate_mapper: Object
 var _cell_validator: Callable
+var _unit_drop_resolver: Callable
 var _hovered_unit_id: String = ""
 
 
@@ -64,6 +65,14 @@ func configure(
 		# target before the next pointer motion instead of retaining a stale id.
 		unit_hovered.emit("")
 	return _refresh_board_rect()
+
+
+func configure_unit_drop_resolver(resolver: Callable) -> void:
+	_unit_drop_resolver = resolver
+
+
+func clear_unit_drop_resolver() -> void:
+	_unit_drop_resolver = Callable()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -128,10 +137,17 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 	var kind := StringName(payload.get("kind", &""))
 	var legal := false
 	if kind == &"prepare_unit":
-		legal = (
+		if (
 			cell != INVALID_CELL
 			and not String(payload.get("unit_instance_id", "")).is_empty()
-		)
+			and _unit_drop_resolver.is_valid()
+		):
+			legal = bool(_unit_drop_resolver.call(
+				String(payload.get("unit_instance_id", "")),
+				&"board",
+				cell,
+				-1
+			))
 	elif kind == &"prepare_equipment":
 		legal = (
 			cell != INVALID_CELL

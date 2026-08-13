@@ -8,12 +8,18 @@ signal unit_dropped(
 	target_slot: int
 )
 signal equipment_dropped(item_instance_id: String, unit_instance_id: String)
+signal unit_preview_cleared()
 
 const PREVIEW_CUE_COLOR := Color8(244, 229, 153, 255)
 
 var _drop_preview: Dictionary = {}
 var _rejection_tooltip_restore: String = ""
 var _has_rejection_tooltip_restore: bool = false
+var _unit_drop_resolver: Callable
+
+
+func configure_unit_drop_resolver(resolver: Callable) -> void:
+	_unit_drop_resolver = resolver
 
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
@@ -51,27 +57,39 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	var payload := data as Dictionary
 	var kind := StringName(payload.get("kind", &""))
 	if kind == &"prepare_unit":
-		var legal := StringName(get_meta(&"drag_target_kind", &"")) in [
-			&"board", &"bench",
-		]
+		var target_kind := StringName(get_meta(&"drag_target_kind", &""))
+		var target_cell := Vector2i(
+			int(get_meta(&"board_x", -1)),
+			int(get_meta(&"board_y", -1))
+		)
+		var target_slot := int(get_meta(&"bench_slot", -1))
+		var resolution: Dictionary = {}
+		if _unit_drop_resolver.is_valid():
+			var resolved: Variant = _unit_drop_resolver.call(
+				String(payload.get("unit_instance_id", "")),
+				target_kind,
+				target_cell,
+				target_slot
+			)
+			if resolved is Dictionary:
+				resolution = (resolved as Dictionary).duplicate(true)
+		var legal := bool(resolution.get("legal", false))
 		if legal:
 			_drop_preview = {
 				"source_kind": StringName(payload.get("source_kind", &"")),
 				"source_cell": payload.get("source_cell", Vector2i(-1, -1)),
 				"source_slot": int(payload.get("source_slot", -1)),
-				"target_kind": StringName(get_meta(&"drag_target_kind", &"")),
-				"target_cell": Vector2i(
-					int(get_meta(&"board_x", -1)),
-					int(get_meta(&"board_y", -1))
-				),
-				"target_slot": int(get_meta(&"bench_slot", -1)),
+				"target_kind": target_kind,
+				"target_cell": target_cell,
+				"target_slot": target_slot,
 				"swap": not String(get_meta(&"unit_instance_id", "")).is_empty()
 					and String(get_meta(&"unit_instance_id", ""))
 						!= String(payload.get("unit_instance_id", "")),
 			}
 			queue_redraw()
 		else:
-			_clear_drop_preview()
+			_drop_preview = {"rejected": true}
+			queue_redraw()
 		return legal
 	if kind == &"prepare_equipment":
 		if bool(payload.get("is_component", false)):
@@ -169,9 +187,11 @@ func _clear_drop_preview() -> void:
 		_rejection_tooltip_restore = ""
 		_has_rejection_tooltip_restore = false
 	if _drop_preview.is_empty():
+		unit_preview_cleared.emit()
 		return
 	_drop_preview.clear()
 	queue_redraw()
+	unit_preview_cleared.emit()
 
 
 func _set_component_rejection(rejection_text: String) -> void:

@@ -16,6 +16,7 @@ class CapturingIntentPort:
 
 	var intents: Array[RunPresentationIntent] = []
 	var _snapshot: RunPresentationSnapshot
+	var preview_supply: LiveScreenSupplyPort
 
 
 	func _init(snapshot: RunPresentationSnapshot) -> void:
@@ -32,6 +33,41 @@ class CapturingIntentPort:
 			)
 		_snapshot = canonical.deep_clone()
 		return RunPresentationResult.success(canonical)
+
+
+	func supply_port() -> LiveScreenSupplyPort:
+		return preview_supply
+
+
+class LayeringPreviewSupplyPort:
+	extends LiveScreenSupplyPort
+
+	var _committed: BoardDraftPreviewSnapshot
+
+
+	func _init(snapshot: RunPresentationSnapshot) -> void:
+		_committed = _preview(snapshot.roster.board.placements)
+
+
+	func try_committed_board_preview() -> BoardDraftPreviewSnapshot:
+		return _committed.deep_clone()
+
+
+	func try_board_draft_preview(
+		draft_placements: Array[BoardPlacementState],
+		_draft_bench_unit_instance_ids: Array[String]
+	) -> BoardDraftPreviewSnapshot:
+		return _preview(draft_placements)
+
+
+	func _preview(
+		placements: Array[BoardPlacementState]
+	) -> BoardDraftPreviewSnapshot:
+		var result := BoardDraftPreviewSnapshot.new()
+		result.used_population = placements.size()
+		result.derived_capacity = 2
+		result.valid = placements.size() <= result.derived_capacity
+		return result
 
 
 func test_prepare_world_board_is_not_covered_across_output_and_ui_scales() -> void:
@@ -413,7 +449,6 @@ func test_world_unit_drop_commits_the_exact_projected_player_cell() -> void:
 	assert_not_null(mapper)
 	if target == null or mapper == null:
 		return
-
 	var destination := Vector2i(7, 3)
 	var screen_position := mapper.world_to_screen(
 		BoardProjection.new().project_cell(destination)
@@ -849,6 +884,7 @@ func _fixture() -> Dictionary:
 
 	var snapshot := _snapshot()
 	var port := CapturingIntentPort.new(snapshot)
+	port.preview_supply = LayeringPreviewSupplyPort.new(snapshot)
 	var screen := ProductionSceneCatalog.new().instantiate(&"RUN_PREPARE")
 	assert_not_null(screen)
 	if screen == null:

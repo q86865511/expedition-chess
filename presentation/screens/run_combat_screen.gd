@@ -107,7 +107,9 @@ func compose(
 	_world_board_mount_scheduled = false
 	_world_board_ready = false
 	_world_board_render_status_signature.clear()
-	_combat_world_projection = CombatWorldEventProjection.new()
+	_combat_world_projection = CombatWorldEventProjection.new(
+		_build_summon_authority()
+	)
 	var projection_error := _combat_world_projection.compose(
 		_world_snapshot_factory.build_combat(_snapshot.deep_clone())
 	)
@@ -121,6 +123,14 @@ func compose(
 	_schedule_world_board_mount()
 	queue_redraw()
 	return &""
+
+
+func _build_summon_authority() -> WorldBoardSummonAuthority:
+	if _supply_port == null:
+		return WorldBoardSummonAuthority.new()
+	return WorldBoardSummonAuthority.new(
+		_supply_port.combat_summoned_unit_templates()
+	)
 
 
 ## Composition may run while this subtree is still detached. Its deferred mount

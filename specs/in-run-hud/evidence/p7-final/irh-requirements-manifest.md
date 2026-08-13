@@ -1,8 +1,8 @@
-# in-run-hud 需求證據清單（批次 3 更新）
+# in-run-hud 需求證據清單（T31 最終收斂）
 
 日期：2026-08-13
 基準：`specs/in-run-hud/requirements.md` IRH-REQ-001～017、`design.md`、`tasks.md`
-候選狀態：**T31 尚未完成；T32 已由 external Opus re-review `APPROVED` 關閉**
+候選狀態：**T31 已完成；T32 已由 external Opus re-review `APPROVED` 關閉**
 
 ## 判定規則
 
@@ -10,7 +10,7 @@
 - **PARTIAL**：已有實作或證據，但仍缺一項以上明列驗收條件；不得視為 requirement 完成。
 - **BLOCKED**：缺必要 typed upstream contract，或最終 gate／review 尚未取得有效證據。
 
-目前統計：**PASS 16／PARTIAL 1／BLOCKED 0**。
+目前統計：**PASS 17／PARTIAL 0／BLOCKED 0**。
 
 ## Evidence candidate 摘要
 
@@ -48,9 +48,14 @@
 - 上述 current-source All 已包含批次 3 修正與 evidence runner contract；Import／Smoke／Gut／
   Content／Canonical／Combat／Expedition／ActEliminationGate／Spec 均取得預期 exit 0，runner
   contract negative fixtures 亦維持預期非 0。
-- 封版文件落地後另於 18:56:05Z～18:56:09Z 補跑 `-Suite Spec`：4076 cases，
-  `passed=true`、`failures=[]`、exit 0；目前 `runner-execution.json` 因此記錄該最後 Spec-only run，
-  All 實數保留於 `all-suite-output.txt` 與 `gut.xml`。
+- T31 最終 current-source fresh All：2026-08-13T09:02:43Z～09:18:57Z，exit 0；
+  GUT 345 scripts／1428／1428 passing／38825 assertions／0 failures／errors／orphans；
+  Spec 4092 cases、`passed=true`、`failures=[]`。Import／GUT 無 `Parse Error`／`Failed to load`；
+  摘錄與 artifact hashes 見 `p8-batch2/t31-all-suite-output.txt`。
+- T31 summon renderer focused：Claude authority 契約測試 5／5、78 assertions；新增正式
+  screen→projection→renderer 接縫 2／2、15 assertions，皆 exit 0。正式內容目前無 summon
+  effect，故使用 typed pinned-template＋spawn-event fixture 驅動正式 renderer；缺供給／模板／
+  sprite／非法模板仍 fail closed。詳見 `p8-batch2/t31-summon-renderer-focused.txt`。
 
 ## IRH-REQ-001～017
 
@@ -62,7 +67,7 @@
 | IRH-REQ-004 ESC 系統選單 | PASS | `presentation/screens/production_screen.gd`；`system_menu_overlay.gd`；`settings_screen_composition.gd`；commit `06acfcc`；system-menu 單元、四 route contract 與 `test_system_menu_settings_port_injection.gd` | 四 route 無常駐 `run.menu`；內嵌設定不換 route，AppRoot 每次 route commit 重讀 committed snapshot／port 注入，reload 不保留 stale snapshot；modal／選單 focus trap 與雙確認均有 runtime 測試。 |
 | IRH-REQ-005 選單暫停／還原 | PASS | `production_screen.gd` 的 previous-paused capture/restore；`run_combat_screen.gd` 共用 settlement guard；system-menu／combat settle 整合測試 | paused=true／false、canonical digest、initial settle 與 retry 在 menu/modal/paused 下不 transition 均有案例。 |
 | IRH-REQ-006 專屬輸入 action | PASS | `project.godot` 的 `system_menu`／`prepare_quick_toggle_unit`；`production_screen.gd` input priority；B1 input contract 與 system-menu 整合測試 | modal／文字輸入優先序已有測試，未沿用 `ui_cancel`。 |
-| IRH-REQ-007 棋盤世界層 | PARTIAL | `board_projection.gd`；world-board renderer/mount/overlay；`combat_world_event_projection.gd`；T27/T28/T29／factory/event 單元測試；`world-board-state.json` | 8×8、玩家半場、逆投影、整數像素、640×360、world-space head anchor、renderer-equivalent depth、duplicate-cell／empty-active-combat fail-closed 與 late-event lifecycle 已有契約；但 dynamic summon/spawn 缺 visual/max-stat authority，只能追蹤為 unrenderable。 |
+| IRH-REQ-007 棋盤世界層 | PASS | `board_projection.gd`；world-board renderer/mount/overlay；`world_board_summon_authority.gd`；`combat_world_event_projection.gd`；`LiveScreenSupplyPort.combat_summoned_unit_templates()`；`run_combat_screen.gd`；T27/T28/T29／factory/event 單元測試；Claude summon authority 契約 5／5（78）；screen→projection→renderer 接縫 2／2（15）；`world-board-state.json` | 8×8、玩家半場、逆投影、整數像素、640×360、world-space head anchor、renderer-equivalent depth、duplicate-cell／empty-active-combat fail-closed、late-event lifecycle 與 same-id respawn 已有契約。Dynamic summon 的 sprite 與 max-stat 只由 pinned template＋production visual catalog 提供；缺權威一律 unrenderable。正式內容無 summon effect，故 renderer 證據為 typed fixture，限制已明示。 |
 | IRH-REQ-008 拖曳擺位 | PASS | `board_draft_move_adapter.gd`；`run_prepare_screen.gd`；world-board drag target/overlay；`test_t19_production_drag_preview_commit.gd`；`test_projected_drag_matches_button_canonical_layout.gd`；九張 `p8-batch2/prepare-board-draft-preview-*` | 備戰席↔棋盤、換位、合法／交換 cue、人口與羈絆 typed preview、revision cache、route／resize resolver lifecycle 與 command-boundary refresh 均成立；非法 drop 零 publication，合法 drop 走既有 canonical command，拖曳／按鈕 persisted RunState 等價。 |
 | IRH-REQ-009 裝備拖曳與合成 | PASS | `prepare_equipment_drag_list.gd`；`prepare_unit_drag_button.gd`；`run_prepare_screen.gd`；commit `bf2f3f5`；T20 unit／canonical integration／PNG | 配戴走既有 equip；零件組合先取 pinned `recipe_preview()`，再走 forge→confirm；drag／button 在 exactly-once confirm 後完整 canonical state 等價。 |
 | IRH-REQ-010 鍵盤等價路徑 | PASS | W action；`run_prepare_screen.gd` quick toggle；正式 focus graph；commit `993e511`／`e15b783`；`test_prepare_keyboard_only_purchase_deploy_equip_start.gd` | 正式 production route 已以 InputEvent 完成純鍵盤買棋→上場→配裝→開始戰鬥；本批 current-source focused 1／1、39 assertions。 |
@@ -72,20 +77,22 @@
 | IRH-REQ-014 單位檢視面板 | PASS | `InRunHudShell.mount_unit_inspector()`；prepare／combat typed DTO；權威 sell quote；captured-id confirmation；T17 inspector／sell focused | 備戰與戰鬥 inspector 模式／identity 可跨 relocalize；未選取清空；1★無裝直接售出，2★或帶裝須確認，cancel 零 dispatch、confirm captured unit exactly once；缺 inspection fail closed。 |
 | IRH-REQ-015 進度列與轉場 | PASS | `in_run_hud_shell.gd` deterministic sequence／non-color node-kind state／non-blocking banner；commit `29ffb11`；T25 focused／TXT | 節點序列、完成／當前／未達非色彩狀態與本地化 screen-reader copy、遠征 HP、750 ms 大字及不攔輸入契約均有測試。 |
 | IRH-REQ-016 備戰屬性預覽 API | PASS | `BattleSetupSourceCompiler.try_compile_unit_stats()`；`UnitStatsPreviewSnapshot`；`UnitStatsPreviewViewModel`；`tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd` | 已有棋盤／板凳、逐欄位同源、clone-only 與裝備來源 5 tests／36 asserts，且納入本次 fresh All。 |
-| IRH-REQ-017 既有 gate 不回歸 | PASS | `p8-batch2/batch3-all-suite-audit-output.txt`／`batch3-codex-audit.md`；既有 `all-gut.godot.log`／`spec-contract.json`／`evidence-report.json` | 2026-08-13T06:17:42Z～06:35:04Z current-source All exit 0：343 scripts／1421 passing／38732 assertions／0 failures／0 errors；Spec 4092 與其他 gates 取得預期 exit 0。Fresh visual evidence 146／146、0 issues，收尾背景 Godot 0。 |
+| IRH-REQ-017 既有 gate 不回歸 | PASS | `p8-batch2/t31-all-suite-output.txt`／`t31-closure-audit.md`；既有 `all-gut.godot.log`／`spec-contract.json`／`evidence-report.json` | 2026-08-13T09:02:43Z～09:18:57Z current-source All exit 0：345 scripts／1428 passing／38825 assertions／0 failures／errors／orphans；Spec 4092 與其他 gates 取得預期 exit 0。Fresh visual evidence 146／146、0 issues；36 張四-route 核心矩陣逐檔 hash／尺寸核對通過。 |
 
 ## T31／T32 closure 狀態
 
-- T31：**PARTIAL**。Fresh visual evidence 為 146／146、0 issues，current-source All 亦為
-  exit 0；IRH-REQ-007 dynamic summon typed visual／max-stat authority 尚未 closure。
+- T31：**CLOSED**。IRH-REQ-001～017 為 PASS 17／PARTIAL 0／BLOCKED 0；fresh visual
+  evidence 146／146、0 issues，current-source All exit 0；dynamic summon authority 與
+  renderer 接縫已由 pinned typed fixture 閉合。
 - T32：**CLOSED／APPROVED**。Codex 第二審、原始 external Opus `CHANGES_REQUESTED` review
   與 external Opus closure re-review 均已取得；re-review 對前次 13 項 findings 判定
   10 項 `CLOSED`、3 項 `ACCEPTED`、0 項 `OPEN`。使用者轉交的 `APPROVED` 原文保存於
   `in-run-hud-opus-re-review-approved.md`；此核可不改變 requirement 統計，也不關閉 T31。
 
-## 主線必須補填
+## 主線補填關閉紀錄
 
-1. 動態 summon／spawn 的 typed visual／max-stat authority；目前 presentation 只可追蹤為
-   unrenderable，不能虛構 sprite 或最大值。
-2. 自然流程若可到達 REWARD，補自然路徑九組或明確核可 typed fixture 的驗收範圍；
-   現有九圖仍明示為正式 typed snapshot fixture。
+1. **CLOSED**：動態 summon／spawn 的 typed visual／max-stat authority 已由 pinned
+   `SummonedUnitRuleSnapshot`、production visual catalog、lease-protected supply port 與
+   `RunCombatScreen` renderer 接縫閉合；缺資料維持 unrenderable。
+2. **CLOSED BY USER DECISION**：使用者於 2026-08-13 明確接受正式 screen typed
+   `PendingRewardState.CHOOSING` fixture 作為 REWARD 九圖驗收範圍；自然流程證據不再要求。

@@ -1,0 +1,56 @@
+T31 / IRH-REQ-007 summon renderer focused evidence
+Date: 2026-08-13
+Baseline: 23c7666fdfaf80da5f35088da81c2f386bbe75d1
+
+Production seam under test:
+- RunCombatScreen.compose() rebuilds CombatWorldEventProjection with
+  WorldBoardSummonAuthority supplied by LiveScreenSupplyPort.
+- Null/inactive supply remains fail-closed: spawn stays unrenderable and no
+  sprite or max-stat value is fabricated.
+
+Formal-content limitation:
+- The current production catalog contains no naturally triggered summon
+  effect. Renderer coverage therefore uses a typed SummonedUnitRuleSnapshot
+  fixture pinned at the supply-port seam and a typed spawn BattleEvent. The
+  fixture is rendered by the production WorldBoardRenderer, not a mock.
+
+Command 1:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1
+  -Suite Gut
+  -TestPath res://tests/unit/in_run_hud/test_run_combat_screen_summon_authority_wiring.gd
+  -GodotPath E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe
+  -TimeoutSeconds 1200
+
+Result 1: exit 0
+Scripts               1
+Tests                 2
+Passing Tests         2
+Asserts              15
+---- All tests passed! ----
+
+Covered assertions:
+- pinned supply template -> screen projection -> summon DTO -> production
+  WorldBoardRenderer sprite body;
+- logical cell, health/max health, mana/max mana remain pinned-authority values;
+- absent supply -> event accepted for lifecycle tracking but no renderable body.
+
+Command 2 (Claude contract test; file unchanged):
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1
+  -Suite Gut
+  -TestPath res://tests/unit/in_run_hud/test_world_board_summon_authority.gd
+  -GodotPath E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe
+  -TimeoutSeconds 1200
+
+Result 2: exit 0
+Scripts               1
+Tests                 5
+Passing Tests         5
+Asserts              78
+---- All tests passed! ----
+
+Contract coverage:
+- pinned domain template fields are forwarded field-for-field;
+- missing template, missing production visual, and invalid stats fail closed;
+- clone-in / clone-out isolation;
+- summon lifecycle including updates, death, late events, and same-id respawn;
+- RunPresentationSession forwards pinned summon templates clone-only.

@@ -33,6 +33,9 @@ var _playback_warning: DiagnosticError
 ## 戰鬥檢視只能由 COMBAT_PENDING 的 battle_setup 建；result 提交後 canonical 只留
 ## BattleResultPendingResolutionState（無 setup），故 COMBAT 期間保留最後一份投影。
 var _retained_combat_inspections: Array[CombatUnitInspectionSnapshot] = []
+## 同一份 battle_setup 的召喚模板（IRH-REQ-007）：spawn 事件只帶身分與格位，血條與
+## 魔力上限的權威只有 pinned battle_rules，故與檢視投影同進同出地保留。
+var _retained_summoned_unit_templates: Array[SummonedUnitRuleSnapshot] = []
 ## in-run-hud T10：備戰期的鍛造預覽與商店報價供給。兩者都是「畫面要問、但公式在
 ## domain」的讀取面（spec §10.3 禁止呈現層自行換算），所以 session 在建構邊界收下
 ## pinned 供給，畫面只經下面的唯讀方法取值，不自行接 catalog 或 Autoload。
@@ -178,6 +181,18 @@ func try_committed_board_preview() -> BoardDraftPreviewSnapshot:
 	if view_model == null:
 		return null
 	return view_model.committed_preview()
+
+
+## 戰鬥中被召喚實體的呈現權威（IRH-REQ-007）：與 combat_inspections 同一份
+## COMBAT_PENDING battle_setup 的 pinned 召喚模板，clone-only。transcript 的 spawn
+## 事件只帶身分、陣營與格位，血條／魔力上限只能來自這裡；缺模板的 unit_id 由呈現層
+## fail closed 為不可渲染，不得虛構。供給缺席或已離開 COMBAT 時回空陣列。
+func combat_summoned_unit_templates() -> Array[SummonedUnitRuleSnapshot]:
+	var result: Array[SummonedUnitRuleSnapshot] = []
+	for template: SummonedUnitRuleSnapshot in _retained_summoned_unit_templates:
+		if template != null:
+			result.append(template.deep_clone())
+	return result
 
 
 ## 羈絆進度唯一權威的轉發（IRH-REQ-013）：含場上 0 隻的 inactive 列、distinct_count、
@@ -421,6 +436,7 @@ func release() -> void:
 	# 走的是與「從未注入供給」相同的空狀態路徑。
 	_shop_economy = ShopEconomyViewModel.new(null, null, null)
 	_retained_combat_inspections.clear()
+	_retained_summoned_unit_templates.clear()
 	_snapshot = RunPresentationSnapshot.new()
 
 
@@ -530,10 +546,14 @@ func _resolve_combat_inspections(
 	var result: Array[CombatUnitInspectionSnapshot] = []
 	if view == null or view.run_phase != RunState.RunPhase.COMBAT:
 		_retained_combat_inspections.clear()
+		_retained_summoned_unit_templates.clear()
 		return result
 	var built := _build_combat_inspections()
 	if not built.is_empty():
 		_retained_combat_inspections = built
+		# 兩者讀的是同一份 COMBAT_PENDING battle_setup；分開更新會讓重播期間的
+		# spawn 事件配到上一場戰鬥的召喚權威。
+		_retained_summoned_unit_templates = _build_summoned_unit_templates()
 	for inspection: CombatUnitInspectionSnapshot in _retained_combat_inspections:
 		result.append(inspection.deep_clone())
 	return result
@@ -595,6 +615,34 @@ func _build_combat_inspections() -> Array[CombatUnitInspectionSnapshot]:
 			equipment_effects,
 			serial_by_instance
 		))
+	return result
+
+
+## 與 _build_combat_inspections() 同源、同守衛：只讀 COMBAT_PENDING battle_setup 的
+## pinned battle_rules，逐一 clone 出召喚模板。result 提交後 setup 不在了會回空，
+## 由呼叫端的保留規則決定是否沿用上一份。
+func _build_summoned_unit_templates() -> Array[SummonedUnitRuleSnapshot]:
+	var result: Array[SummonedUnitRuleSnapshot] = []
+	if _controller == null:
+		return result
+	var committed := _controller.committed_combat_snapshot()
+	if (
+		committed == null
+		or committed.run_phase != RunState.RunPhase.COMBAT
+		or not committed.resolution_state is CombatPendingResolutionState
+	):
+		return result
+	var pending := committed.resolution_state as CombatPendingResolutionState
+	if (
+		pending.battle_setup == null
+		or pending.battle_setup.inputs == null
+		or pending.battle_setup.inputs.battle_rules == null
+	):
+		return result
+	for template: SummonedUnitRuleSnapshot in \
+		pending.battle_setup.inputs.battle_rules.summoned_unit_templates:
+		if template != null:
+			result.append(template.deep_clone())
 	return result
 
 
@@ -762,6 +810,7 @@ func _start_or_resume_combat(intent: RunPresentationIntent) -> RunPresentationRe
 		# 檢視投影只在 COMBAT_PENDING（有 battle_setup）時建得起來，驅動到 result 提交後
 		# canonical 就只剩 BattleResultPendingResolutionState，故先取一份留給整個 COMBAT。
 		_retained_combat_inspections = _build_combat_inspections()
+		_retained_summoned_unit_templates = _build_summoned_unit_templates()
 		var drive_code := _drive_to_commit(COMBAT_COMMIT_STEP_LIMIT)
 		if not drive_code.is_empty():
 			var drive_error := _error(

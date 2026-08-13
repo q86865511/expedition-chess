@@ -17,6 +17,14 @@ var _setup_entity_ids: Dictionary = {}
 var _unrenderable_spawned_ids: Dictionary = {}
 var _dead_entity_ids: Dictionary = {}
 var _codec := BattleEventCodecV1.new()
+## Pinned visual/max-stat authority for entities that only the transcript
+## introduces. Absent authority is the pre-existing contract: every spawn then
+## stays unrenderable, which is why this dependency is optional.
+var _summon_authority: WorldBoardSummonAuthority
+
+
+func _init(p_summon_authority: WorldBoardSummonAuthority = null) -> void:
+	_summon_authority = p_summon_authority
 
 
 func compose(initial_snapshot: WorldBoardSnapshot) -> StringName:
@@ -37,10 +45,12 @@ func compose(initial_snapshot: WorldBoardSnapshot) -> StringName:
 
 ## Applies one presented event window atomically. If any supported event is
 ## malformed or names an unknown entity, the entire window is rejected and the
-## previously presented snapshot is kept. Spawned entities absent from setup do
-## not carry enough visual/stat authority to render; their stable ids are
-## tracked clone-only so their follow-up events can be ignored without rolling
-## back unrelated, renderable entity updates in the same window.
+## previously presented snapshot is kept. Spawned entities absent from setup are
+## rendered from the injected pinned summon authority; without such authority
+## (or for a unit id it does not cover) they still lack complete visual/max-stat
+## data, so their stable ids are tracked clone-only and their follow-up events
+## are ignored without rolling back unrelated, renderable entity updates in the
+## same window.
 func apply_window(events: Array) -> StringName:
 	if _snapshot == null or not _snapshot.is_valid():
 		return INITIAL_SNAPSHOT_INVALID
@@ -90,6 +100,8 @@ func _apply_event(
 	match event.type:
 		&"spawn":
 			return _apply_spawn(
+				draft,
+				units_by_id,
 				unrenderable_spawned_ids,
 				dead_entity_ids,
 				event
@@ -153,21 +165,56 @@ func _apply_event(
 
 
 func _apply_spawn(
+	draft: WorldBoardSnapshot,
+	units_by_id: Dictionary,
 	unrenderable_spawned_ids: Dictionary,
 	dead_entity_ids: Dictionary,
 	event: BattleEvent
 ) -> StringName:
 	var spawned_id: StringName = event.target_instance_ids[0]
-	# Setup is the only authority carrying complete sprite and max-stat data.
+	# Setup owns the complete sprite and max-stat data of the entities it placed.
 	# Repeated setup spawns are therefore explicit no-ops, including after that
-	# setup entity died: presentation cannot fabricate a resurrection snapshot.
-	# A repeated non-setup id starts a new unrenderable lifecycle, matching the
-	# existing spawn strategy while retaining no domain-mutable state.
+	# setup entity died: the summon authority covers summoned templates only, so
+	# presentation still cannot fabricate a resurrection snapshot.
 	if _setup_entity_ids.has(spawned_id):
 		return &""
+	var spawned := _try_authoritative_unit(spawned_id, event)
+	if spawned == null:
+		# No pinned template or no authored sprite for this unit id. A repeated
+		# non-setup id starts a new unrenderable lifecycle, matching the original
+		# spawn strategy while retaining no domain-mutable state.
+		dead_entity_ids.erase(spawned_id)
+		unrenderable_spawned_ids[spawned_id] = true
+		return &""
+	# A respawned id re-enters entirely from pinned authority and the committed
+	# destination cell, so the previous body is replaced rather than duplicated.
+	var previous := units_by_id.get(spawned_id) as WorldBoardUnitSnapshot
+	if previous != null:
+		draft.units.erase(previous)
+	unrenderable_spawned_ids.erase(spawned_id)
 	dead_entity_ids.erase(spawned_id)
-	unrenderable_spawned_ids[spawned_id] = true
+	draft.append_unit(spawned)
+	units_by_id[spawned_id] = draft.units[draft.units.size() - 1]
 	return &""
+
+
+## The renderer body for a spawned entity, or null when nothing pinned covers it.
+## Cell and unit id come from the committed payload; sprite and maximums come
+## from the injected authority. Nothing is derived here.
+func _try_authoritative_unit(
+	spawned_id: StringName,
+	event: BattleEvent
+) -> WorldBoardUnitSnapshot:
+	if _summon_authority == null:
+		return null
+	var payload := event.payload as SpawnEventPayload
+	if payload == null:
+		return null
+	return _summon_authority.try_spawned_unit(
+		payload.unit_id,
+		spawned_id,
+		Vector2i(payload.logical_x, payload.logical_y)
+	)
 
 
 func _apply_move(

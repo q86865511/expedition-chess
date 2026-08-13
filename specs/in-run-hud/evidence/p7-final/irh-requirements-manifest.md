@@ -33,6 +33,7 @@
 - **限制**：`reward-evidence-source.json` 明列 REWARD 九圖使用
   `formal-screen-typed-snapshot-fixture` 與 typed `PendingRewardState.CHOOSING`；fresh profile 第一戰
   決定性落至 `RUN_MAP`，故這九圖是正式 screen typed-fixture evidence，不是自然流程 REWARD 證據。
+  使用者裁決（2026-08-13）：接受 typed fixture 作為 REWARD 九圖的驗收範圍，自然流程證據不再要求。
 - 2026-08-13（UTC）Codex 以 `905e664` 為 baseline 獨立重跑 current-source fresh full All：
   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\run-tests.ps1 -Suite All`
   `-GodotPath 'E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe' -TimeoutSeconds 3600`，

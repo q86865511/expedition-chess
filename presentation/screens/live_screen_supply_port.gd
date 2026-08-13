@@ -115,6 +115,20 @@ func trait_progress() -> Array[TraitProgressSnapshot]:
 	return result
 
 
+## Pinned summon templates of the committed battle setup (IRH-REQ-007). The
+## world-board renderer needs them to give a transcript-only entity a health and
+## mana maximum; an inactive screen gets nothing rather than a stale battle's
+## authority.
+func combat_summoned_unit_templates() -> Array[SummonedUnitRuleSnapshot]:
+	var result: Array[SummonedUnitRuleSnapshot] = []
+	if not _is_active():
+		return result
+	for template: SummonedUnitRuleSnapshot in \
+		_session.combat_summoned_unit_templates():
+		result.append(template.deep_clone() if template != null else null)
+	return result
+
+
 func _is_active() -> bool:
 	return (
 		_session != null

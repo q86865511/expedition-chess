@@ -80,7 +80,8 @@
 - [x] **T16 HARD**：羈絆列接線＋詳情浮層——接 `TraitPreviewViewModel.trait_snapshots()`，
   取代現有空 Label；階級非色彩訊號；浮層邊緣翻轉。（IRH-REQ-013／測試 #10）
   交付：commit `9d9be78`；inactive／active、distinct progress、門檻、成員縮圖、非色彩階級、
-  safe-area 翻轉；focused 2／2、38 assertions，證據 `p8-batch2/t16-trait-detail-popover.*`。
+  safe-area 翻轉；current-source focused 2／2、36 assertions，authority 5／5、45 assertions；
+  證據 `p8-batch2/t16-trait-detail-popover.*`。
 - [x] **T17 HARD**：單位檢視面板（備戰）——依 T01 的 API；T01 未到位前屬性格顯示
   「尚未可用」，**不得以呈現層自行計算的數值填充**。（IRH-REQ-014／測試 #11）
   交付：備戰／戰鬥 inspector clone、權威 sell quote、2★／帶裝確認、captured identity、
@@ -94,8 +95,8 @@
 - [x] **T19 HARD**：棋子拖曳——備戰席↔棋盤、換位；合法格提示、交換預覽、人口與羈絆變化預覽。
   只映射既有 intent，不新增 domain command。（IRH-REQ-008／測試 #7）
   交付：typed draft preview、revision cache、route／resize resolver lifecycle、commit 後刷新與
-  canonical full-chain；focused 1／1（29 assertions），九組
-  `p8-batch2/prepare-board-draft-preview-*` 證據。
+  canonical full-chain；preview focused 1／1（29 assertions），拖曳／按鈕 persisted canonical
+  等價 1／1（20 assertions），九組 `p8-batch2/prepare-board-draft-preview-*` 證據。
 - [x] **T20 HARD**：裝備拖曳與合成——配戴走 `prepare.equip`；合成走
   `recipe_preview()` → `prepare.forge` → `prepare.forge.confirm`，二次確認不得省略。（IRH-REQ-009）
   交付：commit `bf2f3f5`；focused unit 2／2（15 assertions）、canonical integration
@@ -146,8 +147,12 @@
 - Fresh formal evidence：146／146 cases（baseline 128＋shop-tier 9＋board-draft-preview 9）、
   `issues=[]`、exit 0；
   三尺寸 × 三 UI scale 產物已重建，real APPDATA before／after SHA-256 相同，Godot process 0。
-- 2026-08-12T16:13:48Z～16:36:07Z current-source `-Suite All` 為 exit 0：343 scripts、
-  1421／1421 tests、38732 assertions、Spec 4092 cases；此 run 已涵蓋批次 3 修正。
+- Codex 以 `905e664` 為 baseline 獨立審核 T14／T17／T19；產品 finding 0，文件 finding 2
+  （T16 assertion 計數、T19 漏列 canonical 等價測試）已更正，詳見
+  `evidence/p8-batch2/batch3-codex-audit.md`。
+- 2026-08-13T06:17:42Z～06:35:04Z current-source `-Suite All` 為 exit 0：343 scripts、
+  1421／1421 tests、38732 assertions、0 failures／errors，Spec 4092 cases；此 fresh run 已涵蓋
+  baseline `905e664` 與本次文件 read-back。
   T31 因 IRH-REQ-007 dynamic summon typed visual／max-stat authority 仍有缺口而不勾。
 - 原外部 Opus review 為 `CHANGES_REQUESTED`；13 項 decision table 與使用者轉交的 external
   Opus closure re-review `APPROVED` 原文均已落

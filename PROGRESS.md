@@ -27,6 +27,14 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   **PASS 16／PARTIAL 1／BLOCKED 0**；僅 IRH-REQ-007 dynamic summon authority 尚未閉合，
   因此 T31 維持未勾。
 
+- [2026-08-13] ✅ `in-run-hud` 批次 3 獨立審核與批次尾 — 以 `905e664` 為乾淨
+  baseline，逐條重證 T14／T17／T19 與 IRH-REQ-011／013／014；產品 finding 0。
+  修正兩項證據文件：T16 current-source focused 為 2／2、36 assertions（非 38），T19 補列
+  拖曳／按鈕 persisted canonical 等價 1／1、20 assertions。Fresh `-Suite All`
+  2026-08-13T06:17:42Z～06:35:04Z exit 0：343 scripts、1421／1421 tests、
+  38732 assertions、0 failures／errors，Spec 4092；需求台帳維持
+  **PASS 16／PARTIAL 1／BLOCKED 0**。
+
 - [2026-08-12] ✅ `in-run-hud` 上游批次 2＋Codex gate 批次（Claude）— 解除台帳
   IRH-REQ-011/013 BLOCKED 與 008/014 部分 PARTIAL 的上游缺口，並完成 T10。
   (1) 三個 API：`ShopEconomyViewModel`（quote 轉發＋gold_cap 探針差額法，金幣不足仍回

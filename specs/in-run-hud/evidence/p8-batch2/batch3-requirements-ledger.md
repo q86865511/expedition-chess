@@ -8,9 +8,9 @@
 | Task | 結果 | 實作／證據 |
 |---|---|---|
 | T14 | PASS | quote-owned 經濟 HUD、MAX／連勝敗／五階 odds、16 個 SHOP error mapping、可存取停用原因；focused 4／4、71 assertions。 |
-| T16 | PASS | 沿用 `9d9be78`；inactive／active distinct progress、threshold/effect/member popover；focused 2／2、38 assertions。 |
+| T16 | PASS | 沿用 `9d9be78`；inactive／active distinct progress、threshold/effect/member popover；current-source focused 2／2、36 assertions，authority 5／5、45 assertions。 |
 | T17 | PASS | prepare/combat inspector、sell quote、captured-id confirmation、missing DTO fail closed；focused 12／12（127）＋6／6（47）。 |
-| T19 | PASS | typed board-draft preview、人口／羈絆 delta、cache/lifecycle、canonical full-chain；focused 1／1、29 assertions；九張 preview evidence。 |
+| T19 | PASS | typed board-draft preview、人口／羈絆 delta、cache/lifecycle、canonical full-chain；preview 1／1、29 assertions，拖曳／按鈕 persisted canonical 等價 1／1、20 assertions；九張 preview evidence。 |
 | T20 | PASS | 沿用 `bf2f3f5`；recipe preview→forge→confirm 與 drag/button canonical 等價。 |
 | T21 | PASS | 沿用 `993e511`／`e15b783`；production 純鍵盤買棋→上場→配裝→開戰，current-source focused 1／1、39 assertions。 |
 | T25 | PASS | 沿用 `29ffb11`；完成／當前／未達 screen-reader localization，6／6（40）＋1／1（7）。 |
@@ -34,7 +34,10 @@ dynamic summon／spawn 尚缺 typed visual／max-stat authority；presentation �
 
 ## Fresh gates
 
-- `-Suite All`：exit 0；343 scripts、1421／1421 tests、38732 assertions。
+- Codex 以 `905e664` 為 baseline 獨立審核：產品 finding 0；文件 finding 2 已更正，詳見
+  `batch3-codex-audit.md`。
+- 2026-08-13T06:17:42Z～06:35:04Z fresh `-Suite All`：exit 0；343 scripts、
+  1421／1421 tests、38732 assertions、0 failures／errors。
 - Spec：4092 cases、`passed=true`、`failures=[]`。
 - Formal UI evidence：current-source 146／146 cases、`issues=[]`、exit 0；baseline 128＋
   shop-tier 9＋board-draft-preview 9。`evidence-report.json` SHA-256：

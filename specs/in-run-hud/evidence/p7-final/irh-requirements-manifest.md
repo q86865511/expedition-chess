@@ -33,10 +33,11 @@
 - **限制**：`reward-evidence-source.json` 明列 REWARD 九圖使用
   `formal-screen-typed-snapshot-fixture` 與 typed `PendingRewardState.CHOOSING`；fresh profile 第一戰
   決定性落至 `RUN_MAP`，故這九圖是正式 screen typed-fixture evidence，不是自然流程 REWARD 證據。
-- 2026-08-12（UTC）批次 3 current-source fresh full All：
+- 2026-08-13（UTC）Codex 以 `905e664` 為 baseline 獨立重跑 current-source fresh full All：
   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\run-tests.ps1 -Suite All`
   `-GodotPath 'E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe' -TimeoutSeconds 3600`，
-  16:13:48Z～16:36:07Z，exit 0；`p8-batch2/runner-execution.json` 的 suite `All` exit 0。
+  06:17:42Z～06:35:04Z，exit 0；摘要與獨立逐條判定見
+  `p8-batch2/batch3-all-suite-audit-output.txt`／`batch3-codex-audit.md`。
 - GUT：343 scripts／1421 tests／1421 passing／38732 assertions／0 failures／0 errors；
   `all-gut.godot.log` 與 `import.godot.log` 無 `Parse Error`／`Failed to load`。Spec：4092 cases、
   `failures=[]`、`passed=true`；Content／Canonical／Combat／Expedition／ActEliminationGate 皆 exit 0。
@@ -61,7 +62,7 @@
 | IRH-REQ-005 選單暫停／還原 | PASS | `production_screen.gd` 的 previous-paused capture/restore；`run_combat_screen.gd` 共用 settlement guard；system-menu／combat settle 整合測試 | paused=true／false、canonical digest、initial settle 與 retry 在 menu/modal/paused 下不 transition 均有案例。 |
 | IRH-REQ-006 專屬輸入 action | PASS | `project.godot` 的 `system_menu`／`prepare_quick_toggle_unit`；`production_screen.gd` input priority；B1 input contract 與 system-menu 整合測試 | modal／文字輸入優先序已有測試，未沿用 `ui_cancel`。 |
 | IRH-REQ-007 棋盤世界層 | PARTIAL | `board_projection.gd`；world-board renderer/mount/overlay；`combat_world_event_projection.gd`；T27/T28/T29／factory/event 單元測試；`world-board-state.json` | 8×8、玩家半場、逆投影、整數像素、640×360、world-space head anchor、renderer-equivalent depth、duplicate-cell／empty-active-combat fail-closed 與 late-event lifecycle 已有契約；但 dynamic summon/spawn 缺 visual/max-stat authority，只能追蹤為 unrenderable。 |
-| IRH-REQ-008 拖曳擺位 | PASS | `board_draft_move_adapter.gd`；`run_prepare_screen.gd`；world-board drag target/overlay；`test_t19_production_drag_preview_commit.gd`；九張 `p8-batch2/prepare-board-draft-preview-*` | 備戰席↔棋盤、換位、合法／交換 cue、人口與羈絆 typed preview、revision cache、route／resize resolver lifecycle 與 command-boundary refresh 均成立；非法 drop 零 publication，合法 drop 走既有 canonical command。 |
+| IRH-REQ-008 拖曳擺位 | PASS | `board_draft_move_adapter.gd`；`run_prepare_screen.gd`；world-board drag target/overlay；`test_t19_production_drag_preview_commit.gd`；`test_projected_drag_matches_button_canonical_layout.gd`；九張 `p8-batch2/prepare-board-draft-preview-*` | 備戰席↔棋盤、換位、合法／交換 cue、人口與羈絆 typed preview、revision cache、route／resize resolver lifecycle 與 command-boundary refresh 均成立；非法 drop 零 publication，合法 drop 走既有 canonical command，拖曳／按鈕 persisted RunState 等價。 |
 | IRH-REQ-009 裝備拖曳與合成 | PASS | `prepare_equipment_drag_list.gd`；`prepare_unit_drag_button.gd`；`run_prepare_screen.gd`；commit `bf2f3f5`；T20 unit／canonical integration／PNG | 配戴走既有 equip；零件組合先取 pinned `recipe_preview()`，再走 forge→confirm；drag／button 在 exactly-once confirm 後完整 canonical state 等價。 |
 | IRH-REQ-010 鍵盤等價路徑 | PASS | W action；`run_prepare_screen.gd` quick toggle；正式 focus graph；commit `993e511`／`e15b783`；`test_prepare_keyboard_only_purchase_deploy_equip_start.gd` | 正式 production route 已以 InputEvent 完成純鍵盤買棋→上場→配裝→開始戰鬥；本批 current-source focused 1／1、39 assertions。 |
 | IRH-REQ-011 經濟資訊列 | PASS | `ShopEconomySnapshot`／quote clone-out；`in_run_hud_shell.gd`；`production_screen.gd`；`presentation_error_mapper.gd`；`test_prepare_economy_hud_t14.gd` | 金幣、level／XP threshold 或 MAX、五階 authored odds、連勝／連敗、refresh／XP 權威 quote 費用與可存取停用原因均接線；16 個 `SHOP_*` code 依裁決分流，`SHOP_INPUT_INVALID` 不推斷 phase。 |
@@ -70,7 +71,7 @@
 | IRH-REQ-014 單位檢視面板 | PASS | `InRunHudShell.mount_unit_inspector()`；prepare／combat typed DTO；權威 sell quote；captured-id confirmation；T17 inspector／sell focused | 備戰與戰鬥 inspector 模式／identity 可跨 relocalize；未選取清空；1★無裝直接售出，2★或帶裝須確認，cancel 零 dispatch、confirm captured unit exactly once；缺 inspection fail closed。 |
 | IRH-REQ-015 進度列與轉場 | PASS | `in_run_hud_shell.gd` deterministic sequence／non-color node-kind state／non-blocking banner；commit `29ffb11`；T25 focused／TXT | 節點序列、完成／當前／未達非色彩狀態與本地化 screen-reader copy、遠征 HP、750 ms 大字及不攔輸入契約均有測試。 |
 | IRH-REQ-016 備戰屬性預覽 API | PASS | `BattleSetupSourceCompiler.try_compile_unit_stats()`；`UnitStatsPreviewSnapshot`；`UnitStatsPreviewViewModel`；`tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd` | 已有棋盤／板凳、逐欄位同源、clone-only 與裝備來源 5 tests／36 asserts，且納入本次 fresh All。 |
-| IRH-REQ-017 既有 gate 不回歸 | PASS | `p8-batch2/runner-execution.json`／`all-gut.godot.log`／`spec-contract.json`／`evidence-report.json` | 16:13:48Z～16:36:07Z current-source All exit 0：343 scripts／1421 passing／38732 assertions／0 failures／0 errors；Spec 4092 與其他 gates 取得預期 exit 0。Fresh evidence 146／146、0 issues、Godot 0。 |
+| IRH-REQ-017 既有 gate 不回歸 | PASS | `p8-batch2/batch3-all-suite-audit-output.txt`／`batch3-codex-audit.md`；既有 `all-gut.godot.log`／`spec-contract.json`／`evidence-report.json` | 2026-08-13T06:17:42Z～06:35:04Z current-source All exit 0：343 scripts／1421 passing／38732 assertions／0 failures／0 errors；Spec 4092 與其他 gates 取得預期 exit 0。Fresh visual evidence 146／146、0 issues，收尾背景 Godot 0。 |
 
 ## T31／T32 closure 狀態
 

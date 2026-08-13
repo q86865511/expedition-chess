@@ -106,7 +106,7 @@ func test_confirmation_modal_reopens_within_the_same_frame() -> void:
 	assert_true(Support.press(self, run_screen, &"run.menu.cancel"))
 	assert_false(run_screen.is_confirmation_modal_open())
 	assert_null(
-		run_screen.get_node_or_null(^"RunMenuConfirmation"),
+		run_screen.find_child("RunMenuConfirmation", true, false),
 		"the closed dialog must leave the tree immediately, not next frame"
 	)
 
@@ -116,8 +116,10 @@ func test_confirmation_modal_reopens_within_the_same_frame() -> void:
 		run_screen.is_confirmation_modal_open(),
 		"a same-frame retrigger must reopen a real modal"
 	)
-	assert_not_null(run_screen.get_node_or_null(^"RunMenuConfirmation"))
-	for node: Node in run_screen.get_node(^"Actions").find_children(
+	assert_not_null(run_screen.find_child("RunMenuConfirmation", true, false))
+	for node: Node in run_screen.find_child(
+		"Actions", true, false
+	).find_children(
 		"*",
 		"Button",
 		true,

@@ -106,6 +106,32 @@ func test_command_error_prefers_diagnostic_source_code_without_wrapper_prefix() 
 	)
 
 
+func test_command_error_never_falls_back_to_top_level_apply_failed_code() -> void:
+	var command_error := CommandError.new(
+		CommandError.APPLY_FAILED,
+		RunState.RunPhase.PREPARE,
+		&"inventory"
+	)
+	var mapped := RunPresentationSession.new().call(
+		&"_command_error",
+		command_error
+	) as DiagnosticError
+
+	assert_not_null(mapped)
+	if mapped == null:
+		return
+	assert_eq(
+		mapped.source_code,
+		&"RUN_COMMAND_FAILED",
+		"missing diagnostic source_code must use the presentation generic code"
+	)
+	assert_ne(
+		mapped.source_code,
+		CommandError.APPLY_FAILED,
+		"presentation must never expose the top-level APPLY_FAILED wrapper"
+	)
+
+
 func test_session_routes_every_writer_through_factory_and_controller() -> void:
 	var session_source := _source(SESSION_PATH)
 	var factory_source := _source(FACTORY_PATH)

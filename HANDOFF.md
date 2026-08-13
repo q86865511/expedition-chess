@@ -2,7 +2,30 @@
 
 > 建立於 2026-07-22（使用者裁決）。本檔是兩個 AI 協作者之間的分工契約與接手入口；專案進度見 `PROGRESS.md`，規格單一事實來源見 `docs/game-architecture/`。
 
-## 0. 2026-08-04 difficulty-curve（Phase 1）接手點
+## 0. 2026-08-09 in-run-hud（局內 HUD 重製）接手點
+
+- 規格：`specs/in-run-hud/`（requirements／design／tasks＋`layout-reference-1920.json`）。
+  架構規格先行改動已完成：`REQ-UX-006`、`AC-080`~`AC-082`、`DEC-015`、
+  §10.1／10.2／10.3／10.4／10.6／新增 10.7、§14 矩陣與 manifest（`-Suite Spec` exit 0）。
+- 範圍：局內四個 route（`RUN_PREPARE`／`RUN_COMBAT`／`RUN_MAP`／`RUN_REWARD`）全面重製；
+  UI 設計基準 1280×720 → **1920×1080** 並支援 2560×1440；棋盤與單位移至世界層 3/4 投影；
+  新增 ESC 系統選單（繼續遊戲／設定內嵌／返回主選單／離開遊戲）；
+  棋子與裝備拖曳（含合成）並保留鍵盤等價路徑。
+- **使用者 2026-08-09 裁決**：`ui-art-refresh` Phase B1R3 的視覺樣板**不再作為基線**，
+  局內畫面直接以新基準重新設計；B1R3 的視覺核可閘門對本片不生效。
+  局外畫面本片只做基準遷移的機械調整，不做視覺重設計。
+- 分工：實作交 **Codex**；唯一例外是 `T01` 備戰期單位屬性預覽 API（domain 唯讀查詢）由
+  **Claude** 執行。此邊界來自本次使用者裁決，不是 §4 那條已於 2026-07-26 放寬的舊規則。
+- 待 Codex 在 plan 階段裁決並回報：**世界層解析度**維持 640×360 或提升 960×540
+  （規格建議 640×360——960×540 在 2560×1440 為 2.667× 非整數縮放，
+  與 §10.1 整數縮放要求衝突，且需重生成 44 組 sprite sheet／portraits／icons）。
+- **已知阻擋**：fresh profile 短戰鬥 transcript 在 `RUN_COMBAT` 首個可呈現影格即 exhausted，
+  戰鬥畫面無法實機截圖（見 `PROGRESS.md` §已知問題）。tasks 的 `T22` 必須先於 `T23` 完成，
+  否則戰鬥 HUD 沒有可信驗收手段。
+- 明列剔除：商店鎖定（與 `node_entry_service.gd:44-45` 的 `SHOP_LEAK` 不變式衝突）、
+  小小英雄、對手名牌、正式介面的效能 HUD、強化符文選卡輪。
+
+## 0.1 2026-08-04 difficulty-curve（Phase 1）接手點
 
 - 基線：balance-playtest 已由 **PR #9 合併至 `master@24edea9`**（Phase 0 雙審雙
   APPROVED、3k screening #2 gate PASS、BP-SI-007 StringName 排序決定性已修）。
@@ -53,6 +76,61 @@
 - `CampViewModel`（`presentation/viewmodels/camp_view_model.gd`） — 營地五設施的單一 ProfileState 投影
 - `ExpeditionGateViewModel`／`CommanderHallViewModel`／`CollectionViewModel`／`UnlockWorkshopViewModel`／`ChallengeMonumentViewModel` — S5 局外成長各設施讀取介面
 - （S2/S3 既有）戰鬥 event/result clone、商店 offer 表、地圖節點狀態——見各 Lab 的 session/presentation 腳本示範消費方式
+- `UnitStatsPreviewViewModel`（`presentation/viewmodels/unit_stats_preview_view_model.gd`，
+  in-run-hud T01 已交付）— 備戰期單位屬性預覽。`try_stats_for(unit_instance_id)` 回
+  `UnitStatsPreviewSnapshot`（棋盤與板凳單位皆可查，未知 id 回 null）、`all_stats()` 回全部
+  並依 instance id 排序。底層走 `BattleSetupSourceCompiler.try_compile_unit_stats()`，與
+  `compile()` 共用同一條星級縮放路徑，因此逐欄位等於 `BattleSimulation` 初始化寫進
+  `BattleEntityState` 的 `base_*` 與 `max_health`。
+  **範圍界線**：裝備／羈絆／遺物在實戰是經 effect 解算成 `BattleTimedState` 後由
+  `BattleCombatMath` 疊加的，預覽不重現 effect 解算（§10.3 禁止複製公式），
+  只回報 `equipment_instance_ids` 供面板列出來源。呈現層**不得**自行把這些加成算進數值。
+
+- `ShopEconomyViewModel`（`presentation/viewmodels/shop_economy_view_model.gd`，in-run-hud
+  上游批次 2 交付）— 經濟資訊列與報價：`economy_status()`（金幣／gold_cap／等級經驗與下一級
+  門檻／MAX／連勝連敗／目前等級費用機率）、`refresh_quote()`／`buy_xp_quote()`／
+  `sell_quote(unit_instance_id)`（實際金額、可負擔與否、不可用的 domain 具名原因碼）。
+  一切數字來自 `ShopService.quote_*` 與 `EconomyConfigRule`，零公式；金幣不足時仍回正確價格
+  （gold_cap 探針差額法），reroll 的 relic 挑戰加價已含入。建構子收 `RunSession`＋
+  `EconomyExpeditionCatalog`＋run 的 `RunRelicTable`。
+  **接線已完成（gate 批次，2026-08-12）**：畫面**不要**直接建構本 ViewModel——
+  `RunPresentationSession` 建構子已加四個供給尾參（run_session／forge_table／
+  economy_catalog／relic_table，AppRoot 唯一建構點 `app_root.gd:2073` 已傳入），
+  session 提供唯讀轉發：`shop_economy_status()`／`shop_refresh_quote()`／
+  `shop_buy_xp_quote()`／`shop_sell_quote(unit_instance_id)`，以及 forge 供給
+  `forge_inventory_components()`／`forge_recipes_containing(component_def_id)`／
+  `try_forge_pair_recipe(instance_a, instance_b)`。刻意**不**塞進
+  `RunPresentationSnapshot`——sell 報價是逐單位查詢，塞 snapshot 會讓每次 dispatch
+  多跑 N×2 次報價，soak 成本不可控。原「補 `try_run_session()` 存取器」的構想**不做**：
+  公開 raw session 正是 R14 審查點名要移除的東西。
+  **Codex 待做**：畫面經 `LiveScreenIntentPort`／`ProductionLiveScreenContext` 只拿得到
+  dispatch 與 snapshot，需要一個 lease 保護的唯讀 supply port（建議名
+  `LiveScreenSupplyPort`，比照既有 port 的 lease 驗證寫法）轉發上列七個方法，
+  面板才讀得到報價與配方。
+- `TraitPreviewViewModel.trait_progress()`（同檔擴充，上游批次 2）— 羈絆進度唯一權威：
+  回 `Array[TraitProgressSnapshot]`（`domain/battle/`），**含場上 0 隻的 inactive 列**、
+  distinct_count、active_tier、next_required_count 與完整門檻階梯，trait_id 字典序。
+  計數與 `compile()` 共用同一實作，active 列與 `player_active_traits` 逐欄位一致。
+  既有 `trait_snapshots()` 行為未變。羈絆面板／浮層一律改消費本方法，
+  取代只涵蓋 active 的 `RunPresentationSnapshot.active_trait_progress` 投影。
+- `BoardDraftPreviewViewModel`（`presentation/viewmodels/board_draft_preview_view_model.gd`，
+  上游批次 2）— 拖曳中的草稿預覽：`preview(draft_placements, draft_bench_unit_instance_ids)`
+  回 `BoardDraftPreviewSnapshot`（used_population／derived_capacity／valid／issue_codes()／
+  該草稿下的 trait_progress）；`committed_preview()` 回已提交佈局的同構結果。
+  人口與合法性一律經 `BoardPreparationValidator.validate()`，零複製；全程唯讀不 dispatch。
+  草稿是**完整指派**——呼叫端（如 `BoardDraftMoveAdapter`）負責給出整組 placements＋bench，
+  缺漏由 validator 以 `BOARD_UNIT_UNASSIGNED` 如實回報。
+
+**in-run-hud 追加約束**（本片專用，與上列七條並存）：
+
+- **尺寸一律經版面 metrics 入口**：`presentation/` 不得直接寫 `custom_minimum_size = Vector2(...)`；
+  reference 空間為 1920×1080。
+- **拖曳只是輸入路徑**：棋子與裝備拖曳一律映射到既有 intent（`commit_board_draft()`、
+  `prepare.equip`、`prepare.forge`＋`prepare.forge.confirm`），不得新增或修改 domain command；
+  不可逆操作的一次確認不得因拖曳而省略。
+- **世界層棋盤的邊界**：格位合法性、佔用與人口的權威在 domain；presentation 只做
+  格位↔世界↔螢幕的座標轉換與命中測試，反投影結果須經 domain 合法性檢查後才採用，
+  且不得回寫 domain。
 
 ## 3. 進度地圖（接手時從這裡看）
 
@@ -64,6 +142,7 @@
 | S4 `build-systems` | ✅ 完成（2026-07-24） | `specs/build-systems/`（三件套＋implementation-review.md） | 12/12 任務、13/13 S4-AC、Gut 399/399、10,000-seed 構築 soak、8 份雙審紀錄（`.pipeline/reviews/` 本機） |
 | S5 `meta-progression` | ✅ 實作完成（2026-07-26） | `specs/meta-progression/`（三件套＋implementation-review.md） | T01～T12、S5-AC 14/14、Gut 737/737、10k ExpeditionSoak、All exit 0、W5 R4 雙審零未決 |
 | PROD／SCOPE／UX／QA 橫切 15 REQ | ✅ `content-production` 本地 fully closed（未提交） | `specs/g2-roadmap.md`、`specs/content-production/` | `codex/g2-content-production-closure`；44 adopted＋14 rejected；Gut 281/1093、10k soak、All exit 0；acceptance 21＋1 PASS／fully_closed=true |
+| `in-run-hud` 局內 HUD 重製 | 📝 規格完成，待 Codex 實作（2026-08-09） | `specs/in-run-hud/`（三件套＋`layout-reference-1920.json`） | 架構規格先行改動已落地，`-Suite Spec` exit 0；實作證據待 T31 收斂 |
 
 - **content-production 最終閉環（2026-08-01）**：Claude 全批 T18A review
   已落 `.pipeline/content-production/reviews/t18a-full-batch-claude-review.md`；Codex

@@ -7,6 +7,7 @@ var profile: ProfileState
 var action_port: ProductionScreenActionPort
 var navigation_port: LiveScreenNavigationPort
 var intent_port: LiveScreenIntentPort
+var supply_port: LiveScreenSupplyPort
 var playback_port: LiveScreenPlaybackPort
 var inspection_port: LiveScreenInspectionPort
 var collection_projection: CollectionBrowserSnapshot
@@ -34,6 +35,11 @@ func _init(
 	action_port = p_action_port
 	navigation_port = p_navigation_port
 	intent_port = p_intent_port
+	supply_port = (
+		p_intent_port.supply_port()
+		if p_intent_port != null
+		else null
+	)
 	playback_port = p_playback_port
 	inspection_port = p_inspection_port
 	collection_projection = (

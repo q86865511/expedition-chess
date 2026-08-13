@@ -9,7 +9,7 @@ const Support = preload(
 func test_ui_100_125_150_change_meaningful_production_geometry() -> void:
 	var signatures: Dictionary[int, String] = {}
 	for percent: int in [100, 125, 150]:
-		var screen := Support.instantiate_combat(self, Vector2(1280, 720))
+		var screen := Support.instantiate_combat(self, Vector2(1920, 1080))
 		if screen == null:
 			return
 		var snapshot := SettingsSnapshot.new()
@@ -23,6 +23,15 @@ func test_ui_100_125_150_change_meaningful_production_geometry() -> void:
 				int(runtime.get_meta(&"effective_ui_scale_percent", -1)),
 				percent,
 				"runtime must report the scale actually applied to visible nodes"
+			)
+		# B1R3 T13：signature 互異是必要非充分（任一元素變動即過）。
+		# 字級必須真的隨縮放等比放大（REQ-UX-003 的可失敗斷言）。
+		assert_not_null(screen.theme)
+		if screen.theme != null:
+			assert_eq(
+				screen.theme.default_font_size,
+				roundi(27.0 * float(percent) / 100.0),
+				"default font size must scale by the ui factor at %d%%" % percent
 			)
 	assert_ne(signatures[100], signatures[125])
 	assert_ne(signatures[125], signatures[150])

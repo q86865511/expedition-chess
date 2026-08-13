@@ -92,6 +92,19 @@ static func press(
 	screen: ProductionScreen,
 	action_id: StringName
 ) -> bool:
+	if (
+		action_id == &"run.menu"
+		and screen != null
+		and screen.system_menu_state() == &"CLOSED"
+	):
+		var menu_button := screen.system_menu_button()
+		test.assert_not_null(
+			menu_button,
+			"live run routes expose SystemMenuButton instead of resident run.menu"
+		)
+		if menu_button == null:
+			return false
+		menu_button.pressed.emit()
 	var control := button(screen, action_id)
 	test.assert_not_null(control, "missing Button for %s" % String(action_id))
 	if control == null:

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "suite": "All",
+  "fresh_isolated_profile": true,
+  "exit_code": 0,
+  "started_at_utc": "2026-08-08T11:32:15Z",
+  "finished_at_utc": "2026-08-08T11:47:01Z",
+  "godot_version": "4.7.stable.official",
+  "gut": {
+    "scripts": 304,
+    "tests": 1216,
+    "assertions": 25185,
+    "failures": 0,
+    "errors": 0
+  },
+  "real_appdata_inventory_unchanged": true,
+  "evidence_report_ok": true,
+  "evidence_case_count": 41
+}

@@ -13,6 +13,126 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-13] ✅ `in-run-hud` T31 總收斂 — commit `0d120ea` 將 pinned
+  `SummonedUnitRuleSnapshot` 經 lease-protected supply port 注入 `RunCombatScreen` 的
+  `CombatWorldEventProjection`，再由 production `WorldBoardRenderer` 形成 summon body；缺供給、
+  模板、sprite 或非法模板仍 fail closed。Claude 契約測試 5／5（78）與新增 screen renderer
+  seam 2／2（15）皆 exit 0。正式內容目前無 summon effect，故使用 typed pinned-template／
+  spawn-event fixture 驅動正式 renderer，限制已落證據。Fresh current-source `-Suite All`
+  2026-08-13T09:02:43Z～09:18:57Z exit 0：345 scripts、1428／1428、38825 assertions、
+  0 failures／errors／orphans，Spec 4092／0；visual report 146／146、`issues=[]`，四 route
+  各 9 張的 36 張核心矩陣逐檔 SHA-256 與尺寸 read-back 通過。需求台帳最終為
+  **PASS 17／PARTIAL 0／BLOCKED 0**，T00～T32 全數完成。
+
+- [2026-08-13] ✅ `in-run-hud` 批次 2＋3 閉環 — 台帳自 PASS 8／PARTIAL 7／BLOCKED 2
+  收斂至 **PASS 16／PARTIAL 1／BLOCKED 0**（唯一 PARTIAL＝IRH-REQ-007 動態 summon
+  visual authority）。里程：S0 供給埠、T20 合成拖曳（含零件不可裝備語意勘誤）、
+  T21 純鍵盤 E2E（存檔 blocker `e15b783`：persisted item 類別聯集修復＋10k soak）、
+  T16 羈絆浮層、T25 進度狀態 loc、T14 經濟列（15 loc key `7f6ce69`）、T17 出售確認、
+  T19 拖曳預覽（T14/T17/T19 為並行 session 產物，經查證採納 `905e664`：
+  Claude 契約測試零改動）。Codex 獨立審核 0 產品 finding（`608b4a1`），
+  雙方 fresh All 逐位吻合：343 scripts、1421/1421、38732 asserts、Spec 4092/0。
+
+- [2026-08-13] ✅ `in-run-hud` 批次 3（T14／T16／T17／T19／T20／T21／T25）—
+  T14 接上 quote-owned 經濟列、MAX／連勝敗／五階費率、16 個 `SHOP_*` 分流與可存取停用原因；
+  T16 接上 inactive／active distinct progress、門檻、成員與 safe-area trait popover；T17 完成
+  prepare／combat inspector、權威 sell quote、captured-id 2★／帶裝出售確認；T19 完成 typed
+  人口／羈絆草稿預覽、revision cache、resolver route／resize lifecycle 與 canonical full-chain；
+  T20／T21／T25 沿用 commits `bf2f3f5`／`993e511`＋`e15b783`／`29ffb11`，未重做。
+  Focused：T14 4／4（71）、T17 inspector 12／12（127）＋sell 6／6（47）、T19 full-chain
+  1／1（29）、T21 keyboard E2E 1／1（39）；Fresh `-Suite All` 於
+  2026-08-12T16:13:48Z～16:36:07Z exit 0，343 scripts、1421／1421 tests、38732 assertions，
+  Spec 4092。Fresh p8 evidence 146／146、`issues=[]`、exit 0，report SHA-256
+  `6BB13FC1EAC9D8F429731C1A41C3CD508E4E3F7D52F00F00B7A36EDF1EBDC5D7`。需求台帳收斂為
+  **PASS 16／PARTIAL 1／BLOCKED 0**；僅 IRH-REQ-007 dynamic summon authority 尚未閉合，
+  因此 T31 維持未勾。
+
+- [2026-08-13] ✅ `in-run-hud` 批次 3 獨立審核與批次尾 — 以 `905e664` 為乾淨
+  baseline，逐條重證 T14／T17／T19 與 IRH-REQ-011／013／014；產品 finding 0。
+  修正兩項證據文件：T16 current-source focused 為 2／2、36 assertions（非 38），T19 補列
+  拖曳／按鈕 persisted canonical 等價 1／1、20 assertions。Fresh `-Suite All`
+  2026-08-13T06:17:42Z～06:35:04Z exit 0：343 scripts、1421／1421 tests、
+  38732 assertions、0 failures／errors，Spec 4092；需求台帳維持
+  **PASS 16／PARTIAL 1／BLOCKED 0**。
+
+- [2026-08-12] ✅ `in-run-hud` 上游批次 2＋Codex gate 批次（Claude）— 解除台帳
+  IRH-REQ-011/013 BLOCKED 與 008/014 部分 PARTIAL 的上游缺口，並完成 T10。
+  (1) 三個 API：`ShopEconomyViewModel`（quote 轉發＋gold_cap 探針差額法，金幣不足仍回
+  正確價格、relic 挑戰加價含入、catalog 世代守衛）；`compile_trait_progress()`（羈絆進度
+  唯一權威，含 inactive 列，計數與 `compile()` 共用單一實作）＋
+  `TraitPreviewViewModel.trait_progress()`；`BoardDraftPreviewViewModel`（草稿佈局的
+  人口/合法性/羈絆預覽，一律經 `BoardPreparationValidator` 零複製）。
+  (2) gate 批次：`RunPresentationSession` 建構子四個供給尾參（29 呼叫端不破壞）＋
+  七個唯讀轉發方法；**T10** AppRoot 於 `_commit_route` 對 RUN routes 呼叫
+  `bind_system_menu_settings(當前 snapshot, 當前 port)`（查證：settings 套用不重建
+  coordinator，會過期的是 committed snapshot 而非 port，每次 route commit 重讀即根治）；
+  focus graph RUN_PREPARE 補 11 個 action（含簡報漏列的 `prepare.forge.cancel`／
+  `prepare.dismantle`），新測試直接向 ProductionScreen 問實際清單比對；三個
+  `map.node_state.*` loc key（zh_TW/en）＋CSV/RAW 重導＋
+  `LOCALIZATION_CATALOG_SHA256` 同步。
+  (3) 規格勘誤：零件結構上不可裝備（`EquipItemCommand` 拒收），合成＝裝備庫內
+  零件對零件；早前批次 prompt 的 TFT 式「拖到已持裝棋子合成」為誤述，
+  design.md §6 與 IRH-REQ-009 已改。
+  證據：兩批合計 34 個新測試；限定 Gut×4、Spec、static gate 全 exit 0（主對話親跑）；
+  變異驗證五處轉紅還原；fresh All exit 0（333 scripts、1388/1388 tests、
+  38268 asserts、Spec 0 failures，含 localization SHA 連動後的 Content/Smoke）。
+
+- [2026-08-12] ✅ `in-run-hud` T32 findings closure 雙審關閉 — 使用者轉交的 external
+  Opus closure re-review verdict 為 `APPROVED`；前次 13 項 findings 判定 10 項 `CLOSED`、
+  3 項 `ACCEPTED`、0 項 `OPEN`，原文與 SHA-256 已保存於
+  `specs/in-run-hud/evidence/p7-final/in-run-hud-opus-re-review-approved.md`，codex 第二審亦已落檔。
+  此核可只涵蓋 findings closure：T32 已關閉，T31 仍未關；需求台帳維持
+  **當時 PASS 8／PARTIAL 7／BLOCKED 2**；後續批次 3 已更新台帳，不宣稱整片完成。
+- [2026-08-09] ✅ `in-run-hud` T01 備戰期單位屬性預覽 API（IRH-REQ-016）— 新增
+  `BattleSetupSourceCompiler.try_compile_unit_stats()`（與 `compile()` 共用
+  `_apply_stats`／`_find_scaling`，不需 `BoardPlacementState`，板凳單位同樣適用）、
+  具名型別 `UnitStatsPreviewSnapshot`、`UnitStatsPreviewViewModel`
+  （`try_stats_for()`／`all_stats()`，與 `TraitPreviewViewModel` 同構）。
+  5 tests／36 asserts，含變異驗證；fresh All exit 0（307 scripts、1224/1224、
+  25773 asserts、Spec 0 failures）。
+  **修正規格自身錯誤**：原驗收「備戰屬性＝戰鬥首 tick 屬性」不可能成立（`battle_start`
+  觸發的效果會在首 tick 前生效，而預覽依 §10.3 不得重現 effect 解算），改為精確判準
+  「預覽逐欄位＝`BattleSimulation` 初始化寫進 `BattleEntityState` 的 `base_*` 與 `max_health`」。
+  **踩坑**：首次 All 因 Spec 契約 `Public API has a silent-null path` 失敗——domain 公開
+  方法含 `return null` 必須命名為 `try_` 開頭；已依既有慣例改名（`try_compile_unit_stats`、
+  `try_stats_for`）。
+  **附帶查證**：`BattleEquipmentRule.stat_modifiers` 無任何模擬消費者，裝備在實戰的屬性
+  貢獻只走 `effect_ids`；已記入 design.md，未改動。
+- [2026-08-09] 📄 `in-run-hud` 局內 HUD 重製規格完成（交 Codex 實作）— 依 TFT 對局主介面
+  逆向拆解素材產出 `specs/in-run-hud/` 三件套＋`layout-reference-1920.json`（25 個模組、
+  5 個剔除模組、1 項待 Codex 裁決）。架構規格先行改動：新增 `REQ-UX-006`、
+  `AC-080`~`AC-082`、`DEC-015`，修訂 §10.1／10.2／10.3／10.4／10.6 並新增 §10.7 系統選單，
+  §14 追溯矩陣與 manifest（REQ 75→76、AC 79→82、DEC 14→15、aggregate SHA-256 重算）同步；
+  `-Suite Spec` exit 0、0 failures。同步 `HANDOFF.md`（新 §0 接手點、§2 追加約束、§3 進度地圖）、
+  `specs/ui-art-refresh/review-and-plan.md` Phase B 狀態、`specs/g2-roadmap.md` 新增 §10 UI 線、
+  專案 `CLAUDE.md` 架構約定與目前切片。範圍：局內四 route 全面重製、UI 基準 1280×720 →
+  1920×1080 並支援 2560×1440、棋盤移世界層 3/4 投影、ESC 系統選單、棋子與裝備拖曳（含合成）。
+- [2026-08-08] 🎨 UI／美術／中文化整修 Phase B1R2 修訂樣板待核可 — 依第二審
+  N1～N16 修復 action button `clip_text` 最小寬回歸、中央裝備庫死路、150% bottom
+  安全區溢出、棋盤／bench 裁切、空狀態帶、營地空中央、設定標題／列／tooltip 重疊、
+  modal 透明底、首張商店雙 dispatch 與 node-choice 僅停首卡。F1 測試改用獨立 100%
+  基準，焦點測試直接驗按鈕自身 rect 與文字寬；`main.tscn` 清除 Godot 4.7 靜默丟棄的
+  五條 NodePath 死賦值。隔離 wrapper 改等待非 headless 子程序真正結束，對真實
+  `%APPDATA%/Godot/app_userdata/**` 全遞迴前後雜湊（含巢狀 `遠征棋.bak`），inventory
+  SHA 完全一致。41 張 zh_TW 實機證據（含 12 張營地／備戰矩陣、主選單、設定套用後、
+  三分組、node-choice、兩種 modal、狀態、縮放重建、焦點）runner `issues=[]`；fresh
+  `-Suite All` exit 0（304 scripts、1216/1216 tests、25185 assertions、0 failures/errors）。
+  證據見 `specs/ui-art-refresh/evidence/phase-b1r2/README.md`；停在修訂版視覺核可閘門，
+  未開始 B2。
+- [2026-08-08] ⚠️ UI／美術／中文化整修 Phase B1R 首次修訂（已由 B1R2 取代） — 依第一審
+  F1～F16 與 TFT 類版面要求重排：備戰中央 8×4 可見格線棋盤、下方單排 bench、
+  卡片式商店與經濟操作成組，左右欄收斂為隊伍／羈絆及可捲動遠征待辦；營地提高
+  設施操作階層。Theme 改用 Noto Sans TC `wght=400/600`、質感主／次面板與高對比
+  決策數值；修正 150% 新畫面 base meta 污染、node-choice 溢出、狀態列重疊、
+  GODOT_BIN 契約、palette 綁回、真字型斷言、evidence import 與 shallow Theme copy。
+  真實 Windows 偽回退的根因後續更正為 `main.tscn` 的 `node_paths` 相對 NodePath
+  賦值被 Godot 4.7 靜默丟棄；腳本預設值才是有效來源，fresh process 單一開關重驗
+  已無診斷。720p／
+  1080p × 100%／125%／150% 共 12 張 zh_TW 矩陣與四種特殊情境皆通過；fresh
+  `-Suite All` exit 0（304 scripts、1213/1213 tests、25122 assertions、0 failures）。
+  主要真實 settings 的時間戳與 SHA 開工／收尾一致；旁支 `.bak` 基線存在但收尾缺失，
+  已於 evidence 如實列為無法歸因異常。證據見
+  `specs/ui-art-refresh/evidence/phase-b1r/README.md`；停在修訂版視覺核可閘門，未開始 B2。
 - [2026-08-07] 🔧 UI Phase A PR #11 第一審 fixup — F1 挑戰上限恢復為
   `highest+1`，並鎖定通關挑戰 0 後可選 1；F2 補回棋盤滿／備戰區滿／未選取的
   專屬狀態列映射；F3 鎖定 reduced_flash 成功套用時雙狀態面清空，真實 activation
@@ -201,6 +321,7 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - [2026-07-28] ✅ G2 `presentation-ui` wave2/T06 與整波收尾 — T06 鎖定 decoded/opaque repository identity/epoch/full-file-digest token、wrong/stale/replaced CAS、archive-before-clear 全 fault preservation 與 4×4 restart residue runtime matrix；無效首跑的 parser/orphan 不列紅證據，修正後有效紅 2 tests/155 assertions，production green 2/2（300 assertions）。RetainedRunRecoveryService、SaveRepository/StoragePort restart cleanup 與 AppRoot recovery wiring 落地；opaque 無 run digest，tmp 永不升格，R12-A02 仍標 review debt。wave2 最終 All exit 0；Gut 769/769（10987 assertions、0 failures/errors/orphans）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3628 cases 全綠。
 - [2026-07-28] ✅ G2 `presentation-ui` wave2/T03、T05 — T03 完成 typed 四 bus atomic audio port/coordinator；原 test helper 與 fake public API 兩次不合格均明確撤銷舊 manifest 後重建，四項行為 assertions 不變，最終 4/4（93）。T05 完成固定 Boot→MENU、typed menu/continue/start/results/exit、repository identity/epoch、共享 Camp transaction、prepared capability 與 terminal handoff skeleton，限定 7/7（159）。修正 public Variant/Dictionary Spec failures、舊 Smoke/AppRoot boot 假設、opaque LoadResult invariant 與 discard 精確診斷後，All exit 0；Gut 767/767（10687 assertions）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3622 cases 全綠。R12 四項仍 unresolved。
 - [2026-07-28] ✅ G2 `presentation-ui` wave1/T01、T02、T04 — 五份 behavioral tests 先紅後鎖定 SHA manifest，再完成 production content bootstrap＋210-key `zh_TW|en` catalog、schema-1 原子 SettingsRepository、24-intent RunPresentationSession/RunCommandFactory 與 Run/Combat Lab 薄包裝。主迴圈重驗 T01 7/7（464 assertions）、T02 4/4（403）、T04 12/12（55），五份 hash 全一致；wave-end All exit 0，Gut 764/764（10530 assertions、0 failures/errors/orphans）、Smoke 10、Content 39、Canonical 5、Combat 2、Expedition 3、Spec 3555 cases 全綠。R12 四項仍 unresolved，未執行 Git。
+- [2026-08-08] ✅ G2 `ui-art-refresh` Phase B1R3（版面修正，Claude 親自實作）— B1→B1R→B1R2 三輪 Codex 交付經審核退回後，由使用者裁決改由 Claude 接手。修復 B1R2 審查的 P1~P11 全數、U1（`stretch/aspect=expand`＋`stretch_shrink` 落實 640×360 世界解析度，最大化黑條與內容右移根治）、U2（theme runtime 泛化縮放：全 type 字級／constant／StyleBox margin ×factor；`ExpeditionLayoutMetrics` 為尺寸唯一入口；shell 頂／底／狀態帶高度 scale-aware，底部帶錨定畫面底向上生長）。新增自動幾何稽核測試（4 route × 3 縮放：同容器同高、底部帶跨欄位同高、文字不截、安全區、分組頁初始高度、設定底緣），先紅 48 項後綠。另修 evidence runner 三處守門自我關閉、`run-tests.ps1` 子程序 APPDATA 隔離（三輪「測試污染真實設定」懸案的真根因：測試經 SettingsService autoload 寫真實 `user://`）。reviewer 一審 N1~N6 已修、N7~N9 列 B2。fresh All exit 0（306 scripts、1219/1219、25737 asserts）、evidence runner issues=0、真實 APPDATA SHA 前後相同。證據：`specs/ui-art-refresh/evidence/phase-b1r3/`。**停在使用者視覺核可閘門，未 push、未進 B2。**
 - [2026-08-07] ✅ G2 `ui-art-refresh` Phase A（可玩性止血）合併 — PR #11 → master@823869a。A1~A5（營地選擇同步／備戰四分組常駐開始戰鬥／錯誤分流／可見焦點框／缺 key 補齊與地圖語意分離）＋第一審修補 F1~F5（挑戰上限 +1 對齊 domain、備戰滿員文案接線、套用誤報移除、node-choice 預設分組、節點可達性守衛）。第一審 2 高 4 中 5 低全數裁決閉環；審方 fresh 重跑 Gut 1204/1204（24893 asserts）exit 0、10k ExpeditionSoak 0 failures、實機滑鼠全程與設定持久化驗證通過。三個追蹤項移交 Phase B（見待辦）。
 - [2026-07-28] ✅ G2 `presentation-ui` wave0/T00 — 有效 contract red 為 4 tests 中 3 個 assertion failures、parser/import 0；locked SHA `684bad…cadd13`。新增 AppActionResult、settings schema 1/port、run/session/playback、screen lease/capability 與 terminal handoff 等 35 個 compile-safe contracts；ResultInvariant Spec 契約修正後限定 GUT 4/4（276 assertions）、Spec 3481 cases、All 741 tests/9608 assertions 全綠。只完成 skeleton，無 runtime behavior。
 - [2026-07-28] ⚠️ G2 `presentation-ui` review Gate override — 使用者明確指示 R12/R13 審查先跳過並繼續下一步；只放行本地 baseline/TDD/implementation，R12 四項仍 unresolved，Git/PR 與最終完成宣稱未放行。
@@ -229,17 +350,20 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
+- UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
+  2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
+  對局內畫面解除。局外畫面的正式視覺重設計仍留在 Phase B，待局內完成後再排。
 
 ## 待辦
 
 - UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；計畫位於 `specs/ui-art-refresh/review-and-plan.md`。後續為
-  Phase B Theme／字型／版面、Phase C 資產接線、Phase D 中文化收尾。
-  移交 Phase B 的追蹤項：(1) 設定套用在真實 Windows 環境每次都顯示
-  「已生效但畫面未更新」診斷（疑 activation probe 常駐回報，隔離測試環境無法重現）；
-  (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 未映射具名文案（全域
-  highest_challenge_level 與每指揮官紀錄語意差）；(3) Codex 實機測試須隔離
-  APPDATA（本輪污染真實 settings 的 locale）。
+  2026-08-07）；Phase B1、B1R 均未核可，B1R2 修訂已完成並停重新視覺核可。Phase A
+  三項移交追蹤均已關閉：(1) locale-aware glyph probe 與實機常駐 viewport probe
+  均已修，留存真實 Windows before/after evidence；
+  (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
+  (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
+  局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
+  其後仍為 Phase C 資產接線、Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -247,10 +371,6 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已知問題
 
-- Fresh profile 的短戰鬥 transcript 會在 RUN_COMBAT 第一個可呈現影格即 exhausted，
-  `SETTLE_BATTLE` 使畫面由備戰直接回地圖；Phase A 以 10 ms 間隔擷取 80 幀仍無可見
-  RUN_COMBAT 畫面。這不阻擋「開始戰鬥」寫操作，但阻擋戰鬥畫面實機截圖，後續 UI
-  phase 應檢查最短可見播放時間或首幀呈現契約。
 - Combat／Expedition／Build／Camp／Run／Results Lab 仍是開發用灰盒，不是正式產品 UI；正式 production 美術與音訊已由 content-production 閉環，後續產品化 UX 依 roadmap 的剩餘切片處理。
 - Godot 4.7 以 `--script` 執行 production runtime runner 時，程序 exit 0、report 10/10，但 stderr 固定回報 5385 ObjectDB／92 resources；verbose 顯示為 5277 domain `RefCounted`、92 GDScript、15 RegEx、1 GDScriptNativeClass，沒有 leaked Node／Control／Viewport。原始與 verbose logs 保留於 `.pipeline/visual/r15-production-runtime/`，列 runner shutdown 診斷而非隱藏。
 - SaveRepository 依 SDD 採單程序同步交易；跨程序刻意共用同一 production save path 的 file lock／CAS 未納入本切片。
@@ -258,6 +378,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 重要決策紀錄
 
+- [2026-08-09] `in-run-hud` 使用者裁決（四項）：(1) 改造範圍為局內四個 route 全面重做；
+  (2) UI 設計基準改 1920×1080 並支援 2560×1440，**既有 B1R3 樣板與舊畫面全部捨棄、
+  直接以新畫面重新設計**；(3) 棋盤移至世界層 3/4 投影 sprite；(4) 拖曳擺位納入，
+  含裝備拖移與合成，並保留鍵盤等價路徑（懸停＋`W` 快速上場／收回）。
+  domain 缺口由 Claude 先寫規格作為前置任務。
+  理由：參考素材（TFT 對局主介面）的資訊密度在 1280×720 畫布放不下；棋盤留在 UI 層
+  會使 44 組像素資產永遠無法上場。
+- [2026-08-09] `in-run-hud` 剔除「商店鎖定」模組：`domain/run/economy/node_entry_service.gd:44-45`
+  將「進入節點時 `shop_offers` 非空」判為 `SHOP_LEAK` 錯誤，商店由 `try_release_shop_offers()`
+  在結算與離節點時強制清空。TFT 式跨回合鎖定在本專案沒有對應語意，實作將破壞既有不變式
+  與 `reserved_copies` 帳務，故不做前置 domain 任務。
+- [2026-08-09] `in-run-hud` 世界層解析度建議維持 640×360：640×360 在 1920×1080 為 3×、
+  在 2560×1440 為 4×，兩者皆整數倍；960×540 在 2560×1440 為 2.667× 非整數縮放，
+  與 spec §10.1「相機不得使用造成半像素取樣的縮放」衝突，且需重生成 44 組 sprite sheet
+  （各 240 frames）、44 portraits 與 88 icons。最終裁決權交 Codex 在 plan 階段行使。
 - [2026-08-04] G2 `balance-playtest` 使用者裁決：大樣本統計（10k/30k）自本切片移至
   Phase 2 平衡收斂後執行，本切片以 3k screening #2 gate PASS 作 screening 證據收尾；
   採用 Phase 0~3 執行計畫並新增 `difficulty-curve` 機制切片（`specs/g2-roadmap.md` §9）。

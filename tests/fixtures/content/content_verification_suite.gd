@@ -553,7 +553,10 @@ func _case_alias_receipt_migration() -> String:
 		registry_b.free()
 		return "alias migration reused the persisted digest"
 	var migration_adapter := ContentRegistryMigrationAdapter.new(registry_b)
-	var request := ContentIdMigrationRequest.new(&"unit.player_00", &"unit", true, &"run.roster")
+	var unit_categories: Array[StringName] = [&"unit"]
+	var request := ContentIdMigrationRequest.new(
+		&"unit.player_00", unit_categories, true, &"run.roster"
+	)
 	var mapped := migration_adapter.resolve(request)
 	if not mapped.ok or mapped.disposition != ContentIdMigrationResult.Disposition.ALIAS or mapped.resolved_id.value != &"unit.player_00_new":
 		registry_a.free()
@@ -609,8 +612,9 @@ func _case_required_tombstone_incompatible() -> String:
 		registry_a.free()
 		registry_b.free()
 		return "required tombstone receipt did not preserve incompatible run"
+	var tombstone_categories: Array[StringName] = [&"unit"]
 	var request := ContentIdMigrationRequest.new(
-		&"unit.player_00", &"unit", true, &"run.roster.unit_instances"
+		&"unit.player_00", tombstone_categories, true, &"run.roster.unit_instances"
 	)
 	var mapped := ContentRegistryMigrationAdapter.new(registry_b).resolve(request)
 	if mapped.ok or mapped.disposition != ContentIdMigrationResult.Disposition.INCOMPATIBLE_REQUIRED:

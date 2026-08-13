@@ -1248,9 +1248,9 @@ func _decode_roster(value: Variant) -> RosterState:
 			return null
 		items.append(ItemInstanceState.new(
 			_read_string(item, "instance_id", StringName(String(path) + ".instance_id")),
-			_migrate_required_id(
+			_migrate_required_id_any(
 				StringName(_read_string(item, "def_id", StringName(String(path) + ".def_id"))),
-				&"item", StringName(String(path) + ".def_id")
+				_item_def_categories(), StringName(String(path) + ".def_id")
 			),
 			_read_optional_string(item["bound_unit_instance_id"], StringName(String(path) + ".bound_unit_instance_id")),
 			serial
@@ -2044,8 +2044,9 @@ func _migrate_profile_names(values: Array[StringName], path: StringName) -> Arra
 		if _migration_port == null:
 			output.append(original)
 			continue
+		var any_category: Array[StringName] = []
 		var result := _migration_port.resolve(ContentIdMigrationRequest.new(
-			original, &"", false, StringName("%s.%d" % [String(path), index])
+			original, any_category, false, StringName("%s.%d" % [String(path), index])
 		))
 		if not result.ok:
 			output.append(original)
@@ -2077,8 +2078,9 @@ func _migrate_comparison_names(values: Array[StringName]) -> Array[StringName]:
 func _migrate_comparison_id(value: StringName) -> StringName:
 	if _migration_port == null:
 		return value
+	var any_category: Array[StringName] = []
 	var result := _migration_port.resolve(ContentIdMigrationRequest.new(
-		value, &"", false, &"run.content_snapshot"
+		value, any_category, false, &"run.content_snapshot"
 	))
 	if not result.ok:
 		return value
@@ -2086,16 +2088,31 @@ func _migrate_comparison_id(value: StringName) -> StringName:
 		return &""
 	return result.resolved_id.value if result.resolved_id != null else value
 
+## roster_state.item_instances.def_id 的正式類別是零件／成品裝備／消耗品三種;
+## 合成 fixture 與早期存檔另有 item 類別,一併接受以免既有存檔被判 incompatible。
+static func _item_def_categories() -> Array[StringName]:
+	return [&"item_component", &"equipment", &"consumable", &"item"]
+
 func _migrate_required_id(
 	value: StringName,
 	expected_category: StringName,
+	path: StringName
+) -> StringName:
+	var accepted: Array[StringName] = []
+	if not expected_category.is_empty():
+		accepted.append(expected_category)
+	return _migrate_required_id_any(value, accepted, path)
+
+func _migrate_required_id_any(
+	value: StringName,
+	accepted_categories: Array[StringName],
 	path: StringName
 ) -> StringName:
 	if _migration_port == null:
 		_mark_run_incompatible(value, path, ContentIdMigrationError.TOMBSTONE_REQUIRED)
 		return value
 	var result := _migration_port.resolve(ContentIdMigrationRequest.new(
-		value, expected_category, true, path
+		value, accepted_categories, true, path
 	))
 	if not result.ok or result.resolved_id == null:
 		var code := result.error.code if result.error != null else ContentIdMigrationError.TOMBSTONE_REQUIRED

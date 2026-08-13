@@ -33,6 +33,17 @@ var _playback_warning: DiagnosticError
 ## 戰鬥檢視只能由 COMBAT_PENDING 的 battle_setup 建；result 提交後 canonical 只留
 ## BattleResultPendingResolutionState（無 setup），故 COMBAT 期間保留最後一份投影。
 var _retained_combat_inspections: Array[CombatUnitInspectionSnapshot] = []
+## 同一份 battle_setup 的召喚模板（IRH-REQ-007）：spawn 事件只帶身分與格位，血條與
+## 魔力上限的權威只有 pinned battle_rules，故與檢視投影同進同出地保留。
+var _retained_summoned_unit_templates: Array[SummonedUnitRuleSnapshot] = []
+## in-run-hud T10：備戰期的鍛造預覽與商店報價供給。兩者都是「畫面要問、但公式在
+## domain」的讀取面（spec §10.3 禁止呈現層自行換算），所以 session 在建構邊界收下
+## pinned 供給，畫面只經下面的唯讀方法取值，不自行接 catalog 或 Autoload。
+var _forge_table: ForgeRecipeTable
+## ShopEconomyViewModel 每次查詢都重新向 RunSession 取 run_snapshot() deep clone，
+## 自身只持 catalog／relic_table 的私有 clone，因此可以隨 session（＝單一 pinned
+## 世代）存活一次建構；catalog 世代更換必然伴隨新的 session。
+var _shop_economy: ShopEconomyViewModel
 
 
 func _init(
@@ -40,12 +51,22 @@ func _init(
 	p_factory: RunCommandFactory = null,
 	p_battle_catalog: BattleRuleCatalog = null,
 	p_commander_passive_effect_ids: Array[StringName] = [],
-	p_combat: CombatCoordinator = null
+	p_combat: CombatCoordinator = null,
+	p_run_session: RunSession = null,
+	p_forge_table: ForgeRecipeTable = null,
+	p_economy_catalog: EconomyExpeditionCatalog = null,
+	p_relic_table: RunRelicTable = null
 ) -> void:
 	_controller = p_controller
 	_factory = p_factory
 	_battle_catalog = p_battle_catalog.deep_clone() if p_battle_catalog != null else null
 	_commander_passive_effect_ids.assign(p_commander_passive_effect_ids)
+	_forge_table = p_forge_table.deep_clone() if p_forge_table != null else null
+	# 供給缺席（既有呼叫端只傳前五個參數）時同樣建得起來：ShopEconomyViewModel 對
+	# null session／catalog 一律回空狀態或具名 rejection_code，不會 crash。
+	_shop_economy = ShopEconomyViewModel.new(
+		p_run_session, p_economy_catalog, p_relic_table
+	)
 	_combat = p_combat if p_combat != null else (
 		CombatCoordinator.new(_controller) if _controller != null else null
 	)
@@ -72,6 +93,143 @@ func reachable_nodes() -> Array:
 		if reachable:
 			result.append(MapNodePresentationType.from_state(node, true))
 	return result
+
+
+## 備戰期鍛造面板的零件清單（inventory 內的物品快照，clone-only）。未注入
+## ForgeRecipeTable 或無 controller 時回空陣列——「沒有可顯示的零件」與「鍛造供給
+## 缺席」在畫面上都是同一件事：沒有可鍛造的東西。
+func forge_inventory_components() -> Array[ItemInstanceState]:
+	var view_model := _try_forge_view_model()
+	if view_model == null:
+		return []
+	return view_model.inventory_components()
+
+
+## 含指定零件 def_id 的所有已註冊配方（自配＋交叉配方）。配方權威只有 pinned
+## ForgeRecipeTable 一處，呈現層不得自行組合零件。
+func forge_recipes_containing(component_def_id: StringName) -> Array[ForgeRecipeRule]:
+	var view_model := _try_forge_view_model()
+	if view_model == null or component_def_id.is_empty():
+		return []
+	return view_model.recipe_preview(component_def_id)
+
+
+## 拖曳合成的即時預覽：兩個 inventory 零件 instance 配得出來的成品規則，配不出來
+## （或其中一個不是可用零件）時回 null。可用性判準與 ForgeEquipmentCommand 同源：
+## 兩個相異 instance、都在 inventory、都未綁在單位上；成品仍由 table.try_recipe()
+## 決定，本方法不複製任何配方規則。真正的鍛造一律走 FORGE_EQUIPMENT intent。
+func try_forge_pair_recipe(
+	component_instance_id_a: String,
+	component_instance_id_b: String
+) -> ForgeRecipeRule:
+	if (
+		_forge_table == null
+		or component_instance_id_a.is_empty()
+		or component_instance_id_b.is_empty()
+		or component_instance_id_a == component_instance_id_b
+	):
+		return null
+	var components := forge_inventory_components()
+	var def_a := _try_available_component_def_id(
+		components, component_instance_id_a
+	)
+	var def_b := _try_available_component_def_id(
+		components, component_instance_id_b
+	)
+	if def_a.is_empty() or def_b.is_empty():
+		return null
+	return _forge_table.try_recipe(def_a, def_b)
+
+
+## 經濟資訊列（金幣／等級經驗／連勝連敗／目前等級費用機率）。供給缺席時為全零快照。
+func shop_economy_status() -> ShopEconomySnapshot:
+	return _shop_economy.economy_status()
+
+
+## 刷新商店的報價（實際扣款、可否負擔、不可用時的 domain 具名原因）。
+func shop_refresh_quote() -> ShopQuoteSnapshot:
+	return _shop_economy.refresh_quote()
+
+
+## 購買經驗的報價（花費、獲得經驗、折算後等級／經驗、MAX 狀態）。
+func shop_buy_xp_quote() -> ShopXpQuoteSnapshot:
+	return _shop_economy.buy_xp_quote()
+
+
+## 指定單位的出售報價（實際入袋金幣，含 gold_cap 夾擠）。
+func shop_sell_quote(unit_instance_id: String) -> ShopQuoteSnapshot:
+	return _shop_economy.sell_quote(unit_instance_id)
+
+
+## 拖曳草稿的人口／合法性／羈絆變化預覽（IRH-REQ-008）。人口與合法性一律經
+## BoardPreparationValidator、羈絆經 compile_trait_progress()——本方法只轉發，
+## 零複製。草稿是完整指派（缺漏由 validator 以 BOARD_UNIT_UNASSIGNED 如實回報）。
+## 供給缺席時回 null。
+func try_board_draft_preview(
+	draft_placements: Array[BoardPlacementState],
+	draft_bench_unit_instance_ids: Array[String]
+) -> BoardDraftPreviewSnapshot:
+	var view_model := _try_board_draft_view_model()
+	if view_model == null:
+		return null
+	return view_model.preview(draft_placements, draft_bench_unit_instance_ids)
+
+
+## 已提交佈局的同構預覽（拖曳前的基準值，供畫面顯示「變化前→變化後」）。
+func try_committed_board_preview() -> BoardDraftPreviewSnapshot:
+	var view_model := _try_board_draft_view_model()
+	if view_model == null:
+		return null
+	return view_model.committed_preview()
+
+
+## 戰鬥中被召喚實體的呈現權威（IRH-REQ-007）：與 combat_inspections 同一份
+## COMBAT_PENDING battle_setup 的 pinned 召喚模板，clone-only。transcript 的 spawn
+## 事件只帶身分、陣營與格位，血條／魔力上限只能來自這裡；缺模板的 unit_id 由呈現層
+## fail closed 為不可渲染，不得虛構。供給缺席或已離開 COMBAT 時回空陣列。
+func combat_summoned_unit_templates() -> Array[SummonedUnitRuleSnapshot]:
+	var result: Array[SummonedUnitRuleSnapshot] = []
+	for template: SummonedUnitRuleSnapshot in _retained_summoned_unit_templates:
+		if template != null:
+			result.append(template.deep_clone())
+	return result
+
+
+## 羈絆進度唯一權威的轉發（IRH-REQ-013）：含場上 0 隻的 inactive 列、distinct_count、
+## active_tier、next_required_count 與完整門檻階梯，trait_id 字典序。
+## 供給缺席時回空陣列。取代只涵蓋 active 的 snapshot 投影作為面板資料來源。
+func trait_progress() -> Array[TraitProgressSnapshot]:
+	if _controller == null or _battle_catalog == null:
+		return []
+	return TraitPreviewViewModel.new(_controller, _battle_catalog).trait_progress()
+
+
+## ViewModel 只在讀取邊界存活（同 _build_snapshot 的既有範式）：回傳值本身已是
+## clone，畫面因此拿不到 RunController。
+func _try_board_draft_view_model() -> BoardDraftPreviewViewModel:
+	if _controller == null or _factory == null or _battle_catalog == null:
+		return null
+	return BoardDraftPreviewViewModel.new(_controller, _factory, _battle_catalog)
+
+
+func _try_forge_view_model() -> ForgeViewModel:
+	if _controller == null or _forge_table == null:
+		return null
+	return ForgeViewModel.new(_controller, _forge_table)
+
+
+func _try_available_component_def_id(
+	components: Array[ItemInstanceState],
+	item_instance_id: String
+) -> StringName:
+	for item: ItemInstanceState in components:
+		if (
+			item != null
+			and item.instance_id == item_instance_id
+			and item.bound_unit_instance_id == null
+		):
+			return item.def_id
+	return &""
 
 
 func dispatch(intent: RunPresentationIntent) -> RunPresentationResult:
@@ -273,7 +431,12 @@ func release() -> void:
 	_controller = null
 	_factory = null
 	_battle_catalog = null
+	_forge_table = null
+	# 供給一併解除，讓 RunSession／catalog clone 隨 run 範疇結束釋放；後續查詢
+	# 走的是與「從未注入供給」相同的空狀態路徑。
+	_shop_economy = ShopEconomyViewModel.new(null, null, null)
 	_retained_combat_inspections.clear()
+	_retained_summoned_unit_templates.clear()
 	_snapshot = RunPresentationSnapshot.new()
 
 
@@ -383,10 +546,14 @@ func _resolve_combat_inspections(
 	var result: Array[CombatUnitInspectionSnapshot] = []
 	if view == null or view.run_phase != RunState.RunPhase.COMBAT:
 		_retained_combat_inspections.clear()
+		_retained_summoned_unit_templates.clear()
 		return result
 	var built := _build_combat_inspections()
 	if not built.is_empty():
 		_retained_combat_inspections = built
+		# 兩者讀的是同一份 COMBAT_PENDING battle_setup；分開更新會讓重播期間的
+		# spawn 事件配到上一場戰鬥的召喚權威。
+		_retained_summoned_unit_templates = _build_summoned_unit_templates()
 	for inspection: CombatUnitInspectionSnapshot in _retained_combat_inspections:
 		result.append(inspection.deep_clone())
 	return result
@@ -451,6 +618,34 @@ func _build_combat_inspections() -> Array[CombatUnitInspectionSnapshot]:
 	return result
 
 
+## 與 _build_combat_inspections() 同源、同守衛：只讀 COMBAT_PENDING battle_setup 的
+## pinned battle_rules，逐一 clone 出召喚模板。result 提交後 setup 不在了會回空，
+## 由呼叫端的保留規則決定是否沿用上一份。
+func _build_summoned_unit_templates() -> Array[SummonedUnitRuleSnapshot]:
+	var result: Array[SummonedUnitRuleSnapshot] = []
+	if _controller == null:
+		return result
+	var committed := _controller.committed_combat_snapshot()
+	if (
+		committed == null
+		or committed.run_phase != RunState.RunPhase.COMBAT
+		or not committed.resolution_state is CombatPendingResolutionState
+	):
+		return result
+	var pending := committed.resolution_state as CombatPendingResolutionState
+	if (
+		pending.battle_setup == null
+		or pending.battle_setup.inputs == null
+		or pending.battle_setup.inputs.battle_rules == null
+	):
+		return result
+	for template: SummonedUnitRuleSnapshot in \
+		pending.battle_setup.inputs.battle_rules.summoned_unit_templates:
+		if template != null:
+			result.append(template.deep_clone())
+	return result
+
+
 func _build_combat_inspection(
 	unit_serial: int,
 	unit: UnitBattleSnapshot,
@@ -460,8 +655,10 @@ func _build_combat_inspection(
 ) -> CombatUnitInspectionSnapshot:
 	var inspection := CombatUnitInspectionSnapshot.new()
 	inspection.unit_serial = unit_serial
+	inspection.presentation_instance_id = unit.instance_id
 	inspection.source_id = unit.unit_id
 	inspection.side_id = unit.side
+	inspection.logical_cell = Vector2i(unit.logical_x, unit.logical_y)
 	inspection.target_serial = _first_target_serial(
 		unit,
 		serial_by_instance
@@ -613,6 +810,7 @@ func _start_or_resume_combat(intent: RunPresentationIntent) -> RunPresentationRe
 		# 檢視投影只在 COMBAT_PENDING（有 battle_setup）時建得起來，驅動到 result 提交後
 		# canonical 就只剩 BattleResultPendingResolutionState，故先取一份留給整個 COMBAT。
 		_retained_combat_inspections = _build_combat_inspections()
+		_retained_summoned_unit_templates = _build_summoned_unit_templates()
 		var drive_code := _drive_to_commit(COMBAT_COMMIT_STEP_LIMIT)
 		if not drive_code.is_empty():
 			var drive_error := _error(
@@ -665,6 +863,7 @@ func _build_snapshot() -> RunPresentationSnapshot:
 	result.manifest_digest = view.content_manifest_digest
 	result.view = view.deep_clone()
 	result.map = _controller.map_snapshot()
+	_mark_progress_transitions(result, _snapshot)
 	result.economy = _controller.economy_snapshot()
 	result.roster = _controller.roster_snapshot()
 	result.pending_reward = _controller.pending_reward_snapshot()
@@ -694,10 +893,163 @@ func _build_snapshot() -> RunPresentationSnapshot:
 			result.roster,
 			result.economy.level
 		)
+	if _battle_catalog != null:
+		# ViewModel 僅在 snapshot 建立邊界存活；回傳值會再由
+		# RunPresentationSnapshot.deep_clone() clone-out，畫面不保留 controller。
+		result.unit_stats_previews.assign(
+			UnitStatsPreviewViewModel.new(
+				_controller, _battle_catalog
+			).all_stats()
+		)
+		result.prepare_unit_inspections.assign(
+			_build_prepare_unit_inspections(result)
+		)
+		result.active_trait_previews.assign(
+			TraitPreviewViewModel.new(
+				_controller, _battle_catalog
+			).trait_snapshots()
+		)
+		result.active_trait_progress.assign(
+			_build_active_trait_progress(result)
+		)
+		if result.roster != null and result.economy != null:
+			result.shop_offer_previews.assign(
+				ShopOfferPreviewViewModel.new(
+					result.roster, _battle_catalog
+				).previews(result.economy)
+			)
 	result.combat_inspections = _resolve_combat_inspections(view)
 	for kind_name: String in RunPresentationIntent.Kind.keys():
 		result.available_actions.append(StringName(kind_name))
 	return result
+
+
+func _build_active_trait_progress(
+	snapshot: RunPresentationSnapshot
+) -> Array[TraitProgressPresentationSnapshot]:
+	var result: Array[TraitProgressPresentationSnapshot] = []
+	if (
+		snapshot == null
+		or _battle_catalog == null
+		or snapshot.manifest_digest.is_empty()
+		or _battle_catalog.manifest_digest_value() != snapshot.manifest_digest
+	):
+		return result
+	for active: TraitBattleSnapshot in snapshot.active_trait_previews:
+		if active == null or active.trait_id.is_empty():
+			result.clear()
+			return result
+		var rule := _battle_catalog.try_trait_rule(active.trait_id)
+		if rule == null:
+			result.clear()
+			return result
+		var progress := TraitProgressPresentationSnapshot.new()
+		progress.trait_id = active.trait_id
+		progress.current_tier = active.tier
+		progress.member_count = active.member_instance_ids.size()
+		for index: int in range(rule.thresholds.size()):
+			var authored := rule.thresholds[index]
+			if authored == null:
+				result.clear()
+				return result
+			var threshold := TraitThresholdPresentationSnapshot.new()
+			threshold.tier = index + 1
+			threshold.required_count = authored.required_count
+			threshold.effect_ids.assign(authored.effect_ids)
+			progress.thresholds.append(threshold)
+		if progress.thresholds.is_empty():
+			result.clear()
+			return result
+		result.append(progress)
+	return result
+
+
+func _build_prepare_unit_inspections(
+	snapshot: RunPresentationSnapshot
+) -> Array[PrepareUnitInspectionSnapshot]:
+	var result: Array[PrepareUnitInspectionSnapshot] = []
+	if (
+		snapshot == null
+		or snapshot.roster == null
+		or _battle_catalog == null
+		or snapshot.manifest_digest.is_empty()
+		or _battle_catalog.manifest_digest_value() != snapshot.manifest_digest
+	):
+		return result
+	for unit: UnitInstance in snapshot.roster.unit_instances:
+		if unit == null:
+			continue
+		var preview := _find_prepare_stats(
+			snapshot.unit_stats_previews, unit.instance_id
+		)
+		var rule := _battle_catalog.try_unit_rule(unit.def_id)
+		if (
+			preview == null
+			or rule == null
+			or preview.unit_id != unit.def_id
+			or preview.star != unit.star
+			or preview.equipment_instance_ids != unit.equipment_instance_ids
+		):
+			continue
+		var inspection := PrepareUnitInspectionSnapshot.new()
+		inspection.unit_instance_id = StringName(unit.instance_id)
+		inspection.unit_id = preview.unit_id
+		inspection.unit_def_id = unit.def_id
+		inspection.star = unit.star
+		inspection.cost_tier = rule.cost_tier
+		inspection.trait_ids.assign(rule.trait_ids)
+		inspection.ability_id = (
+			rule.ability_id.value if rule.ability_id != null else &""
+		)
+		inspection.ai_profile = rule.ai_profile
+		inspection.equipment_instance_ids.assign(unit.equipment_instance_ids)
+		inspection.stats = preview.deep_clone()
+		result.append(inspection)
+	result.sort_custom(_prepare_inspection_precedes)
+	return result
+
+
+func _find_prepare_stats(
+	previews: Array[UnitStatsPreviewSnapshot],
+	unit_instance_id: String
+) -> UnitStatsPreviewSnapshot:
+	for preview: UnitStatsPreviewSnapshot in previews:
+		if preview != null and String(preview.instance_id) == unit_instance_id:
+			return preview
+	return null
+
+
+func _prepare_inspection_precedes(
+	left: PrepareUnitInspectionSnapshot,
+	right: PrepareUnitInspectionSnapshot
+) -> bool:
+	return String(left.unit_instance_id) < String(right.unit_instance_id)
+
+
+## Transition banners are committed-snapshot events, not phase guesses. A new
+## session (or a changed run id) has no previous sample and therefore emits no
+## banner. Invalid current-node data is rejected by progress_current_node_id().
+func _mark_progress_transitions(
+	result: RunPresentationSnapshot,
+	previous: RunPresentationSnapshot
+) -> void:
+	if (
+		result == null
+		or result.view == null
+		or previous == null
+		or previous.view == null
+		or previous.run_id.is_empty()
+		or previous.run_id != result.run_id
+	):
+		return
+	result.progress_act_transitioned = (
+		previous.view.act_index != result.view.act_index
+	)
+	var current_node_id := result.progress_current_node_id()
+	result.progress_node_transitioned = (
+		not current_node_id.is_empty()
+		and current_node_id != previous.progress_current_node_id()
+	)
 
 
 ## Kept as a thin alias: the shared rule lives on MapNodePresentation
@@ -713,7 +1065,7 @@ func _command_error(value: CommandError) -> DiagnosticError:
 	if value == null:
 		return _error(&"RUN_COMMAND_FAILED", &"error.presentation.run_command_failed")
 	return _error(
-		_source_code(value.code, value.diagnostic_values),
+		_source_code(&"RUN_COMMAND_FAILED", value.diagnostic_values),
 		&"error.presentation.run_command_failed"
 	)
 

@@ -14,6 +14,8 @@ const _MESSAGE_KEYS: Dictionary = {
 	&"APP_ACTION_NOT_AVAILABLE": &"error.presentation.action_not_available",
 	&"CAMP_EXPEDITION_SELECTION_REQUIRED":
 		&"error.presentation.camp_selection_required",
+	&"EXPEDITION_CHALLENGE_PREREQUISITE_UNMET":
+		&"error.presentation.expedition_challenge_prerequisite_unmet",
 	&"APP_RETAINED_RUN_EXISTS": &"error.presentation.retained_run_exists",
 	&"APP_PREPARED_RUN_STALE": &"error.presentation.prepared_run_stale",
 	&"EXIT_REQUEST_ALREADY_PENDING":
@@ -75,6 +77,22 @@ const _MESSAGE_KEYS: Dictionary = {
 		&"error.presentation.resolve_overflow_item_not_in_tray",
 	&"RUN_COMMAND_FAILED": &"error.presentation.run_command_failed",
 	&"RUN_TRANSITION_FAILED": &"error.presentation.run_transition_failed",
+	&"SHOP_GOLD_INSUFFICIENT": &"error.shop.gold_insufficient",
+	&"SHOP_LEVEL_MAX": &"error.shop.level_max",
+	&"SHOP_OFFER_STALE": &"error.shop.offer_stale",
+	&"SHOP_ROSTER_FULL": &"error.shop.roster_full",
+	&"SHOP_UNIT_MISSING": &"error.shop.unit_missing",
+	&"SHOP_UNIT_RULE_MISSING": &"error.shop.unit_rule_missing",
+	&"SHOP_UNIT_POOL_INVALID": &"error.shop.unit_pool_invalid",
+	&"SHOP_RESERVATION_INVALID": &"error.shop.reservation_invalid",
+	&"SHOP_CATALOG_GENERATION_MISMATCH": &"error.shop.generation_mismatch",
+	&"SHOP_INPUT_INVALID": &"error.shop.input_invalid",
+	&"SHOP_RNG_FAILED": &"error.shop.internal_failure",
+	&"SHOP_KEY_FAILED": &"error.shop.internal_failure",
+	&"SHOP_DIGEST_FAILED": &"error.shop.internal_failure",
+	&"SHOP_CONFIG_INVALID": &"error.shop.internal_failure",
+	&"SHOP_SERIAL_EXHAUSTED": &"error.shop.internal_failure",
+	&"SHOP_MERGE_FAILED": &"error.shop.internal_failure",
 }
 
 

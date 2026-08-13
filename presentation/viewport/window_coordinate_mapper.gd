@@ -2,7 +2,7 @@ class_name WindowCoordinateMapper
 extends RefCounted
 
 const WORLD_SIZE := Vector2i(640, 360)
-const UI_REFERENCE_SIZE := Vector2i(1280, 720)
+const UI_REFERENCE_SIZE := Vector2i(1920, 1080)
 const SUPPORTED_UI_SCALES: Array[int] = [100, 125, 150]
 
 const LAYOUT_INVALID: StringName = &"VIEWPORT_LAYOUT_INVALID"
@@ -120,6 +120,18 @@ func ui_scale_percent() -> int:
 
 func configuration_error() -> StringName:
 	return _configuration_error
+
+
+func deep_clone() -> WindowCoordinateMapper:
+	var clone := WindowCoordinateMapper.new()
+	clone._configured = _configured
+	clone._configuration_error = _configuration_error
+	clone._world_origin = _world_origin
+	clone._world_scale = _world_scale
+	clone._ui_origin = _ui_origin
+	clone._ui_scale = _ui_scale
+	clone._ui_scale_percent_value = _ui_scale_percent_value
+	return clone
 
 
 func _reject(error: StringName) -> StringName:

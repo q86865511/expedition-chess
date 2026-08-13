@@ -172,7 +172,7 @@ func test_camp_unlocks_challenge_one_after_clearing_challenge_zero() -> void:
 	profile.commander_challenge_records = records
 
 	assert_eq(camp.call(&"compose", profile, port), &"")
-	var challenge := camp.get_node_or_null(^"ChallengeSelector") as SpinBox
+	var challenge := camp.find_child("ChallengeSelector", true, false) as SpinBox
 	assert_not_null(challenge)
 	if challenge == null:
 		return

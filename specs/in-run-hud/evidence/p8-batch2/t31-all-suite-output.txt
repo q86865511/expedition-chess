@@ -1,0 +1,64 @@
+T31 fresh current-source All gate
+Date: 2026-08-13
+Baseline before renderer wiring: 23c7666fdfaf80da5f35088da81c2f386bbe75d1
+
+Command:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1
+  -Suite All
+  -GodotPath E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe
+  -TimeoutSeconds 3600
+
+Runner:
+started_at_utc:  2026-08-13T09:02:43Z
+finished_at_utc: 2026-08-13T09:18:57Z
+exit_code: 0
+message: Requested suites completed.
+wall time: 974.9 seconds
+
+Expected-success suite exits:
+Import=0
+RunnerContractPass=0
+RunnerContractPause=0
+RunnerContractLoggerCleanup=0
+Smoke=0
+Gut=0
+Content=0
+Canonical=0
+Combat=0
+Expedition=0
+ActEliminationGate=0
+Spec=0
+
+Runner contract negative fixtures returned their expected non-zero codes:
+Assertion=2; PushError=2; EngineError=2; EngineOrphan=2; ZeroTests=3;
+Infrastructure=3; Timeout=124; LoggerLeak=3.
+
+GUT statistics:
+Warnings              3
+Scripts             345
+Tests              1428
+Passing Tests      1428
+Asserts           38825
+Time              893.571s
+---- All tests passed! ----
+
+gut.xml: errors=0, orphans=0, failures=0, tests=1428, assertions=38825.
+The three GUT warnings are intentional invalid-UTF-8 save-repository fixtures.
+Import/GUT scan: 0 matches for `Parse Error` or `Failed to load`.
+
+Spec contract:
+case_count=4092
+passed=true
+failures=[]
+
+Artifact SHA-256:
+runner-execution.json=56EA3B6EA5163696C5268819E8F246D6103BDFCB00FD542386A2EDB9602BA6AB
+gut.godot.log=9C8CFE1566BE742CDD11A19154DDA9426793EE9811870443294BD360ECD0F386
+spec-contract.json=9D6E7A6A1AAF3D242422EDDC144D8CC12271AF2C8A2A3A96693B5CCEAC8C6EBD
+
+Post-document read-back:
+- After the T31 checkbox, manifest, and PROGRESS updates, `-Suite Spec` ran
+  from 2026-08-13T09:23:22Z to 09:23:26Z.
+- exit_code=0; case_count=4092; passed=true; failures=[].
+- Final process probe (excluding the probe itself): 0 Godot, old run-tests,
+  Get-Content, Select-String, or rg background processes remained.

@@ -4,9 +4,13 @@ extends RefCounted
 const UNSUPPORTED_LOCALE: StringName = &"UNSUPPORTED_LOCALE"
 const FONT_UNAVAILABLE: StringName = &"ACCESSIBILITY_FONT_UNAVAILABLE"
 const GLYPH_MISSING: StringName = &"ACCESSIBILITY_REQUIRED_GLYPH_MISSING"
+const FONT_SOURCE_BUNDLED: StringName = &"res.font.noto_sans_tc"
 const FONT_SOURCE_THEME: StringName = &"godot.theme_db.fallback_font"
 const FONT_SOURCE_SYSTEM: StringName = &"godot.system_font.cjk_fallback"
 const PROBE_FONT_SIZE: int = 24
+const BUNDLED_FONT: FontFile = preload(
+	"res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf"
+)
 const SYSTEM_FONT_NAMES: Array[String] = [
 	"Microsoft JhengHei UI",
 	"Microsoft JhengHei",
@@ -52,7 +56,7 @@ func readability_report(
 	var tokens := font_tokens_for(locale)
 	if not bool(tokens.get("ok", false)):
 		return tokens
-	var selection := _font_selection(required_text)
+	var selection := _font_selection(locale, required_text)
 	var font_value: Variant = selection.get("font")
 	if not font_value is Font:
 		return _readability_failure(
@@ -67,12 +71,8 @@ func readability_report(
 		selection.get("source", FONT_SOURCE_THEME)
 	)
 
-	var required_codepoints: Dictionary = {}
+	var required_codepoints := _required_codepoints(locale, required_text)
 	var missing_glyphs: Array[int] = []
-	for index: int in required_text.length():
-		var codepoint := required_text.unicode_at(index)
-		if _is_required_glyph(codepoint):
-			required_codepoints[codepoint] = true
 	for value: Variant in required_codepoints.keys():
 		var codepoint := int(value)
 		if not font.has_char(codepoint):
@@ -111,6 +111,7 @@ func readability_report(
 			tokens.get("fallback_font_tokens", []) as Array
 		).duplicate(),
 		"font_source": font_source,
+		"fallback_used": font_source != FONT_SOURCE_BUNDLED,
 		"font_available": true,
 		"readable": true,
 		"required_glyph_count": required_codepoints.size(),
@@ -135,7 +136,7 @@ func apply_to(
 	var report := readability_report(locale, required_text)
 	if not bool(report.get("ok", false)):
 		return report
-	var selection := _font_selection(required_text)
+	var selection := _font_selection(locale, required_text)
 	var font_value: Variant = selection.get("font")
 	if not font_value is Font:
 		return _readability_failure(
@@ -146,50 +147,77 @@ func apply_to(
 			Vector2.ZERO
 		)
 	var font := font_value as Font
-	label.add_theme_font_override(&"font", font)
+	if StringName(selection.get("source", &"")) == FONT_SOURCE_BUNDLED:
+		label.remove_theme_font_override(&"font")
+	else:
+		label.add_theme_font_override(&"font", font)
 	label.text = required_text
 	return report.duplicate(true)
 
 
-func _font_selection(required_text: String) -> Dictionary:
+func _font_selection(locale: StringName, required_text: String) -> Dictionary:
+	var required_codepoints := _required_codepoints(locale, required_text)
+	if _font_covers(BUNDLED_FONT, required_codepoints):
+		return {
+			"font": BUNDLED_FONT,
+			"source": FONT_SOURCE_BUNDLED,
+		}
 	var system_font := SystemFont.new()
 	var names := PackedStringArray()
 	for font_name: String in SYSTEM_FONT_NAMES:
 		names.append(font_name)
 	system_font.font_names = names
 	system_font.allow_system_fallback = true
-	if _font_covers(system_font, required_text):
+	if _font_covers(system_font, required_codepoints):
 		return {
 			"font": system_font,
 			"source": FONT_SOURCE_SYSTEM,
 		}
 	var theme_font := ThemeDB.fallback_font
-	if theme_font != null and _font_covers(theme_font, required_text):
+	if theme_font != null and _font_covers(theme_font, required_codepoints):
 		return {
 			"font": theme_font,
 			"source": FONT_SOURCE_THEME,
 		}
-	# Preserve the real SystemFont result so the caller reports the exact missing
-	# glyphs. Never substitute a positive readability result without coverage.
+	# Preserve the bundled font result so the report names the exact missing glyphs.
 	return {
-		"font": system_font,
-		"source": FONT_SOURCE_SYSTEM,
+		"font": BUNDLED_FONT,
+		"source": FONT_SOURCE_BUNDLED,
 	}
 
 
-func _font_covers(font: Font, required_text: String) -> bool:
-	var found_required_glyph := false
-	for index: int in required_text.length():
-		var codepoint := required_text.unicode_at(index)
-		if not _is_required_glyph(codepoint):
-			continue
-		found_required_glyph = true
+func _font_covers(font: Font, required_codepoints: Dictionary) -> bool:
+	if font == null or required_codepoints.is_empty():
+		return false
+	for value: Variant in required_codepoints.keys():
+		var codepoint := int(value)
 		if not font.has_char(codepoint):
 			return false
-	return found_required_glyph
+	return true
 
 
-func _is_required_glyph(codepoint: int) -> bool:
+func _required_codepoints(
+	locale: StringName,
+	required_text: String
+) -> Dictionary:
+	var result: Dictionary = {}
+	var contains_cjk := false
+	for index: int in required_text.length():
+		var codepoint := required_text.unicode_at(index)
+		if not _is_visible_glyph(codepoint):
+			continue
+		result[codepoint] = true
+		contains_cjk = contains_cjk or _is_cjk_glyph(codepoint)
+	if locale == &"zh_TW" and not contains_cjk:
+		return {}
+	return result
+
+
+func _is_visible_glyph(codepoint: int) -> bool:
+	return codepoint > 0x20 and codepoint != 0x7F
+
+
+func _is_cjk_glyph(codepoint: int) -> bool:
 	return (
 		(codepoint >= 0x3400 and codepoint <= 0x4DBF)
 		or (codepoint >= 0x4E00 and codepoint <= 0x9FFF)
@@ -213,6 +241,7 @@ func _readability_failure(
 		"primary_font_token": primary_font_token,
 		"fallback_font_tokens": _FALLBACKS.duplicate(),
 		"font_source": font_source,
+		"fallback_used": font_source != FONT_SOURCE_BUNDLED,
 		"font_available": error_code != FONT_UNAVAILABLE,
 		"readable": false,
 		"required_glyph_count": required_glyph_count,

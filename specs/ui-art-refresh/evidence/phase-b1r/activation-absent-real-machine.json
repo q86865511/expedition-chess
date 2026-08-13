@@ -1,0 +1,39 @@
+{
+	"app_booted": true,
+	"audio_buses": [
+		"Master",
+		"Music",
+		"SFX",
+		"UI"
+	],
+	"diagnostic_visible": false,
+	"display_server": "Windows",
+	"expected_diagnostic": "absent",
+	"fresh_process": true,
+	"headless": false,
+	"issues": [],
+	"locale": "zh_TW",
+	"ok": true,
+	"screenshot": "res://specs/ui-art-refresh/evidence/phase-b1r/activation-absent-real-machine.png",
+	"screenshot_sha256": "21f3d59c039f9fccddfe6c1204d4c577f2e607ec9402bb02e85b15a17603c6d3",
+	"single_toggle": "reduced_motion",
+	"source_code": "",
+	"status_report": {},
+	"viewport_runtime": {
+		"direct_probe": "",
+		"inside_tree": true,
+		"presentation_host_path": "../UiLayer/UiRoot/PresentationHost",
+		"presentation_host_path_resolves": true,
+		"runtime_present": true,
+		"ui_layer_path": "../UiLayer",
+		"ui_layer_path_resolves": true,
+		"ui_root_path": "../UiLayer/UiRoot",
+		"ui_root_path_resolves": true,
+		"window_size": "(1280, 720)",
+		"world_container_path": "../WorldViewportContainer",
+		"world_container_path_resolves": true,
+		"world_viewport_path": "../WorldViewportContainer/WorldViewport",
+		"world_viewport_path_resolves": true
+	},
+	"visible_message": ""
+}

@@ -34,30 +34,42 @@ const _PRIMARY_ACTIONS: Dictionary = {
 		&"map.select",
 		&"map.confirm",
 		&"choice.ack",
-		&"run.menu",
 	],
+	# in-run-hud T10：備戰期的商店／鍛造／裝備／移動動作以前不在焦點圖裡，
+	# 鍵盤玩家 Tab 不到（ProductionScreen 的補掃迴圈雖然仍會把它們補進焦點環，
+	# 但順序就變成「未登記＝隨 _required_action_ids 尾隨」而非本類別決定）。
+	# 新增項的相對順序比照 ProductionScreen._required_action_ids() 的 RUN_PREPARE
+	# 清單；既有項的相對順序維持不變（choice.* 早於 service.*、prepare.start 仍 deferred）。
 	&"RUN_PREPARE": [
 		&"prepare.unit",
+		&"prepare.refresh",
+		&"prepare.buy",
+		&"prepare.xp",
+		&"prepare.sell",
+		&"prepare.forge",
+		&"prepare.forge.confirm",
+		&"prepare.forge.cancel",
+		&"prepare.equip",
+		&"prepare.dismantle",
 		&"choice.begin",
 		&"choice.confirm",
 		&"choice.cancel",
 		&"service.dismantle",
 		&"service.exit",
+		&"prepare.move_board",
+		&"prepare.move_bench",
 		&"choice.ack",
 		&"prepare.start",
-		&"run.menu",
 	],
 	&"RUN_COMBAT": [
 		&"combat.pause",
 		&"combat.inspect",
 		&"combat.speed",
-		&"run.menu",
 	],
 	&"RUN_REWARD": [
 		&"reward.select",
 		&"reward.confirm",
 		&"choice.ack",
-		&"run.menu",
 	],
 	&"RUN_ROUTE_FALLBACK": [&"run.retry_route", &"run.menu"],
 	&"APP_ROUTE_FALLBACK": [&"app.retry_route", &"menu.exit"],

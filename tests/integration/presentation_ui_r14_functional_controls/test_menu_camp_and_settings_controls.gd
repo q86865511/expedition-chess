@@ -14,11 +14,11 @@ func test_real_menu_start_and_default_camp_selection_start_a_run() -> void:
 	var camp := Support.active_screen(harness)
 	assert_eq(camp.route_kind, &"CAMP_WORLD")
 
-	var commander := camp.get_node_or_null(
-		"Composition/CommanderSelector"
+	var commander := camp.find_child(
+		"CommanderSelector", true, false
 	) as OptionButton
-	var challenge := camp.get_node_or_null(
-		"Composition/ChallengeSelector"
+	var challenge := camp.find_child(
+		"ChallengeSelector", true, false
 	) as SpinBox
 	assert_not_null(commander)
 	assert_not_null(challenge)

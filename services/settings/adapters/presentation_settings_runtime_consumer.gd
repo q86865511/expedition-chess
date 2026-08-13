@@ -16,6 +16,7 @@ var _runtime_by_kind: Dictionary = {}
 var _last_theme_snapshot: SettingsSnapshot
 var _last_viewport_snapshot: SettingsSnapshot
 var _localization_catalog: LocalizationCatalog
+var _theme_runtime := ExpeditionThemeRuntime.new()
 
 
 func _init(
@@ -172,47 +173,19 @@ func _apply_accessibility(snapshot: SettingsSnapshot) -> StringName:
 
 
 func _apply_ui_scale(scale_percent: int) -> void:
-	if _host == null or scale_percent not in [100, 125, 150]:
+	if (
+		_host == null
+		or not is_instance_valid(_host)
+		or scale_percent not in [100, 125, 150]
+	):
 		return
-	var factor := float(scale_percent) / 100.0
-	for node: Node in _host.find_children("*", "Button", true, false):
-		var button := node as Button
-		if button == null:
-			continue
-		button.custom_minimum_size = Vector2(
-			240.0 * factor,
-			56.0 * factor
-		)
-		button.add_theme_font_size_override(
-			&"font_size",
-			roundi(16.0 * factor)
-		)
-	for node: Node in _host.find_children("*", "OptionButton", true, false):
-		var option := node as OptionButton
-		if option != null:
-			option.custom_minimum_size = Vector2(
-				280.0 * factor,
-				56.0 * factor
-			)
-			option.add_theme_font_size_override(
-				&"font_size",
-				roundi(16.0 * factor)
-			)
-	for node: Node in _host.find_children("*", "ItemList", true, false):
-		var list := node as ItemList
-		if list != null:
-			list.custom_minimum_size = Vector2(
-				360.0 * factor,
-				180.0 * factor
-			)
-			list.add_theme_font_size_override(
-				&"font_size",
-				roundi(16.0 * factor)
-			)
+	_theme_runtime.apply(_host, scale_percent)
 
 
 func _accessibility_host() -> Node:
-	if _host == null:
+	# deferred 套用可能在 host 已被釋放後才輪到（freed 物件不等於 null，
+	# 直接 find_child 會在引擎層炸「find_children on a null value」）。
+	if _host == null or not is_instance_valid(_host):
 		return null
 	if _host.name == ACCESSIBILITY_HOST_NAME:
 		return _host

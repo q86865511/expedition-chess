@@ -1,0 +1,32 @@
+{
+	"after": {
+		"committed": true,
+		"fallback_used": false,
+		"font_source": "res.font.noto_sans_tc",
+		"locale": "en",
+		"missing_glyphs": [],
+		"ok": true,
+		"presentation_ok": true,
+		"readable": true,
+		"source_code": ""
+	},
+	"before": {
+		"algorithm": "legacy_cjk_only_required_set",
+		"fault_injection_status": {
+			"authoritative_state": {},
+			"committed": true,
+			"fallback_active": true,
+			"message_key": "error.settings.activation_diagnostic",
+			"presentation_ok": false,
+			"retryable": true,
+			"source_code": "ACCESSIBILITY_REQUIRED_GLYPH_MISSING"
+		},
+		"locale": "en",
+		"measured_height": 33.0,
+		"measured_width": 602.0,
+		"required_glyph_count": 0,
+		"source_code": "ACCESSIBILITY_REQUIRED_GLYPH_MISSING",
+		"visible_message": "已生效但畫面未更新（顯示已回退）：設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定",
+		"would_report_ok": false
+	}
+}

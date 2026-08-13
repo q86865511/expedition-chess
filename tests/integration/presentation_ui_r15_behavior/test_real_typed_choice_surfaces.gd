@@ -19,11 +19,11 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 		camp_screen.get_node_or_null(^"Composition") as CampWorldScreen
 	)
 	var commander := (
-		camp_screen.get_node_or_null(^"Composition/CommanderSelector")
+		camp_screen.find_child("CommanderSelector", true, false)
 		as OptionButton
 	)
 	var challenge := (
-		camp_screen.get_node_or_null(^"Composition/ChallengeSelector")
+		camp_screen.find_child("ChallengeSelector", true, false)
 		as SpinBox
 	)
 	assert_not_null(
@@ -99,7 +99,7 @@ func test_app_root_camp_and_map_use_visible_typed_selections() -> void:
 	await wait_process_frames(2)
 	map_screen = Support.active_screen(harness)
 	var node_selector := (
-		map_screen.get_node_or_null(^"Composition/NodeSelector") as ItemList
+		map_screen.find_child("NodeSelector", true, false) as ItemList
 		if map_screen != null
 		else null
 	)
@@ -153,10 +153,9 @@ func test_reward_offer_and_combat_inspection_are_real_typed_controls() -> void:
 	)
 	if reward_screen == null:
 		return
-	var offers := (
-		reward_screen.get_node_or_null(^"Composition/OfferSelector")
-		as ItemList
-	)
+	var offers := reward_screen.find_child(
+		"OfferSelector", true, false
+	) as ItemList
 	assert_not_null(
 		offers,
 		"RUN_REWARD must render every authoritative offer as a selectable control"
@@ -259,10 +258,9 @@ func test_reward_offer_and_combat_inspection_are_real_typed_controls() -> void:
 	add_child_autofree(combat_screen)
 	combat_screen.activate_live()
 
-	var units := (
-		combat_screen.get_node_or_null(^"Composition/UnitSelector")
-		as ItemList
-	)
+	var units := combat_screen.find_child(
+		"UnitSelector", true, false
+	) as ItemList
 	assert_not_null(units, "RUN_COMBAT must render selectable typed units")
 	if units == null:
 		return
@@ -295,15 +293,17 @@ func test_reward_offer_and_combat_inspection_are_real_typed_controls() -> void:
 		0,
 		"inspection is clone-only and must never dispatch gameplay intent"
 	)
-	for path: NodePath in [
-		^"Composition/InspectionPanel/SourceValue",
-		^"Composition/InspectionPanel/TargetValue",
-		^"Composition/InspectionPanel/StatsValue",
-		^"Composition/InspectionPanel/EquipmentValue",
-		^"Composition/InspectionPanel/TraitsValue",
-		^"Composition/InspectionPanel/StatusesValue",
+	for control_name: String in [
+		"SourceValue",
+		"TargetValue",
+		"StatsValue",
+		"EquipmentValue",
+		"TraitsValue",
+		"StatusesValue",
 	]:
-		var label := combat_screen.get_node_or_null(path) as Label
-		assert_not_null(label, "%s must be player-visible" % path)
+		var label := combat_screen.find_child(
+			control_name, true, false
+		) as Label
+		assert_not_null(label, "%s must be player-visible" % control_name)
 		if label != null:
 			assert_false(label.text.strip_edges().is_empty())

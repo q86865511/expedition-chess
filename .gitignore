@@ -23,6 +23,7 @@ Thumbs.db
 artifacts/test/*
 !artifacts/test/.gitkeep
 /artifacts/rc/**
+/artifacts/ui-art-refresh/**
 *.tmp
 
 # pipeline 狀態(本機)

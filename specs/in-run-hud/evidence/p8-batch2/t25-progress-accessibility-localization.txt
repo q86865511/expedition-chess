@@ -1,0 +1,30 @@
+T25 進度狀態 accessibility localization focused evidence
+=========================================================
+
+實作：
+- RunNodeSequence 的可見符號仍為 completed／current／unreached 非色彩訊號。
+- 每個 accessibility token 追加對應的 map.node_state.completed／current／unreached 本地化字串。
+- state_localization_keys metadata 保留逐節點對應，供契約測試讀回。
+
+Focused accessibility test
+--------------------------
+Test path: res://tests/unit/in_run_hud/test_progress_accessibility_states_t25.gd
+Exit: 0
+Tests: 1/1 passed
+Asserts: 7
+Failures / errors / orphans: 0 / 0 / 0
+
+Existing progress HUD regression
+--------------------------------
+Test path: res://tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd
+Exit: 0
+Tests: 6/6 passed
+Asserts: 40
+Failures / errors / orphans: 0 / 0 / 0
+
+Localization parity and digest gates
+------------------------------------
+test_project_content_bootstrap.gd: exit 0, 11/11 tests, 1899 asserts
+test_localization_catalog_raw_parity.gd: exit 0, 2/2 tests, 7 asserts
+test_static_gate_rejects_dependency_and_localization_breaks.gd: exit 0, 4/4 tests, 64 asserts
+All failures / errors / orphans: 0 / 0 / 0

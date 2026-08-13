@@ -73,14 +73,40 @@ func test_run_combat_tooltip_guard_and_cjk_font_use_production_hosts() -> void:
 
 	var cjk_label := root.get_node(Support.NODE_PATHS[&"cjk"]) as Label
 	assert_eq(cjk_label.text, Support.REQUIRED_ZH_TW_TEXT)
-	assert_true(cjk_label.has_theme_font_override(&"font"))
+	assert_false(cjk_label.has_theme_font_override(&"font"))
 	assert_true(after.cjk_ok)
 	assert_true(after.cjk_readable)
 	assert_eq(after.cjk_missing_glyphs, [])
 	assert_eq(
 		after.cjk_font_source,
-		LocalizedTypographyPolicy.FONT_SOURCE_SYSTEM
+		LocalizedTypographyPolicy.FONT_SOURCE_BUNDLED
 	)
+	assert_false(after.cjk_fallback_used)
+
+
+func test_english_activation_uses_bundled_font_without_false_cjk_failure() -> void:
+	var root := Support.instantiate_run_combat(self)
+	if root == null:
+		return
+	var consumer := Support.load_consumer(self, root)
+	assert_not_null(consumer)
+	if consumer == null:
+		return
+	var snapshot := SettingsSnapshot.new()
+	snapshot.locale = &"en"
+	assert_eq(StringName(consumer.call(&"activate", &"theme", snapshot)), &"")
+	var report := consumer.call(
+		&"runtime_accessibility_report"
+	) as AccessibilityRuntimeReport
+	assert_not_null(report)
+	if report == null:
+		return
+	assert_true(report.ok, report.error)
+	assert_eq(report.cjk_locale, &"en")
+	assert_eq(report.cjk_font_source, LocalizedTypographyPolicy.FONT_SOURCE_BUNDLED)
+	assert_false(report.cjk_fallback_used)
+	assert_true(report.cjk_readable)
+	assert_eq(report.cjk_missing_glyphs, [])
 
 
 func test_production_screenshot_runner_uses_no_accessibility_fixture() -> void:

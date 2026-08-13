@@ -1,0 +1,481 @@
+[gd_resource type="Theme" load_steps=31 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf" id="1_font"]
+[ext_resource type="Texture2D" path="res://theme/ui-panel-frame.svg" id="2_panel"]
+[ext_resource type="Texture2D" path="res://theme/ui-focus-frame.svg" id="3_focus"]
+
+[sub_resource type="FontVariation" id="FontVariation_regular"]
+base_font = ExtResource("1_font")
+variation_opentype = {"wght": 400.0}
+
+[sub_resource type="FontVariation" id="FontVariation_heading"]
+base_font = ExtResource("1_font")
+variation_opentype = {"wght": 600.0}
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+texture = ExtResource("2_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_action_bar_compact"]
+texture = ExtResource("2_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+content_margin_left = 24.0
+content_margin_top = 6.0
+content_margin_right = 24.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_focus"]
+texture = ExtResource("3_focus")
+texture_margin_left = 10.0
+texture_margin_top = 10.0
+texture_margin_right = 10.0
+texture_margin_bottom = 10.0
+expand_margin_left = 4.0
+expand_margin_top = 4.0
+expand_margin_right = 4.0
+expand_margin_bottom = 4.0
+draw_center = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.184314, 0.603922, 0.588235, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.843137, 0.607843, 0.227451, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_disabled"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.72)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 18.0
+content_margin_top = 12.0
+content_margin_right = 18.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_field"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+content_margin_left = 15.0
+content_margin_top = 10.5
+content_margin_right = 15.0
+content_margin_bottom = 10.5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected"]
+bg_color = Color(0.184314, 0.603922, 0.588235, 0.72)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_background"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top_bar"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_bottom = 2
+border_color = Color(0.843137, 0.764706, 0.603922, 1)
+content_margin_left = 24.0
+content_margin_top = 18.0
+content_margin_right = 24.0
+content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_secondary_panel"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 0.65)
+content_margin_left = 18.0
+content_margin_top = 15.0
+content_margin_right = 18.0
+content_margin_bottom = 15.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_status"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.98)
+border_width_left = 3
+border_color = Color(0.184314, 0.603922, 0.588235, 1)
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.184314, 0.603922, 0.588235, 1)
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card_tier_1"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card_tier_2"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.184314, 0.603922, 0.588235, 1)
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card_tier_3"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.462745, 0.32549, 0.607843, 1)
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card_tier_4"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.843137, 0.607843, 0.227451, 1)
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card_tier_5"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 3
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.662745, 0.301961, 0.345098, 1)
+content_margin_left = 12.0
+content_margin_top = 9.0
+content_margin_right = 12.0
+content_margin_bottom = 9.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_modal"]
+bg_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.843137, 0.607843, 0.227451, 1)
+content_margin_left = 36.0
+content_margin_top = 30.0
+content_margin_right = 36.0
+content_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grid_cell"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grid_cell_hover"]
+bg_color = Color(0.184314, 0.603922, 0.588235, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grid_cell_pressed"]
+bg_color = Color(0.843137, 0.607843, 0.227451, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grid_cell_disabled"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.72)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 1)
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_settings_toggle"]
+
+[resource]
+default_font = SubResource("FontVariation_regular")
+default_font_size = 27
+Button/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+Button/colors/font_hover_color = Color(0.960784, 0.941176, 0.87451, 1)
+Button/colors/font_pressed_color = Color(0.0313726, 0.0588235, 0.0980392, 1)
+Button/colors/font_disabled_color = Color(0.411765, 0.443137, 0.482353, 1)
+Button/styles/normal = SubResource("StyleBoxFlat_button_normal")
+Button/styles/hover = SubResource("StyleBoxFlat_button_hover")
+Button/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+Button/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+Button/styles/focus = SubResource("StyleBoxTexture_focus")
+CheckButton/styles/focus = SubResource("StyleBoxTexture_focus")
+Label/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+LineEdit/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+LineEdit/styles/normal = SubResource("StyleBoxFlat_field")
+LineEdit/styles/focus = SubResource("StyleBoxTexture_focus")
+OptionButton/styles/normal = SubResource("StyleBoxFlat_button_normal")
+OptionButton/styles/hover = SubResource("StyleBoxFlat_button_hover")
+OptionButton/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+OptionButton/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+OptionButton/styles/focus = SubResource("StyleBoxTexture_focus")
+ItemList/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+ItemList/colors/font_selected_color = Color(0.960784, 0.941176, 0.87451, 1)
+ItemList/styles/panel = SubResource("StyleBoxFlat_field")
+ItemList/styles/focus = SubResource("StyleBoxTexture_focus")
+ItemList/styles/selected = SubResource("StyleBoxFlat_selected")
+Panel/styles/panel = SubResource("StyleBoxTexture_panel")
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_panel")
+HBoxContainer/constants/separation = 24
+VBoxContainer/constants/separation = 18
+GridContainer/constants/h_separation = 18
+GridContainer/constants/v_separation = 12
+ExpeditionBackground/base_type = &"Panel"
+ExpeditionBackground/styles/panel = SubResource("StyleBoxFlat_background")
+ExpeditionPanel/base_type = &"PanelContainer"
+ExpeditionPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionPrimaryPanel/base_type = &"PanelContainer"
+ExpeditionPrimaryPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionSecondaryPanel/base_type = &"PanelContainer"
+ExpeditionSecondaryPanel/styles/panel = SubResource("StyleBoxFlat_secondary_panel")
+ExpeditionBoardPanel/base_type = &"PanelContainer"
+ExpeditionBoardPanel/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionBoardStack/base_type = &"VBoxContainer"
+ExpeditionBoardStack/constants/separation = 6
+ExpeditionStatusPanel/base_type = &"PanelContainer"
+ExpeditionStatusPanel/styles/panel = SubResource("StyleBoxFlat_status")
+ExpeditionShopCard/base_type = &"Button"
+ExpeditionShopCard/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCard/font_sizes/font_size = 21
+ExpeditionShopCard/styles/normal = SubResource("StyleBoxFlat_shop_card")
+ExpeditionShopCard/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCard/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCard/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopCardTier1/base_type = &"Button"
+ExpeditionShopCardTier1/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCardTier1/font_sizes/font_size = 21
+ExpeditionShopCardTier1/styles/normal = SubResource("StyleBoxFlat_shop_card_tier_1")
+ExpeditionShopCardTier1/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCardTier1/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCardTier1/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopCardTier2/base_type = &"Button"
+ExpeditionShopCardTier2/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCardTier2/font_sizes/font_size = 21
+ExpeditionShopCardTier2/styles/normal = SubResource("StyleBoxFlat_shop_card_tier_2")
+ExpeditionShopCardTier2/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCardTier2/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCardTier2/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopCardTier3/base_type = &"Button"
+ExpeditionShopCardTier3/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCardTier3/font_sizes/font_size = 21
+ExpeditionShopCardTier3/styles/normal = SubResource("StyleBoxFlat_shop_card_tier_3")
+ExpeditionShopCardTier3/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCardTier3/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCardTier3/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopCardTier4/base_type = &"Button"
+ExpeditionShopCardTier4/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCardTier4/font_sizes/font_size = 21
+ExpeditionShopCardTier4/styles/normal = SubResource("StyleBoxFlat_shop_card_tier_4")
+ExpeditionShopCardTier4/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCardTier4/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCardTier4/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopCardTier5/base_type = &"Button"
+ExpeditionShopCardTier5/fonts/font = SubResource("FontVariation_regular")
+ExpeditionShopCardTier5/font_sizes/font_size = 21
+ExpeditionShopCardTier5/styles/normal = SubResource("StyleBoxFlat_shop_card_tier_5")
+ExpeditionShopCardTier5/styles/hover = SubResource("StyleBoxFlat_button_hover")
+ExpeditionShopCardTier5/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+ExpeditionShopCardTier5/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopColumn/base_type = &"VBoxContainer"
+ExpeditionShopColumn/constants/separation = 12
+ExpeditionTopBar/base_type = &"PanelContainer"
+ExpeditionTopBar/styles/panel = SubResource("StyleBoxFlat_top_bar")
+ExpeditionActionBar/base_type = &"PanelContainer"
+ExpeditionActionBar/styles/panel = SubResource("StyleBoxTexture_panel")
+ExpeditionActionBarCompact/base_type = &"PanelContainer"
+ExpeditionActionBarCompact/styles/panel = SubResource("StyleBoxTexture_action_bar_compact")
+ExpeditionBottomAction/base_type = &"Button"
+ExpeditionBottomAction/fonts/font = SubResource("FontVariation_regular")
+ExpeditionBottomAction/font_sizes/font_size = 21
+ExpeditionPrepareBottomBand/base_type = &"HBoxContainer"
+ExpeditionPrepareBottomBand/constants/separation = 12
+ExpeditionPrepareShopBand/base_type = &"HBoxContainer"
+ExpeditionPrepareShopBand/constants/separation = 12
+ExpeditionShopCardsRow/base_type = &"HBoxContainer"
+ExpeditionShopCardsRow/constants/separation = 12
+ExpeditionGridCell/base_type = &"Button"
+ExpeditionGridCell/fonts/font = SubResource("FontVariation_regular")
+ExpeditionGridCell/font_sizes/font_size = 18
+ExpeditionGridCell/styles/normal = SubResource("StyleBoxFlat_grid_cell")
+ExpeditionGridCell/styles/hover = SubResource("StyleBoxFlat_grid_cell_hover")
+ExpeditionGridCell/styles/pressed = SubResource("StyleBoxFlat_grid_cell_pressed")
+ExpeditionGridCell/styles/disabled = SubResource("StyleBoxFlat_grid_cell_disabled")
+ExpeditionGridCell/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionBoardGrid/base_type = &"GridContainer"
+ExpeditionBoardGrid/constants/h_separation = 12
+ExpeditionBoardGrid/constants/v_separation = 6
+ExpeditionBenchRow/base_type = &"HBoxContainer"
+ExpeditionBenchRow/constants/separation = 12
+ExpeditionInventoryRow/base_type = &"HBoxContainer"
+ExpeditionInventoryRow/constants/separation = 12
+ExpeditionModalPanel/base_type = &"PanelContainer"
+ExpeditionModalPanel/styles/panel = SubResource("StyleBoxFlat_modal")
+ExpeditionSettingsRows/base_type = &"VBoxContainer"
+ExpeditionSettingsRows/constants/separation = 6
+ExpeditionSettingsLabel/base_type = &"Label"
+ExpeditionSettingsLabel/fonts/font = SubResource("FontVariation_regular")
+ExpeditionSettingsLabel/font_sizes/font_size = 24
+ExpeditionSettingsOption/base_type = &"OptionButton"
+ExpeditionSettingsOption/fonts/font = SubResource("FontVariation_regular")
+ExpeditionSettingsOption/font_sizes/font_size = 24
+ExpeditionSettingsToggle/base_type = &"CheckButton"
+ExpeditionSettingsToggle/fonts/font = SubResource("FontVariation_regular")
+ExpeditionSettingsToggle/font_sizes/font_size = 24
+ExpeditionSettingsToggle/styles/normal = SubResource("StyleBoxEmpty_settings_toggle")
+ExpeditionSettingsToggle/styles/hover = SubResource("StyleBoxEmpty_settings_toggle")
+ExpeditionSettingsToggle/styles/pressed = SubResource("StyleBoxEmpty_settings_toggle")
+ExpeditionSettingsToggle/styles/disabled = SubResource("StyleBoxEmpty_settings_toggle")
+ExpeditionTitle/base_type = &"Label"
+ExpeditionTitle/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionTitle/fonts/font = SubResource("FontVariation_heading")
+ExpeditionTitle/font_sizes/font_size = 48
+ExpeditionHeading/base_type = &"Label"
+ExpeditionHeading/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionHeading/fonts/font = SubResource("FontVariation_heading")
+ExpeditionHeading/font_sizes/font_size = 36
+ExpeditionAuxiliary/base_type = &"Label"
+ExpeditionAuxiliary/colors/font_color = Color(0.411765, 0.443137, 0.482353, 1)
+ExpeditionAuxiliary/font_sizes/font_size = 24
+ExpeditionSection/base_type = &"Label"
+ExpeditionSection/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionSection/fonts/font = SubResource("FontVariation_heading")
+ExpeditionSection/font_sizes/font_size = 24
+ExpeditionMetric/base_type = &"Label"
+ExpeditionMetric/colors/font_color = Color(0.929412, 0.894118, 0.815686, 1)
+ExpeditionMetric/fonts/font = SubResource("FontVariation_regular")
+ExpeditionMetric/font_sizes/font_size = 27
+ExpeditionFocus/base_type = &"Panel"
+ExpeditionFocus/styles/panel = SubResource("StyleBoxTexture_focus")
+ExpeditionPalette/colors/navy_950 = Color(0.0313726, 0.0588235, 0.0980392, 1)
+ExpeditionPalette/colors/navy_800 = Color(0.0784314, 0.14902, 0.227451, 1)
+ExpeditionPalette/colors/parchment_300 = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionPalette/colors/off_white = Color(0.929412, 0.894118, 0.815686, 1)
+ExpeditionPalette/colors/amber_500 = Color(0.843137, 0.607843, 0.227451, 1)
+ExpeditionPalette/colors/teal_500 = Color(0.184314, 0.603922, 0.588235, 1)
+ExpeditionPalette/colors/crimson_500 = Color(0.662745, 0.301961, 0.345098, 1)
+ExpeditionPalette/colors/violet_500 = Color(0.462745, 0.32549, 0.607843, 1)
+ExpeditionPalette/colors/stone_500 = Color(0.411765, 0.443137, 0.482353, 1)
+ExpeditionPalette/colors/focus_high = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionTypeScale/font_sizes/title = 48
+ExpeditionTypeScale/font_sizes/heading = 36
+ExpeditionTypeScale/font_sizes/body = 27
+ExpeditionTypeScale/font_sizes/auxiliary = 24
+ExpeditionSpacing/constants/space_1 = 6
+ExpeditionSpacing/constants/space_2 = 12
+ExpeditionSpacing/constants/space_3 = 18
+ExpeditionSpacing/constants/space_4 = 24
+ExpeditionSpacing/constants/space_6 = 36
+ExpeditionSpacing/constants/space_8 = 48
+ExpeditionSpacing/constants/safe_margin = 36
+ExpeditionSpacing/constants/gutter = 24
+ExpeditionSpacing/constants/min_button_height = 72

@@ -1517,7 +1517,40 @@ func _commit_route(prepared: Dictionary) -> StringName:
 		return ERROR_ROUTE_ACTIVATION_INVALID
 	_route_generation = int(prepared.get("generation", _route_generation))
 	_active_route_kind = StringName(prepared.get("route_kind", &""))
+	_bind_active_screen_system_menu()
 	return &""
+
+
+## T10：局內 ESC 系統選單的內嵌設定要能就地送出，靠的是 composition root 在畫面
+## 組裝時注入 typed port——畫面自己不得接 SettingsService 或存檔。
+##
+## 為什麼綁在每次 route commit 而不是 boot 一次：ProductionScreen 是 route-scoped
+## 物件，任何 route 切換／同 route 重載都會換一個新實例（舊實例連同它持有的 port
+## 一起消失）。這裡每次都重新取 `settings_application_port()` 與 repository 當下的
+## committed snapshot，活動畫面因此不可能握著上一輪的 port 或過期的設定值——包括
+## settings 套用後 `_configure_settings_runtime` 換掉 `_settings_application` 實例
+## 的情形（app_root.gd:386/:434）。
+func _bind_active_screen_system_menu() -> void:
+	var screen := _active_production_screen()
+	if screen == null or screen.route_kind not in ProductionScreen.RUN_ROUTES:
+		return
+	var port := settings_application_port()
+	var snapshot := _committed_settings_snapshot()
+	if port == null or snapshot == null:
+		return
+	screen.bind_system_menu_settings(snapshot, port)
+
+
+func _committed_settings_snapshot() -> SettingsSnapshot:
+	if (
+		_settings_repository_runtime == null
+		or not _settings_repository_runtime.has_method("current_snapshot")
+	):
+		return null
+	return (
+		_settings_repository_runtime.call("current_snapshot")
+		as SettingsSnapshot
+	)
 
 
 ## G2 M1：state machine transition 之後才做的 route commit。commit 失敗代表
@@ -2034,13 +2067,21 @@ func _try_compose_active_run(profile: ProfileState, run: RunState) -> StringName
 	)
 	# wave5 修正 A4：RUN 狀態的驅動端。灰盒本身只是功能載體，但它推的是真的
 	# RunController／RunCommandFactory——五個建構方法在此有唯一的正式呼叫端。
+	# in-run-hud T10：鍛造預覽與商店報價的供給只有這一個正式建構點可以注入
+	# （呈現層不得自行接 catalog／Autoload）。四者與四個 run command 共用同一批
+	# pinned 物件，報價與實際扣款因此必然同一世代。
 	_run_presentation_session = RunPresentationSession.new(
 		_run_controller,
 		_run_command_factory,
 		battle_result.catalog,
 		_battle_commander_passive_effect_ids(
 			battle_result.catalog, commander_passive_effect_ids
-		)
+		),
+		null,
+		_run_session,
+		content.forge_table,
+		content.economy_catalog,
+		table_result.table
 	)
 	_begin_playtest_session(run, content)
 	_unresumable_run_id = ""

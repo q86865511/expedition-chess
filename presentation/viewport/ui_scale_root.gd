@@ -1,7 +1,7 @@
 class_name UiScaleRoot
 extends RefCounted
 
-const REFERENCE_SIZE := Vector2i(1280, 720)
+const REFERENCE_SIZE := Vector2i(1920, 1080)
 const SUPPORTED_UI_SCALES: Array[int] = [100, 125, 150]
 const INVALID_WINDOW_SIZE: StringName = &"UI_SCALE_WINDOW_SIZE_INVALID"
 const UNSUPPORTED_SCALE: StringName = &"UI_SCALE_UNSUPPORTED"

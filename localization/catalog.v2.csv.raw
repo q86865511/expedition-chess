@@ -2,11 +2,17 @@ key,zh_TW,en
 app.retry_route,重新載入畫面,Reload Screen
 camp.back,返回營地,Back to Camp
 camp.challenge_monument,挑戰紀念碑,Challenge Monument
+camp.challenge_selector,挑戰等級,Challenge Level
 camp.collection,圖鑑,Collection
 camp.commander_hall,指揮官大廳,Commander Hall
+camp.commander_selector,指揮官,Commander
 camp.expedition_gate,遠征之門,Expedition Gate
 camp.forge,工坊,Workshop
 camp.menu,返回主選單,Main Menu
+camp.panel.expedition,遠征資訊,Expedition
+camp.resource.challenge,最高挑戰,Highest Challenge
+camp.resource.currency,工坊貨幣,Workshop Currency
+camp.resource.discovered,已發現,Discovered
 camp.settings,設定,Settings
 camp.start,開始遠征,Start Expedition
 choice.ack,確認事件結果,Acknowledge Choice Result
@@ -50,39 +56,40 @@ error.collection_entry_not_found,找不到收藏項目,Collection entry not foun
 error.presentation.action_not_available,目前無法執行這個操作,That action is not available right now
 error.presentation.app_action,操作失敗,The action failed
 error.presentation.camp_selection_required,請先選擇指揮官與挑戰等級,Select a commander and challenge level first
-error.presentation.exit_already_pending,離開請求已在處理中,An exit request is already pending
 error.presentation.equip_item_slots_full,該單位的裝備欄位已滿,That unit has no free equipment slot
+error.presentation.exit_already_pending,離開請求已在處理中,An exit request is already pending
+error.presentation.expedition_challenge_prerequisite_unmet,此指揮官尚未解鎖所選挑戰等級,The selected challenge level is not unlocked for this commander.
 error.presentation.failure,操作失敗,The action failed
 error.presentation.prepare_bench_full,備戰區已滿,The bench is full
 error.presentation.prepare_board_full,戰場沒有可用位置,No board cell is available
 error.presentation.prepare_selection_required,請先選擇有效項目,Select a valid item first
 error.presentation.prepare_start_not_ready,隊伍尚未符合開戰條件,The party is not ready to start combat
-error.presentation.resolve_overflow_item_not_in_tray,找不到待處理的溢出裝備,The overflow equipment is no longer in the tray
 error.presentation.prepared_run_stale,遠征存檔已過期，請重新載入,The saved run is stale; reload it
 error.presentation.recovery_postcommit,保留遠征已處理，但畫面未能更新,"The retained run was handled, but the screen could not follow"
 error.presentation.render_failed,畫面繪製失敗,Rendering failed
+error.presentation.resolve_overflow_item_not_in_tray,找不到待處理的溢出裝備,The overflow equipment is no longer in the tray
 error.presentation.results_action_in_progress,結算操作進行中,A results action is already running
 error.presentation.results_fallback,結算畫面已退回備援顯示,Results fell back to the recovery screen
 error.presentation.retained_run_exists,已有保留的遠征，請先處理,A saved run is still retained
 error.presentation.route_bind_failed,畫面繫結失敗,The screen could not be bound
 error.presentation.route_commit_failed,畫面切換失敗,The screen could not be switched
 error.presentation.route_prepare_invalid,無法準備下一個畫面,The next screen could not be prepared
-error.presentation.run_incompatible,保留的遠征與目前版本不相容,The retained run is incompatible with this version
 error.presentation.run_command_failed,遠征操作失敗，請檢查目前狀態後再試,The expedition action failed; check the current state and try again
+error.presentation.run_incompatible,保留的遠征與目前版本不相容,The retained run is incompatible with this version
 error.presentation.run_map_node_selection_unavailable,目前沒有可前往的節點,No selectable map node is available
 error.presentation.run_recovery,有一個無法載入的遠征待處理,A run that cannot be loaded is waiting
 error.presentation.run_route_fallback,遠征畫面已退回備援顯示,The run screen fell back to the recovery screen
 error.presentation.run_session_unavailable,目前沒有可用的遠征,No expedition session is available
-error.presentation.run_unavailable,遠征資料無法讀取,The run data could not be read
 error.presentation.run_transition_failed,遠征狀態切換失敗,The expedition state could not transition
+error.presentation.run_unavailable,遠征資料無法讀取,The run data could not be read
 error.presentation.save_unavailable,存檔無法讀取,The save file could not be read
 error.presentation.scene_bind_failed,場景繫結失敗,The scene could not be bound
 error.presentation.screen_not_active,畫面尚未啟用，請稍候再試,The screen is not active yet
 error.presentation.start_postcommit,遠征已開始，但畫面未能切換,"The run started, but the screen could not follow"
 error.presentation.terminal_handoff,結算交接失敗,The results handoff failed
 error.save.io_failure,存檔寫入失敗,Saving failed
-error.settings.application_failed,設定套用失敗,The settings could not be applied
 error.settings.activation_diagnostic,設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定,"Settings were saved, but part of the interface could not update immediately; the saved settings were reloaded"
+error.settings.application_failed,設定套用失敗,The settings could not be applied
 error.settings.application_invalid_result,設定套用回應無效,The settings application returned an invalid result
 error.settings.apply_failed,設定套用失敗,The settings could not be applied
 error.settings.draft_invalid,設定草稿無效,The settings draft is invalid
@@ -91,6 +98,17 @@ error.settings.invalid_enum,設定選項無效,That setting option is invalid
 error.settings.port_invalid,設定通道無效,The settings port is invalid
 error.settings.rebuild_failed,設定重建失敗,The settings could not be rebuilt
 error.settings.runtime_missing,設定執行環境未就緒,The settings runtime is not ready
+error.shop.generation_mismatch,內容版本不符，商店暫停,Content version mismatch; the shop is unavailable
+error.shop.gold_insufficient,金幣不足,Not enough gold
+error.shop.input_invalid,目前無法進行這項商店操作,This shop action is not available right now
+error.shop.internal_failure,商店運算失敗，請稍後再試,The shop could not complete this action
+error.shop.level_max,等級已達上限,Level is already at maximum
+error.shop.offer_stale,這筆報價已失效,That offer is no longer available
+error.shop.reservation_invalid,商店保留狀態已失效,The shop reservation is no longer valid
+error.shop.roster_full,隊伍已滿,The party is full
+error.shop.unit_missing,找不到指定棋子,That unit could not be found
+error.shop.unit_pool_invalid,棋子牌庫狀態不符,The unit pool is out of sync
+error.shop.unit_rule_missing,這個棋子無法交易,That unit cannot be traded
 error.status.post_commit,已生效但畫面未更新（顯示已回退）：,"Applied, but the screen fell back: "
 error.status.pre_commit,操作未生效（尚未變更，可重試）：,"Action did not apply (nothing changed, retry): "
 loc.ability_slice_monster_00,怪物技能：Slice Monster 00,Monster Ability: Slice Monster 00
@@ -795,6 +813,9 @@ map.node_kind.merchant,商人,Merchant
 map.node_kind.normal,一般戰鬥,Battle
 map.node_kind.rest,休息,Rest
 map.node_kind.treasure,寶藏,Treasure
+map.node_state.completed,已完成,Completed
+map.node_state.current,目前所在,Current
+map.node_state.unreached,未到達,Not Reached
 map.select,選擇節點,Select Node
 menu.continue,繼續遠征,Continue
 menu.exit,離開,Exit
@@ -807,20 +828,42 @@ menu.recovery.confirm,確認棄置,Confirm Discard
 menu.recovery.status,是否棄置無法載入的遠征？,Discard the unloadable run?
 menu.settings,設定,Settings
 menu.start,開始,Start
+prepare.action_group_selector,備戰動作分類,Prepare Action Category
 prepare.buy,購買所選單位,Buy Selected Unit
 prepare.dismantle,拆解所選裝備,Dismantle Selected Equipment
+prepare.empty.expedition,目前沒有待處理的遠征事件,No expedition event is pending.
+prepare.empty.issues,目前沒有部署問題,No deployment issue.
+prepare.empty.overflow,目前沒有待處理裝備,No equipment overflow.
+prepare.empty.synergies,部署單位後顯示羈絆摘要,Deploy units to show synergy details.
 prepare.equip,裝備所選物品,Equip Selected Item
 prepare.forge,鍛造所選物品,Forge Selected Items
 prepare.forge.cancel,取消鍛造,Cancel Forge
 prepare.forge.confirm,確認鍛造,Confirm Forge
-prepare.action_group_selector,備戰動作分類,Prepare Action Category
 prepare.group.advance,推進,Advance
 prepare.group.forge_equipment,鍛造裝備,Forge and Equipment
 prepare.group.party,隊伍調整,Party Setup
 prepare.group.shop,商店,Shop
 prepare.move_bench,移至備戰區,Move to Bench
 prepare.move_board,移至戰場,Move to Board
+prepare.panel.bench,備戰區,Bench
+prepare.panel.board,戰場,Board
+prepare.panel.expedition,遠征資訊,Expedition
+prepare.panel.inventory,裝備庫,Inventory
+prepare.panel.issues,部署問題,Deployment Issues
+prepare.panel.overflow,待處理裝備,Overflow
+prepare.panel.party,隊伍,Party
+prepare.panel.shop,商店,Shop
+prepare.panel.synergies,羈絆,Synergies
+prepare.panel.units,單位,Units
 prepare.refresh,重新整理商店,Refresh Shop
+prepare.resource.capacity,人口,Capacity
+prepare.resource.gold,金幣,Gold
+prepare.resource.hp,遠征生命,Expedition HP
+prepare.resource.level_xp,等級／經驗,Level / XP
+prepare.resource.level_xp_max,已達上限,Max
+prepare.resource.loss_streak,連敗,Loss Streak
+prepare.resource.shop_odds,費用機率,Shop Odds
+prepare.resource.win_streak,連勝,Win Streak
 prepare.sell,出售所選單位,Sell Selected Unit
 prepare.start,開始戰鬥,Start Combat
 prepare.unit,調整隊伍,Manage Party

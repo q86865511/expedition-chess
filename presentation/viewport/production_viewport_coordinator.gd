@@ -2,12 +2,14 @@ class_name ProductionViewportCoordinator
 extends Node
 
 const INVALID_TREE: StringName = &"PRODUCTION_VIEWPORT_TREE_INVALID"
+const INVALID_WORLD_SURFACE: StringName = &"PRODUCTION_VIEWPORT_WORLD_SURFACE_INVALID"
+const COORDINATOR_GROUP: StringName = &"production_viewport_coordinator"
 
-@export var world_container_path: NodePath
-@export var world_viewport_path: NodePath
-@export var ui_layer_path: NodePath
-@export var ui_root_path: NodePath
-@export var presentation_host_path: NodePath
+@export var world_container_path: NodePath = ^"../WorldViewportContainer"
+@export var world_viewport_path: NodePath = ^"../WorldViewportContainer/WorldViewport"
+@export var ui_layer_path: NodePath = ^"../UiLayer"
+@export var ui_root_path: NodePath = ^"../UiLayer/UiRoot"
+@export var presentation_host_path: NodePath = ^"../UiLayer/UiRoot/PresentationHost"
 
 var _world_policy := WorldViewportPolicy.new()
 var _ui_policy := UiScaleRoot.new()
@@ -17,6 +19,7 @@ var _last_window_size := Vector2i.ZERO
 
 
 func _ready() -> void:
+	add_to_group(COORDINATOR_GROUP)
 	var viewport := get_viewport()
 	if viewport != null and not viewport.size_changed.is_connected(
 		_on_viewport_size_changed
@@ -71,14 +74,19 @@ func synchronize(window_size: Vector2i) -> StringName:
 	if not mapper_error.is_empty():
 		return mapper_error
 	var world_rect: Rect2 = world_layout["world_rect"]
-	world_viewport.size = _world_policy.world_size()
 	world_viewport.canvas_item_default_texture_filter = (
 		Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	)
 	world_container.position = world_rect.position
 	world_container.size = world_rect.size
 	world_container.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	# stretch + stretch_shrink 讓 SubViewport 恆為 world_rect/scale = 640×360
+	# （§10.1）；先前先關再開 stretch 的寫法會被 stretch=true 的
+	# recalc 覆寫回容器尺寸，authored 解析度從未生效。
 	world_container.stretch = true
+	world_container.stretch_shrink = maxi(
+		1, int(world_layout["integer_scale"])
+	)
 
 	var screen_rect: Rect2 = ui_layout["screen_rect"]
 	var reference := Vector2(UiScaleRoot.REFERENCE_SIZE)
@@ -99,7 +107,7 @@ func synchronize(window_size: Vector2i) -> StringName:
 	set_meta(&"world_rect", world_rect)
 	set_meta(&"ui_screen_rect", screen_rect)
 	set_meta(&"ui_scale_percent", _ui_scale_percent)
-	return &""
+	return _push_coordinate_mapper_to_world_surfaces()
 
 
 func window_size() -> Vector2i:
@@ -112,6 +120,41 @@ func pointer_to_world(window_point: Vector2) -> Vector2:
 
 func pointer_to_ui(window_point: Vector2) -> Vector2:
 	return _mapper.screen_to_ui(window_point)
+
+
+func coordinate_mapper_clone() -> WindowCoordinateMapper:
+	if not coordinate_mapper_ready():
+		return null
+	return _mapper.deep_clone()
+
+
+func coordinate_mapper_ready() -> bool:
+	return coordinate_mapper_error().is_empty()
+
+
+func coordinate_mapper_error() -> StringName:
+	return _mapper.configuration_error()
+
+
+func _push_coordinate_mapper_to_world_surfaces() -> StringName:
+	var tree := get_tree()
+	if tree == null:
+		return INVALID_TREE
+	var first_error: StringName = &""
+	for candidate: Node in tree.get_nodes_in_group(
+		ProductionWorldSurface.MOUNT_GROUP
+	):
+		if not candidate is ProductionWorldSurface:
+			if first_error.is_empty():
+				first_error = INVALID_WORLD_SURFACE
+			continue
+		var surface := candidate as ProductionWorldSurface
+		var refresh_error := surface.refresh_coordinate_mapper(
+			_mapper.deep_clone()
+		)
+		if first_error.is_empty() and not refresh_error.is_empty():
+			first_error = refresh_error
+	return first_error
 
 
 func _visible_window_size() -> Vector2i:

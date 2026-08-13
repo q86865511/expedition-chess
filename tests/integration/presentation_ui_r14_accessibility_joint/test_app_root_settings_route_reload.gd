@@ -37,7 +37,8 @@ func test_app_root_settings_port_applies_to_replaced_run_combat_scene() -> void:
 	var continued := Support.continue_to_run_combat(harness)
 	assert_true(
 		bool(continued.get("ok", false)),
-		"fresh AppRoot must Continue the fake-storage COMBAT save through SceneRouter"
+		"fresh AppRoot must Continue the fake-storage COMBAT save through SceneRouter: %s"
+		% String(continued.get("error", &""))
 	)
 	if not bool(continued.get("ok", false)):
 		return
@@ -48,9 +49,12 @@ func test_app_root_settings_port_applies_to_replaced_run_combat_scene() -> void:
 	if port == null:
 		return
 	var candidate := Support.candidate(150, &"deuteranopia")
+	candidate.locale = &"en"
 	var applied: SettingsApplicationResult = port.apply(candidate)
 	assert_true(applied.ok, "only AppRoot's settings port may apply the candidate")
 	assert_true(applied.committed)
+	assert_true(applied.presentation_ok)
+	assert_null(applied.error)
 	assert_true(
 		Support.snapshots_equal(
 			harness.settings_repository.current_snapshot(),
@@ -72,6 +76,12 @@ func test_app_root_settings_port_applies_to_replaced_run_combat_scene() -> void:
 	assert_true(before_report.rule_information_visible)
 	assert_true(before_report.cjk_ok)
 	assert_true(before_report.cjk_readable)
+	assert_eq(before_report.cjk_locale, &"en")
+	assert_eq(
+		before_report.cjk_font_source,
+		LocalizedTypographyPolicy.FONT_SOURCE_BUNDLED
+	)
+	assert_false(before_report.cjk_fallback_used)
 	assert_eq(before_report.cjk_missing_glyphs, [])
 	var old_screen_id := Support.active_screen(harness).get_instance_id()
 
@@ -131,7 +141,11 @@ func test_real_settings_repository_rebuilds_run_combat_after_app_restart() -> vo
 	if not combat_root.settings_bind_error.is_empty():
 		return
 	var entered_combat := Support.continue_to_run_combat(combat_root)
-	assert_true(bool(entered_combat.get("ok", false)))
+	assert_true(
+		bool(entered_combat.get("ok", false)),
+		"COMBAT restart must use the production route composition: %s"
+		% String(entered_combat.get("error", &""))
+	)
 	if not bool(entered_combat.get("ok", false)):
 		return
 	var candidate := Support.candidate(125, &"tritanopia")

@@ -124,6 +124,7 @@ func test_combat_semantic_cues_are_bound_to_authoritative_typed_data() -> void:
 	var consumer := PresentationSettingsRuntimeConsumer.new(screen)
 	assert_eq(consumer.activate(&"theme", snapshot), &"")
 	assert_eq(consumer.activate(&"viewport", snapshot), &"")
+	var danger_kind_key: StringName = &"map.node_kind.elite"
 	await wait_process_frames(2)
 	for expected: Dictionary in [
 		{
@@ -136,7 +137,7 @@ func test_combat_semantic_cues_are_bound_to_authoritative_typed_data() -> void:
 		},
 		{
 			"semantic": &"danger",
-			"id": &"elite.node",
+			"id": danger_kind_key,
 		},
 	]:
 		var control := Support.semantic_control(
@@ -151,7 +152,18 @@ func test_combat_semantic_cues_are_bound_to_authoritative_typed_data() -> void:
 		)
 		if control != null:
 			assert_true(control.visible)
-			assert_false(Support.visible_text(control).strip_edges().is_empty())
+			var visible_text := Support.visible_text(control).strip_edges()
+			assert_false(visible_text.is_empty())
+			if StringName(expected["semantic"]) == &"danger":
+				assert_eq(
+					visible_text,
+					screen.localized_ui_text(danger_kind_key)
+				)
+				assert_ne(
+					visible_text,
+					"elite.node",
+					"danger cue must never expose the runtime node id"
+				)
 			assert_false(
 				String(control.get_meta(&"semantic_pattern", "")).is_empty(),
 				"non-color meaning must survive every color mode"

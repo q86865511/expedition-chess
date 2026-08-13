@@ -131,6 +131,20 @@
   Tab 焦點肉眼可見；無裸 key。
 
 ### Phase B｜Theme 與版面系統（介面樣板落地）
+
+> **狀態更新（2026-08-09，使用者裁決）**：Theme 與內嵌字型（本階段第 1、2 項）保留有效，
+> 已於 `codex/g2-ui-art-refresh-b` 落地至 B1R3。**第 3 項「依 core-ui 樣板重排各畫面」的
+> B1R3 視覺樣板不再作為基線**——使用者裁決捨棄舊畫面，局內介面改以新基準重新設計，
+> B1R3 的視覺核可閘門對局內畫面不再生效。
+>
+> 局內四個 route（`RUN_PREPARE`／`RUN_COMBAT`／`RUN_MAP`／`RUN_REWARD`）的版面工作
+> **改由 `specs/in-run-hud/` 三件套承接**，該片同時把 UI 設計基準自 1280×720 改為
+> 1920×1080（支援 2560×1440）、把棋盤移至世界層 3/4 投影、新增 ESC 系統選單與拖曳互動。
+> 局外畫面（主選單／營地／設施／圖鑑／設定／結算）在該片只做基準遷移的機械調整，
+> 正式視覺重設計仍留在本階段，待局內完成後再排。
+>
+> 本階段的驗收解析度矩陣同步更新為 1280×720／1920×1080／2560×1440。
+> Phase C（美術資產接線）與 Phase D（中文化收尾）不受影響，維持原計畫。
 1. 依 `palette.json` 建立單一 Godot Theme `.tres`（named color／StyleBox／
    font size tokens；type scale 與 spacing scale 一次定案），`project.godot`
    掛 `gui/theme/custom`，清除散落的 `theme_override_*` 與內嵌 hex

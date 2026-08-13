@@ -16,7 +16,7 @@ const Support = preload(
 	+ "g2_findings_test_support.gd"
 )
 ## scenes/production/*.tscn 的設計空間（run_combat.tscn 的 design_size）。
-const DESIGN_SIZE := Vector2(1280.0, 720.0)
+const DESIGN_SIZE := Vector2(1920.0, 1080.0)
 ## 「可讀」的下限：夠寬能放一句在地化訊息、夠高能放一行字。
 const MIN_READABLE_SIZE := Vector2(600.0, 24.0)
 
@@ -26,18 +26,27 @@ func test_failed_action_status_bar_has_a_readable_rect_inside_the_design_space()
 	assert_true(Support.press(self, Support.active_screen(harness), &"menu.start"))
 	var camp := Support.active_screen(harness)
 	assert_eq(camp.route_kind, &"CAMP_WORLD")
-	var commander := camp.get_node_or_null(
-		"Composition/CommanderSelector"
+	var commander := camp.find_child(
+		"CommanderSelector", true, false
 	) as OptionButton
+	var status_panel := camp.find_child(
+		"StatusRegion", true, false
+	) as PanelContainer
 	assert_not_null(commander)
-	if commander == null:
+	assert_not_null(status_panel)
+	if commander == null or status_panel == null:
 		return
+	assert_false(
+		status_panel.visible,
+		"an empty status band must collapse instead of drawing a 44px strip"
+	)
 	commander.item_selected.emit(-1)
 	assert_true(Support.press(self, camp, &"camp.start"))
 	assert_false(
 		camp.status_message_text().is_empty(),
 		"precondition: the failure must have reached the surface"
 	)
+	assert_true(status_panel.visible)
 
 	var bar := camp.status_message_control()
 	assert_not_null(bar, "the status surface must be a real node on the screen")
@@ -58,7 +67,7 @@ func test_failed_action_status_bar_has_a_readable_rect_inside_the_design_space()
 	assert_lte(
 		bar.position.x + bar.size.x,
 		DESIGN_SIZE.x,
-		"the status bar must stay inside the 1280x720 design space"
+		"the status bar must stay inside the 1920x1080 design space"
 	)
 	assert_lte(bar.position.y + bar.size.y, DESIGN_SIZE.y)
 

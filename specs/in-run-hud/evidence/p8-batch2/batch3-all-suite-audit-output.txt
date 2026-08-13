@@ -1,0 +1,40 @@
+Command:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All -GodotPath E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe -TimeoutSeconds 3600
+
+Runner:
+suite: All
+exit_code: 0
+message: Requested suites completed.
+started_at_utc: 2026-08-13T06:17:42Z
+finished_at_utc: 2026-08-13T06:35:04Z
+
+GUT statistics excerpt:
+Scripts             343
+Tests              1421
+Passing Tests      1421
+Asserts           38732
+Failures               0
+Errors                 0
+---- All tests passed! ----
+
+Spec:
+case_count: 4092
+passed: true
+failures: []
+
+Production gates:
+Import 0
+Smoke 0
+Gut 0
+Content 0
+Canonical 0
+Combat 0
+Expedition 0
+ActEliminationGate 0
+Spec 0
+
+Source read-back:
+artifacts/test/runner-execution.json
+artifacts/test/gut.godot.log
+artifacts/test/gut.xml
+artifacts/test/spec-contract.json

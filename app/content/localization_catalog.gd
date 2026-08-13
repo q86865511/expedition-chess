@@ -147,6 +147,12 @@ func _register_fixed_keys() -> void:
 	_register(&"camp.expedition_gate", "遠征之門", "Expedition Gate")
 	_register(&"camp.commander_hall", "指揮官大廳", "Commander Hall")
 	_register(&"camp.challenge_monument", "挑戰紀念碑", "Challenge Monument")
+	_register(&"camp.commander_selector", "指揮官", "Commander")
+	_register(&"camp.challenge_selector", "挑戰等級", "Challenge Level")
+	_register(&"camp.panel.expedition", "遠征資訊", "Expedition")
+	_register(&"camp.resource.currency", "工坊貨幣", "Workshop Currency")
+	_register(&"camp.resource.challenge", "最高挑戰", "Highest Challenge")
+	_register(&"camp.resource.discovered", "已發現", "Discovered")
 	_register(&"run.retry_route", "重試畫面", "Retry Screen")
 	_register(&"app.retry_route", "重新載入畫面", "Reload Screen")
 	_register(&"camp.settings", "設定", "Settings")
@@ -170,6 +176,45 @@ func _register_fixed_keys() -> void:
 	_register(&"prepare.move_board", "移至戰場", "Move to Board")
 	_register(&"prepare.move_bench", "移至備戰區", "Move to Bench")
 	_register(&"prepare.start", "開始戰鬥", "Start Combat")
+	_register(&"prepare.action_group_selector", "備戰動作分類", "Prepare Action Category")
+	_register(&"prepare.group.advance", "推進", "Advance")
+	_register(&"prepare.group.forge_equipment", "鍛造裝備", "Forge and Equipment")
+	_register(&"prepare.group.party", "隊伍調整", "Party Setup")
+	_register(&"prepare.group.shop", "商店", "Shop")
+	_register(&"prepare.panel.board", "戰場", "Board")
+	_register(&"prepare.panel.bench", "備戰區", "Bench")
+	_register(&"prepare.panel.expedition", "遠征資訊", "Expedition")
+	_register(&"prepare.panel.inventory", "裝備庫", "Inventory")
+	_register(&"prepare.panel.issues", "部署問題", "Deployment Issues")
+	_register(&"prepare.panel.overflow", "待處理裝備", "Overflow")
+	_register(&"prepare.panel.party", "隊伍", "Party")
+	_register(&"prepare.panel.shop", "商店", "Shop")
+	_register(&"prepare.panel.synergies", "羈絆", "Synergies")
+	_register(&"prepare.panel.units", "單位", "Units")
+	_register(
+		&"prepare.empty.expedition",
+		"目前沒有待處理的遠征事件",
+		"No expedition event is pending."
+	)
+	_register(&"prepare.empty.issues", "目前沒有部署問題", "No deployment issue.")
+	_register(&"prepare.empty.overflow", "目前沒有待處理裝備", "No equipment overflow.")
+	_register(
+		&"prepare.empty.synergies",
+		"部署單位後顯示羈絆摘要",
+		"Deploy units to show synergy details."
+	)
+	_register(&"prepare.resource.capacity", "人口", "Capacity")
+	_register(&"prepare.resource.gold", "金幣", "Gold")
+	_register(&"prepare.resource.hp", "遠征生命", "Expedition HP")
+	_register(&"prepare.resource.level_xp", "等級／經驗", "Level / XP")
+	# in-run-hud T14（IRH-REQ-011）：經濟資訊列多出來的三個欄位標籤與一個值 token。
+	# 命名沿用同一條資源列的 prepare.resource.*（gold／level_xp 就在上面兩行），
+	# 語意對應 ShopEconomySnapshot 的 win_streak／loss_streak／odds_*／at_max_level；
+	# 各費率的百分比數字由呈現層直接格式化 basis points，不進 catalog。
+	_register(&"prepare.resource.win_streak", "連勝", "Win Streak")
+	_register(&"prepare.resource.loss_streak", "連敗", "Loss Streak")
+	_register(&"prepare.resource.shop_odds", "費用機率", "Shop Odds")
+	_register(&"prepare.resource.level_xp_max", "已達上限", "Max")
 	_register(&"choice.begin", "確認所選事件", "Confirm Selected Choice")
 	_register(&"choice.confirm", "確認選擇", "Confirm Choice")
 	_register(&"choice.cancel", "取消選擇", "Cancel Choice")
@@ -296,6 +341,48 @@ func _register_fixed_keys() -> void:
 		"人口上限數值無效",
 		"Population capacity value is invalid"
 	)
+	# in-run-hud T14（IRH-REQ-011）：商店報價停用原因的文案。來源是
+	# ShopQuoteSnapshot.rejection_code／CommandApplyError 診斷 key `source_code`
+	# 的 ShopError 具名碼（HANDOFF §2 第 6 條）。命名比照 SETTINGS_*→error.settings.*
+	# 的既有映射：去掉與 key 前綴重複的 SHOP_ 後轉小寫，即 error.shop.<code>。
+	# 只收玩家在報價／購買路徑撞得到的碼；RNG／KEY／DIGEST／CONFIG／SERIAL／MERGE
+	# 六個是不變量失效（玩家無從處置、也分辨不出差異），共用 internal_failure 一句，
+	# 比照 error.settings.activation_diagnostic 的既有作法。
+	_register(&"error.shop.gold_insufficient", "金幣不足", "Not enough gold")
+	_register(&"error.shop.level_max", "等級已達上限", "Level is already at maximum")
+	_register(&"error.shop.offer_stale", "這筆報價已失效", "That offer is no longer available")
+	_register(&"error.shop.roster_full", "隊伍已滿", "The party is full")
+	_register(&"error.shop.unit_missing", "找不到指定棋子", "That unit could not be found")
+	_register(
+		&"error.shop.unit_rule_missing",
+		"這個棋子無法交易",
+		"That unit cannot be traded"
+	)
+	_register(
+		&"error.shop.unit_pool_invalid",
+		"棋子牌庫狀態不符",
+		"The unit pool is out of sync"
+	)
+	_register(
+		&"error.shop.reservation_invalid",
+		"商店保留狀態已失效",
+		"The shop reservation is no longer valid"
+	)
+	_register(
+		&"error.shop.generation_mismatch",
+		"內容版本不符，商店暫停",
+		"Content version mismatch; the shop is unavailable"
+	)
+	_register(
+		&"error.shop.input_invalid",
+		"目前無法進行這項商店操作",
+		"This shop action is not available right now"
+	)
+	_register(
+		&"error.shop.internal_failure",
+		"商店運算失敗，請稍後再試",
+		"The shop could not complete this action"
+	)
 	_register(&"map.node_kind.normal", "一般戰鬥", "Battle")
 	_register(&"map.node_kind.elite", "菁英戰鬥", "Elite Battle")
 	_register(&"map.node_kind.merchant", "商人", "Merchant")
@@ -303,6 +390,12 @@ func _register_fixed_keys() -> void:
 	_register(&"map.node_kind.rest", "休息", "Rest")
 	_register(&"map.node_kind.treasure", "寶藏", "Treasure")
 	_register(&"map.node_kind.boss", "首領", "Boss")
+	# in-run-hud：進度列每個節點的狀態文字。以前 accessible copy 只有符號＋節點種類，
+	# 讀屏使用者聽不出「這一格是走過的、現在的、還是還沒到的」。命名比照同族的
+	# map.node_kind.*（值 token 直接對應 InRunHudShell 的 PROGRESS_STATE_* 常數）。
+	_register(&"map.node_state.completed", "已完成", "Completed")
+	_register(&"map.node_state.current", "目前所在", "Current")
+	_register(&"map.node_state.unreached", "未到達", "Not Reached")
 	# wave2-C
 	_register(
 		&"error.status.pre_commit",
@@ -322,6 +415,36 @@ func _register_fixed_keys() -> void:
 		"That action is not available right now"
 	)
 	_register(
+		&"error.presentation.equip_item_slots_full",
+		"該單位的裝備欄位已滿",
+		"That unit has no free equipment slot"
+	)
+	_register(
+		&"error.presentation.prepare_start_not_ready",
+		"隊伍尚未符合開戰條件",
+		"The party is not ready to start combat"
+	)
+	_register(
+		&"error.presentation.resolve_overflow_item_not_in_tray",
+		"找不到待處理的溢出裝備",
+		"The overflow equipment is no longer in the tray"
+	)
+	_register(
+		&"error.presentation.run_command_failed",
+		"遠征操作失敗，請檢查目前狀態後再試",
+		"The expedition action failed; check the current state and try again"
+	)
+	_register(
+		&"error.presentation.run_map_node_selection_unavailable",
+		"目前沒有可前往的節點",
+		"No selectable map node is available"
+	)
+	_register(
+		&"error.presentation.run_transition_failed",
+		"遠征狀態切換失敗",
+		"The expedition state could not transition"
+	)
+	_register(
 		&"error.presentation.screen_not_active",
 		"畫面尚未啟用，請稍候再試",
 		"The screen is not active yet"
@@ -330,6 +453,11 @@ func _register_fixed_keys() -> void:
 		&"error.presentation.camp_selection_required",
 		"請先選擇指揮官與挑戰等級",
 		"Select a commander and challenge level first"
+	)
+	_register(
+		&"error.presentation.expedition_challenge_prerequisite_unmet",
+		"此指揮官尚未解鎖所選挑戰等級",
+		"The selected challenge level is not unlocked for this commander."
 	)
 	_register(
 		&"error.presentation.retained_run_exists",
@@ -459,6 +587,11 @@ func _register_fixed_keys() -> void:
 		&"error.settings.application_failed",
 		"設定套用失敗",
 		"The settings could not be applied"
+	)
+	_register(
+		&"error.settings.activation_diagnostic",
+		"設定已儲存，但部分介面未能立即更新；已重新載入已儲存設定",
+		"Settings were saved, but part of the interface could not update immediately; the saved settings were reloaded"
 	)
 	_register(
 		&"run.menu.status",
@@ -660,7 +793,10 @@ func _register_named_family(
 	)
 	# difficulty-curve T04：trait 門檻階梯化新增的 tier2/tier3 分段 effect loc key
 	# （命名對齊 localization/catalog.v2.csv 的 _t2/_t3 慣例）。
-	for tier_suffix: Array in [["t2", "二階", "Tier 2"], ["t3", "三階", "Tier 3"]]:
+	for tier_suffix: Array in [
+		["t2", "二階", "Tier 2", "tier-2"],
+		["t3", "三階", "Tier 3", "tier-3"],
+	]:
 		_register(
 			StringName("loc.effect_trait_%s_%s_%s" % [family, token, tier_suffix[0]]),
 			"%s效果：%s（%s）" % [zh_family, _title(token), tier_suffix[1]],
@@ -672,7 +808,7 @@ func _register_named_family(
 			),
 			"%s「%s」的%s正式階段效果。" % [zh_family, _title(token), tier_suffix[1]],
 			"Formal %s effect for %s %s." % [
-				String(tier_suffix[2]).to_lower(), en_family.to_lower(), _title(token),
+				tier_suffix[3], en_family.to_lower(), _title(token),
 			]
 		)
 

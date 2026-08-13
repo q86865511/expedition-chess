@@ -64,7 +64,8 @@
 | REQ-SAVE-004 | DEC-012 | 9.6 | AC-046、AC-065 | Commit-before-present |
 | REQ-SAVE-005 | DEC-012 | 9.5、9.9 | AC-035、AC-066、AC-072 | Union state／恢復 |
 | REQ-SAVE-006 | DEC-012 | 9.7 | AC-026、AC-069 | I/O fault injection |
-| REQ-UX-001、REQ-UX-002、REQ-UX-003 | DEC-002、DEC-010；ASM-006 | 10 | AC-007、AC-028、AC-029 | 視覺／無障礙 |
+| REQ-UX-001、REQ-UX-002、REQ-UX-003 | DEC-002、DEC-010、DEC-015；ASM-006 | 10 | AC-007、AC-028、AC-029、AC-081、AC-082 | 視覺／無障礙 |
+| REQ-UX-006 | DEC-015 | 10.7 | AC-080 | 呈現層整合 |
 | REQ-UX-004 | ASM-003 | 10.6 | AC-031 | 效能 |
 | REQ-UX-005 | ASM-006 | 10.5、11.2 | AC-077 | Localization 靜態驗證 |
 | REQ-QA-001 | DEC-010、DEC-011 | 11.2 | AC-002、AC-016、AC-034、AC-047、AC-074 | 內容驗證 |

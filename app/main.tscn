@@ -29,21 +29,19 @@ offset_bottom = 360.0
 mouse_filter = 2
 script = ExtResource("3_world")
 
-[node name="BoardTileTarget" type="ColorRect" parent="AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"]
+[node name="BoardTileTarget" type="Control" parent="AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"]
 offset_left = 128.0
 offset_top = 64.0
 offset_right = 192.0
 offset_bottom = 112.0
-color = Color(0.176471, 0.643137, 0.768627, 1)
 mouse_filter = 0
 metadata/target_id = &"world.board_tile"
 
-[node name="CampHotspotTarget" type="ColorRect" parent="AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"]
+[node name="CampHotspotTarget" type="Control" parent="AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"]
 offset_left = 412.0
 offset_top = 196.0
 offset_right = 460.0
 offset_bottom = 228.0
-color = Color(0.94902, 0.694118, 0.247059, 1)
 mouse_filter = 0
 metadata/target_id = &"world.camp_hotspot"
 
@@ -62,10 +60,5 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="ViewportCoordinator" type="Node" parent="AppRoot" node_paths=PackedStringArray("world_container_path", "world_viewport_path", "ui_layer_path", "ui_root_path", "presentation_host_path")]
+[node name="ViewportCoordinator" type="Node" parent="AppRoot"]
 script = ExtResource("2_viewport")
-world_container_path = NodePath("../WorldViewportContainer")
-world_viewport_path = NodePath("../WorldViewportContainer/WorldViewport")
-ui_layer_path = NodePath("../UiLayer")
-ui_root_path = NodePath("../UiLayer/UiRoot")
-presentation_host_path = NodePath("../UiLayer/UiRoot/PresentationHost")

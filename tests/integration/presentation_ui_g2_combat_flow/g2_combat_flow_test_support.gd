@@ -4,13 +4,92 @@ extends RefCounted
 ## 推到戰鬥的共用步驟。每一步都走 ProductionScreen.request_intent()，也就是正式畫面
 ## 按鈕背後的同一個 lease-bound intent port。
 
-const LifecycleSupport = preload(
-	"res://tests/unit/presentation_ui_app_lifecycle/lifecycle_test_support.gd"
-)
+const MAIN_SCENE := preload("res://app/main.tscn")
+
+
+class BootHarness:
+	extends RefCounted
+
+	var main: Node
+	var registry: ContentRegistryService
+	var repository: SaveRepository
+	var router: SceneRouterService
+	var root: ApplicationRoot
+	var host: Control
+	var viewport_coordinator: ProductionViewportCoordinator
+	var world_surface: ProductionWorldSurface
+	var boot_error: StringName = &""
 
 
 static func boot(test: GutTest) -> Variant:
-	return LifecycleSupport.boot(test, FakeSaveStorage.new())
+	# G2 exercises the formal world-board mount and first-draw settlement gate.
+	# The generic lifecycle fixture intentionally owns only AppRoot + a route
+	# host, so it cannot represent production after the board moved into the
+	# world SubViewport. Instantiate the actual main composition instead: this
+	# gives every G2 route exactly one surface, its real viewport coordinator,
+	# and the route-local HUD overlay mount created by RunCombatScreen.
+	var harness := BootHarness.new()
+	harness.main = MAIN_SCENE.instantiate()
+	harness.root = harness.main.get_node_or_null(^"AppRoot") as ApplicationRoot
+	harness.host = harness.main.get_node_or_null(
+		^"AppRoot/UiLayer/UiRoot/PresentationHost"
+	) as Control
+	harness.viewport_coordinator = harness.main.get_node_or_null(
+		^"AppRoot/ViewportCoordinator"
+	) as ProductionViewportCoordinator
+	harness.world_surface = harness.main.get_node_or_null(
+		^"AppRoot/WorldViewportContainer/WorldViewport/ProductionWorld"
+	) as ProductionWorldSurface
+	test.assert_not_null(harness.root)
+	test.assert_not_null(harness.host)
+	test.assert_not_null(harness.viewport_coordinator)
+	test.assert_not_null(harness.world_surface)
+	if (
+		harness.root == null
+		or harness.host == null
+		or harness.viewport_coordinator == null
+		or harness.world_surface == null
+	):
+		return harness
+
+	harness.registry = ContentRegistryService.new()
+	test.add_child_autofree(harness.registry)
+	harness.repository = SaveRepository.new(FakeSaveStorage.new())
+	test.add_child_autofree(harness.repository)
+	harness.router = SceneRouterService.new()
+	test.add_child_autofree(harness.router)
+	harness.root.boot_failed.connect(func(error_code: StringName) -> void:
+		harness.boot_error = error_code
+	)
+	var bind_error := harness.root.bind_services(
+		harness.registry,
+		harness.repository,
+		harness.router
+	)
+	test.assert_eq(bind_error, &"", "test graph must bind before tree entry")
+	test.add_child_autofree(harness.main)
+	# Pin the same supported baseline used by the production viewport contract.
+	# The coordinator's deferred visible-window refresh may run later, but the
+	# mapper is already valid before any route schedules its deferred board mount.
+	test.assert_eq(
+		harness.viewport_coordinator.synchronize(Vector2i(1280, 720)),
+		&""
+	)
+	test.assert_eq(
+		test.get_tree().get_nodes_in_group(
+			ProductionWorldSurface.MOUNT_GROUP
+		).size(),
+		1,
+		"the production fixture must expose exactly one world surface"
+	)
+	test.assert_eq(
+		test.get_tree().get_nodes_in_group(
+			ProductionViewportCoordinator.COORDINATOR_GROUP
+		).size(),
+		1,
+		"the production fixture must expose exactly one viewport coordinator"
+	)
+	return harness
 
 
 static func active_screen(harness: Variant) -> ProductionScreen:

@@ -21,6 +21,32 @@ func test_prepare_uses_authoritative_report_and_exposes_the_player_loop() -> voi
 		&"board_validation_report",
 		BoardValidationReport.new(12, issues)
 	)
+	var owner := ReservationOwnerKeyState.create(
+		&"run.r16.formal",
+		&"node.r16.formal",
+		&"shop",
+		&"refresh.r16.formal",
+		0,
+		&"owner.r16.formal"
+	)
+	var offers: Array[ShopOffer] = [
+		ShopOffer.new(
+			0,
+			"offer.r16.formal",
+			&"unit.r16.formal",
+			3,
+			1,
+			owner
+		),
+	]
+	snapshot.economy = EconomyState.new(10, 1, 0, 0, 0, 0, offers)
+	var offer_preview := ShopOfferPreviewSnapshot.new()
+	offer_preview.offer_id = &"offer.r16.formal"
+	offer_preview.slot_index = 0
+	offer_preview.unit_def_id = &"unit.r16.formal"
+	offer_preview.cost = 3
+	offer_preview.cost_tier = 1
+	snapshot.shop_offer_previews.append(offer_preview)
 	var registry := LiveScreenLeaseRegistry.new()
 	var lease := registry.activate(AppStateMachine.State.RUN, 1601)
 	var session := RunPresentationSession.new()
@@ -67,7 +93,6 @@ func test_prepare_uses_authoritative_report_and_exposes_the_player_loop() -> voi
 		)
 	for action_id: StringName in [
 		&"prepare.refresh",
-		&"prepare.buy",
 		&"prepare.xp",
 		&"prepare.sell",
 		&"prepare.forge",
@@ -77,6 +102,34 @@ func test_prepare_uses_authoritative_report_and_exposes_the_player_loop() -> voi
 		&"prepare.move_bench",
 	]:
 		assert_not_null(_action_button(screen, action_id))
+	assert_null(
+		_action_button(screen, &"prepare.buy"),
+		"buying must remain owned by one exact typed offer card"
+	)
+	var offer_card: Button
+	for node: Node in screen.find_children("ShopCard*", "Button", true, false):
+		var candidate := node as Button
+		if (
+			candidate != null
+			and String(candidate.get_meta(&"shop_offer_id", ""))
+				== "offer.r16.formal"
+		):
+			offer_card = candidate
+			break
+	assert_not_null(
+		offer_card,
+		"the matching authoritative offer/preview pair must expose its exact card"
+	)
+	if offer_card != null:
+		assert_eq(
+			String(offer_card.get_meta(&"shop_offer_id")),
+			"offer.r16.formal"
+		)
+		assert_true(bool(offer_card.get_meta(&"direct_action_owned", false)))
+		assert_false(
+			offer_card.has_meta(&"action_id"),
+			"an exact offer card must not impersonate generic prepare.buy"
+		)
 
 
 func test_collection_has_three_queryable_categories_and_typed_compare() -> void:

@@ -26,3 +26,11 @@ func trait_snapshots() -> Array[TraitBattleSnapshot]:
 	var roster := _controller.roster_snapshot()
 	var bundle := _compiler.compile(roster, _catalog)
 	return bundle.player_active_traits
+
+## IRH-REQ-013：pinned catalog 全部羈絆的進度列（含場上 0 隻的 inactive 列、
+## 不同 def_id 計數、下一門檻與完整門檻階梯）。純轉發 BattleSetupSourceCompiler
+## 的產物——呈現層不得複製門檻公式（spec §10.3）。與 trait_snapshots() 同源，
+## 已達門檻的列在 trait_id／tier／成員上與其一致。
+func trait_progress() -> Array[TraitProgressSnapshot]:
+	var roster := _controller.roster_snapshot()
+	return _compiler.compile_trait_progress(roster, _catalog)

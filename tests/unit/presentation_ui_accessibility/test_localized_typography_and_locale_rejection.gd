@@ -60,3 +60,32 @@ func test_locale_wire_set_is_exact_and_unsupported_locale_is_named() -> void:
 	assert_eq(rejection.get("ok"), false)
 	assert_eq(rejection.get("error_code"), &"UNSUPPORTED_LOCALE")
 	assert_eq(rejection.get("primary_font_token", &""), &"")
+
+
+func test_bundled_font_is_first_for_zh_tw_and_en_visible_text() -> void:
+	var policy := LocalizedTypographyPolicy.new()
+	for case: Dictionary in [
+		{"locale": &"zh_TW", "text": "戰鬥規則與傷害提示"},
+		{"locale": &"en", "text": "Combat rules and damage cues"},
+	]:
+		var report := policy.readability_report(case["locale"], case["text"])
+		assert_true(bool(report.get("ok", false)))
+		assert_eq(
+			StringName(report.get("font_source", &"")),
+			LocalizedTypographyPolicy.FONT_SOURCE_BUNDLED
+		)
+		assert_false(bool(report.get("fallback_used", true)))
+		assert_gt(int(report.get("required_glyph_count", 0)), 0)
+
+
+func test_real_missing_glyph_is_not_reported_as_readable() -> void:
+	var report := LocalizedTypographyPolicy.new().readability_report(
+		&"en",
+		String.chr(0x10FFFF)
+	)
+	assert_false(bool(report.get("ok", true)))
+	assert_eq(
+		StringName(report.get("error_code", &"")),
+		LocalizedTypographyPolicy.GLYPH_MISSING
+	)
+	assert_false((report.get("missing_glyphs", []) as Array).is_empty())

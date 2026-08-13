@@ -69,7 +69,7 @@ func test_runtime_world_and_ui_hosts_cover_the_screenshot_matrix() -> void:
 		assert_eq(world.call(&"world_size"), Vector2i(640, 360))
 		assert_eq(world.call(&"texture_filter_mode"), &"nearest")
 		assert_true(bool(world.call(&"pixel_snap_enabled")))
-		assert_eq(ui.call(&"reference_size"), Vector2i(1280, 720))
+		assert_eq(ui.call(&"reference_size"), Vector2i(1920, 1080))
 		var safe_rect: Variant = ui.call(&"safe_rect")
 		assert_true(safe_rect is Rect2 and (safe_rect as Rect2).size.x > 0.0)
 

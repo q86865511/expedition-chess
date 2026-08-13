@@ -16,6 +16,7 @@ var tooltip_maximum_depth: int
 var cjk_ok: bool
 var cjk_locale: StringName
 var cjk_font_source: StringName
+var cjk_fallback_used: bool
 var cjk_readable: bool
 var cjk_required_glyph_count: int
 var cjk_missing_glyphs: Array[int] = []
@@ -40,6 +41,7 @@ func deep_clone() -> AccessibilityRuntimeReport:
 	clone.cjk_ok = cjk_ok
 	clone.cjk_locale = cjk_locale
 	clone.cjk_font_source = cjk_font_source
+	clone.cjk_fallback_used = cjk_fallback_used
 	clone.cjk_readable = cjk_readable
 	clone.cjk_required_glyph_count = cjk_required_glyph_count
 	clone.cjk_missing_glyphs.assign(cjk_missing_glyphs)

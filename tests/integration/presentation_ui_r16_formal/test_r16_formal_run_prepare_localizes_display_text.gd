@@ -55,7 +55,7 @@ func test_run_prepare_renders_localized_names_instead_of_raw_ids() -> void:
 	if composition == null:
 		return
 
-	var board := composition.get_node_or_null(^"BoardSelector") as ItemList
+	var board := composition.find_child("BoardSelector", true, false) as ItemList
 	assert_not_null(board)
 	if board != null:
 		assert_eq(board.item_count, 1)
@@ -65,28 +65,28 @@ func test_run_prepare_renders_localized_names_instead_of_raw_ids() -> void:
 			"board selector must not leak the raw unit instance id"
 		)
 
-	var bench := composition.get_node_or_null(^"BenchSelector") as ItemList
+	var bench := composition.find_child("BenchSelector", true, false) as ItemList
 	assert_not_null(bench)
 	if bench != null:
 		assert_eq(bench.item_count, 1)
 		assert_eq(bench.get_item_text(0), "測試戰士布拉沃")
 		assert_false(bench.get_item_text(0).contains(BENCH_UNIT_INSTANCE_ID))
 
-	var shop := composition.get_node_or_null(^"ShopSelector") as ItemList
+	var shop := composition.find_child("ShopSelector", true, false) as ItemList
 	assert_not_null(shop)
 	if shop != null:
 		assert_eq(shop.item_count, 1)
 		assert_string_contains(shop.get_item_text(0), "測試商品")
 		assert_false(shop.get_item_text(0).contains(String(OFFER_UNIT_DEF_ID)))
 
-	var inventory := composition.get_node_or_null(^"InventorySelector") as ItemList
+	var inventory := composition.find_child("InventorySelector", true, false) as ItemList
 	assert_not_null(inventory)
 	if inventory != null:
 		assert_eq(inventory.item_count, 1)
 		assert_string_contains(inventory.get_item_text(0), "測試零件")
 		assert_false(inventory.get_item_text(0).contains(String(ITEM_DEF_ID)))
 
-	var units := composition.get_node_or_null(^"BuildUnitSelector") as ItemList
+	var units := composition.find_child("BuildUnitSelector", true, false) as ItemList
 	assert_not_null(units)
 	if units != null:
 		assert_eq(units.item_count, 2)
@@ -96,7 +96,7 @@ func test_run_prepare_renders_localized_names_instead_of_raw_ids() -> void:
 		assert_false(unit_text.contains(String(BOARD_UNIT_DEF_ID)))
 		assert_false(unit_text.contains(String(BENCH_UNIT_DEF_ID)))
 
-	var issues := composition.get_node_or_null(^"DeploymentIssues") as ItemList
+	var issues := composition.find_child("DeploymentIssues", true, false) as ItemList
 	assert_not_null(issues)
 	if issues != null:
 		assert_eq(issues.item_count, 1)

@@ -1,0 +1,9 @@
+{
+	"choice_count": 3,
+	"disabled_shop_card_count": 5,
+	"ok": true,
+	"right_panel_rect": "[P: (992.0, 136.0), S: (248.0, 392.0)]",
+	"right_scroll_present": true,
+	"shop_card_count": 5,
+	"start_button_rect": "[P: (1060.0, 628.0), S: (180.0, 48.0)]"
+}

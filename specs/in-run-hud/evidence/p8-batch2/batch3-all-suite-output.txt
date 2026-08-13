@@ -1,0 +1,45 @@
+in-run-hud 批次 3 current-source Fresh All
+============================================
+
+Command:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite All -GodotPath E:\OneDrive\桌面\Godot_v4.7-stable_win64.exe -TimeoutSeconds 3600
+
+UTC:
+2026-08-12T16:13:48Z -- 2026-08-12T16:36:07Z
+
+Overall:
+exit_code: 0
+
+Formal suites:
+Import: 0
+Smoke: 0
+Gut: 0
+Content: 0
+Canonical: 0
+Combat: 0
+Expedition: 0
+ActEliminationGate: 0
+Spec: 0
+
+GUT summary:
+Scripts: 343
+Tests: 1421
+Passing Tests: 1421
+Asserts: 38732
+Failures / errors / orphans: 0 / 0 / 0
+Time: 1237.848s
+
+Spec contract:
+case_count: 4092
+passed: true
+failures: []
+
+Runner-contract negative fixtures retained their expected non-zero exits:
+Assertion / PushError / EngineError / EngineOrphan: 2
+ZeroTests / Infrastructure / LoggerLeak: 3
+Timeout: 124
+
+Machine-readable evidence:
+- runner-execution.json
+- all-gut.godot.log
+- spec-contract.json

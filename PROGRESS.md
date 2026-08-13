@@ -13,6 +13,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-13] ✅ `in-run-hud` 批次 2＋3 閉環 — 台帳自 PASS 8／PARTIAL 7／BLOCKED 2
+  收斂至 **PASS 16／PARTIAL 1／BLOCKED 0**（唯一 PARTIAL＝IRH-REQ-007 動態 summon
+  visual authority）。里程：S0 供給埠、T20 合成拖曳（含零件不可裝備語意勘誤）、
+  T21 純鍵盤 E2E（存檔 blocker `e15b783`：persisted item 類別聯集修復＋10k soak）、
+  T16 羈絆浮層、T25 進度狀態 loc、T14 經濟列（15 loc key `7f6ce69`）、T17 出售確認、
+  T19 拖曳預覽（T14/T17/T19 為並行 session 產物，經查證採納 `905e664`：
+  Claude 契約測試零改動）。Codex 獨立審核 0 產品 finding（`608b4a1`），
+  雙方 fresh All 逐位吻合：343 scripts、1421/1421、38732 asserts、Spec 4092/0。
+
 - [2026-08-13] ✅ `in-run-hud` 批次 3（T14／T16／T17／T19／T20／T21／T25）—
   T14 接上 quote-owned 經濟列、MAX／連勝敗／五階費率、16 個 `SHOP_*` 分流與可存取停用原因；
   T16 接上 inactive／active distinct progress、門檻、成員與 safe-area trait popover；T17 完成

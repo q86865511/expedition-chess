@@ -71,7 +71,9 @@
 - G2 `difficulty-curve`（`codex/g2-difficulty-curve`，進行中）:幕間難度縮放、三幕
   Boss 差異化、多敵遭遇、trait 門檻階梯、tier-1 池重標、challenge run-op 回鏈;
   規格位於 `specs/difficulty-curve/`。
-- G2 `in-run-hud`（`codex/g2-ui-art-refresh-b`，規格完成待實作，2026-08-09）:局內四個
+- G2 `in-run-hud`（`codex/g2-ui-art-refresh-b`，批次 3 閉環 2026-08-13，台帳
+  PASS 16／PARTIAL 1／BLOCKED 0；剩 summon visual authority／REWARD 證據裁決／
+  T31 總收斂）:局內四個
   route 全面重製、UI 基準改 1920×1080 並支援 2560×1440、棋盤移世界層 3/4 投影、
   ESC 系統選單、棋子與裝備拖曳（含合成）。規格位於 `specs/in-run-hud/`
   （三件套＋`layout-reference-1920.json`）;實作交 Codex，`T01` 備戰期屬性預覽 API 由

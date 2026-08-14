@@ -13,6 +13,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-14] ✅ G2 `ui-art-refresh` B-out-1 使用者核可 — `MENU_MAIN` 移除右側
+  大面積底板，三個操作按鈕直接疊在 ImageGen key art；`CAMP_WORLD` 以 `camp.png`
+  撐滿主區域，移除重複左列並把五個場景標記升為正式 click/focus 控制項，遠征資訊
+  收成半寬緊湊卡，頂／底欄採 CAMP-only shell 幾何。readonly focus graph 五項無缺；
+  1280／1920／2560 × UI 100／125／150 共 18 張逐張人工檢視，evidence 18/18、
+  `issues=[]`。Fresh All exit 0：1451/1451、38993 assertions、0 failures／errors／
+  orphans。下一批 B-out-2 為五設施進 shell＋portraits 接線＋圖鑑卡片化；另記中央區
+  三層框線收單框、底部帶左半用途待裁決。
+
 - [2026-08-13] ✅ `in-run-hud` T31 總收斂 — commit `0d120ea` 將 pinned
   `SummonedUnitRuleSnapshot` 經 lease-protected supply port 注入 `RunCombatScreen` 的
   `CombatWorldEventProjection`，再由 production `WorldBoardRenderer` 形成 summon body；缺供給、
@@ -352,12 +361,13 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外畫面的正式視覺重設計仍留在 Phase B，待局內完成後再排。
+  對局內畫面解除。局外 B-out-1 已核可；下一批 B-out-2 為五設施進 shell、portraits
+  接線與圖鑑卡片化。
 
 ## 待辦
 
 - UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；Phase B1、B1R 均未核可，B1R2 修訂已完成並停重新視覺核可。Phase A
+  2026-08-07）；B-out-1 已於 2026-08-14 使用者核可。Phase A
   三項移交追蹤均已關閉：(1) locale-aware glyph probe 與實機常駐 viewport probe
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；

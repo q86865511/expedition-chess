@@ -15,6 +15,11 @@ const META_BASE_MINIMUM := &"expedition_theme_base_minimum"
 const META_FIXED_MINIMUM := &"expedition_theme_fixed_minimum"
 const META_ALLOW_TEXT_CLIP := &"expedition_allow_text_clip"
 
+## MENU_MAIN 仍使用同一個 1920×1080 reference 空間；key art 全幅鋪底，
+## 標題留在左上安全區，按鈕直接落在 ImageGen 特意保留的右側暗部。
+const MENU_TITLE_RECT := Rect2(108.0, 66.0, 930.0, 96.0)
+const MENU_ACTIONS_RECT := Rect2(1356.0, 222.0, 432.0, 636.0)
+
 
 static func set_min(control: Control, width: float, height: float) -> void:
 	_set_minimum(control, Vector2(width, height), true)
@@ -57,4 +62,3 @@ static func _set_minimum(
 	if record_reference:
 		control.set_meta(META_BASE_MINIMUM, minimum)
 	control.custom_minimum_size = minimum
-

@@ -611,8 +611,41 @@ func _bind_localized_controls() -> void:
 				action.theme_type_variation = &"ExpeditionBottomAction"
 				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
+		if route_kind == &"MENU_MAIN":
+			_apply_menu_layout(controls)
 		_apply_settings_layout(100)
 	_install_system_menu()
+
+
+func _apply_menu_layout(controls: BoxContainer, scale_percent: int = 100) -> void:
+	if route_kind != &"MENU_MAIN" or controls == null:
+		return
+	var factor := clampf(float(scale_percent) / 100.0, 1.0, 1.5)
+	var actions_rect := ExpeditionLayoutMetrics.MENU_ACTIONS_RECT
+	var actions_right := actions_rect.end.x
+	actions_rect.size.x = roundf(actions_rect.size.x * factor)
+	actions_rect.position.x = actions_right - actions_rect.size.x
+	# MENU actions sit directly on the ImageGen-authored quiet area. The fixed
+	# right edge keeps 100/125/150% hit-rect growth inside the safe canvas without
+	# reintroducing a full-height backing panel.
+	var obsolete_panel := get_node_or_null(^"MenuActionPanel")
+	if obsolete_panel != null:
+		obsolete_panel.queue_free()
+	controls.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	controls.grow_horizontal = Control.GROW_DIRECTION_END
+	controls.grow_vertical = Control.GROW_DIRECTION_END
+	controls.position = actions_rect.position
+	controls.size = actions_rect.size
+	controls.alignment = BoxContainer.ALIGNMENT_CENTER
+	controls.z_index = 3
+	for node: Node in controls.get_children():
+		var button := node as Button
+		if button == null:
+			continue
+		button.theme_type_variation = &"ExpeditionMenuAction"
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if not button.has_meta(ExpeditionLayoutMetrics.META_BASE_MINIMUM):
+			ExpeditionLayoutMetrics.set_min(button, 0.0, 72.0)
 
 
 func _install_system_menu() -> void:
@@ -837,19 +870,55 @@ func _configure_non_b1_layout(title: Label) -> void:
 	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if route_kind == &"MENU_MAIN":
+		_install_menu_key_art()
+		if title != null:
+			title.position = ExpeditionLayoutMetrics.MENU_TITLE_RECT.position
+			title.size = ExpeditionLayoutMetrics.MENU_TITLE_RECT.size
+			ExpeditionLayoutMetrics.set_fixed_min(
+				title,
+				ExpeditionLayoutMetrics.MENU_TITLE_RECT.size.x,
+				ExpeditionLayoutMetrics.MENU_TITLE_RECT.size.y
+			)
+			title.theme_type_variation = &"ExpeditionTitle"
+			title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			title.z_index = 3
+		return
 	if title != null:
 		title.position = Vector2(108.0, 42.0)
 		title.size = Vector2(1704.0, 84.0)
 		ExpeditionLayoutMetrics.set_fixed_min(title, 0.0, 84.0)
 		title.theme_type_variation = &"ExpeditionTitle"
 		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	if route_kind != &"SETTINGS":
-		return
 	_apply_settings_layout(100)
+
+
+func _install_menu_key_art() -> void:
+	if route_kind != &"MENU_MAIN" or get_node_or_null(^"MenuKeyArt") != null:
+		return
+	var visuals := ProductionEnvironmentVisualCatalog.new()
+	var texture := visuals.try_texture(&"key_art.menu_main")
+	if texture == null:
+		return
+	var key_art := TextureRect.new()
+	key_art.name = "MenuKeyArt"
+	key_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	key_art.texture = texture
+	key_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	key_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	key_art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	key_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	key_art.set_meta(&"visual_id", &"key_art.menu_main")
+	add_child(key_art)
+	move_child(key_art, mini(1, get_child_count() - 1))
 
 
 func apply_theme_scale_layout(scale_percent: int) -> void:
 	_apply_settings_layout(scale_percent)
+	if route_kind == &"MENU_MAIN":
+		_apply_menu_layout(
+			get_node_or_null(^"Actions") as BoxContainer, scale_percent
+		)
 	if _layout_shell != null:
 		_layout_shell.set_scale_factor(float(scale_percent) / 100.0)
 		var title := get_node_or_null(^"Label") as Label
@@ -912,26 +981,35 @@ func _apply_settings_layout(scale_percent: int) -> void:
 
 
 func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
-	var facilities := VBoxContainer.new()
-	facilities.name = "Actions"
-	facilities.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	facilities.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	# 設施鈕在左欄垂直置中，不留「上滿下空」的殘缺觀感。
-	facilities.alignment = BoxContainer.ALIGNMENT_CENTER
-	layout_content(ProductionLayoutShell.REGION_LEFT).add_child(facilities)
+	var composition := get_node_or_null(^"Composition") as CampWorldScreen
+	var staging := Control.new()
+	staging.name = "CampActionStaging"
+	staging.visible = false
+	staging.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if composition != null:
+		composition.add_child(staging)
+	else:
+		add_child(staging)
 	for action_id: StringName in action_ids.slice(0, 5):
 		var facility := _new_action_button(action_id)
-		facility.set_meta(&"expedition_theme_fixed_minimum", true)
-		facilities.add_child(facility)
-	var primary := HBoxContainer.new()
-	primary.name = "CampPrimaryActions"
-	primary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	primary.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(primary)
-	for action_id: StringName in action_ids.slice(5):
+		facility.theme_type_variation = &"ExpeditionCampFacilityMarker"
+		staging.add_child(facility)
+	var start := _new_action_button(&"camp.start")
+	start.theme_type_variation = &"ExpeditionCampStartAction"
+	staging.add_child(start)
+	var secondary := HBoxContainer.new()
+	secondary.name = "CampSecondaryActions"
+	secondary.alignment = BoxContainer.ALIGNMENT_END
+	secondary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(secondary)
+	for action_id: StringName in [&"camp.settings", &"camp.menu"]:
 		var button := _new_action_button(action_id)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		primary.add_child(button)
+		button.theme_type_variation = &"ExpeditionCampSecondaryAction"
+		ExpeditionLayoutMetrics.set_fixed_min(button, 240.0, 72.0)
+		button.size_flags_horizontal = Control.SIZE_SHRINK_END
+		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		secondary.add_child(button)
 
 
 func _new_action_button(action_id: StringName) -> Button:

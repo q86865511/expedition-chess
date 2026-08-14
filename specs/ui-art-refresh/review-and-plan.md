@@ -159,6 +159,14 @@
 - 驗收：All＋static gate 過；100%/125%/150% 縮放與 720p/1080p/1440p 截圖無裁切
   無重疊；零 `theme_override_*` 散落（探針類除外，列外清單）。
 
+#### 局外畫面批次
+
+- **B-out-1（2026-08-14 使用者核可）**：`MENU_MAIN` key art 直疊操作按鈕與
+  `CAMP_WORLD` 主環境／場景設施標記；18 張解析度×UI scale 證據與 All exit 0。
+- **B-out-2（下一批）**：五設施進 `ProductionLayoutShell`、portraits 接線、圖鑑卡片化。
+  - 順手收斂：`CAMP_WORLD` 中央區三層嵌套框線收成單一框。
+  - 待裁決：`CAMP_WORLD` 底部帶左半空間的正式用途與配置。
+
 ### Phase C｜美術資產接線（讓 44 組資產上場）
 1. 單位視覺：棋盤與備戰用 SpriteFrames（idle/walk/attack 動畫）、商店卡與圖鑑
    用 portrait＋icon；星級／費用以形狀符號輔助（palette 三硬規則）。

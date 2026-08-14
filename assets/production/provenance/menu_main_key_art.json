@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "asset_id": "key_art.menu_main",
+  "status": "adopted",
+  "adopted_attempt_id": "menu-main-key-art-attempt-001",
+  "generation": {
+    "mode": "built-in-imagegen",
+    "independent_call": true,
+    "imagegen_output_id": "019ffc38-c4fd-7981-9e12-1f8353aef024/exec-7da45b3f-73f1-491d-b5f9-653f2f202d1b.png",
+    "call_id": null,
+    "call_id_exposure": "not_exposed_by_builtin_image_gen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Use case: stylized-concept\nAsset type: 16:9 full-screen key art background for a fantasy expedition strategy game's main menu\nInput images: Image 1 is a style and palette reference only; match its detailed hand-authored pixel-art language, nocturnal navy atmosphere, warm amber practical lights, teal magical accents, stone-and-wood material vocabulary, and isometric-fantasy mood. Do not copy its exact camp layout.\nPrimary request: create an original moonlit expedition departure scene on a high ruined mountain pass: a small caravan and banner preparing to leave through an ancient stone gate toward distant peaks, with a subtle magical waypoint glow and a strong sense of journey.\nComposition/framing: wide cinematic 16:9 landscape; keep the rightmost 34% visually quiet and dark enough for a translucent vertical menu panel; keep the upper-left 32% low-detail and high-contrast enough for a large title; place the main focal caravan and illuminated gate in the left-center/lower-center; no important subject at the extreme edges.\nLighting/mood: calm before departure, adventurous, mysterious, premium game key art; deep blue night and pre-dawn violet sky, restrained warm firelight, small teal rune accents.\nStyle/medium: crisp high-detail pixel art with intentional clusters and readable silhouettes, consistent with the reference asset's production quality; no painterly blur, no photorealism, no 3D render.\nText: none.\nConstraints: no UI, no logo, no lettering, no watermark, no readable symbols, no modern objects, no close-up character portrait, no exact duplication of Image 1."
+  },
+  "reference_inputs": [
+    {
+      "role": "style-and-palette-reference",
+      "path": "assets/production/environment/camp.png",
+      "sha256": "c986abc40e02b39eac5d09b2a711a5583d929a70848fa6620bd83deb542ecdb0"
+    }
+  ],
+  "source_attempt": {
+    "path": "assets/production/key_art_attempts/menu_main/attempt-001/raw.png",
+    "sha256": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37",
+    "width": 1672,
+    "height": 941
+  },
+  "output": {
+    "path": "assets/production/key_art/menu_main.png",
+    "sha256": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37",
+    "width": 1672,
+    "height": 941,
+    "processing": "identity-copy"
+  },
+  "selection": {
+    "reviewer": "codex:visual-selection",
+    "decision": "adopted",
+    "reason": "The right third is naturally dark for the action panel, the left-center carries the expedition focal point, and the asset contains no embedded text or UI.",
+    "pending_user_visual_approval": true
+  }
+}

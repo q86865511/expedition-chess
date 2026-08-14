@@ -12,6 +12,36 @@ const FACILITY_ROUTES: Array[StringName] = [
 ]
 const EXPEDITION_SELECTION_REQUIRED: StringName = \
 	&"CAMP_EXPEDITION_SELECTION_REQUIRED"
+const CAMP_VISUAL_ID: StringName = &"environment.camp"
+const METRIC_WIDTH: float = 216.0
+const FACILITY_MARKER_SIZE: Vector2 = Vector2(270.0, 72.0)
+const FACILITY_MARKERS: Array[Dictionary] = [
+	{
+		"name": "FacilityExpeditionGate",
+		"key": &"camp.expedition_gate",
+		"anchor": Vector2(0.22, 0.22),
+	},
+	{
+		"name": "FacilityCommanderHall",
+		"key": &"camp.commander_hall",
+		"anchor": Vector2(0.20, 0.73),
+	},
+	{
+		"name": "FacilityCollection",
+		"key": &"camp.collection",
+		"anchor": Vector2(0.79, 0.72),
+	},
+	{
+		"name": "FacilityWorkshop",
+		"key": &"camp.forge",
+		"anchor": Vector2(0.79, 0.22),
+	},
+	{
+		"name": "FacilityChallengeMonument",
+		"key": &"camp.challenge_monument",
+		"anchor": Vector2(0.50, 0.50),
+	},
+]
 
 var _bundle: CampFacilityBundle
 var _navigation_port: LiveScreenNavigationPort
@@ -20,8 +50,7 @@ var _selected_challenge_level: int = -1
 var _commander_selector: OptionButton
 var _challenge_selector: SpinBox
 var _layout_root: Control
-var _commander_summary: Label
-var _challenge_summary: Label
+var _environment_visuals := ProductionEnvironmentVisualCatalog.new()
 
 
 func compose(
@@ -40,7 +69,6 @@ func compose(
 		_selected_commander_id = StringName(
 			_commander_selector.get_item_metadata(0)
 		)
-	_refresh_center_summary()
 	return &""
 
 
@@ -94,9 +122,9 @@ func _build_expedition_controls() -> void:
 	add_child(_layout_root)
 	var metrics := HBoxContainer.new()
 	metrics.name = "CampMetrics"
-	var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
-	metrics_rect.position.x += ProductionLayoutShell.TITLE_COLUMN_WIDTH
-	metrics_rect.size.x -= ProductionLayoutShell.TITLE_COLUMN_WIDTH
+	metrics.theme_type_variation = &"ExpeditionCampMetrics"
+	metrics.alignment = BoxContainer.ALIGNMENT_END
+	var metrics_rect := _camp_metrics_rect()
 	metrics.position = metrics_rect.position
 	metrics.size = metrics_rect.size
 	metrics.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -113,34 +141,11 @@ func _build_expedition_controls() -> void:
 		&"camp.resource.discovered",
 		str(_bundle.discovered_ids().size())
 	))
-	var center := VBoxContainer.new()
-	center.name = "CampCenterSummary"
 	var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
-	center.position = center_rect.position
-	center.size = center_rect.size
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_layout_root.add_child(center)
-	var center_heading := Label.new()
-	center_heading.text = _localized_ui_text(&"camp.commander_selector")
-	center_heading.theme_type_variation = &"ExpeditionHeading"
-	center.add_child(center_heading)
-	_commander_summary = Label.new()
-	_commander_summary.name = "CommanderSummary"
-	_commander_summary.theme_type_variation = &"ExpeditionTitle"
-	_commander_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_commander_summary.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_commander_summary.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	center.add_child(_commander_summary)
-	_challenge_summary = Label.new()
-	_challenge_summary.name = "ChallengeSummary"
-	_challenge_summary.theme_type_variation = &"ExpeditionMetric"
-	center.add_child(_challenge_summary)
-	center.add_child(_metric_label(
-		&"camp.resource.discovered",
-		str(_bundle.discovered_ids().size())
-	))
+	_build_environment_visual(center_rect)
 	var expedition_panel := VBoxContainer.new()
 	expedition_panel.name = "ExpeditionPanelContent"
+	expedition_panel.theme_type_variation = &"ExpeditionCampExpeditionPanel"
 	var expedition_rect := _region_content_rect(
 		ProductionLayoutShell.REGION_RIGHT
 	)
@@ -150,14 +155,15 @@ func _build_expedition_controls() -> void:
 	_layout_root.add_child(expedition_panel)
 	var heading := Label.new()
 	heading.text = _localized_ui_text(&"camp.panel.expedition")
-	heading.theme_type_variation = &"ExpeditionHeading"
+	heading.theme_type_variation = &"ExpeditionCampCardHeading"
 	expedition_panel.add_child(heading)
 	var commander_label := Label.new()
 	commander_label.text = _localized_ui_text(&"camp.commander_selector")
-	commander_label.theme_type_variation = &"ExpeditionAuxiliary"
+	commander_label.theme_type_variation = &"ExpeditionCampCardLabel"
 	expedition_panel.add_child(commander_label)
 	_commander_selector = OptionButton.new()
 	_commander_selector.name = "CommanderSelector"
+	_commander_selector.theme_type_variation = &"ExpeditionCampCompactChoice"
 	ExpeditionLayoutMetrics.set_min(_commander_selector, 0.0, 72.0)
 	_commander_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_commander_selector.focus_mode = Control.FOCUS_ALL
@@ -178,10 +184,11 @@ func _build_expedition_controls() -> void:
 
 	var challenge_label := Label.new()
 	challenge_label.text = _localized_ui_text(&"camp.challenge_selector")
-	challenge_label.theme_type_variation = &"ExpeditionAuxiliary"
+	challenge_label.theme_type_variation = &"ExpeditionCampCardLabel"
 	expedition_panel.add_child(challenge_label)
 	_challenge_selector = SpinBox.new()
 	_challenge_selector.name = "ChallengeSelector"
+	_challenge_selector.theme_type_variation = &"ExpeditionCampCompactSpinBox"
 	ExpeditionLayoutMetrics.set_min(_challenge_selector, 0.0, 72.0)
 	_challenge_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_challenge_selector.focus_mode = Control.FOCUS_ALL
@@ -198,15 +205,121 @@ func _build_expedition_controls() -> void:
 	)
 	_challenge_selector.value_changed.connect(_on_challenge_selected)
 	expedition_panel.add_child(_challenge_selector)
+	var challenge_input := _challenge_selector.get_line_edit()
+	if challenge_input != null:
+		challenge_input.theme_type_variation = &"ExpeditionCampCompactInput"
+	var start := _take_staged_action(&"camp.start")
+	if start != null:
+		start.name = "CampStartAction"
+		start.visible = true
+		start.theme_type_variation = &"ExpeditionCampStartAction"
+		ExpeditionLayoutMetrics.set_min(start, 0.0, 72.0)
+		start.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		start.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		expedition_panel.add_child(start)
+	_discard_empty_action_staging()
+
+
+func _build_environment_visual(rect: Rect2) -> void:
+	var frame := PanelContainer.new()
+	frame.name = "CampEnvironmentView"
+	frame.position = rect.position
+	frame.size = rect.size
+	frame.theme_type_variation = &"ExpeditionCampMapFrame"
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.clip_contents = true
+	_layout_root.add_child(frame)
+	var canvas := Control.new()
+	canvas.name = "CampEnvironmentCanvas"
+	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.clip_contents = true
+	canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	frame.add_child(canvas)
+	var environment := TextureRect.new()
+	environment.name = "CampEnvironmentTexture"
+	environment.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	environment.texture = _environment_visuals.try_texture(CAMP_VISUAL_ID)
+	environment.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	environment.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	environment.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	environment.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	environment.set_meta(&"visual_id", CAMP_VISUAL_ID)
+	canvas.add_child(environment)
+	for marker_spec: Dictionary in FACILITY_MARKERS:
+		_add_facility_marker(canvas, marker_spec)
+
+
+func _add_facility_marker(canvas: Control, marker_spec: Dictionary) -> void:
+	var localization_key := StringName(marker_spec["key"])
+	var marker := _take_staged_action(localization_key)
+	if marker == null:
+		return
+	marker.name = String(marker_spec["name"])
+	marker.visible = true
+	marker.theme_type_variation = &"ExpeditionCampFacilityMarker"
+	marker.focus_mode = Control.FOCUS_ALL
+	marker.mouse_filter = Control.MOUSE_FILTER_STOP
+	marker.z_index = 2
+	ExpeditionLayoutMetrics.set_min(
+		marker, FACILITY_MARKER_SIZE.x, FACILITY_MARKER_SIZE.y
+	)
+	marker.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	marker.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	canvas.add_child(marker)
+	var anchor := marker_spec["anchor"] as Vector2
+	marker.anchor_left = anchor.x
+	marker.anchor_right = anchor.x
+	marker.anchor_top = anchor.y
+	marker.anchor_bottom = anchor.y
+	marker.offset_left = -FACILITY_MARKER_SIZE.x * 0.5
+	marker.offset_right = FACILITY_MARKER_SIZE.x * 0.5
+	marker.offset_top = -FACILITY_MARKER_SIZE.y * 0.5
+	marker.offset_bottom = FACILITY_MARKER_SIZE.y * 0.5
+	marker.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	marker.grow_vertical = Control.GROW_DIRECTION_BOTH
+	marker.set_meta(&"facility_localization_key", localization_key)
 
 
 func _metric_label(key: StringName, value: String) -> Label:
 	var label := Label.new()
 	label.text = "%s  %s" % [_localized_ui_text(key), value]
-	label.theme_type_variation = &"ExpeditionMetric"
+	label.theme_type_variation = &"ExpeditionCampMetric"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.size_flags_horizontal = Control.SIZE_SHRINK_END
+	ExpeditionLayoutMetrics.set_fixed_min(label, METRIC_WIDTH, 0.0)
 	return label
+
+
+func _camp_metrics_rect() -> Rect2:
+	var rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
+	var total_width := METRIC_WIDTH * 3.0 + 24.0
+	rect.position.x = rect.end.x - total_width
+	rect.size.x = total_width
+	return rect
+
+
+func _take_staged_action(action_id: StringName) -> Button:
+	var staging := find_child("CampActionStaging", true, false) as Control
+	if staging == null:
+		return null
+	for node: Node in staging.get_children():
+		var button := node as Button
+		if (
+			button != null
+			and button.has_meta(&"action_id")
+			and StringName(button.get_meta(&"action_id")) == action_id
+		):
+			staging.remove_child(button)
+			return button
+	return null
+
+
+func _discard_empty_action_staging() -> void:
+	var staging := find_child("CampActionStaging", true, false) as Control
+	if staging != null and staging.get_child_count() == 0:
+		staging.queue_free()
 
 
 func _region_content_rect(region: StringName) -> Rect2:
@@ -229,39 +342,21 @@ func _on_commander_selected(index: int) -> void:
 		_selected_commander_id = StringName(
 			_commander_selector.get_item_metadata(index)
 		)
-	_refresh_center_summary()
 	_update_parent_action_state()
 
 
 func _on_challenge_selected(value: float) -> void:
 	_selected_challenge_level = roundi(value)
-	_refresh_center_summary()
 	_update_parent_action_state()
-
-
-func _refresh_center_summary() -> void:
-	if _commander_summary != null:
-		_commander_summary.text = (
-			_localized_content_text(_selected_commander_id)
-			if not _selected_commander_id.is_empty()
-			else _localized_ui_text(&"camp.commander_selector")
-		)
-	if _challenge_summary != null:
-		_challenge_summary.text = "%s  %d" % [
-			_localized_ui_text(&"camp.challenge_selector"),
-			maxi(_selected_challenge_level, 0),
-		]
 
 
 func refresh_layout_rects() -> void:
 	var metrics := find_child("CampMetrics", true, false) as Control
 	if metrics != null:
-		var metrics_rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
-		metrics_rect.position.x += ProductionLayoutShell.TITLE_COLUMN_WIDTH
-		metrics_rect.size.x -= ProductionLayoutShell.TITLE_COLUMN_WIDTH
+		var metrics_rect := _camp_metrics_rect()
 		metrics.position = metrics_rect.position
 		metrics.size = metrics_rect.size
-	var center := find_child("CampCenterSummary", true, false) as Control
+	var center := find_child("CampEnvironmentView", true, false) as Control
 	if center != null:
 		var center_rect := _region_content_rect(ProductionLayoutShell.REGION_CENTER)
 		center.position = center_rect.position

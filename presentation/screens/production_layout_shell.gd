@@ -8,6 +8,12 @@ const TOP_HEIGHT: float = 126.0
 const BOTTOM_HEIGHT: float = 204.0
 const PREPARE_BOTTOM_HEIGHT: float = 210.0
 const SIDE_WIDTH: float = 420.0
+## CAMP_WORLD 的局外主視覺分支：左欄移除、右欄縮半，頂底帶只保留
+## 一列標題／動作所需高度。其他 route 仍只讀上方共用常數。
+const CAMP_TOP_HEIGHT: float = 84.0
+const CAMP_BOTTOM_HEIGHT: float = 108.0
+const CAMP_LEFT_WIDTH: float = 0.0
+const CAMP_RIGHT_WIDTH: float = SIDE_WIDTH * 0.5
 const PANEL_CONTENT_MARGIN: Vector2 = Vector2(24.0, 18.0)
 const STATUS_HEIGHT: float = 66.0
 const STATUS_GUTTER: float = 12.0
@@ -34,6 +40,7 @@ const REGION_STATUS: StringName = &"status"
 
 var _contents: Dictionary = {}
 var _panels: Dictionary = {}
+var _route_kind: StringName = &""
 var _bottom_height: float = BOTTOM_HEIGHT
 var _bottom_height_cap: float = INF
 var _bottom_scroll_enabled: bool = false
@@ -60,13 +67,14 @@ func _exit_tree() -> void:
 
 
 func build(route_kind: StringName = &"") -> void:
+	_route_kind = route_kind
 	_bottom_scroll_enabled = route_kind in [&"RUN_PREPARE", &"RUN_COMBAT"]
 	_bottom_height_cap = (
 		BOARD_ROUTE_BOTTOM_HEIGHT_CAP
 		if _bottom_scroll_enabled
 		else INF
 	)
-	_bottom_height = (
+	_bottom_height = CAMP_BOTTOM_HEIGHT if route_kind == &"CAMP_WORLD" else (
 		PREPARE_BOTTOM_HEIGHT
 		if route_kind == &"RUN_PREPARE"
 		else BOTTOM_HEIGHT
@@ -88,6 +96,10 @@ func build(route_kind: StringName = &"") -> void:
 	var left_variation := &"ExpeditionPrimaryPanel" if route_kind == &"CAMP_WORLD" else &"ExpeditionSecondaryPanel"
 	var center_variation := &"ExpeditionBoardPanel" if route_kind == &"RUN_PREPARE" else &"ExpeditionSecondaryPanel"
 	_add_panel(REGION_LEFT, "LeftRegion", current_region_rect(REGION_LEFT), left_variation, VBoxContainer.new())
+	if route_kind == &"CAMP_WORLD":
+		var left_panel := _panels.get(REGION_LEFT) as PanelContainer
+		if left_panel != null:
+			left_panel.visible = false
 	_add_panel(REGION_CENTER, "CenterRegion", current_region_rect(REGION_CENTER), center_variation, VBoxContainer.new())
 	if route_kind in [&"RUN_PREPARE", &"RUN_COMBAT"]:
 		var center_panel := _panels.get(REGION_CENTER) as PanelContainer
@@ -96,7 +108,13 @@ func build(route_kind: StringName = &"") -> void:
 			# framing surface so projected tiles/sprites remain visible underneath.
 			center_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.18)
 	_add_panel(REGION_RIGHT, "RightRegion", current_region_rect(REGION_RIGHT), &"ExpeditionSecondaryPanel", VBoxContainer.new())
-	_add_panel(REGION_BOTTOM, "BottomRegion", current_region_rect(REGION_BOTTOM), ACTION_BAR_VARIATION, HBoxContainer.new())
+	_add_panel(
+		REGION_BOTTOM,
+		"BottomRegion",
+		current_region_rect(REGION_BOTTOM),
+		_bottom_panel_variation(),
+		HBoxContainer.new()
+	)
 	_add_panel(REGION_STATUS, "StatusRegion", current_region_rect(REGION_STATUS), &"ExpeditionStatusPanel", HBoxContainer.new())
 	set_status_visible(false)
 	_add_control_region(REGION_OVERLAY, "OverlayRegion", Rect2(Vector2.ZERO, REFERENCE_SIZE))
@@ -179,7 +197,18 @@ func _effective_bottom_height() -> float:
 
 ## 頂/狀態帶照 factor 縮放；底部帶採 _effective_bottom_height 的實測值。
 func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
-	var top_height := ceilf(TOP_HEIGHT * _scale_factor)
+	var authored_top_height := (
+		CAMP_TOP_HEIGHT if _route_kind == &"CAMP_WORLD" else TOP_HEIGHT
+	)
+	var left_width := (
+		CAMP_LEFT_WIDTH if _route_kind == &"CAMP_WORLD" else SIDE_WIDTH
+	)
+	var right_width := (
+		CAMP_RIGHT_WIDTH if _route_kind == &"CAMP_WORLD" else SIDE_WIDTH
+	)
+	var left_gutter := GUTTER if left_width > 0.0 else 0.0
+	var right_gutter := GUTTER if right_width > 0.0 else 0.0
+	var top_height := ceilf(authored_top_height * _scale_factor)
 	var status_height := ceilf(STATUS_HEIGHT * _scale_factor)
 	var scaled_bottom := _effective_bottom_height()
 	var content_top := SAFE_MARGIN + top_height + GUTTER
@@ -195,12 +224,23 @@ func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
 		REGION_TOP:
 			return Rect2(SAFE_MARGIN, SAFE_MARGIN, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, top_height)
 		REGION_LEFT:
-			return Rect2(SAFE_MARGIN, content_top, SIDE_WIDTH, content_height)
+			return Rect2(SAFE_MARGIN, content_top, left_width, content_height)
 		REGION_RIGHT:
-			return Rect2(REFERENCE_SIZE.x - SAFE_MARGIN - SIDE_WIDTH, content_top, SIDE_WIDTH, content_height)
+			return Rect2(
+				REFERENCE_SIZE.x - SAFE_MARGIN - right_width,
+				content_top,
+				right_width,
+				content_height
+			)
 		REGION_CENTER:
-			var center_x := SAFE_MARGIN + SIDE_WIDTH + GUTTER
-			return Rect2(center_x, content_top, REFERENCE_SIZE.x - center_x - SAFE_MARGIN - SIDE_WIDTH - GUTTER, content_height)
+			var center_x := SAFE_MARGIN + left_width + left_gutter
+			return Rect2(
+				center_x,
+				content_top,
+				REFERENCE_SIZE.x - center_x - SAFE_MARGIN
+					- right_width - right_gutter,
+				content_height
+			)
 		REGION_BOTTOM:
 			return Rect2(SAFE_MARGIN, footer_top, REFERENCE_SIZE.x - SAFE_MARGIN * 2.0, scaled_bottom)
 		REGION_STATUS:
@@ -251,11 +291,7 @@ func set_status_visible(value: bool) -> void:
 	_status_visible = value
 	var bottom_panel := _panels.get(REGION_BOTTOM) as PanelContainer
 	if bottom_panel != null:
-		bottom_panel.theme_type_variation = (
-			ACTION_BAR_COMPACT_VARIATION
-			if _bottom_scroll_enabled and value
-			else ACTION_BAR_VARIATION
-		)
+		bottom_panel.theme_type_variation = _bottom_panel_variation(value)
 	# Status visibility changes the board-route bottom cap. Relayout every
 	# region in one pass so BottomRegion and StatusRegion move together instead
 	# of retaining the geometry calculated for the previous visibility state.
@@ -267,6 +303,15 @@ func set_status_visible(value: bool) -> void:
 
 func is_status_visible() -> bool:
 	return _status_visible
+
+
+func _bottom_panel_variation(status_visible: bool = false) -> StringName:
+	return (
+		ACTION_BAR_COMPACT_VARIATION
+		if _route_kind == &"CAMP_WORLD"
+			or (_bottom_scroll_enabled and status_visible)
+		else ACTION_BAR_VARIATION
+	)
 
 
 ## ScrollContainer's built-in follow_focus guarantees reachability, but an

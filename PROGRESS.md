@@ -13,6 +13,22 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-15] ✅ 平衡 screening 可暫停／續跑（逐案 checkpoint）— 分片改為每完成一個
+  case 就 append 一行 JSONL 到 `artifacts/test/screening-checkpoint/shard-NN.jsonl`
+  （含完整 case_proof 與執行度量），合併端改由 JSONL 全量重算，分片 JSON 降為診斷產物。
+  新增 `-Resume`（比對 source freeze digest 與 candidate，不符即具名拒絕
+  `BALANCE_RESUME_SOURCE_DRIFT`／`_CANDIDATE_MISMATCH`／`_PARAM_MISMATCH`）、
+  `-MergeOnly`、優雅暫停（`pause.flag` 在 case 邊界輪詢，分片寫 paused 尾記錄後 exit 0，
+  合併端遇 paused 以 exit 4 收場不出報告）、`screening-ctl.ps1`（start/pause/resume/status）
+  與 `screening-server.py`＋`screening-progress.html`（localhost:8765，逐案精確進度、ETA、
+  暫停／續跑按鈕）。**重開機後續跑＝同一條 `resume` 指令**，不依賴駐留行程。
+  證據：2 seeds × 2 shards 同一棵樹「一次跑完 vs 暫停→續跑」合併報告 1192 欄逐欄位相同
+  （只有 12 個時間類欄位與 resume_count 不同，`canonical_replay_digest` 一致）；另一組
+  「跑一半強殺→續跑」1192 欄僅 `source_freeze_digest` 不同（兩輪之間確實改過樹）。
+  新 golden `tools/balance/tests/test-screening-checkpoint.ps1`（53 斷言，含合併相等性、
+  半行截斷修復、續跑具名拒絕、paused 不得誤判完成）已接進 `-Suite ActEliminationGate`；
+  GDScript 端 `tests/unit/balance_playtest/test_balance_checkpoint_ledger.gd` 10/10。
+
 - [2026-08-14] ✅ G2 `ui-art-refresh` B-out-1 使用者核可 — `MENU_MAIN` 移除右側
   大面積底板，三個操作按鈕直接疊在 ImageGen key art；`CAMP_WORLD` 以 `camp.png`
   撐滿主區域，移除重複左列並把五個場景標記升為正式 click/focus 控制項，遠征資訊

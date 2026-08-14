@@ -318,63 +318,7 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 		replay_parts.append("%s:%d:%s" % [
 			String(value.strategy_id), value.seed_index, value.replay_digest
 		])
-		var selected_ids: Array[String] = []
-		for selected_id: StringName in value.selected_ids:
-			selected_ids.append(String(selected_id))
-		var route_ids: Array[String] = []
-		for route_id: StringName in value.route_ids:
-			route_ids.append(String(route_id))
-		var failure_codes: Array[String] = []
-		for failure_code: StringName in value.failure_codes:
-			failure_codes.append(String(failure_code))
-		var act_snapshots: Array[Dictionary] = []
-		for act_snapshot: BalanceBotActSnapshot in value.act_snapshots:
-			var stable_unit_ids: Array[String] = []
-			for unit_id: StringName in act_snapshot.stable_unit_ids:
-				stable_unit_ids.append(String(unit_id))
-			act_snapshots.append({
-				"act_index": act_snapshot.act_index,
-				"gold": act_snapshot.gold,
-				"expedition_hp": act_snapshot.expedition_hp,
-				"roster_unit_count": act_snapshot.roster_unit_count,
-				"board_unit_count": act_snapshot.board_unit_count,
-				"stable_unit_ids": stable_unit_ids,
-				"battle_wins": act_snapshot.battle_wins,
-				"battle_losses": act_snapshot.battle_losses,
-				"elimination_node_id": String(act_snapshot.elimination_node_id),
-			})
-		case_proofs.append({
-			"strategy_id": String(value.strategy_id),
-			"seed_index": value.seed_index,
-			"run_id": String(value.run_id),
-			"world_digest": value.world_digest,
-			"terminal": value.terminal,
-			"won": value.won,
-			"act_reached": value.act_reached,
-			"build_id": String(value.build_id),
-			"selected_ids": selected_ids,
-			"route_ids": route_ids,
-			"ending_gold": value.ending_gold,
-			"ending_hp": value.ending_hp,
-			"battle_wins": value.battle_wins,
-			"battle_losses": value.battle_losses,
-			"buy_unit_count": value.buy_unit_count,
-			"buy_xp_count": value.buy_xp_count,
-			"reroll_count": value.reroll_count,
-			"sell_unit_count": value.sell_unit_count,
-			"boss_retry_count": value.boss_retry_count,
-			"completed_node_count": value.completed_node_count,
-			"reload_count": value.reload_count,
-			"null_offer_rule_count": value.null_offer_rule_count,
-			"act_snapshots": act_snapshots,
-			"final_phase": String(value.final_phase),
-			"settlement_receipt_count": value.settlement_receipt_digests.size(),
-			"settlement_receipt_digests": value.settlement_receipt_digests.duplicate(),
-			"reward_receipt_count": value.reward_receipt_digests.size(),
-			"reward_receipt_digests": value.reward_receipt_digests.duplicate(),
-			"failure_codes": failure_codes,
-			"replay_digest": value.replay_digest,
-		})
+		case_proofs.append(_case_proof(value))
 		for route_id: StringName in value.route_ids:
 			var route_key := String(route_id)
 			route_counts[route_key] = int(route_counts.get(route_key, 0)) + 1
@@ -457,6 +401,109 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 		"gate_reasons": reason_text,
 		"ac_032": "PENDING_EXTERNAL",
 	})
+
+
+## 逐案 checkpoint 的一行 JSONL（分片模式）。內容是 `to_json()` 的 case_proofs 元素
+## 加上該 case 的執行度量，讓合併端能只靠 checkpoint 重算全部統計，不必等分片跑完
+## 才拿得到局部聚合。回傳 String 而非 Dictionary：Dictionary 形狀只允許存在於
+## codec 邊界（spec 契約），對外的具名 API 一律是字串。
+func checkpoint_line(
+	value: BalanceBotCaseResult,
+	shard_index: int,
+	primary_elapsed_ms: int,
+	replay_sampled: bool,
+	replay_elapsed_ms: int,
+	replay_matched: bool
+) -> String:
+	return JSON.stringify({
+		"schema_version": SCHEMA_VERSION,
+		"shard_index": shard_index,
+		"strategy_id": String(value.strategy_id),
+		"seed_index": value.seed_index,
+		"primary_elapsed_ms": primary_elapsed_ms,
+		"replay_sampled": replay_sampled,
+		"replay_elapsed_ms": replay_elapsed_ms,
+		"replay_matched": replay_matched,
+		"case": _case_proof(value),
+	}, "", true, true)
+
+
+## 分片尾記錄：分片是「跑完」還是「見暫停旗標停下」由本行決定，合併端不得以退出碼
+## 推測。同時帶上 candidate 身分，讓合併端能逐片比對（取代舊的分片 JSON 交叉檢查）。
+func checkpoint_status_line(
+	status: String, shard_index: int, completed_cases: int, skipped_cases: int
+) -> String:
+	return JSON.stringify({
+		"schema_version": SCHEMA_VERSION,
+		"status": status,
+		"shard_index": shard_index,
+		"completed_cases": completed_cases,
+		"skipped_cases": skipped_cases,
+		"candidate_id": String(candidate.candidate_id) if candidate != null else "",
+		"content_version": candidate.content_version if candidate != null else "",
+		"manifest_digest": candidate.manifest_digest if candidate != null else "",
+		"tune_digest": candidate.tune_digest if candidate != null else "",
+	}, "", true, true)
+
+
+func _case_proof(value: BalanceBotCaseResult) -> Dictionary:
+	var selected_ids: Array[String] = []
+	for selected_id: StringName in value.selected_ids:
+		selected_ids.append(String(selected_id))
+	var route_ids: Array[String] = []
+	for route_id: StringName in value.route_ids:
+		route_ids.append(String(route_id))
+	var failure_codes: Array[String] = []
+	for failure_code: StringName in value.failure_codes:
+		failure_codes.append(String(failure_code))
+	var act_snapshots: Array[Dictionary] = []
+	for act_snapshot: BalanceBotActSnapshot in value.act_snapshots:
+		var stable_unit_ids: Array[String] = []
+		for unit_id: StringName in act_snapshot.stable_unit_ids:
+			stable_unit_ids.append(String(unit_id))
+		act_snapshots.append({
+			"act_index": act_snapshot.act_index,
+			"gold": act_snapshot.gold,
+			"expedition_hp": act_snapshot.expedition_hp,
+			"roster_unit_count": act_snapshot.roster_unit_count,
+			"board_unit_count": act_snapshot.board_unit_count,
+			"stable_unit_ids": stable_unit_ids,
+			"battle_wins": act_snapshot.battle_wins,
+			"battle_losses": act_snapshot.battle_losses,
+			"elimination_node_id": String(act_snapshot.elimination_node_id),
+		})
+	return {
+		"strategy_id": String(value.strategy_id),
+		"seed_index": value.seed_index,
+		"run_id": String(value.run_id),
+		"world_digest": value.world_digest,
+		"terminal": value.terminal,
+		"won": value.won,
+		"act_reached": value.act_reached,
+		"build_id": String(value.build_id),
+		"selected_ids": selected_ids,
+		"route_ids": route_ids,
+		"ending_gold": value.ending_gold,
+		"ending_hp": value.ending_hp,
+		"battle_wins": value.battle_wins,
+		"battle_losses": value.battle_losses,
+		"buy_unit_count": value.buy_unit_count,
+		"buy_xp_count": value.buy_xp_count,
+		"reroll_count": value.reroll_count,
+		"sell_unit_count": value.sell_unit_count,
+		"boss_retry_count": value.boss_retry_count,
+		"completed_node_count": value.completed_node_count,
+		"reload_count": value.reload_count,
+		"null_offer_rule_count": value.null_offer_rule_count,
+		"act_snapshots": act_snapshots,
+		"final_phase": String(value.final_phase),
+		"settlement_receipt_count": value.settlement_receipt_digests.size(),
+		"settlement_receipt_digests": value.settlement_receipt_digests.duplicate(),
+		"reward_receipt_count": value.reward_receipt_digests.size(),
+		"reward_receipt_digests": value.reward_receipt_digests.duplicate(),
+		"failure_codes": failure_codes,
+		"replay_digest": value.replay_digest,
+	}
 
 
 func _count(strategy_id: StringName, require_terminal: bool, require_win: bool) -> int:

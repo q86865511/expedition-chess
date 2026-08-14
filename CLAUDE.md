@@ -21,8 +21,17 @@
 - **BalancePlaytest targeted suite**（只跑 balance_playtest 測試目錄，不含大樣本 bot 跑批）：
   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Gut -TestPath res://tests/unit/balance_playtest`
 - **限定 GUT 目錄**：加上 `-TestPath res://tests/<path>`；canonical／content 可用 `-Case <case>`。
+- **平衡 screening 跑批（可暫停／續跑）**：`tools/balance/screening-ctl.ps1` 的四個子命令
+  （`start`／`pause`／`resume`／`status`），例：
+  `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/balance/screening-ctl.ps1 start -SeedCount 1000 -ShardCount 16`
+  （`start` 預設先跑 `-Suite All`，`-SkipAll` 才略過；`pause` 讓各分片在 case 邊界收工；
+  `resume` 從逐案 checkpoint 接著跑，**重開機後也是同一條指令**，不依賴駐留行程）。
+- **screening 進度網頁**：`python tools/balance/screening-server.py`（localhost:8765，
+  `/status`、`POST /pause`、`POST /resume`）；`/resume` 需要伺服器行程的環境有 `GODOT_BIN`。
 - Godot executable 由環境變數 `GODOT_BIN` 或 wrapper 的 `-GodotPath` 傳入；不得把本機絕對路徑寫進 repository。
 - Runner artifacts 位於 `artifacts/test/`；退出碼固定為 `0／2／3／124`。
+  screening 跑批另有 `4`＝本輪暫停（`tools/balance/run-sharded-cohort.ps1`，逐案 checkpoint
+  位於 `artifacts/test/screening-checkpoint/`）。
 
 ## 架構約定
 

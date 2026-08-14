@@ -12,3 +12,7 @@
 - 一輪兩值的理由：兩者作用面正交（經濟收入 vs 戰鬥難度），歸因不互相污染。
 - 預期：economy 勝率上移、act2 淘汰 >0；convergence WARN 欄位對照。
 - 結果：（screening 後回填）
+
+- R1 連鎖備忘：act2 golden 分佈於 test_act_scaling/test_encounter_compiler（已同步 14000）；
+  domain battle_rules_snapshot.gd:34 預設仍 13000（實際縮放走 pinned config，不影響行為，
+  改動涉 canonical 位元組——留待收斂後與 golden 動態化一併裁決）。

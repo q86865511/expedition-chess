@@ -9,7 +9,7 @@ const BattleSetupFixture = preload("res://tests/fixtures/canonical/battle_setup_
 
 const DIGEST := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 const ACT1_BPS: int = 10000
-const ACT2_BPS: int = 13000
+const ACT2_BPS: int = 14000  # R1 TUNE: act2 淘汰 0 上調(phase2-iteration-log R1)
 const ACT3_BPS: int = 16000
 
 var _compiler := EncounterCompiler.new()

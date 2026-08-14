@@ -68,10 +68,12 @@ func test_three_strategies_share_one_cohort_world_and_reach_results() -> void:
 			)
 		else:
 			assert_eq(value.ending_hp, 0, "%s 敗局必須是遠征 HP 歸零的真淘汰" % label)
-			assert_lt(
+			# R1 TUNE(interest_per_step 2)後 economy 可存活至終局 boss 才敗，
+			# 走訪數==完整路線屬合法；固定規則是「不得超過」而非「必少於」。
+			assert_lte(
 				value.completed_node_count,
 				BalanceProductionCaseDriver.EXPECTED_FULL_ROUTE_NODES,
-				"%s 敗局走訪數應少於完整路線" % label
+				"%s 敗局走訪數不得超過完整路線" % label
 			)
 		assert_gt(
 			value.battle_wins + value.battle_losses, 0,

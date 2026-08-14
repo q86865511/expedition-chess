@@ -220,7 +220,7 @@ func test_pinned_production_candidate_matches_source_and_fails_closed() -> void:
 	source_entries.assign(scan.entries)
 	var source_candidate := BalanceCandidateDescriptor.new(
 		&"", "0.2.0-content-production",
-		"08a5a2f679d59b586c8ec35854ccb491762ad1cb03ea8144e2e2d0bfcca21c83",
+		"f7bc9df62ba8f6306a54272fd599157ad3a5913f3f3fc659475b3379c777de64",
 		BalanceCandidateDescriptor.RNG_VERSION,
 		source_entries
 	)

@@ -7,5 +7,5 @@ script = ExtResource("1_8efcp")
 id = &"config.combat_default"
 display_name_key = &"loc.config_combat_default"
 act1_enemy_stat_bps = 10000
-act2_enemy_stat_bps = 13000
+act2_enemy_stat_bps = 14000
 act3_enemy_stat_bps = 16000

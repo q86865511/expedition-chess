@@ -170,25 +170,14 @@ static func request_kind(
 	return request(harness, RunPresentationIntent.new(kind))
 
 
+## 目前可選節點（frontier）的第一個。判準與 domain 的 NodeEntryService 同源
+## （MapFrontier），不會挑到上一層沒選走的兄弟分支那種「列得出來卻進不去」的節點。
 static func first_reachable_node_id(harness: Variant) -> String:
 	var current := snapshot(harness)
-	if current == null or current.map == null:
+	if current == null:
 		return ""
-	for node: MapNodeState in current.map.nodes:
-		if node.completed or current.map.completed_node_ids.has(node.node_id):
-			continue
-		if current.map.completed_node_ids.is_empty():
-			if node.act_index == 1 and node.layer_index == 0:
-				return node.node_id
-			continue
-		for completed_id: String in current.map.completed_node_ids:
-			for edge: MapEdgeState in current.map.edges:
-				if (
-					edge.from_node_id == completed_id
-					and edge.to_node_id == node.node_id
-				):
-					return node.node_id
-	return ""
+	var frontier := MapFrontier.frontier_node_ids(current.map)
+	return "" if frontier.is_empty() else frontier[0]
 
 
 ## MAP → PREPARE → 買滿買得起的棋 → 全部上場 → COMBAT。回傳空字串代表成功，

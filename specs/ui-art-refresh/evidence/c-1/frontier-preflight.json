@@ -1,0 +1,680 @@
+{
+  "baseline": "9d98e4d",
+  "blocking_issue": "BP-SI-003",
+  "decision": "stop before presentation implementation; require named frontier query",
+  "driver": {
+    "completed_node_count": 2,
+    "diagnostic_node_limit": 2,
+    "failure_codes": [
+      "BALANCE_DIAGNOSTIC_NODE_LIMIT"
+    ],
+    "seed_index": 0,
+    "strategy": "tempo"
+  },
+  "gate_pass": false,
+  "read_surface": {
+    "historical_reachable_nodes": [
+      "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba"
+    ],
+    "nodes": [
+      {
+        "act_index": 1,
+        "completed": true,
+        "historical_layer_branch": false,
+        "layer_index": 0,
+        "node_id": "node_ec164e0494da1dacd2d7016c1f8c7d872407248385ad152b69dab8fbd8d224ac",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": true,
+        "layer_index": 1,
+        "node_id": "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba",
+        "node_kind": "normal",
+        "reachable_nodes_query": true,
+        "slot_index": 0
+      },
+      {
+        "act_index": 1,
+        "completed": true,
+        "historical_layer_branch": false,
+        "layer_index": 1,
+        "node_id": "node_c1902307b8e393535b62494e4c5d087996efe1d7c66f86198a9f14b1223c63c4",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_297a153a48963db26b030ac22c9043156f9228b786bc4fc471a4e6d23c744fa1",
+        "node_kind": "merchant",
+        "reachable_nodes_query": true,
+        "slot_index": 0
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993",
+        "node_kind": "merchant",
+        "reachable_nodes_query": true,
+        "slot_index": 1
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_775abd9f2b5aebc5a3cd1b6fad3b54b2fcff8943cac524eb3dc3d637a9cfa331",
+        "node_kind": "treasure",
+        "reachable_nodes_query": true,
+        "slot_index": 2
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_5a458f5edb1360e0ca70d27611767c0f52f960ca891182eb0d23a921f91c6ebb",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_d727085c44b47696b135fbee20ec390ca28b1de0133d38c13b0d7574ed4ab9f8",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_b52c97b6bf2e4914e189ca4aa6d8c1d1b7c01c01ca888a2c7743c9b7811b82b5",
+        "node_kind": "treasure",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_be756abedd16fdbcb2b16b09f1e12158a828736487a426282e1b130b88e9369a",
+        "node_kind": "merchant",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 5,
+        "node_id": "node_a5e7c3c4d25265f8caa6284ecfcefc3fcb6f156ac0fb0813e2718728ad97d4bd",
+        "node_kind": "rest",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 1,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 6,
+        "node_id": "node_54bcdd02bc844b2a5a085bdc32c6e90bb6a9316814b70f13fe2cc018bb1b4425",
+        "node_kind": "boss",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 0,
+        "node_id": "node_0f04beab9fc3b6237cbf73303b483f4e264967b8ba419f070b57093a7edb0643",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 1,
+        "node_id": "node_d941ad41745c2b78023e3ca16c2379745713a20bd795b2200caa1b32cff30a61",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 1,
+        "node_id": "node_05f2d41d4dbe287b474168004927af0881d44a3531187616b43a8da8567e4326",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_57e9a9068824b8f37cf83390605c6f75a575371b9335c3b9b46f49741707bcd1",
+        "node_kind": "event",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_9c73343ca26a4f8eb3aa07bfab340729629d399e68773a42bea415d79f17d1ea",
+        "node_kind": "event",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_74357efa981f427f73e1ba6505201badc4d123a780aff373d2e138867f693f94",
+        "node_kind": "event",
+        "reachable_nodes_query": false,
+        "slot_index": 2
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_d3d0c9a14f97e54351990be4964b2a388924a504dc83680d2224ea22b900eee7",
+        "node_kind": "elite",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_3ebeb9d3bb8ca25c3f49a6c6fb668fd072057c303b2c38142dd0ca6af7fcbcd7",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_92c2ab4593893c0bf13e4d88643e80bf9112ff1be253abcdc0db7e232309e635",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 2
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_88c592e896ab1282a6a4da3d84499260f859fb60c8e8173b1592f68d5f78a1d8",
+        "node_kind": "treasure",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_2cee6ad29182645762466379e671a73b26f137aac1b266f6fd4c14d3ce122d9d",
+        "node_kind": "event",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_a69a6da0442fc5bbade4ecb48385e44f37edd0cb069ca9e3559ea06992c5f56e",
+        "node_kind": "treasure",
+        "reachable_nodes_query": false,
+        "slot_index": 2
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 5,
+        "node_id": "node_f21f6a541699738871265aaae93ddcad22650a59545259bd80104c8c705d596f",
+        "node_kind": "rest",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 2,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 6,
+        "node_id": "node_4cd2de837a6d0815f1c5538365596965ff2206a4aa1123bf5144dde51a332db2",
+        "node_kind": "boss",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 0,
+        "node_id": "node_6b40f77e4317173340a2304f42a5471e214df48d7c2fcae5d62ec0b6fd9b76b7",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 1,
+        "node_id": "node_36c9584e331acab651f2c0221964badde6f6194963f68cc8f19fbbd95480d8e4",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 1,
+        "node_id": "node_7a719dccaf358c7955d94669f8757cec11741d2fc36ab3d02fa9e6066cfc325b",
+        "node_kind": "elite",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_9da0a58251ef195f4167fc6615369ad4e0a48a80732322e408fcdb1739dde369",
+        "node_kind": "merchant",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 2,
+        "node_id": "node_b3d651748dfd69fd077d29c619767bb61e1da1375f027201ee6c335b2a803086",
+        "node_kind": "treasure",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_1d2cd4ea1f91407aaca1ce49d700d39890ae1c1767910f80dda28df47b4afbe7",
+        "node_kind": "elite",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_a1859a0fce64b4113b0e482d0b1093ce5fba2d2dcb98ff372bd719d4bd5c07a9",
+        "node_kind": "elite",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 3,
+        "node_id": "node_38a8cbe4fb146c6a22f78a011c69c75fae06ea2834987e5fa12a9f879f7640f6",
+        "node_kind": "normal",
+        "reachable_nodes_query": false,
+        "slot_index": 2
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_e64fbffaff3e74730f5d8efef0175a44c2322262e685edfc377f2fa5d1e59d1e",
+        "node_kind": "event",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_c85a2e5a642fc8623d18b6395c4db7e2f846f0e355d488b9ce821405dd2464dc",
+        "node_kind": "treasure",
+        "reachable_nodes_query": false,
+        "slot_index": 1
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 4,
+        "node_id": "node_b0ca36b0c029262cd8fe6337c20641847b887d56709dbd58be0a7608e585e766",
+        "node_kind": "merchant",
+        "reachable_nodes_query": false,
+        "slot_index": 2
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 5,
+        "node_id": "node_fc2d34f4d326f6c8611add7529697c9d4e652baad77c4ee76959bbda72ebc36f",
+        "node_kind": "rest",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      },
+      {
+        "act_index": 3,
+        "completed": false,
+        "historical_layer_branch": false,
+        "layer_index": 6,
+        "node_id": "node_01f8240b8690475cb8ae76e2ab6e0afe294bda4bf0cc00e37b45bac6eb758f7a",
+        "node_kind": "boss",
+        "reachable_nodes_query": false,
+        "slot_index": 0
+      }
+    ],
+    "reachable_nodes": [
+      "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba",
+      "node_297a153a48963db26b030ac22c9043156f9228b786bc4fc471a4e6d23c744fa1",
+      "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993",
+      "node_775abd9f2b5aebc5a3cd1b6fad3b54b2fcff8943cac524eb3dc3d637a9cfa331"
+    ],
+    "snapshot_map_node_count": 39
+  },
+  "run": {
+    "app_phase": "MAP",
+    "completed_node_ids": [
+      "node_c1902307b8e393535b62494e4c5d087996efe1d7c66f86198a9f14b1223c63c4",
+      "node_ec164e0494da1dacd2d7016c1f8c7d872407248385ad152b69dab8fbd8d224ac"
+    ],
+    "latest_completed_coordinate": {
+      "act_index": 1,
+      "layer_index": 1
+    },
+    "run_id": "run_3938e7a031389925c2bc27e788ebc69cca6e3768a4276a4d9172e5438ffa4e07"
+  },
+  "run_map_ui": {
+    "historical_node_was_enabled": true,
+    "node_selector_rows": [
+      {
+        "disabled": true,
+        "index": 0,
+        "node_id": "node_ec164e0494da1dacd2d7016c1f8c7d872407248385ad152b69dab8fbd8d224ac",
+        "text": "map_node.slice_normal · map.node_kind.normal · 1-0"
+      },
+      {
+        "disabled": false,
+        "index": 1,
+        "node_id": "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba",
+        "text": "map_node.slice_normal · map.node_kind.normal · 1-1"
+      },
+      {
+        "disabled": true,
+        "index": 2,
+        "node_id": "node_c1902307b8e393535b62494e4c5d087996efe1d7c66f86198a9f14b1223c63c4",
+        "text": "map_node.slice_normal · map.node_kind.normal · 1-1"
+      },
+      {
+        "disabled": false,
+        "index": 3,
+        "node_id": "node_297a153a48963db26b030ac22c9043156f9228b786bc4fc471a4e6d23c744fa1",
+        "text": "map_node.slice_merchant · map.node_kind.merchant · 1-2"
+      },
+      {
+        "disabled": false,
+        "index": 4,
+        "node_id": "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993",
+        "text": "map_node.slice_merchant · map.node_kind.merchant · 1-2"
+      },
+      {
+        "disabled": false,
+        "index": 5,
+        "node_id": "node_775abd9f2b5aebc5a3cd1b6fad3b54b2fcff8943cac524eb3dc3d637a9cfa331",
+        "text": "map_node.slice_treasure · map.node_kind.treasure · 1-2"
+      },
+      {
+        "disabled": true,
+        "index": 6,
+        "node_id": "node_5a458f5edb1360e0ca70d27611767c0f52f960ca891182eb0d23a921f91c6ebb",
+        "text": "map_node.slice_normal · map.node_kind.normal · 1-3"
+      },
+      {
+        "disabled": true,
+        "index": 7,
+        "node_id": "node_d727085c44b47696b135fbee20ec390ca28b1de0133d38c13b0d7574ed4ab9f8",
+        "text": "map_node.slice_normal · map.node_kind.normal · 1-3"
+      },
+      {
+        "disabled": true,
+        "index": 8,
+        "node_id": "node_b52c97b6bf2e4914e189ca4aa6d8c1d1b7c01c01ca888a2c7743c9b7811b82b5",
+        "text": "map_node.slice_treasure · map.node_kind.treasure · 1-4"
+      },
+      {
+        "disabled": true,
+        "index": 9,
+        "node_id": "node_be756abedd16fdbcb2b16b09f1e12158a828736487a426282e1b130b88e9369a",
+        "text": "map_node.slice_merchant · map.node_kind.merchant · 1-4"
+      },
+      {
+        "disabled": true,
+        "index": 10,
+        "node_id": "node_a5e7c3c4d25265f8caa6284ecfcefc3fcb6f156ac0fb0813e2718728ad97d4bd",
+        "text": "map_node.slice_rest · map.node_kind.rest · 1-5"
+      },
+      {
+        "disabled": true,
+        "index": 11,
+        "node_id": "node_54bcdd02bc844b2a5a085bdc32c6e90bb6a9316814b70f13fe2cc018bb1b4425",
+        "text": "map_node.slice_boss · map.node_kind.boss · 1-6"
+      },
+      {
+        "disabled": true,
+        "index": 12,
+        "node_id": "node_0f04beab9fc3b6237cbf73303b483f4e264967b8ba419f070b57093a7edb0643",
+        "text": "map_node.slice_normal · map.node_kind.normal · 2-0"
+      },
+      {
+        "disabled": true,
+        "index": 13,
+        "node_id": "node_d941ad41745c2b78023e3ca16c2379745713a20bd795b2200caa1b32cff30a61",
+        "text": "map_node.slice_normal · map.node_kind.normal · 2-1"
+      },
+      {
+        "disabled": true,
+        "index": 14,
+        "node_id": "node_05f2d41d4dbe287b474168004927af0881d44a3531187616b43a8da8567e4326",
+        "text": "map_node.slice_normal · map.node_kind.normal · 2-1"
+      },
+      {
+        "disabled": true,
+        "index": 15,
+        "node_id": "node_57e9a9068824b8f37cf83390605c6f75a575371b9335c3b9b46f49741707bcd1",
+        "text": "map_node.slice_event_10 · map.node_kind.event · 2-2"
+      },
+      {
+        "disabled": true,
+        "index": 16,
+        "node_id": "node_9c73343ca26a4f8eb3aa07bfab340729629d399e68773a42bea415d79f17d1ea",
+        "text": "map_node.slice_event_04 · map.node_kind.event · 2-2"
+      },
+      {
+        "disabled": true,
+        "index": 17,
+        "node_id": "node_74357efa981f427f73e1ba6505201badc4d123a780aff373d2e138867f693f94",
+        "text": "map_node.slice_event_11 · map.node_kind.event · 2-2"
+      },
+      {
+        "disabled": true,
+        "index": 18,
+        "node_id": "node_d3d0c9a14f97e54351990be4964b2a388924a504dc83680d2224ea22b900eee7",
+        "text": "map_node.slice_elite · map.node_kind.elite · 2-3"
+      },
+      {
+        "disabled": true,
+        "index": 19,
+        "node_id": "node_3ebeb9d3bb8ca25c3f49a6c6fb668fd072057c303b2c38142dd0ca6af7fcbcd7",
+        "text": "map_node.slice_normal · map.node_kind.normal · 2-3"
+      },
+      {
+        "disabled": true,
+        "index": 20,
+        "node_id": "node_92c2ab4593893c0bf13e4d88643e80bf9112ff1be253abcdc0db7e232309e635",
+        "text": "map_node.slice_normal · map.node_kind.normal · 2-3"
+      },
+      {
+        "disabled": true,
+        "index": 21,
+        "node_id": "node_88c592e896ab1282a6a4da3d84499260f859fb60c8e8173b1592f68d5f78a1d8",
+        "text": "map_node.slice_treasure · map.node_kind.treasure · 2-4"
+      },
+      {
+        "disabled": true,
+        "index": 22,
+        "node_id": "node_2cee6ad29182645762466379e671a73b26f137aac1b266f6fd4c14d3ce122d9d",
+        "text": "map_node.slice_event_00 · map.node_kind.event · 2-4"
+      },
+      {
+        "disabled": true,
+        "index": 23,
+        "node_id": "node_a69a6da0442fc5bbade4ecb48385e44f37edd0cb069ca9e3559ea06992c5f56e",
+        "text": "map_node.slice_treasure · map.node_kind.treasure · 2-4"
+      },
+      {
+        "disabled": true,
+        "index": 24,
+        "node_id": "node_f21f6a541699738871265aaae93ddcad22650a59545259bd80104c8c705d596f",
+        "text": "map_node.slice_rest · map.node_kind.rest · 2-5"
+      },
+      {
+        "disabled": true,
+        "index": 25,
+        "node_id": "node_4cd2de837a6d0815f1c5538365596965ff2206a4aa1123bf5144dde51a332db2",
+        "text": "map_node.slice_boss · map.node_kind.boss · 2-6"
+      },
+      {
+        "disabled": true,
+        "index": 26,
+        "node_id": "node_6b40f77e4317173340a2304f42a5471e214df48d7c2fcae5d62ec0b6fd9b76b7",
+        "text": "map_node.slice_normal · map.node_kind.normal · 3-0"
+      },
+      {
+        "disabled": true,
+        "index": 27,
+        "node_id": "node_36c9584e331acab651f2c0221964badde6f6194963f68cc8f19fbbd95480d8e4",
+        "text": "map_node.slice_normal · map.node_kind.normal · 3-1"
+      },
+      {
+        "disabled": true,
+        "index": 28,
+        "node_id": "node_7a719dccaf358c7955d94669f8757cec11741d2fc36ab3d02fa9e6066cfc325b",
+        "text": "map_node.slice_elite · map.node_kind.elite · 3-1"
+      },
+      {
+        "disabled": true,
+        "index": 29,
+        "node_id": "node_9da0a58251ef195f4167fc6615369ad4e0a48a80732322e408fcdb1739dde369",
+        "text": "map_node.slice_merchant · map.node_kind.merchant · 3-2"
+      },
+      {
+        "disabled": true,
+        "index": 30,
+        "node_id": "node_b3d651748dfd69fd077d29c619767bb61e1da1375f027201ee6c335b2a803086",
+        "text": "map_node.slice_treasure · map.node_kind.treasure · 3-2"
+      },
+      {
+        "disabled": true,
+        "index": 31,
+        "node_id": "node_1d2cd4ea1f91407aaca1ce49d700d39890ae1c1767910f80dda28df47b4afbe7",
+        "text": "map_node.slice_elite · map.node_kind.elite · 3-3"
+      },
+      {
+        "disabled": true,
+        "index": 32,
+        "node_id": "node_a1859a0fce64b4113b0e482d0b1093ce5fba2d2dcb98ff372bd719d4bd5c07a9",
+        "text": "map_node.slice_elite · map.node_kind.elite · 3-3"
+      },
+      {
+        "disabled": true,
+        "index": 33,
+        "node_id": "node_38a8cbe4fb146c6a22f78a011c69c75fae06ea2834987e5fa12a9f879f7640f6",
+        "text": "map_node.slice_normal · map.node_kind.normal · 3-3"
+      },
+      {
+        "disabled": true,
+        "index": 34,
+        "node_id": "node_e64fbffaff3e74730f5d8efef0175a44c2322262e685edfc377f2fa5d1e59d1e",
+        "text": "map_node.slice_event_04 · map.node_kind.event · 3-4"
+      },
+      {
+        "disabled": true,
+        "index": 35,
+        "node_id": "node_c85a2e5a642fc8623d18b6395c4db7e2f846f0e355d488b9ce821405dd2464dc",
+        "text": "map_node.slice_treasure · map.node_kind.treasure · 3-4"
+      },
+      {
+        "disabled": true,
+        "index": 36,
+        "node_id": "node_b0ca36b0c029262cd8fe6337c20641847b887d56709dbd58be0a7608e585e766",
+        "text": "map_node.slice_merchant · map.node_kind.merchant · 3-4"
+      },
+      {
+        "disabled": true,
+        "index": 37,
+        "node_id": "node_fc2d34f4d326f6c8611add7529697c9d4e652baad77c4ee76959bbda72ebc36f",
+        "text": "map_node.slice_rest · map.node_kind.rest · 3-5"
+      },
+      {
+        "disabled": true,
+        "index": 38,
+        "node_id": "node_01f8240b8690475cb8ae76e2ab6e0afe294bda4bf0cc00e37b45bac6eb758f7a",
+        "text": "map_node.slice_boss · map.node_kind.boss · 3-6"
+      }
+    ],
+    "selected_historical_node_id": "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba",
+    "selected_node_id": "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba"
+  },
+  "schema_version": "c1-frontier-preflight-1",
+  "screenshot": {
+    "height": 1080,
+    "path": "res://specs/ui-art-refresh/evidence/c-1/frontier-preflight.png",
+    "save_error": 0,
+    "sha256": "f3ab67eaccebe9067ed842c96c5ff2f02658ea01e9f34c2922eb0d6ea8c64ca8",
+    "width": 1920
+  }
+}

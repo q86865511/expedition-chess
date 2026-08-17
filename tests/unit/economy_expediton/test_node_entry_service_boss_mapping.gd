@@ -42,7 +42,8 @@ func test_non_boss_node_encounter_id_is_unaffected_by_act_mapping() -> void:
 	var target := _first_node_of_kind(fixture.map, MapNodeState.NodeKind.NORMAL, 1)
 	assert_not_null(target)
 	if target == null: return
-	# act1 layer0 的 normal 節點在空 completed_node_ids 下即可達（node_entry_service._reachable）。
+	# 還沒進過任何節點（current_node_id 為 null、completed_node_ids 為空）時，frontier
+	# ＝ act1 layer0 的起始集合，這個 normal 節點因此可進入（MapFrontier）。
 	var result := NodeEntryService.new().enter(
 		fixture.root.run, target.node_id, fixture.catalog, battle_catalog
 	)
@@ -144,13 +145,15 @@ func _first_node_of_kind(map: MapState, kind: MapNodeState.NodeKind, act_index: 
 			return node
 	return null
 
-## _reachable()（node_entry_service.gd）只需「某個已完成節點 → target 有邊」這一跳；
-## boss 節點所在層恆有唯一前驅（layer 5，size 1），故直接標記該前驅完成即可，不必
-## 重演整條 act 內的通關鏈。
+## 可進入的節點只有「目前所在節點的出邊」（MapFrontier），所以 fixture 要把前驅同時
+## 標成已完成**並**設為所在節點——這正是走完該節點後的真實狀態。boss 節點所在層恆有
+## 唯一前驅（layer 5，size 1），故一跳即可，不必重演整條 act 內的通關鏈。
 func _make_reachable(run: RunState, target: MapNodeState) -> void:
 	for edge: MapEdgeState in run.map_state.edges:
 		if edge.to_node_id == target.node_id:
 			run.map_state.completed_node_ids = [edge.from_node_id]
+			run.current_node_id = OptionalStringValue.new(edge.from_node_id)
+			run.map_state.current_node_id = OptionalStringValue.new(edge.from_node_id)
 			return
 	fail_test("no edge leads to target node %s" % target.node_id)
 

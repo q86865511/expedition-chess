@@ -54,26 +54,10 @@ func economy() -> EconomyState:
 	return _session.economy_state() if _session != null else null
 
 
+## 目前可選節點（frontier）。判準與 domain 的 NodeEntryService 同源，dev lab 因此
+## 不會列出「按了會被 NODE_ENTRY_NODE_UNREACHABLE 擋掉」的歷史分支。
 func reachable_node_ids() -> Array[String]:
-	var result: Array[String] = []
-	var map_state := map()
-	if map_state == null:
-		return result
-	for node: MapNodeState in map_state.nodes:
-		if node.completed or map_state.completed_node_ids.has(node.node_id):
-			continue
-		if map_state.completed_node_ids.is_empty():
-			if node.act_index == 1 and node.layer_index == 0:
-				result.append(node.node_id)
-			continue
-		for completed_id: String in map_state.completed_node_ids:
-			for edge: MapEdgeState in map_state.edges:
-				if edge.from_node_id == completed_id and edge.to_node_id == node.node_id:
-					result.append(node.node_id)
-					break
-			if result.has(node.node_id):
-				break
-	return result
+	return MapFrontier.frontier_node_ids(map())
 
 
 func try_node(node_id: String) -> MapNodeState:

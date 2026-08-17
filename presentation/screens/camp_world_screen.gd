@@ -14,6 +14,10 @@ const EXPEDITION_SELECTION_REQUIRED: StringName = \
 	&"CAMP_EXPEDITION_SELECTION_REQUIRED"
 const CAMP_VISUAL_ID: StringName = &"environment.camp"
 const METRIC_WIDTH: float = 216.0
+## CAMP top metrics keep a route-local gap for the mouse entry to the ESC menu.
+## The button itself is owned by ProductionScreen; this reservation prevents the
+## third metric from rendering underneath it at every supported UI scale.
+const SYSTEM_MENU_RESERVE_WIDTH: float = 294.0
 const FACILITY_MARKER_SIZE: Vector2 = Vector2(270.0, 72.0)
 const FACILITY_MARKERS: Array[Dictionary] = [
 	{
@@ -315,7 +319,7 @@ func _metric_label(key: StringName, value: String) -> Label:
 func _camp_metrics_rect() -> Rect2:
 	var rect := _region_content_rect(ProductionLayoutShell.REGION_TOP)
 	var total_width := METRIC_WIDTH * 3.0 + 24.0
-	rect.position.x = rect.end.x - total_width
+	rect.position.x = rect.end.x - SYSTEM_MENU_RESERVE_WIDTH - total_width
 	rect.size.x = total_width
 	return rect
 

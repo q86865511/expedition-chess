@@ -20,6 +20,18 @@ const META_ALLOW_TEXT_CLIP := &"expedition_allow_text_clip"
 const MENU_TITLE_RECT := Rect2(108.0, 66.0, 930.0, 96.0)
 const MENU_ACTIONS_RECT := Rect2(1356.0, 222.0, 432.0, 636.0)
 
+## SETTINGS / RESULTS 已由 ProductionLayoutShell 持有外框與安全區；以下只描述
+## composition 內部的 reference 尺度，避免 scene offset 與程式布局分裂。
+const SETTINGS_DRAFT_STATUS_HEIGHT: float = 66.0
+const SETTINGS_SECTION_GAP: float = 18.0
+const RESULTS_CARD_GAP: float = 18.0
+const RESULTS_CARD_INSET: Vector2 = Vector2(30.0, 21.0)
+const RESULTS_OUTCOME_CARD_HEIGHT: float = 132.0
+const RESULTS_PRIMARY_CARD_HEIGHT: float = 174.0
+const RESULTS_AUDIT_CARD_HEIGHT: float = 96.0
+const RESULTS_METRIC_LABEL_HEIGHT: float = 36.0
+const RESULTS_METRIC_LABEL_GAP: float = 6.0
+
 
 static func set_min(control: Control, width: float, height: float) -> void:
 	_set_minimum(control, Vector2(width, height), true)

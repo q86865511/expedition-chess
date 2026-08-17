@@ -18,12 +18,20 @@ const FACILITY_TOP_HEIGHT: float = 96.0
 const FACILITY_BOTTOM_HEIGHT: float = 108.0
 const FACILITY_LEFT_WIDTH: float = 0.0
 const COLLECTION_RIGHT_WIDTH: float = SIDE_WIDTH
+const OUTGAME_TOP_HEIGHT: float = 108.0
+const OUTGAME_BOTTOM_HEIGHT: float = 108.0
+const OUTGAME_SIDE_WIDTH: float = 0.0
 const CAMP_FACILITY_ROUTES: Array[StringName] = [
 	&"FACILITY_EXPEDITION_GATE",
 	&"FACILITY_COMMANDER_HALL",
 	&"COLLECTION",
 	&"FACILITY_UNLOCK_WORKSHOP",
 	&"FACILITY_CHALLENGE_MONUMENT",
+]
+const OUTGAME_PANEL_ROUTES: Array[StringName] = [
+	&"SETTINGS",
+	&"RESULTS",
+	&"RESULTS_FALLBACK",
 ]
 const PANEL_CONTENT_MARGIN: Vector2 = Vector2(24.0, 18.0)
 const STATUS_HEIGHT: float = 66.0
@@ -90,6 +98,8 @@ func build(route_kind: StringName = &"") -> void:
 		if route_kind == &"CAMP_WORLD"
 		else FACILITY_BOTTOM_HEIGHT
 		if route_kind in CAMP_FACILITY_ROUTES
+		else OUTGAME_BOTTOM_HEIGHT
+		if route_kind in OUTGAME_PANEL_ROUTES
 		else PREPARE_BOTTOM_HEIGHT
 		if route_kind == &"RUN_PREPARE"
 		else BOTTOM_HEIGHT
@@ -109,7 +119,13 @@ func build(route_kind: StringName = &"") -> void:
 	add_child(background)
 	_add_panel(REGION_TOP, "TopRegion", current_region_rect(REGION_TOP), &"ExpeditionTopBar", HBoxContainer.new())
 	var left_variation := &"ExpeditionPrimaryPanel" if route_kind == &"CAMP_WORLD" else &"ExpeditionSecondaryPanel"
-	var center_variation := &"ExpeditionBoardPanel" if route_kind == &"RUN_PREPARE" else &"ExpeditionSecondaryPanel"
+	var center_variation := (
+		&"ExpeditionBoardPanel"
+		if route_kind == &"RUN_PREPARE"
+		else &"ExpeditionPrimaryPanel"
+		if route_kind in OUTGAME_PANEL_ROUTES
+		else &"ExpeditionSecondaryPanel"
+	)
 	_add_panel(REGION_LEFT, "LeftRegion", current_region_rect(REGION_LEFT), left_variation, VBoxContainer.new())
 	if route_kind == &"CAMP_WORLD":
 		var left_panel := _panels.get(REGION_LEFT) as PanelContainer
@@ -130,6 +146,11 @@ func build(route_kind: StringName = &"") -> void:
 			# framing surface so projected tiles/sprites remain visible underneath.
 			center_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.18)
 	_add_panel(REGION_RIGHT, "RightRegion", current_region_rect(REGION_RIGHT), &"ExpeditionSecondaryPanel", VBoxContainer.new())
+	if route_kind in OUTGAME_PANEL_ROUTES:
+		for side: StringName in [REGION_LEFT, REGION_RIGHT]:
+			var side_panel := _panels.get(side) as PanelContainer
+			if side_panel != null:
+				side_panel.visible = false
 	_add_panel(
 		REGION_BOTTOM,
 		"BottomRegion",
@@ -224,6 +245,8 @@ func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
 		if _route_kind == &"CAMP_WORLD"
 		else FACILITY_TOP_HEIGHT
 		if _route_kind in CAMP_FACILITY_ROUTES
+		else OUTGAME_TOP_HEIGHT
+		if _route_kind in OUTGAME_PANEL_ROUTES
 		else TOP_HEIGHT
 	)
 	var left_width := (
@@ -231,6 +254,8 @@ func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
 		if _route_kind == &"CAMP_WORLD"
 		else FACILITY_LEFT_WIDTH
 		if _route_kind in CAMP_FACILITY_ROUTES
+		else OUTGAME_SIDE_WIDTH
+		if _route_kind in OUTGAME_PANEL_ROUTES
 		else SIDE_WIDTH
 	)
 	var right_width := (
@@ -240,6 +265,8 @@ func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
 		if _route_kind == &"COLLECTION"
 		else 0.0
 		if _route_kind in CAMP_FACILITY_ROUTES
+		else OUTGAME_SIDE_WIDTH
+		if _route_kind in OUTGAME_PANEL_ROUTES
 		else SIDE_WIDTH
 	)
 	var left_gutter := GUTTER if left_width > 0.0 else 0.0
@@ -346,6 +373,7 @@ func _bottom_panel_variation(status_visible: bool = false) -> StringName:
 		ACTION_BAR_COMPACT_VARIATION
 		if _route_kind == &"CAMP_WORLD"
 			or _route_kind in CAMP_FACILITY_ROUTES
+			or _route_kind in OUTGAME_PANEL_ROUTES
 			or (_bottom_scroll_enabled and status_visible)
 		else ACTION_BAR_VARIATION
 	)

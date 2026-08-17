@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=31 format=3]
+[gd_resource type="Theme" load_steps=32 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf" id="1_font"]
 [ext_resource type="Texture2D" path="res://theme/ui-panel-frame.svg" id="2_panel"]
@@ -217,6 +217,9 @@ content_margin_left = 24.0
 content_margin_top = 18.0
 content_margin_right = 24.0
 content_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_results_outcome"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.82)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_secondary_panel"]
 bg_color = Color(0.0313726, 0.0588235, 0.0980392, 0.92)
@@ -503,7 +506,11 @@ ExpeditionInventoryRow/constants/separation = 12
 ExpeditionModalPanel/base_type = &"PanelContainer"
 ExpeditionModalPanel/styles/panel = SubResource("StyleBoxFlat_modal")
 ExpeditionSettingsRows/base_type = &"VBoxContainer"
-ExpeditionSettingsRows/constants/separation = 6
+ExpeditionSettingsRows/constants/separation = 9
+ExpeditionSettingsRow/base_type = &"HBoxContainer"
+ExpeditionSettingsRow/constants/separation = 24
+ExpeditionSettingsSectionDivider/base_type = &"HSeparator"
+ExpeditionSettingsSectionDivider/constants/separation = 18
 ExpeditionSettingsLabel/base_type = &"Label"
 ExpeditionSettingsLabel/fonts/font = SubResource("FontVariation_regular")
 ExpeditionSettingsLabel/font_sizes/font_size = 24
@@ -517,6 +524,28 @@ ExpeditionSettingsToggle/styles/normal = SubResource("StyleBoxEmpty_settings_tog
 ExpeditionSettingsToggle/styles/hover = SubResource("StyleBoxEmpty_settings_toggle")
 ExpeditionSettingsToggle/styles/pressed = SubResource("StyleBoxEmpty_settings_toggle")
 ExpeditionSettingsToggle/styles/disabled = SubResource("StyleBoxEmpty_settings_toggle")
+ExpeditionResultsOutcomeCard/base_type = &"PanelContainer"
+ExpeditionResultsOutcomeCard/styles/panel = SubResource("StyleBoxFlat_results_outcome")
+ExpeditionResultsMetricCard/base_type = &"PanelContainer"
+ExpeditionResultsMetricCard/styles/panel = SubResource("StyleBoxFlat_secondary_panel")
+ExpeditionResultsAuditCard/base_type = &"PanelContainer"
+ExpeditionResultsAuditCard/styles/panel = SubResource("StyleBoxFlat_status")
+ExpeditionResultsOutcome/base_type = &"Label"
+ExpeditionResultsOutcome/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionResultsOutcome/fonts/font = SubResource("FontVariation_heading")
+ExpeditionResultsOutcome/font_sizes/font_size = 36
+ExpeditionResultsMetric/base_type = &"Label"
+ExpeditionResultsMetric/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionResultsMetric/fonts/font = SubResource("FontVariation_heading")
+ExpeditionResultsMetric/font_sizes/font_size = 30
+ExpeditionResultsMetricLabel/base_type = &"Label"
+ExpeditionResultsMetricLabel/colors/font_color = Color(0.658824, 0.690196, 0.713726, 1)
+ExpeditionResultsMetricLabel/fonts/font = SubResource("FontVariation_regular")
+ExpeditionResultsMetricLabel/font_sizes/font_size = 18
+ExpeditionResultsAudit/base_type = &"Label"
+ExpeditionResultsAudit/colors/font_color = Color(0.658824, 0.690196, 0.713726, 1)
+ExpeditionResultsAudit/fonts/font = SubResource("FontVariation_regular")
+ExpeditionResultsAudit/font_sizes/font_size = 14
 ExpeditionTitle/base_type = &"Label"
 ExpeditionTitle/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
 ExpeditionTitle/fonts/font = SubResource("FontVariation_heading")

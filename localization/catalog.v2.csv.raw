@@ -870,6 +870,8 @@ prepare.unit,調整隊伍,Manage Party
 prepare.xp,購買經驗值,Buy XP
 results.camp,返回營地,Return to Camp
 results.menu,返回主選單,Return to Menu
+results.metric.currency_delta,本次貨幣獎勵,Expedition Currency Reward
+results.metric.profile_currency,目前持有貨幣,Current Currency
 results.outcome.abandoned,已放棄遠征,Expedition Abandoned
 results.outcome.completed,遠征完成,Expedition Completed
 results.outcome.failed,遠征失敗,Expedition Failed
@@ -930,6 +932,7 @@ settings.value.locale.zh_TW,繁體中文（台灣）,Traditional Chinese (Taiwan
 settings.value.ui_scale_percent.100,100%,100%
 settings.value.ui_scale_percent.125,125%,125%
 settings.value.ui_scale_percent.150,150%,150%
+system_menu.open,選單,Menu
 tooltip.collection_order,圖鑑順序,Collection Order
 tooltip.cost,花費,Cost
 tooltip.reward_amount,獎勵數量,Reward Amount

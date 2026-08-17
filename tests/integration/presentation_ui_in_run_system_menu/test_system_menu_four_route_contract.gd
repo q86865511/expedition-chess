@@ -42,9 +42,9 @@ func test_four_run_routes_replace_resident_run_menu_with_system_button() -> void
 		assert_eq(menu_button.name, "SystemMenuButton")
 		assert_eq(
 			StringName(menu_button.get_meta(&"localization_key", &"")),
-			&"screen.run_container.title"
+			&"system_menu.open"
 		)
-		assert_eq(menu_button.text, _localized()[&"screen.run_container.title"])
+		assert_eq(menu_button.text, _localized()[&"system_menu.open"])
 		assert_eq(
 			String(menu_button.get_meta(&"accessible_text", "")),
 			menu_button.text,
@@ -347,6 +347,7 @@ func _hud_test_content_text(key: StringName) -> String:
 func _localized() -> Dictionary:
 	var values: Dictionary = {
 		&"screen.run_container.title": "遠征",
+		&"system_menu.open": "選單",
 		&"system_menu.title": "系統選單",
 		&"menu.continue": "繼續遠征",
 		&"system_menu.settings": "設定",

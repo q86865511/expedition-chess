@@ -12,6 +12,7 @@ const SCREEN_COMPOSITION_TYPE_INVALID: StringName = \
 const SYSTEM_MENU_BIND_INVALID: StringName = &"SYSTEM_MENU_BIND_INVALID"
 const SYSTEM_MENU_INPUT: StringName = &"system_menu"
 const SYSTEM_MENU_BUTTON_NODE: StringName = &"SystemMenuButton"
+const SYSTEM_MENU_BUTTON_LOCALIZATION_KEY: StringName = &"system_menu.open"
 const RUN_ROUTES: Array[StringName] = [
 	&"RUN_MAP",
 	&"RUN_PREPARE",
@@ -26,6 +27,7 @@ const CAMP_FACILITY_ROUTES: Array[StringName] = [
 	&"FACILITY_CHALLENGE_MONUMENT",
 ]
 const SHELL_ROUTES: Array[StringName] = [
+	&"SETTINGS",
 	&"CAMP_WORLD",
 	&"FACILITY_EXPEDITION_GATE",
 	&"FACILITY_COMMANDER_HALL",
@@ -36,6 +38,25 @@ const SHELL_ROUTES: Array[StringName] = [
 	&"RUN_PREPARE",
 	&"RUN_COMBAT",
 	&"RUN_REWARD",
+	&"RESULTS",
+	&"RESULTS_FALLBACK",
+]
+const SYSTEM_MENU_ROUTES: Array[StringName] = [
+	&"SETTINGS",
+	&"CAMP_WORLD",
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+	&"RUN_MAP",
+	&"RUN_PREPARE",
+	&"RUN_COMBAT",
+	&"RUN_REWARD",
+	&"RUN_ROUTE_FALLBACK",
+	&"APP_ROUTE_FALLBACK",
+	&"RESULTS",
+	&"RESULTS_FALLBACK",
 ]
 
 const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
@@ -151,6 +172,7 @@ var _system_menu_pause_captured: bool = false
 var _system_menu_previous_paused: bool = false
 var _prepare_refresh_quote: ShopQuoteSnapshot
 var _prepare_xp_quote: ShopXpQuoteSnapshot
+var _route_ui_scale_percent: int = 100
 
 
 func _ready() -> void:
@@ -170,11 +192,7 @@ func bind_system_menu_settings(
 	_system_menu_settings_snapshot = snapshot.deep_clone()
 	_system_menu_settings_port = port
 	if _system_menu_overlay != null:
-		_system_menu_overlay.configure(
-			_localized_text_clone(),
-			_system_menu_settings_snapshot,
-			_system_menu_settings_port
-		)
+		_configure_system_menu_overlay()
 	return &""
 
 
@@ -216,7 +234,7 @@ func is_background_input_blocked() -> bool:
 
 func open_system_menu() -> bool:
 	if (
-		route_kind not in RUN_ROUTES
+		route_kind not in SYSTEM_MENU_ROUTES
 		or not _live_active
 		or _modal_open
 		or _system_menu_overlay == null
@@ -281,6 +299,7 @@ func prepare_live_binding(
 		return composition_error
 	_apply_prepare_shop_quote_controls()
 	_live_context = context
+	_configure_system_menu_overlay()
 	return &""
 
 
@@ -324,7 +343,7 @@ func activate_live() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if (
-		route_kind not in RUN_ROUTES
+		route_kind not in SYSTEM_MENU_ROUTES
 		or event == null
 		or not event.is_action_pressed(SYSTEM_MENU_INPUT, false, true)
 	):
@@ -626,13 +645,16 @@ func _bind_localized_controls() -> void:
 			action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
 	else:
+		var uses_outgame_shell := route_kind in [
+			&"SETTINGS", &"RESULTS", &"RESULTS_FALLBACK",
+		]
 		var controls: BoxContainer = (
 			HBoxContainer.new()
-			if route_kind == &"SETTINGS"
+			if uses_outgame_shell
 			else VBoxContainer.new()
 		)
 		controls.name = "Actions"
-		if route_kind == &"SETTINGS":
+		if uses_outgame_shell:
 			controls.z_index = 6
 		else:
 			# 動作欄真置中：PRESET_CENTER 的錨點在中心，但預設 grow 會讓
@@ -645,13 +667,14 @@ func _bind_localized_controls() -> void:
 		add_child(controls)
 		for action_id: StringName in action_ids:
 			var action := _new_action_button(action_id)
-			if route_kind == &"SETTINGS":
+			if uses_outgame_shell:
 				action.theme_type_variation = &"ExpeditionBottomAction"
 				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
 		if route_kind == &"MENU_MAIN":
 			_apply_menu_layout(controls)
 		_apply_settings_layout(100)
+		_apply_results_layout()
 	_install_system_menu()
 
 
@@ -687,15 +710,19 @@ func _apply_menu_layout(controls: BoxContainer, scale_percent: int = 100) -> voi
 
 
 func _install_system_menu() -> void:
-	if route_kind not in RUN_ROUTES or _system_menu_overlay != null:
+	if route_kind not in SYSTEM_MENU_ROUTES or _system_menu_overlay != null:
 		return
 	_system_menu_button = Button.new()
 	_system_menu_button.name = SYSTEM_MENU_BUTTON_NODE
-	_system_menu_button.text = _context.resolve_text(&"screen.run_container.title")
+	_system_menu_button.text = _context.resolve_text(
+		SYSTEM_MENU_BUTTON_LOCALIZATION_KEY
+	)
 	_system_menu_button.focus_mode = Control.FOCUS_ALL
 	_system_menu_button.disabled = true
 	# Visible text, accessibility text, and stable metadata share one exact key.
-	_system_menu_button.set_meta(&"localization_key", &"screen.run_container.title")
+	_system_menu_button.set_meta(
+		&"localization_key", SYSTEM_MENU_BUTTON_LOCALIZATION_KEY
+	)
 	_system_menu_button.set_meta(
 		&"accessible_text", _system_menu_button.text
 	)
@@ -727,11 +754,7 @@ func _install_system_menu() -> void:
 		overlay_host.add_child(_system_menu_overlay)
 	else:
 		add_child(_system_menu_overlay)
-	_system_menu_overlay.configure(
-		_localized_text_clone(),
-		_system_menu_settings_snapshot,
-		_system_menu_settings_port
-	)
+	_configure_system_menu_overlay()
 	_system_menu_overlay.closed.connect(_on_system_menu_closed)
 	_system_menu_overlay.return_to_menu_requested.connect(
 		_on_system_menu_return_to_menu_requested
@@ -755,12 +778,37 @@ func _on_system_menu_closed() -> void:
 
 func _on_system_menu_return_to_menu_requested() -> void:
 	close_system_menu()
+	var action_id := _system_menu_return_action_id()
 	if (
-		_live_active
+		not action_id.is_empty()
+		and _live_active
 		and _live_context != null
 		and _live_context.action_port != null
 	):
-		_dispatch_action(&"run.menu", null)
+		_dispatch_action(action_id, null)
+
+
+func _configure_system_menu_overlay() -> void:
+	if _system_menu_overlay == null:
+		return
+	_system_menu_overlay.configure(
+		_localized_text_clone(),
+		_system_menu_settings_snapshot,
+		_system_menu_settings_port,
+		not _system_menu_return_action_id().is_empty()
+	)
+
+
+func _system_menu_return_action_id() -> StringName:
+	if _live_context == null or _live_context.action_port == null:
+		return &""
+	var available := _live_context.action_port.action_ids()
+	for action_id: StringName in [
+		&"run.menu", &"camp.menu", &"results.menu",
+	]:
+		if action_id in available:
+			return action_id
+	return &""
 
 
 func _on_system_menu_exit_requested() -> void:
@@ -893,7 +941,7 @@ func _install_b1_layout() -> void:
 
 
 func _install_fullscreen_ui_background() -> void:
-	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
+	if route_kind != &"MENU_MAIN":
 		return
 	var background := Panel.new()
 	background.name = "FullscreenBackground"
@@ -905,7 +953,7 @@ func _install_fullscreen_ui_background() -> void:
 
 
 func _configure_non_b1_layout(title: Label) -> void:
-	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
+	if route_kind != &"MENU_MAIN":
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	if route_kind == &"MENU_MAIN":
@@ -922,13 +970,6 @@ func _configure_non_b1_layout(title: Label) -> void:
 			title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 			title.z_index = 3
 		return
-	if title != null:
-		title.position = Vector2(108.0, 42.0)
-		title.size = Vector2(1704.0, 84.0)
-		ExpeditionLayoutMetrics.set_fixed_min(title, 0.0, 84.0)
-		title.theme_type_variation = &"ExpeditionTitle"
-		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_apply_settings_layout(100)
 
 
 func _install_menu_key_art() -> void:
@@ -952,13 +993,15 @@ func _install_menu_key_art() -> void:
 
 
 func apply_theme_scale_layout(scale_percent: int) -> void:
-	_apply_settings_layout(scale_percent)
+	_route_ui_scale_percent = clampi(scale_percent, 100, 150)
 	if route_kind == &"MENU_MAIN":
 		_apply_menu_layout(
 			get_node_or_null(^"Actions") as BoxContainer, scale_percent
 		)
 	if _layout_shell != null:
-		_layout_shell.set_scale_factor(float(scale_percent) / 100.0)
+		_layout_shell.set_scale_factor(
+			float(_route_ui_scale_percent) / 100.0
+		)
 		var title := get_node_or_null(^"Label") as Label
 		if title != null:
 			var title_rect := _layout_shell.current_content_rect(
@@ -968,6 +1011,7 @@ func apply_theme_scale_layout(scale_percent: int) -> void:
 			title_rect.size.x = ProductionLayoutShell.TITLE_WIDTH
 			title.position = title_rect.position
 			title.size = title_rect.size
+		_refresh_route_layout()
 		_sync_status_band_visibility()
 		# 主題切換後子節點 minimum 的重算是延遲的；立即量測會拿到舊值。
 		# 下一影格再收斂一次（shell 帶高實測＋composition rect 重排）。
@@ -978,44 +1022,76 @@ func apply_theme_scale_layout(scale_percent: int) -> void:
 ## 其上為畫面狀態帶、其上為 Composition（draft 驗證列保留在 Composition
 ## 可見高度內）。所有高度隨 UI 縮放 ×factor，任何縮放下不出安全區。
 func _apply_settings_layout(scale_percent: int) -> void:
-	if route_kind != &"SETTINGS":
+	if route_kind != &"SETTINGS" or _layout_shell == null:
 		return
 	var factor := float(scale_percent) / 100.0
-	var safe_bottom := 1080.0 - ProductionLayoutShell.SAFE_MARGIN
-	var actions_height := ceilf(72.0 * factor)
-	var actions_top := safe_bottom - actions_height
-	var status_height := ceilf(66.0 * factor)
-	var gap := ceilf(12.0 * factor)
-	var status_top := actions_top - gap - status_height
-	var composition_top := 150.0
-	var composition_height := status_top - gap - composition_top
+	var center := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_CENTER
+	)
+	var bottom := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_BOTTOM
+	)
+	var draft_status_height := ceilf(
+		ExpeditionLayoutMetrics.SETTINGS_DRAFT_STATUS_HEIGHT * factor
+	)
 	var actions := get_node_or_null(^"Actions") as Control
 	if actions != null:
-		actions.position = Vector2(108.0, actions_top)
-		actions.size = Vector2(1704.0, actions_height)
+		actions.position = bottom.position
+		actions.size = bottom.size
 	var composition := get_node_or_null(^"Composition") as Control
 	if composition != null:
-		composition.position = Vector2(108.0, composition_top)
+		composition.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		composition.grow_horizontal = Control.GROW_DIRECTION_END
+		composition.grow_vertical = Control.GROW_DIRECTION_END
+		composition.position = center.position
 		ExpeditionLayoutMetrics.set_fixed_min(
-			composition, 1704.0, composition_height
+			composition, center.size.x, center.size.y
 		)
-		composition.size = Vector2(1704.0, composition_height)
+		composition.size = center.size
 		composition.clip_contents = true
 		if composition.has_method(&"apply_status_rect"):
 			composition.call(
 				&"apply_status_rect",
 				Rect2(
 					0.0,
-					composition_height - status_height,
-					1704.0,
-					status_height
+					center.size.y - draft_status_height,
+					center.size.x,
+					draft_status_height
 				)
 			)
-	_status_view.attach(
-		self,
-		0,
-		Rect2(108.0, status_top, 1704.0, status_height)
+
+
+func _apply_results_layout() -> void:
+	if (
+		route_kind not in [&"RESULTS", &"RESULTS_FALLBACK"]
+		or _layout_shell == null
+	):
+		return
+	var center := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_CENTER
 	)
+	var bottom := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_BOTTOM
+	)
+	var actions := get_node_or_null(^"Actions") as Control
+	if actions != null:
+		actions.position = bottom.position
+		actions.size = bottom.size
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		composition.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		composition.grow_horizontal = Control.GROW_DIRECTION_END
+		composition.grow_vertical = Control.GROW_DIRECTION_END
+		composition.position = center.position
+		composition.size = center.size
+		composition.clip_contents = true
+		if composition.has_method(&"refresh_layout_rects"):
+			composition.call(&"refresh_layout_rects")
+
+
+func _refresh_route_layout() -> void:
+	_apply_settings_layout(_route_ui_scale_percent)
+	_apply_results_layout()
 
 
 func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
@@ -2866,6 +2942,7 @@ func _sync_status_band_visibility() -> void:
 		return
 	var visible := not _status_view.message_text().is_empty()
 	_layout_shell.set_status_visible(visible)
+	_refresh_route_layout()
 	_status_view.attach(
 		self,
 		0,

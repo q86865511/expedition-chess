@@ -172,6 +172,16 @@
   - `CAMP_WORLD` 中央裝飾 surface 已收斂，由環境圖框獨佔單一可見框線。
   - 底部帶左半用途定案為目前 focus／hover 設施名稱的情境提示，沿用既有 loc。
   - 指定修訂完成並提交後，依使用者裁決開始 B-out-3。
+- **B-out-3（2026-08-17 使用者核可，含四項修訂）**：`SETTINGS` 保留單一
+  標籤欄、縮放權威與既有節點契約後進 route-local shell；`RESULTS`／fallback
+  的硬編 offset 已收進 `ExpeditionLayoutMetrics`，五項結算資料卡片化。局外 ESC
+  allowlist、內嵌設定與雙確認契約完成；`MENU_MAIN` 維持排除。`app/main.tscn`
+  的兩個靶實查為無繪製 `Control`，無須修改。四組畫面狀態 × 9 組解析度／UI scale
+  共 36 張已逐張檢視，36/36、36 unique SHA、`issues=[]`。核可修訂補上兩張大數字卡
+  的本次獎勵／目前持有貨幣 loc 標籤、設定捲動區滿高、右上入口改標「選單」及完成橫幅
+  單框；另修正營地 metrics 與入口重疊。三組受影響尺寸 × 四狀態共 12 張補圖逐張檢視，
+  12/12、12 unique SHA、`issues=[]`。最終 All 1471/1471、39232 assertions、Spec 4096/0。
+  證據：`evidence/b-out-3/`。Phase B 完成，停止並等待下一批，不開始 Phase C。
 
 ### Phase C｜美術資產接線（讓 44 組資產上場）
 1. 單位視覺：棋盤與備戰用 SpriteFrames（idle/walk/attack 動畫）、商店卡與圖鑑

@@ -31,6 +31,7 @@ var _state: State = State.CLOSED
 var _localized_text: Dictionary[StringName, String] = {}
 var _settings_snapshot: SettingsSnapshot
 var _settings_port: SettingsApplicationPort
+var _return_to_menu_available: bool = true
 var _surface: Control
 var _active_focus_controls: Array[Control] = []
 var _background_controls: Dictionary = {}
@@ -51,7 +52,8 @@ func _ready() -> void:
 func configure(
 	localized_text: Dictionary,
 	settings_snapshot: SettingsSnapshot = null,
-	settings_port: SettingsApplicationPort = null
+	settings_port: SettingsApplicationPort = null,
+	return_to_menu_available: bool = true
 ) -> void:
 	_localized_text.clear()
 	for key: Variant in localized_text.keys():
@@ -62,6 +64,7 @@ func configure(
 		else null
 	)
 	_settings_port = settings_port
+	_return_to_menu_available = return_to_menu_available
 	if _state != State.CLOSED:
 		_rebuild_state()
 
@@ -211,7 +214,10 @@ func _build_root() -> void:
 		&"menu.settings",
 		_on_settings_pressed
 	)
-	_add_button(content, &"run.menu", &"run.menu", _on_menu_pressed)
+	var return_to_menu := _add_button(
+		content, &"run.menu", &"run.menu", _on_menu_pressed
+	)
+	return_to_menu.disabled = not _return_to_menu_available
 	_add_button(content, &"menu.exit", &"menu.exit", _on_exit_pressed)
 	_finish_focus_graph()
 

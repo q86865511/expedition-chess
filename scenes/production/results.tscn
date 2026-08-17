@@ -11,34 +11,14 @@ route_kind = &"RESULTS"
 script = ExtResource("2")
 
 [node name="ReceiptValue" type="Label" parent="Composition"]
-offset_left = 72.0
-offset_top = 112.0
-offset_right = 1040.0
-offset_bottom = 144.0
 
 [node name="OutcomeValue" type="Label" parent="Composition"]
-offset_left = 72.0
-offset_top = 160.0
-offset_right = 1040.0
-offset_bottom = 192.0
 
 [node name="RewardValue" type="Label" parent="Composition"]
-offset_left = 72.0
-offset_top = 208.0
-offset_right = 1040.0
-offset_bottom = 240.0
 
 [node name="ProfileValue" type="Label" parent="Composition"]
-offset_left = 72.0
-offset_top = 256.0
-offset_right = 1040.0
-offset_bottom = 288.0
 
 [node name="DigestValue" type="Label" parent="Composition"]
-offset_left = 72.0
-offset_top = 304.0
-offset_right = 1040.0
-offset_bottom = 352.0
 
 [node name="Label" type="Label" parent="."]
 text = ""

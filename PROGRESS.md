@@ -13,6 +13,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-17] ✅ G2 `ui-art-refresh` B-out-3 使用者核可（含四項修訂），Phase B 完成 — `SETTINGS`
+  保留單一標籤欄／縮放權威與既有節點路徑，進入無側欄的 route-local shell 主面板並新增
+  accessibility／audio 分區；`RESULTS`／fallback 的 `.tscn` offset 全數收進
+  `ExpeditionLayoutMetrics`，五項結算資料卡片化。ESC 系統選單放行營地、五設施、圖鑑、
+  設定、結算與既有 RUN routes，內嵌設定及雙確認不變；`MENU_MAIN` 維持排除。實查
+  `app/main.tscn` 兩個世界靶已是不可繪製 `Control`，故無該場景 diff。1280／1920／2560 ×
+  UI 100／125／150 的四組畫面狀態共 36 張已逐張人工檢視；修正結算 label 在 125%
+  minimum 臨界點往左生長後，evidence 36/36、36 unique SHA、`issues=[]`。Fresh All exit 0：
+  使用者核可後，兩張大數字卡補上本次獎勵／目前持有貨幣雙語標籤，receipt／digest 降為
+  輔助小字；設定捲動區吃滿面板；頂欄入口依實際行為改標「選單」；結算橫幅收為單框。
+  補圖檢視另修正營地 metrics 與選單入口重疊，三組受影響尺寸 × 四狀態共 12 張補圖為
+  12/12、12 unique SHA、`issues=[]`，均已逐張檢視。最終 All exit 0：1471/1471 tests、
+  39232 assertions、0 failures／errors／orphans，Spec 4096／0；loc parity 13/13、
+  1936 assertions。證據見 `specs/ui-art-refresh/evidence/b-out-3/`；Phase B 至此完成，未 push。
+
 - [2026-08-17] ✅ G2 `ui-art-refresh` B-out-2 使用者核可（含圖鑑換行修訂）— 五個營地設施
   全數進入 `ProductionLayoutShell` 的 route-local 分支；四個單區設施移除空左右欄，
   `COLLECTION` 保留右側比較區並把內容清單改為 production portrait cards，搜尋／比較／
@@ -387,15 +402,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 B-out-2 實作、54 張 evidence 與 fresh All 已完成；停在使用者視覺核可閘門，
-  核可前不開始後續批次。
+- UI 線 Phase B（B-out-1～B-out-3）已完成並獲使用者核可；B-out-3 原 36 張矩陣與
+  修訂補圖 12 張、fresh All 皆通過。未 push，依裁決停止並等待下一批，不開始 Phase C。
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外 B-out-1 已核可；B-out-2 五設施 shell、portraits 與圖鑑卡片
-  修訂版已完成，等待使用者視覺核可。
+  對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 已核可；Phase B 完成，
+  Phase C 尚未開始。
 
 ## 待辦
 
@@ -405,8 +420,8 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  局內版面已改由 `in-run-hud` 承接（見下）；B-out-2 已停視覺核可閘門，核可後才排
-  局外後續批次；其後仍為 Phase C 資產接線、Phase D 中文化收尾。
+  局內版面已改由 `in-run-hud` 承接（見下）；局外 Phase B 已完成。依使用者指示停下，
+  不先行轉入 Phase C；其後仍為 Phase C 資產接線、Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

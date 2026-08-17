@@ -7,11 +7,21 @@ const CATEGORY_ORDER: Array[StringName] = [
 	CollectionBrowserViewModel.KIND_RECIPE,
 	CollectionBrowserViewModel.KIND_GLOSSARY,
 ]
+const TOOLBAR_HEIGHT: float = 72.0
+const TOOLBAR_GAP: float = 18.0
+const CATEGORY_WIDTH: float = 300.0
+# Collection 的 content 列含一張無 portrait 的指揮官資料卡與三張單位卡；190 在
+# 150% 時仍能讓四欄留在同列，同時容納 168px 圖像與 icon margin。
+const CARD_WIDTH: float = 190.0
+const CARD_ICON_SIZE: float = 168.0
+const COMPARE_RESULT_HEIGHT: float = 144.0
 
 var _view_model: CollectionBrowserViewModel
 var _navigation_port: LiveScreenNavigationPort
 var _localized_text: Dictionary[StringName, String] = {}
 var _signals_bound: bool = false
+var _visuals := ProductionUnitVisualCatalog.new()
+var _ui_scale_percent: int = 100
 
 
 func compose_collection(
@@ -30,9 +40,11 @@ func compose_collection(
 		else _minimal_profile_projection(profile.deep_clone())
 	)
 	_view_model = CollectionBrowserViewModel.new(owned_projection)
+	_configure_visual_controls()
 	_bind_controls()
 	_populate_categories()
 	_refresh_entries()
+	refresh_layout_rects()
 	return &""
 
 
@@ -110,7 +122,8 @@ func _refresh_entries() -> void:
 	for entry_index: int in matches.size():
 		var entry_id := StringName(matches[entry_index])
 		var label := _entry_text(entry_id)
-		entries.add_item(label)
+		var portrait := _entry_portrait(kind, entry_id)
+		entries.add_item(label, portrait)
 		var visible_index := entries.item_count - 1
 		entries.set_item_metadata(visible_index, entry_id)
 		entries.set_item_tooltip(
@@ -118,7 +131,7 @@ func _refresh_entries() -> void:
 			_tooltip_text(&"tooltip.collection_order", entry_index + 1)
 		)
 		if comparable:
-			compare.add_item(label)
+			compare.add_item(label, portrait)
 			var compare_index := compare.item_count - 1
 			compare.set_item_metadata(compare_index, entry_id)
 			compare.set_item_tooltip(
@@ -131,6 +144,118 @@ func _refresh_entries() -> void:
 		if comparable
 		else CollectionBrowserViewModel.CATEGORY_NOT_COMPARABLE
 	)
+
+
+func apply_theme_scale_layout(scale_percent: int) -> void:
+	_ui_scale_percent = clampi(scale_percent, 100, 150)
+	_apply_card_metrics()
+	refresh_layout_rects()
+
+
+func refresh_layout_rects() -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen == null:
+		return
+	var center := parent_screen.layout_region_content_rect(
+		ProductionLayoutShell.REGION_CENTER
+	)
+	var right := parent_screen.layout_region_content_rect(
+		ProductionLayoutShell.REGION_RIGHT
+	)
+	if center.size.x <= 0.0 or center.size.y <= 0.0:
+		return
+	var factor := float(_ui_scale_percent) / 100.0
+	var toolbar_height := ceilf(TOOLBAR_HEIGHT * factor)
+	var toolbar_gap := ceilf(TOOLBAR_GAP * factor)
+	var category_width := roundf(CATEGORY_WIDTH * factor)
+	var category := get_node_or_null(^"CategorySelector") as OptionButton
+	var search := get_node_or_null(^"SearchInput") as LineEdit
+	var entries := get_node_or_null(^"EntrySelector") as ItemList
+	var compare := get_node_or_null(^"CompareSelector") as ItemList
+	var result := get_node_or_null(^"CompareResult") as Label
+	if category != null:
+		category.position = center.position
+		category.size = Vector2(category_width, toolbar_height)
+	if search != null:
+		search.position = Vector2(
+			center.position.x + category_width + toolbar_gap,
+			center.position.y
+		)
+		search.size = Vector2(
+			maxf(0.0, center.size.x - category_width - toolbar_gap),
+			toolbar_height
+		)
+	if entries != null:
+		entries.position = Vector2(
+			center.position.x,
+			center.position.y + toolbar_height + toolbar_gap
+		)
+		entries.size = Vector2(
+			center.size.x,
+			maxf(0.0, center.size.y - toolbar_height - toolbar_gap)
+		)
+	if right.size.x <= 0.0 or right.size.y <= 0.0:
+		return
+	var result_height := ceilf(COMPARE_RESULT_HEIGHT * factor)
+	if compare != null:
+		compare.position = right.position
+		compare.size = Vector2(
+			right.size.x,
+			maxf(0.0, right.size.y - result_height - toolbar_gap)
+		)
+	if result != null:
+		result.position = Vector2(
+			right.position.x,
+			right.end.y - result_height
+		)
+		result.size = Vector2(right.size.x, result_height)
+
+
+func _configure_visual_controls() -> void:
+	var category := get_node_or_null(^"CategorySelector") as OptionButton
+	var search := get_node_or_null(^"SearchInput") as LineEdit
+	var entries := get_node_or_null(^"EntrySelector") as ItemList
+	var compare := get_node_or_null(^"CompareSelector") as ItemList
+	var result := get_node_or_null(^"CompareResult") as Label
+	if category != null:
+		category.theme_type_variation = &"ExpeditionCollectionCategory"
+	if search != null:
+		search.theme_type_variation = &"ExpeditionCollectionSearch"
+	if entries != null:
+		entries.theme_type_variation = &"ExpeditionCollectionCardGrid"
+		entries.icon_mode = ItemList.ICON_MODE_TOP
+		entries.same_column_width = true
+		entries.max_columns = 0
+		entries.allow_reselect = true
+		entries.set_meta(&"portrait_catalog_error", _visuals.load_error())
+	if compare != null:
+		compare.theme_type_variation = &"ExpeditionCollectionCompareList"
+		compare.icon_mode = ItemList.ICON_MODE_LEFT
+		compare.allow_reselect = true
+	if result != null:
+		result.theme_type_variation = &"ExpeditionCollectionCompareResult"
+		result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		result.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_apply_card_metrics()
+
+
+func _apply_card_metrics() -> void:
+	var factor := float(_ui_scale_percent) / 100.0
+	var entries := get_node_or_null(^"EntrySelector") as ItemList
+	var compare := get_node_or_null(^"CompareSelector") as ItemList
+	if entries != null:
+		entries.fixed_column_width = roundi(CARD_WIDTH * factor)
+		entries.fixed_icon_size = Vector2i.ONE * roundi(
+			CARD_ICON_SIZE * factor
+		)
+	if compare != null:
+		compare.fixed_icon_size = Vector2i.ONE * roundi(48.0 * factor)
+
+
+func _entry_portrait(kind: StringName, entry_id: StringName) -> Texture2D:
+	if kind != CollectionBrowserViewModel.KIND_CONTENT:
+		return null
+	return _visuals.try_portrait(entry_id)
 
 
 ## Matches against the resolved display name (current locale) rather than the

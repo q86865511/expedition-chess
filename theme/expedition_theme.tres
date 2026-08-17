@@ -373,6 +373,12 @@ content_margin_bottom = 3.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_settings_toggle"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_collection_surface"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+
 [resource]
 default_font = SubResource("FontVariation_regular")
 default_font_size = 27
@@ -620,3 +626,53 @@ ExpeditionCampSecondaryAction/styles/hover = SubResource("StyleBoxFlat_button_ho
 ExpeditionCampSecondaryAction/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 ExpeditionCampSecondaryAction/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
 ExpeditionCampSecondaryAction/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionCampFooterContext/base_type = &"Label"
+ExpeditionCampFooterContext/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionCampFooterContext/fonts/font = SubResource("FontVariation_heading")
+ExpeditionCampFooterContext/font_sizes/font_size = 22
+ExpeditionFacilityCardGrid/base_type = &"ItemList"
+ExpeditionFacilityCardGrid/fonts/font = SubResource("FontVariation_regular")
+ExpeditionFacilityCardGrid/font_sizes/font_size = 24
+ExpeditionFacilityCardGrid/constants/h_separation = 18
+ExpeditionFacilityCardGrid/constants/v_separation = 18
+ExpeditionFacilityCardGrid/constants/icon_margin = 12
+ExpeditionFacilityCardGrid/styles/panel = SubResource("StyleBoxEmpty_collection_surface")
+ExpeditionFacilityCardGrid/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionFacilityCardGrid/styles/selected = SubResource("StyleBoxFlat_selected")
+ExpeditionFacilityCardGrid/styles/selected_focus = SubResource("StyleBoxFlat_selected")
+ExpeditionCollectionCategory/base_type = &"OptionButton"
+ExpeditionCollectionCategory/fonts/font = SubResource("FontVariation_regular")
+ExpeditionCollectionCategory/font_sizes/font_size = 21
+ExpeditionCollectionCategory/styles/normal = SubResource("StyleBoxFlat_compact_button_normal")
+ExpeditionCollectionCategory/styles/hover = SubResource("StyleBoxFlat_compact_button_hover")
+ExpeditionCollectionCategory/styles/pressed = SubResource("StyleBoxFlat_compact_button_pressed")
+ExpeditionCollectionCategory/styles/disabled = SubResource("StyleBoxFlat_compact_button_disabled")
+ExpeditionCollectionCategory/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionCollectionSearch/base_type = &"LineEdit"
+ExpeditionCollectionSearch/fonts/font = SubResource("FontVariation_regular")
+ExpeditionCollectionSearch/font_sizes/font_size = 21
+ExpeditionCollectionSearch/styles/normal = SubResource("StyleBoxFlat_compact_field")
+ExpeditionCollectionSearch/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionCollectionCardGrid/base_type = &"ItemList"
+ExpeditionCollectionCardGrid/fonts/font = SubResource("FontVariation_regular")
+ExpeditionCollectionCardGrid/font_sizes/font_size = 21
+ExpeditionCollectionCardGrid/constants/h_separation = 18
+ExpeditionCollectionCardGrid/constants/v_separation = 18
+ExpeditionCollectionCardGrid/constants/icon_margin = 12
+ExpeditionCollectionCardGrid/styles/panel = SubResource("StyleBoxEmpty_collection_surface")
+ExpeditionCollectionCardGrid/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionCollectionCardGrid/styles/selected = SubResource("StyleBoxFlat_selected")
+ExpeditionCollectionCardGrid/styles/selected_focus = SubResource("StyleBoxFlat_selected")
+ExpeditionCollectionCompareList/base_type = &"ItemList"
+ExpeditionCollectionCompareList/fonts/font = SubResource("FontVariation_regular")
+ExpeditionCollectionCompareList/font_sizes/font_size = 18
+ExpeditionCollectionCompareList/constants/v_separation = 12
+ExpeditionCollectionCompareList/constants/icon_margin = 12
+ExpeditionCollectionCompareList/styles/panel = SubResource("StyleBoxEmpty_collection_surface")
+ExpeditionCollectionCompareList/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionCollectionCompareList/styles/selected = SubResource("StyleBoxFlat_selected")
+ExpeditionCollectionCompareList/styles/selected_focus = SubResource("StyleBoxFlat_selected")
+ExpeditionCollectionCompareResult/base_type = &"Label"
+ExpeditionCollectionCompareResult/colors/font_color = Color(0.843137, 0.764706, 0.603922, 1)
+ExpeditionCollectionCompareResult/fonts/font = SubResource("FontVariation_regular")
+ExpeditionCollectionCompareResult/font_sizes/font_size = 21

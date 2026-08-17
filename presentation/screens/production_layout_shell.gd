@@ -14,6 +14,17 @@ const CAMP_TOP_HEIGHT: float = 84.0
 const CAMP_BOTTOM_HEIGHT: float = 108.0
 const CAMP_LEFT_WIDTH: float = 0.0
 const CAMP_RIGHT_WIDTH: float = SIDE_WIDTH * 0.5
+const FACILITY_TOP_HEIGHT: float = 96.0
+const FACILITY_BOTTOM_HEIGHT: float = 108.0
+const FACILITY_LEFT_WIDTH: float = 0.0
+const COLLECTION_RIGHT_WIDTH: float = SIDE_WIDTH
+const CAMP_FACILITY_ROUTES: Array[StringName] = [
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+]
 const PANEL_CONTENT_MARGIN: Vector2 = Vector2(24.0, 18.0)
 const STATUS_HEIGHT: float = 66.0
 const STATUS_GUTTER: float = 12.0
@@ -74,8 +85,12 @@ func build(route_kind: StringName = &"") -> void:
 		if _bottom_scroll_enabled
 		else INF
 	)
-	_bottom_height = CAMP_BOTTOM_HEIGHT if route_kind == &"CAMP_WORLD" else (
-		PREPARE_BOTTOM_HEIGHT
+	_bottom_height = (
+		CAMP_BOTTOM_HEIGHT
+		if route_kind == &"CAMP_WORLD"
+		else FACILITY_BOTTOM_HEIGHT
+		if route_kind in CAMP_FACILITY_ROUTES
+		else PREPARE_BOTTOM_HEIGHT
 		if route_kind == &"RUN_PREPARE"
 		else BOTTOM_HEIGHT
 	)
@@ -101,6 +116,13 @@ func build(route_kind: StringName = &"") -> void:
 		if left_panel != null:
 			left_panel.visible = false
 	_add_panel(REGION_CENTER, "CenterRegion", current_region_rect(REGION_CENTER), center_variation, VBoxContainer.new())
+	if route_kind == &"CAMP_WORLD":
+		var camp_center_panel := _panels.get(REGION_CENTER) as PanelContainer
+		if camp_center_panel != null:
+			# CampEnvironmentView owns the one intentional frame. Suppressing the
+			# shell's decorative center surface removes the three-deep frame stack
+			# without changing any other route's panel vocabulary.
+			camp_center_panel.self_modulate = Color(1.0, 1.0, 1.0, 0.0)
 	if route_kind in [&"RUN_PREPARE", &"RUN_COMBAT"]:
 		var center_panel := _panels.get(REGION_CENTER) as PanelContainer
 		if center_panel != null:
@@ -198,13 +220,27 @@ func _effective_bottom_height() -> float:
 ## 頂/狀態帶照 factor 縮放；底部帶採 _effective_bottom_height 的實測值。
 func _region_rect_for_state_with_bottom(region: StringName) -> Rect2:
 	var authored_top_height := (
-		CAMP_TOP_HEIGHT if _route_kind == &"CAMP_WORLD" else TOP_HEIGHT
+		CAMP_TOP_HEIGHT
+		if _route_kind == &"CAMP_WORLD"
+		else FACILITY_TOP_HEIGHT
+		if _route_kind in CAMP_FACILITY_ROUTES
+		else TOP_HEIGHT
 	)
 	var left_width := (
-		CAMP_LEFT_WIDTH if _route_kind == &"CAMP_WORLD" else SIDE_WIDTH
+		CAMP_LEFT_WIDTH
+		if _route_kind == &"CAMP_WORLD"
+		else FACILITY_LEFT_WIDTH
+		if _route_kind in CAMP_FACILITY_ROUTES
+		else SIDE_WIDTH
 	)
 	var right_width := (
-		CAMP_RIGHT_WIDTH if _route_kind == &"CAMP_WORLD" else SIDE_WIDTH
+		CAMP_RIGHT_WIDTH
+		if _route_kind == &"CAMP_WORLD"
+		else COLLECTION_RIGHT_WIDTH
+		if _route_kind == &"COLLECTION"
+		else 0.0
+		if _route_kind in CAMP_FACILITY_ROUTES
+		else SIDE_WIDTH
 	)
 	var left_gutter := GUTTER if left_width > 0.0 else 0.0
 	var right_gutter := GUTTER if right_width > 0.0 else 0.0
@@ -309,6 +345,7 @@ func _bottom_panel_variation(status_visible: bool = false) -> StringName:
 	return (
 		ACTION_BAR_COMPACT_VARIATION
 		if _route_kind == &"CAMP_WORLD"
+			or _route_kind in CAMP_FACILITY_ROUTES
 			or (_bottom_scroll_enabled and status_visible)
 		else ACTION_BAR_VARIATION
 	)

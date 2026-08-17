@@ -279,6 +279,26 @@ func _add_facility_marker(canvas: Control, marker_spec: Dictionary) -> void:
 	marker.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	marker.grow_vertical = Control.GROW_DIRECTION_BOTH
 	marker.set_meta(&"facility_localization_key", localization_key)
+	marker.focus_entered.connect(_show_facility_context.bind(marker))
+	marker.mouse_entered.connect(_show_facility_context.bind(marker))
+
+
+func _show_facility_context(marker: Button) -> void:
+	if marker == null:
+		return
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen == null:
+		return
+	var context := parent_screen.find_child(
+		"CampFacilityContext", true, false
+	) as Label
+	if context == null:
+		return
+	context.text = marker.text
+	context.set_meta(
+		&"facility_localization_key",
+		marker.get_meta(&"facility_localization_key", &"")
+	)
 
 
 func _metric_label(key: StringName, value: String) -> Label:

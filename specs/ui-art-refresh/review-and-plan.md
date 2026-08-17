@@ -163,9 +163,15 @@
 
 - **B-out-1（2026-08-14 使用者核可）**：`MENU_MAIN` key art 直疊操作按鈕與
   `CAMP_WORLD` 主環境／場景設施標記；18 張解析度×UI scale 證據與 All exit 0。
-- **B-out-2（下一批）**：五設施進 `ProductionLayoutShell`、portraits 接線、圖鑑卡片化。
-  - 順手收斂：`CAMP_WORLD` 中央區三層嵌套框線收成單一框。
-  - 待裁決：`CAMP_WORLD` 底部帶左半空間的正式用途與配置。
+- **B-out-2（2026-08-17 使用者核可，含圖鑑換行修訂）**：五設施已進
+  `ProductionLayoutShell` 的 per-route 分支；production portraits 已接圖鑑 content
+  cards，並保留搜尋／比較／focus／節點契約。54 張解析度×UI scale 證據逐張檢視、
+  `issues=[]`，fresh All exit 0。核可後另補 6 張 UI 125%／150% 圖鑑證據；190
+  reference px 卡寬讓一張指揮官資料卡與三張 portrait 卡在高縮放仍維持同列，6/6、
+  `issues=[]`，定向契約 5/5、83 assertions。
+  - `CAMP_WORLD` 中央裝飾 surface 已收斂，由環境圖框獨佔單一可見框線。
+  - 底部帶左半用途定案為目前 focus／hover 設施名稱的情境提示，沿用既有 loc。
+  - 指定修訂完成並提交後，依使用者裁決開始 B-out-3。
 
 ### Phase C｜美術資產接線（讓 44 組資產上場）
 1. 單位視覺：棋盤與備戰用 SpriteFrames（idle/walk/attack 動畫）、商店卡與圖鑑

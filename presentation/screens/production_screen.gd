@@ -18,6 +18,25 @@ const RUN_ROUTES: Array[StringName] = [
 	&"RUN_COMBAT",
 	&"RUN_REWARD",
 ]
+const CAMP_FACILITY_ROUTES: Array[StringName] = [
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+]
+const SHELL_ROUTES: Array[StringName] = [
+	&"CAMP_WORLD",
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+	&"RUN_MAP",
+	&"RUN_PREPARE",
+	&"RUN_COMBAT",
+	&"RUN_REWARD",
+]
 
 const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
 ## design :201「UI 只由 unacknowledged committed receipt 顯示 result」的顯示端節點名。
@@ -547,6 +566,25 @@ func _bind_localized_controls() -> void:
 		add_child(result_label)
 	if route_kind == &"CAMP_WORLD" and _layout_shell != null:
 		_build_camp_action_controls(action_ids)
+	elif route_kind in CAMP_FACILITY_ROUTES and _layout_shell != null:
+		var facility_actions := HBoxContainer.new()
+		facility_actions.name = "Actions"
+		facility_actions.alignment = BoxContainer.ALIGNMENT_END
+		facility_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		facility_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(
+			facility_actions
+		)
+		for action_id: StringName in action_ids:
+			var facility_action := _new_action_button(action_id)
+			facility_action.theme_type_variation = \
+				&"ExpeditionCampSecondaryAction"
+			ExpeditionLayoutMetrics.set_fixed_min(
+				facility_action, 240.0, 72.0
+			)
+			facility_action.size_flags_horizontal = Control.SIZE_SHRINK_END
+			facility_action.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			facility_actions.add_child(facility_action)
 	elif route_kind == &"RUN_PREPARE" and _layout_shell != null:
 		var controls := HBoxContainer.new()
 		controls.name = "Actions"
@@ -824,7 +862,7 @@ func _dismiss_focused_text_edit() -> bool:
 
 
 func _install_b1_layout() -> void:
-	if route_kind != &"CAMP_WORLD" and route_kind not in RUN_ROUTES:
+	if route_kind not in SHELL_ROUTES:
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layout_shell = ProductionLayoutShell.new()
@@ -990,10 +1028,13 @@ func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
 		composition.add_child(staging)
 	else:
 		add_child(staging)
+	var first_facility_text := ""
 	for action_id: StringName in action_ids.slice(0, 5):
 		var facility := _new_action_button(action_id)
 		facility.theme_type_variation = &"ExpeditionCampFacilityMarker"
 		staging.add_child(facility)
+		if first_facility_text.is_empty():
+			first_facility_text = facility.text
 	var start := _new_action_button(&"camp.start")
 	start.theme_type_variation = &"ExpeditionCampStartAction"
 	staging.add_child(start)
@@ -1003,6 +1044,16 @@ func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
 	secondary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(secondary)
+	# B-out-2：左半帶作為目前設施的情境提示，不再是無意義留白；文字沿用
+	# 已解析的設施 loc key，避免新增另一套玩家可見字串。
+	var facility_context := Label.new()
+	facility_context.name = "CampFacilityContext"
+	facility_context.text = first_facility_text
+	facility_context.theme_type_variation = &"ExpeditionCampFooterContext"
+	facility_context.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	facility_context.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	facility_context.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	secondary.add_child(facility_context)
 	for action_id: StringName in [&"camp.settings", &"camp.menu"]:
 		var button := _new_action_button(action_id)
 		button.theme_type_variation = &"ExpeditionCampSecondaryAction"

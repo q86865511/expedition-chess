@@ -13,6 +13,17 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-17] ✅ G2 `ui-art-refresh` B-out-2 使用者核可（含圖鑑換行修訂）— 五個營地設施
+  全數進入 `ProductionLayoutShell` 的 route-local 分支；四個單區設施移除空左右欄，
+  `COLLECTION` 保留右側比較區並把內容清單改為 production portrait cards，搜尋／比較／
+  focus／既有節點契約不變。44 張單位 portrait 經既有 manifest catalog 接線，未虛構
+  commander→unit 對映。`CAMP_WORLD` 中央由環境圖框獨佔單一可見框線，底帶左半定案為
+  focus／hover 設施名稱提示。1280／1920／2560 × UI 100／125／150 共 54 張逐張人工
+  檢視，evidence 54/54、54 個唯一 SHA、`issues=[]`。Fresh All exit 0：1466/1466 tests、
+  39116 assertions、0 failures／errors／orphans，Spec 4096／0。核可後再把圖鑑 content
+  卡寬收為 190 reference px；受影響的 1280／1920／2560 × UI 125／150 共 6 張補圖逐張
+  複檢，6/6、`issues=[]`，定向契約 5/5、83 assertions。B-out-2 已可提交並轉入 B-out-3。
+
 - [2026-08-15] ✅ 平衡 screening 可暫停／續跑（逐案 checkpoint）— 分片改為每完成一個
   case 就 append 一行 JSONL 到 `artifacts/test/screening-checkpoint/shard-NN.jsonl`
   （含完整 case_proof 與執行度量），合併端改由 JSONL 全量重算，分片 JSON 降為診斷產物。
@@ -376,15 +387,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 B-out-2 進行中（Codex）：五設施進 shell＋portraits 接線＋圖鑑卡片化；
-  screening 已停，寫檔與跑批限制解除。
+- UI 線 B-out-2 實作、54 張 evidence 與 fresh All 已完成；停在使用者視覺核可閘門，
+  核可前不開始後續批次。
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外 B-out-1 已核可；下一批 B-out-2 為五設施進 shell、portraits
-  接線與圖鑑卡片化。
+  對局內畫面解除。局外 B-out-1 已核可；B-out-2 五設施 shell、portraits 與圖鑑卡片
+  修訂版已完成，等待使用者視覺核可。
 
 ## 待辦
 
@@ -394,8 +405,8 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
-  其後仍為 Phase C 資產接線、Phase D 中文化收尾。
+  局內版面已改由 `in-run-hud` 承接（見下）；B-out-2 已停視覺核可閘門，核可後才排
+  局外後續批次；其後仍為 Phase C 資產接線、Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

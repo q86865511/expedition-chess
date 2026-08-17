@@ -373,6 +373,12 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 進行中
 
+- **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
+  performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
+  `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
+- UI 線 B-out-2 進行中（Codex）：五設施進 shell＋portraits 接線＋圖鑑卡片化；
+  screening 已停，寫檔與跑批限制解除。
+
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者

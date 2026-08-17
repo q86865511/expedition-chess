@@ -13,6 +13,13 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-16] 🎨 UI 線 Phase B（局外視覺）整段完成 — B-out-1 `d7e91b9`（CAMP 環境圖
+  ＋MENU key art，核可含兩輪修訂）、B-out-2 `20212de`（五設施進 shell＋44 portraits
+  接圖鑑＋換行修訂）、B-out-3 `1c6ef32`（SETTINGS 骨架＋RESULTS 卡片化含標籤修訂＋
+  ESC 局外放行；app/main.tscn 點擊靶查證本為不可見）。最終 All 1471/1471、
+  39232 asserts、Spec 4096/0、loc parity 13/13 全綠；三批均經視覺核可閘門。
+  剩餘：Phase C 資產接線、Phase D 中文化收尾。
+
 - [2026-08-17] ✅ G2 `ui-art-refresh` B-out-3 使用者核可（含四項修訂），Phase B 完成 — `SETTINGS`
   保留單一標籤欄／縮放權威與既有節點路徑，進入無側欄的 route-local shell 主面板並新增
   accessibility／audio 分區；`RESULTS`／fallback 的 `.tscn` offset 全數收進

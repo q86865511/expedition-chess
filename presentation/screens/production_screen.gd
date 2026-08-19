@@ -118,6 +118,9 @@ const _SHOP_REJECTION_MESSAGE_KEYS: Dictionary = {
 	&"SHOP_SERIAL_EXHAUSTED": &"error.shop.internal_failure",
 	&"SHOP_MERGE_FAILED": &"error.shop.internal_failure",
 }
+const _SHOP_TRAIT_ATLAS: Texture2D = preload(
+	"res://assets/production/shared/trait.png"
+)
 
 ## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
 ## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
@@ -1707,7 +1710,9 @@ func _new_shop_card(
 	)
 	card.theme_type_variation = &"ExpeditionShopCard"
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# PREPARE 的相鄰分組動作頁可能高於商店列；卡片維持 layout-reference
+	# 的固定高度，不被整條 bottom scroll content 拉伸而把底列推到 viewport 外。
+	card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	card.set_meta(&"shop_slot_index", slot_index)
 	card.set_meta(
 		&"shop_offer_id",
@@ -1730,7 +1735,11 @@ func _new_shop_card(
 			)
 		)
 	)
-	ExpeditionLayoutMetrics.set_fixed_min(card, 168.0, 108.0)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		card,
+		ExpeditionLayoutMetrics.SHOP_CARD_SIZE.x,
+		ExpeditionLayoutMetrics.SHOP_CARD_SIZE.y
+	)
 	if preview == null:
 		var empty_key := (
 			&"error.presentation.action_not_available"
@@ -1787,86 +1796,205 @@ func _add_shop_card_content(
 	card: Button,
 	portrait: Texture2D
 ) -> void:
-	var content := VBoxContainer.new()
+	var content := MarginContainer.new()
 	content.name = "CardContent"
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content.theme_type_variation = &"ExpeditionShopCardInnerMargin"
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.clip_contents = true
 	card.add_child(content)
-
-	var identity_row := HBoxContainer.new()
-	identity_row.name = "IdentityRow"
-	identity_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ExpeditionLayoutMetrics.set_fixed_min(identity_row, 0.0, 48.0)
-	content.add_child(identity_row)
 
 	var portrait_view := TextureRect.new()
 	portrait_view.name = "Portrait"
-	ExpeditionLayoutMetrics.set_fixed_min(portrait_view, 48.0, 48.0)
 	portrait_view.texture = portrait
 	portrait_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	portrait_view.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	portrait_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	identity_row.add_child(portrait_view)
+	content.add_child(portrait_view)
 
-	var identity_text := VBoxContainer.new()
-	identity_text.name = "IdentityText"
-	identity_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity_row.add_child(identity_text)
+	var gradient_texture := GradientTexture2D.new()
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([
+		0.0,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_GRADIENT_START,
+		1.0,
+	])
+	gradient.colors = PackedColorArray([
+		Color(0.0156863, 0.027451, 0.0470588, 0.0),
+		Color(0.0156863, 0.027451, 0.0470588, 0.72),
+		Color(0.0156863, 0.027451, 0.0470588, 0.98),
+	])
+	gradient_texture.gradient = gradient
+	gradient_texture.fill_from = Vector2(0.5, 0.0)
+	gradient_texture.fill_to = Vector2(0.5, 1.0)
+	var gradient_view := TextureRect.new()
+	gradient_view.name = "BottomReadabilityGradient"
+	gradient_view.texture = gradient_texture
+	gradient_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	gradient_view.stretch_mode = TextureRect.STRETCH_SCALE
+	gradient_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(gradient_view)
+
+	var foreground_margin := MarginContainer.new()
+	foreground_margin.name = "ForegroundMargin"
+	foreground_margin.theme_type_variation = &"ExpeditionShopForegroundMargin"
+	foreground_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(foreground_margin)
+
+	var foreground := VBoxContainer.new()
+	foreground.name = "ForegroundLayout"
+	foreground.theme_type_variation = &"ExpeditionShopForegroundLayout"
+	foreground.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	foreground_margin.add_child(foreground)
+
+	var top_info := HBoxContainer.new()
+	top_info.name = "TopInfo"
+	top_info.theme_type_variation = &"ExpeditionShopTopInfo"
+	top_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	foreground.add_child(top_info)
+
+	var badge_stack := VBoxContainer.new()
+	badge_stack.name = "TraitBadges"
+	badge_stack.theme_type_variation = &"ExpeditionShopTraitBadgeStack"
+	badge_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge_stack.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	top_info.add_child(badge_stack)
+
+	var top_spacer := Control.new()
+	top_spacer.name = "TopSpacer"
+	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_info.add_child(top_spacer)
+
+	var ownership_cues := HBoxContainer.new()
+	ownership_cues.name = "OwnershipCues"
+	ownership_cues.theme_type_variation = &"ExpeditionShopOwnershipCues"
+	ownership_cues.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ownership_cues.size_flags_horizontal = Control.SIZE_SHRINK_END
+	top_info.add_child(ownership_cues)
+
+	var owned_cue := HBoxContainer.new()
+	owned_cue.name = "OwnedCueShapes"
+	owned_cue.theme_type_variation = &"ExpeditionShopTinyCueRow"
+	owned_cue.alignment = BoxContainer.ALIGNMENT_END
+	owned_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		owned_cue,
+		ExpeditionLayoutMetrics.SHOP_CARD_OWNED_CUE_WIDTH,
+		ExpeditionLayoutMetrics.SHOP_CARD_STAR_CUE_SIZE.y
+	)
+	ownership_cues.add_child(owned_cue)
+
+	var star_cue := HBoxContainer.new()
+	star_cue.name = "StarUpCueShape"
+	star_cue.theme_type_variation = &"ExpeditionShopTinyCueRow"
+	star_cue.alignment = BoxContainer.ALIGNMENT_END
+	star_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		star_cue,
+		ExpeditionLayoutMetrics.SHOP_CARD_STAR_CUE_SIZE.x,
+		ExpeditionLayoutMetrics.SHOP_CARD_STAR_CUE_SIZE.y
+	)
+	ownership_cues.add_child(star_cue)
+
+	var vertical_spacer := Control.new()
+	vertical_spacer.name = "VerticalSpacer"
+	vertical_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vertical_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	foreground.add_child(vertical_spacer)
+
+	var bottom_info := HBoxContainer.new()
+	bottom_info.name = "BottomInfo"
+	bottom_info.theme_type_variation = &"ExpeditionShopCardBottomInfo"
+	bottom_info.alignment = BoxContainer.ALIGNMENT_CENTER
+	bottom_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		bottom_info,
+		0.0,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_INFO_HEIGHT
+	)
+	foreground.add_child(bottom_info)
 
 	var name_label := Label.new()
 	name_label.name = "UnitName"
-	name_label.add_theme_font_size_override(&"font_size", 18)
+	name_label.theme_type_variation = &"ExpeditionShopCardName"
 	name_label.clip_text = true
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity_text.add_child(name_label)
+	bottom_info.add_child(name_label)
+
+	var cost_block := HBoxContainer.new()
+	cost_block.name = "CostBlock"
+	cost_block.theme_type_variation = &"ExpeditionShopCardCostBlock"
+	cost_block.alignment = BoxContainer.ALIGNMENT_END
+	cost_block.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bottom_info.add_child(cost_block)
+
+	var coin_icon := Label.new()
+	coin_icon.name = "CoinIcon"
+	coin_icon.theme_type_variation = &"ExpeditionShopCoinGlyph"
+	coin_icon.text = "●"
+	coin_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	coin_icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	coin_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		coin_icon,
+		ExpeditionLayoutMetrics.SHOP_CARD_COST_ICON_SIZE,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_INFO_HEIGHT
+	)
+	cost_block.add_child(coin_icon)
 
 	var price_label := Label.new()
-	price_label.name = "PriceTier"
-	price_label.add_theme_font_size_override(&"font_size", 18)
-	price_label.clip_text = true
-	price_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	price_label.name = "CostValue"
+	price_label.theme_type_variation = &"ExpeditionShopCardCost"
+	price_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	price_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	price_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity_text.add_child(price_label)
+	cost_block.add_child(price_label)
+
 	var tier_cues := HBoxContainer.new()
 	tier_cues.name = "TierCueShapes"
-	tier_cues.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	tier_cues.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	tier_cues.grow_vertical = Control.GROW_DIRECTION_BOTH
+	tier_cues.theme_type_variation = &"ExpeditionShopTinyCueRow"
 	tier_cues.alignment = BoxContainer.ALIGNMENT_END
 	tier_cues.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ExpeditionLayoutMetrics.set_fixed_min(tier_cues, 48.0, 12.0)
-	price_label.add_child(tier_cues)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		tier_cues,
+		ExpeditionLayoutMetrics.SHOP_CARD_TIER_CUE_WIDTH,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_INFO_HEIGHT
+	)
+	cost_block.add_child(tier_cues)
 
-	var trait_label := Label.new()
-	trait_label.name = "Traits"
-	trait_label.add_theme_font_size_override(&"font_size", 18)
-	trait_label.clip_text = true
-	trait_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	trait_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	trait_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_child(trait_label)
-
-	var ownership_label := Label.new()
-	ownership_label.name = "OwnedAndStarUp"
-	ownership_label.add_theme_font_size_override(&"font_size", 18)
-	ownership_label.clip_text = true
-	ownership_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	ownership_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ownership_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_child(ownership_label)
-	var star_cue := HBoxContainer.new()
-	star_cue.name = "StarUpCueShape"
-	star_cue.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	star_cue.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	star_cue.grow_vertical = Control.GROW_DIRECTION_BOTH
-	star_cue.alignment = BoxContainer.ALIGNMENT_END
-	star_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ExpeditionLayoutMetrics.set_fixed_min(star_cue, 30.0, 12.0)
-	ownership_label.add_child(star_cue)
+	# 舊路徑降為不可見的 accessible compatibility copy：既有唯讀語意
+	# probe／screen-reader metadata 可繼續讀取，玩家可見卡面不會出現長句。
+	var legacy_identity := HBoxContainer.new()
+	legacy_identity.name = "IdentityRow"
+	legacy_identity.visible = false
+	content.add_child(legacy_identity)
+	var legacy_identity_text := VBoxContainer.new()
+	legacy_identity_text.name = "IdentityText"
+	legacy_identity.add_child(legacy_identity_text)
+	var legacy_name := Label.new()
+	legacy_name.name = "UnitName"
+	legacy_identity_text.add_child(legacy_name)
+	var legacy_price := Label.new()
+	legacy_price.name = "PriceTier"
+	legacy_identity_text.add_child(legacy_price)
+	var legacy_tier_cues := HBoxContainer.new()
+	legacy_tier_cues.name = "TierCueShapes"
+	legacy_price.add_child(legacy_tier_cues)
+	var legacy_traits := Label.new()
+	legacy_traits.name = "Traits"
+	legacy_traits.visible = false
+	content.add_child(legacy_traits)
+	var legacy_ownership := Label.new()
+	legacy_ownership.name = "OwnedAndStarUp"
+	legacy_ownership.visible = false
+	content.add_child(legacy_ownership)
+	var legacy_star_cue := HBoxContainer.new()
+	legacy_star_cue.name = "StarUpCueShape"
+	legacy_ownership.add_child(legacy_star_cue)
 
 
 func _refresh_shop_card_localization(card: Button) -> void:
@@ -1904,62 +2032,133 @@ func _refresh_shop_card_localization(card: Button) -> void:
 	var star_key: StringName = &"tooltip.star"
 	var ownership_key: StringName = &"prepare.panel.units"
 	var name_label := card.get_node_or_null(
-		"CardContent/IdentityRow/IdentityText/UnitName"
+		"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/UnitName"
 	) as Label
 	if name_label != null:
 		name_label.text = unit_name
 		name_label.set_meta(&"content_localization_id", unit_def_id)
 		name_label.set_meta(&"accessible_text", unit_name)
+	var legacy_name := card.get_node_or_null(
+		"CardContent/IdentityRow/IdentityText/UnitName"
+	) as Label
+	if legacy_name != null:
+		legacy_name.text = unit_name
+		legacy_name.set_meta(&"content_localization_id", unit_def_id)
+		legacy_name.set_meta(&"accessible_text", unit_name)
 	var price_label := card.get_node_or_null(
-		"CardContent/IdentityRow/IdentityText/PriceTier"
+		"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 	) as Label
 	if price_label != null:
-		price_label.text = "%s %d" % [
-			_context.resolve_text(cost_key),
-			cost,
-		]
+		price_label.text = str(cost)
 		price_label.set_meta(&"localization_key", cost_key)
 		price_label.set_meta(&"authoritative_cost", cost)
 		price_label.set_meta(&"authoritative_cost_tier", cost_tier)
-		price_label.set_meta(&"accessible_text", price_label.text)
-		_refresh_shop_tier_cue(price_label, cost_tier)
-	var trait_label := card.get_node_or_null(
+		price_label.set_meta(
+			&"accessible_text",
+			"%s %d" % [_context.resolve_text(cost_key), cost]
+		)
+		_refresh_shop_tier_cue(
+			card.get_node_or_null(
+				"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/TierCueShapes"
+			) as HBoxContainer,
+			price_label.get_theme_color(&"font_color"),
+			cost_tier
+		)
+	var legacy_price := card.get_node_or_null(
+		"CardContent/IdentityRow/IdentityText/PriceTier"
+	) as Label
+	if legacy_price != null:
+		legacy_price.text = "%s %d" % [
+			_context.resolve_text(cost_key), cost,
+		]
+		legacy_price.set_meta(&"localization_key", cost_key)
+		legacy_price.set_meta(&"authoritative_cost", cost)
+		legacy_price.set_meta(&"authoritative_cost_tier", cost_tier)
+		legacy_price.set_meta(&"accessible_text", legacy_price.text)
+		_refresh_shop_tier_cue(
+			legacy_price.get_node_or_null(^"TierCueShapes") as HBoxContainer,
+			price_label.get_theme_color(&"font_color") if price_label != null else Color.WHITE,
+			cost_tier
+		)
+	var badge_stack := card.get_node_or_null(
+		"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/TraitBadges"
+	) as VBoxContainer
+	_refresh_shop_trait_badges(
+		badge_stack,
+		stored_trait_ids,
+		trait_labels
+	)
+	var legacy_traits := card.get_node_or_null(
 		"CardContent/Traits"
 	) as Label
-	if trait_label != null:
-		trait_label.text = " / ".join(trait_labels)
-		trait_label.set_meta(
-			&"content_localization_ids",
-			stored_trait_ids.duplicate()
+	if legacy_traits != null:
+		legacy_traits.text = " / ".join(trait_labels)
+		legacy_traits.set_meta(
+			&"content_localization_ids", stored_trait_ids.duplicate()
 		)
-		trait_label.set_meta(&"accessible_text", trait_label.text)
-	var ownership_label := card.get_node_or_null(
-		"CardContent/OwnedAndStarUp"
-	) as Label
+		legacy_traits.set_meta(&"accessible_text", legacy_traits.text)
+	var ownership_cues := card.get_node_or_null(
+		"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/OwnershipCues"
+	) as HBoxContainer
 	var star_result := (
 		_context.resolve_text(star_key)
 		if star_up_after_purchase
 		else ""
 	)
-	if ownership_label != null:
-		ownership_label.text = "%s %d" % [
+	if ownership_cues != null:
+		var ownership_accessible := "%s %d" % [
 			_context.resolve_text(ownership_key), owned_unit_count,
 		]
 		if star_up_after_purchase:
-			ownership_label.text += " · %s" % star_result
-		ownership_label.set_meta(
+			ownership_accessible += " · %s" % star_result
+		ownership_cues.set_meta(
 			&"localization_keys",
 			[ownership_key, star_key]
 		)
-		ownership_label.set_meta(
+		ownership_cues.set_meta(
 			&"star_up_after_purchase_value",
 			1 if star_up_after_purchase else 0
 		)
-		ownership_label.set_meta(
-			&"accessible_text",
-			ownership_label.text
+		ownership_cues.set_meta(&"accessible_text", ownership_accessible)
+		var cue_color := (
+			price_label.get_theme_color(&"font_color")
+			if price_label != null
+			else Color(0.960784, 0.941176, 0.87451, 1.0)
 		)
-		_refresh_shop_star_cue(ownership_label, star_up_after_purchase)
+		_refresh_shop_owned_cue(
+			ownership_cues.get_node_or_null(^"OwnedCueShapes") as HBoxContainer,
+			cue_color,
+			owned_unit_count
+		)
+		_refresh_shop_star_cue(
+			ownership_cues.get_node_or_null(^"StarUpCueShape") as HBoxContainer,
+			cue_color,
+			star_up_after_purchase
+		)
+	var legacy_ownership := card.get_node_or_null(
+		"CardContent/OwnedAndStarUp"
+	) as Label
+	if legacy_ownership != null:
+		legacy_ownership.text = "%s %d" % [
+			_context.resolve_text(ownership_key), owned_unit_count,
+		]
+		if star_up_after_purchase:
+			legacy_ownership.text += " · %s" % star_result
+		legacy_ownership.set_meta(
+			&"localization_keys", [ownership_key, star_key]
+		)
+		legacy_ownership.set_meta(
+			&"star_up_after_purchase_value",
+			1 if star_up_after_purchase else 0
+		)
+		legacy_ownership.set_meta(
+			&"accessible_text", legacy_ownership.text
+		)
+		_refresh_shop_star_cue(
+			legacy_ownership.get_node_or_null(^"StarUpCueShape") as HBoxContainer,
+			price_label.get_theme_color(&"font_color") if price_label != null else Color.WHITE,
+			star_up_after_purchase
+		)
 
 	var detail_lines: Array[String] = [
 		unit_name,
@@ -1984,8 +2183,91 @@ func _refresh_shop_card_localization(card: Button) -> void:
 	card.set_meta(&"accessible_text", detail_text)
 
 
-func _refresh_shop_tier_cue(price_label: Label, cost_tier: int) -> void:
-	var cue := price_label.get_node_or_null(^"TierCueShapes") as HBoxContainer
+func _refresh_shop_trait_badges(
+	badge_stack: VBoxContainer,
+	trait_ids: Array,
+	trait_labels: Array[String]
+) -> void:
+	if badge_stack == null:
+		return
+	_clear_shop_cue_children(badge_stack)
+	badge_stack.set_meta(&"content_localization_ids", trait_ids.duplicate())
+	badge_stack.set_meta(&"accessible_text", " / ".join(trait_labels))
+	var visible_count := mini(
+		ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_MAX,
+		mini(trait_ids.size(), trait_labels.size())
+	)
+	badge_stack.set_meta(&"visible_badge_count", visible_count)
+	for index: int in visible_count:
+		var trait_id := StringName(trait_ids[index])
+		var badge := PanelContainer.new()
+		badge.name = "TraitBadge%d" % index
+		badge.theme_type_variation = &"ExpeditionShopTraitBadge"
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(
+			badge,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_WIDTH,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_HEIGHT
+		)
+		badge_stack.add_child(badge)
+		var row := HBoxContainer.new()
+		row.name = "BadgeContent"
+		row.theme_type_variation = &"ExpeditionShopTraitBadgeContent"
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.add_child(row)
+		var icon := TextureRect.new()
+		icon.name = "Icon"
+		icon.texture = _shop_trait_icon_texture(trait_id)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(
+			icon,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_ICON_SIZE,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_ICON_SIZE
+		)
+		row.add_child(icon)
+		var label := Label.new()
+		label.name = "TraitName"
+		label.theme_type_variation = &"ExpeditionShopTraitBadgeLabel"
+		label.text = trait_labels[index]
+		label.clip_text = true
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.set_meta(&"content_localization_id", trait_id)
+		label.set_meta(&"accessible_text", label.text)
+		row.add_child(label)
+
+
+func _shop_trait_icon_texture(trait_id: StringName) -> AtlasTexture:
+	var cell := _shop_trait_atlas_cell(trait_id)
+	var icon := AtlasTexture.new()
+	icon.atlas = _SHOP_TRAIT_ATLAS
+	icon.region = Rect2(
+		Vector2(cell) * ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_ATLAS_CELL_SIZE,
+		ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_ATLAS_CELL_SIZE
+	)
+	return icon
+
+
+func _shop_trait_atlas_cell(trait_id: StringName) -> Vector2i:
+	var token := String(trait_id)
+	var faction_tokens := ["arcane", "ember", "frost", "iron", "shadow", "verdant"]
+	if token.begins_with("trait.faction_"):
+		return Vector2i(maxi(0, faction_tokens.find(token.trim_prefix("trait.faction_"))), 0)
+	var role_tokens := ["marksman", "mystic", "sentinel", "trickster", "vanguard", "warden"]
+	if token.begins_with("trait.role_"):
+		return Vector2i(0, maxi(0, role_tokens.find(token.trim_prefix("trait.role_"))) + 1)
+	return Vector2i(0, 7)
+
+
+func _refresh_shop_tier_cue(
+	cue: HBoxContainer,
+	color: Color,
+	cost_tier: int
+) -> void:
 	if cue == null:
 		return
 	_clear_shop_cue_children(cue)
@@ -1994,19 +2276,44 @@ func _refresh_shop_tier_cue(price_label: Label, cost_tier: int) -> void:
 	for index: int in maxi(1, cost_tier):
 		var pip := ColorRect.new()
 		pip.name = "TierPip%d" % index
-		pip.color = price_label.get_theme_color(&"font_color")
+		pip.color = color
 		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ExpeditionLayoutMetrics.set_fixed_min(pip, 6.0, 6.0)
+		ExpeditionLayoutMetrics.set_fixed_min(
+			pip,
+			ExpeditionLayoutMetrics.SHOP_CARD_TIER_PIP_SIZE,
+			ExpeditionLayoutMetrics.SHOP_CARD_TIER_PIP_SIZE
+		)
+		cue.add_child(pip)
+
+
+func _refresh_shop_owned_cue(
+	cue: HBoxContainer,
+	color: Color,
+	owned_unit_count: int
+) -> void:
+	if cue == null:
+		return
+	_clear_shop_cue_children(cue)
+	cue.set_meta(&"owned_unit_count", owned_unit_count)
+	cue.set_meta(&"non_color_cue", &"owned-copy-pips")
+	for index: int in mini(3, maxi(0, owned_unit_count)):
+		var pip := ColorRect.new()
+		pip.name = "OwnedPip%d" % index
+		pip.color = color
+		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(
+			pip,
+			ExpeditionLayoutMetrics.SHOP_CARD_OWNED_PIP_SIZE,
+			ExpeditionLayoutMetrics.SHOP_CARD_OWNED_PIP_SIZE
+		)
 		cue.add_child(pip)
 
 
 func _refresh_shop_star_cue(
-	ownership_label: Label,
+	cue: HBoxContainer,
+	color: Color,
 	star_up_after_purchase: bool
 ) -> void:
-	var cue := ownership_label.get_node_or_null(
-		^"StarUpCueShape"
-	) as HBoxContainer
 	if cue == null:
 		return
 	_clear_shop_cue_children(cue)
@@ -2017,12 +2324,12 @@ func _refresh_shop_star_cue(
 	)
 	var primary := ColorRect.new()
 	primary.name = "PrimaryShape"
-	primary.color = ownership_label.get_theme_color(&"font_color")
+	primary.color = color
 	primary.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ExpeditionLayoutMetrics.set_fixed_min(
 		primary,
-		6.0 if star_up_after_purchase else 18.0,
-		12.0 if star_up_after_purchase else 4.0
+		5.0 if star_up_after_purchase else 16.0,
+		10.0 if star_up_after_purchase else 4.0
 	)
 	cue.add_child(primary)
 	if star_up_after_purchase:
@@ -2030,7 +2337,7 @@ func _refresh_shop_star_cue(
 		secondary.name = "SecondaryShape"
 		secondary.color = primary.color
 		secondary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ExpeditionLayoutMetrics.set_fixed_min(secondary, 12.0, 6.0)
+		ExpeditionLayoutMetrics.set_fixed_min(secondary, 10.0, 5.0)
 		cue.add_child(secondary)
 
 

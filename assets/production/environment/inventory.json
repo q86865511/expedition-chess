@@ -1,7 +1,7 @@
 {
   "$schema": "environment-visual-inventory.schema.json",
   "schema_version": 1,
-  "slice": "ui-art-refresh-c-1",
+  "slice": "ui-art-refresh-c-2",
   "status": "adopted",
   "visuals": [
     {
@@ -39,6 +39,18 @@
       "source_path": "assets/production/map_attempts/run-map-attempt-01.png",
       "source_sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
       "provenance": "assets/production/provenance/run_map_environment.json"
+    },
+    {
+      "visual_id": "environment.run_combat",
+      "kind": "environment",
+      "status": "adopted",
+      "path": "assets/production/environment/run_combat.png",
+      "sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+      "width": 1672,
+      "height": 941,
+      "source_path": "assets/production/combat_attempts/run-combat-attempt-01.png",
+      "source_sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+      "provenance": "assets/production/provenance/run_combat_environment.json"
     }
   ]
 }

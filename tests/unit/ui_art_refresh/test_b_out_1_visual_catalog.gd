@@ -10,20 +10,29 @@ func test_catalog_loads_the_adopted_environment_visuals() -> void:
 	assert_eq(catalog.load_error(), &"")
 	assert_eq(
 		catalog.visual_ids(),
-		[&"environment.camp", &"key_art.menu_main", &"environment.run_map"]
+		[
+			&"environment.run_combat",
+			&"environment.camp",
+			&"key_art.menu_main",
+			&"environment.run_map",
+		]
 	)
 	var camp := catalog.try_texture(&"environment.camp")
 	var menu := catalog.try_texture(&"key_art.menu_main")
 	var run_map := catalog.try_texture(&"environment.run_map")
+	var run_combat := catalog.try_texture(&"environment.run_combat")
 	assert_not_null(camp)
 	assert_not_null(menu)
 	assert_not_null(run_map)
+	assert_not_null(run_combat)
 	if camp != null:
 		assert_eq(camp.get_size(), Vector2(1280.0, 720.0))
 	if menu != null:
 		assert_eq(menu.get_size(), Vector2(1672.0, 941.0))
 	if run_map != null:
 		assert_eq(run_map.get_size(), Vector2(1672.0, 941.0))
+	if run_combat != null:
+		assert_eq(run_combat.get_size(), Vector2(1672.0, 941.0))
 
 
 func test_environment_manifest_paths_and_hashes_match_disk() -> void:
@@ -34,7 +43,7 @@ func test_environment_manifest_paths_and_hashes_match_disk() -> void:
 	if not parsed is Dictionary:
 		return
 	var visuals: Array = (parsed as Dictionary).get("visuals", [])
-	assert_eq(visuals.size(), 3)
+	assert_eq(visuals.size(), 4)
 	for entry_value: Variant in visuals:
 		assert_true(entry_value is Dictionary)
 		if not entry_value is Dictionary:

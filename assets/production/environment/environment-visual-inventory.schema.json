@@ -8,7 +8,7 @@
   "properties": {
     "$schema": { "type": "string", "minLength": 1 },
     "schema_version": { "const": 1 },
-    "slice": { "const": "ui-art-refresh-c-1" },
+    "slice": { "const": "ui-art-refresh-c-2" },
     "status": { "const": "adopted" },
     "visuals": {
       "type": "array",

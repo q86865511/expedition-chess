@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "suite": "REQ-UX-002 playback focused Gut",
+  "exit_code": 0,
+  "scripts": 1,
+  "tests": 2,
+  "passing_tests": 2,
+  "assertions": 52,
+  "covered": [
+    "invalid multiplier matrix is state preserving",
+    "pause and 1x/2x/4x only move the presentation cursor"
+  ]
+}

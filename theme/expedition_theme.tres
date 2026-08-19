@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=32 format=3]
+[gd_resource type="Theme" load_steps=33 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf" id="1_font"]
 [ext_resource type="Texture2D" path="res://theme/ui-panel-frame.svg" id="2_panel"]
@@ -242,6 +242,17 @@ content_margin_top = 12.0
 content_margin_right = 24.0
 content_margin_bottom = 12.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_trait_badge"]
+bg_color = Color(0.0156863, 0.027451, 0.0470588, 0.82)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 5.0
+content_margin_top = 2.0
+content_margin_right = 7.0
+content_margin_bottom = 2.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_shop_card"]
 bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
 border_width_left = 1
@@ -471,6 +482,50 @@ ExpeditionShopCardTier5/styles/normal = SubResource("StyleBoxFlat_shop_card_tier
 ExpeditionShopCardTier5/styles/hover = SubResource("StyleBoxFlat_button_hover")
 ExpeditionShopCardTier5/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 ExpeditionShopCardTier5/styles/focus = SubResource("StyleBoxTexture_focus")
+ExpeditionShopTraitBadge/base_type = &"PanelContainer"
+ExpeditionShopTraitBadge/styles/panel = SubResource("StyleBoxFlat_shop_trait_badge")
+ExpeditionShopCardInnerMargin/base_type = &"MarginContainer"
+ExpeditionShopCardInnerMargin/constants/margin_left = 2
+ExpeditionShopCardInnerMargin/constants/margin_top = 2
+ExpeditionShopCardInnerMargin/constants/margin_right = 2
+ExpeditionShopCardInnerMargin/constants/margin_bottom = 2
+ExpeditionShopForegroundMargin/base_type = &"MarginContainer"
+ExpeditionShopForegroundMargin/constants/margin_left = 5
+ExpeditionShopForegroundMargin/constants/margin_top = 5
+ExpeditionShopForegroundMargin/constants/margin_right = 5
+ExpeditionShopForegroundMargin/constants/margin_bottom = 5
+ExpeditionShopForegroundLayout/base_type = &"VBoxContainer"
+ExpeditionShopForegroundLayout/constants/separation = 0
+ExpeditionShopTopInfo/base_type = &"HBoxContainer"
+ExpeditionShopTopInfo/constants/separation = 4
+ExpeditionShopTraitBadgeLabel/base_type = &"Label"
+ExpeditionShopTraitBadgeLabel/fonts/font = SubResource("FontVariation_heading")
+ExpeditionShopTraitBadgeLabel/font_sizes/font_size = 13
+ExpeditionShopTraitBadgeLabel/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionShopCardName/base_type = &"Label"
+ExpeditionShopCardName/fonts/font = SubResource("FontVariation_heading")
+ExpeditionShopCardName/font_sizes/font_size = 17
+ExpeditionShopCardName/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionShopCardCost/base_type = &"Label"
+ExpeditionShopCardCost/fonts/font = SubResource("FontVariation_heading")
+ExpeditionShopCardCost/font_sizes/font_size = 17
+ExpeditionShopCardCost/colors/font_color = Color(0.960784, 0.941176, 0.87451, 1)
+ExpeditionShopCoinGlyph/base_type = &"Label"
+ExpeditionShopCoinGlyph/fonts/font = SubResource("FontVariation_heading")
+ExpeditionShopCoinGlyph/font_sizes/font_size = 15
+ExpeditionShopCoinGlyph/colors/font_color = Color(0.843137, 0.607843, 0.227451, 1)
+ExpeditionShopTraitBadgeStack/base_type = &"VBoxContainer"
+ExpeditionShopTraitBadgeStack/constants/separation = 2
+ExpeditionShopTraitBadgeContent/base_type = &"HBoxContainer"
+ExpeditionShopTraitBadgeContent/constants/separation = 3
+ExpeditionShopCardBottomInfo/base_type = &"HBoxContainer"
+ExpeditionShopCardBottomInfo/constants/separation = 4
+ExpeditionShopCardCostBlock/base_type = &"HBoxContainer"
+ExpeditionShopCardCostBlock/constants/separation = 3
+ExpeditionShopOwnershipCues/base_type = &"HBoxContainer"
+ExpeditionShopOwnershipCues/constants/separation = 2
+ExpeditionShopTinyCueRow/base_type = &"HBoxContainer"
+ExpeditionShopTinyCueRow/constants/separation = 2
 ExpeditionShopColumn/base_type = &"VBoxContainer"
 ExpeditionShopColumn/constants/separation = 12
 ExpeditionTopBar/base_type = &"PanelContainer"
@@ -487,7 +542,7 @@ ExpeditionPrepareBottomBand/constants/separation = 12
 ExpeditionPrepareShopBand/base_type = &"HBoxContainer"
 ExpeditionPrepareShopBand/constants/separation = 12
 ExpeditionShopCardsRow/base_type = &"HBoxContainer"
-ExpeditionShopCardsRow/constants/separation = 12
+ExpeditionShopCardsRow/constants/separation = 6
 ExpeditionGridCell/base_type = &"Button"
 ExpeditionGridCell/fonts/font = SubResource("FontVariation_regular")
 ExpeditionGridCell/font_sizes/font_size = 18

@@ -730,29 +730,29 @@ loc.relic_verdant_accord,遺物：Verdant Accord,Relic: Verdant Accord
 loc.relic_wanderer_map,遺物：Wanderer Map,Relic: Wanderer Map
 loc.reward_table_slice_relic,遺物獎勵,Relic Rewards
 loc.reward_table_slice_standard,標準獎勵,Standard Rewards
-loc.trait_faction_arcane,陣營：Arcane,Faction: Arcane
+loc.trait_faction_arcane,奧術,Arcane
 loc.trait_faction_arcane_description,啟用陣營「Arcane」的階段效果。,Activates tier effects for faction Arcane.
-loc.trait_faction_ember,陣營：Ember,Faction: Ember
+loc.trait_faction_ember,燼,Ember
 loc.trait_faction_ember_description,啟用陣營「Ember」的階段效果。,Activates tier effects for faction Ember.
-loc.trait_faction_frost,陣營：Frost,Faction: Frost
+loc.trait_faction_frost,霜,Frost
 loc.trait_faction_frost_description,啟用陣營「Frost」的階段效果。,Activates tier effects for faction Frost.
-loc.trait_faction_iron,陣營：Iron,Faction: Iron
+loc.trait_faction_iron,鐵,Iron
 loc.trait_faction_iron_description,啟用陣營「Iron」的階段效果。,Activates tier effects for faction Iron.
-loc.trait_faction_shadow,陣營：Shadow,Faction: Shadow
+loc.trait_faction_shadow,影,Shadow
 loc.trait_faction_shadow_description,啟用陣營「Shadow」的階段效果。,Activates tier effects for faction Shadow.
-loc.trait_faction_verdant,陣營：Verdant,Faction: Verdant
+loc.trait_faction_verdant,翠蔭,Verdant
 loc.trait_faction_verdant_description,啟用陣營「Verdant」的階段效果。,Activates tier effects for faction Verdant.
-loc.trait_role_marksman,職業：Marksman,Role: Marksman
+loc.trait_role_marksman,神射手,Marksman
 loc.trait_role_marksman_description,啟用職業「Marksman」的階段效果。,Activates tier effects for role Marksman.
-loc.trait_role_mystic,職業：Mystic,Role: Mystic
+loc.trait_role_mystic,秘術師,Mystic
 loc.trait_role_mystic_description,啟用職業「Mystic」的階段效果。,Activates tier effects for role Mystic.
-loc.trait_role_sentinel,職業：Sentinel,Role: Sentinel
+loc.trait_role_sentinel,哨衛,Sentinel
 loc.trait_role_sentinel_description,啟用職業「Sentinel」的階段效果。,Activates tier effects for role Sentinel.
-loc.trait_role_trickster,職業：Trickster,Role: Trickster
+loc.trait_role_trickster,詭術師,Trickster
 loc.trait_role_trickster_description,啟用職業「Trickster」的階段效果。,Activates tier effects for role Trickster.
-loc.trait_role_vanguard,職業：Vanguard,Role: Vanguard
+loc.trait_role_vanguard,先鋒,Vanguard
 loc.trait_role_vanguard_description,啟用職業「Vanguard」的階段效果。,Activates tier effects for role Vanguard.
-loc.trait_role_warden,職業：Warden,Role: Warden
+loc.trait_role_warden,守望者,Warden
 loc.trait_role_warden_description,啟用職業「Warden」的階段效果。,Activates tier effects for role Warden.
 loc.unit_slice_monster_00,怪物 01,Monster 01
 loc.unit_slice_monster_01,怪物 02,Monster 02

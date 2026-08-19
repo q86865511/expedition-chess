@@ -13,6 +13,23 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-19] ✅ UI Phase C-2 `RUN_COMBAT` 戰鬥呈現與共用商店卡修訂完成 —
+  `BattlePlayback` 的 committed event window 接至 world-layer presentation renderer，技能／普攻／
+  受擊／狀態分別使用既有 `combat_vfx` 與 `status_damage` atlas；傷害飄字依既有密度設定只限制
+  實例預算，不過濾或重排 0～15 canonical event sequence。暫停時 VFX 時鐘不前進，1×／2×／
+  4× 只縮放 presentation delta；視覺層零 `RngService`／gameplay stream 引用。ImageGen 新產
+  1672×941 夜色低對比石地背景供三幕共用，兩候選中採第一稿，未採用變體未進 repository／
+  inventory，provenance 與 SHA 閉環。九組矩陣、暫停／1×／2×／4× 與四張真實戰鬥播放序列
+  均重拍並逐張檢視，evidence 17／17、`issues=[]`；focused 6／6（44 assertions）、播放回歸
+  2／2（52）。依使用者條件核可追加 PREPARE／COMBAT 共用 182×108 商店卡：滿版 portrait、
+  左上最多三枚在地化羈絆徽章、底部單位名＋金幣費用，費用階／持有／升星的非色彩訊號保留；
+  六張 route／解析度證據無截斷。依 2026-08-19 單次 app 例外核准，只改 12 個既有 trait
+  display 值與 bootstrap seal，exporter 重導 941-row CSV／raw，digest
+  `619d20f2...7882`；loc parity 13／13（1948）與 Smoke 10／10 綠。最後商店卡版本 focused
+  14／14（314）、fresh All 1493／1493（39458）、獨立 Combat 18／18 AC，以及 fresh 10k
+  combat soak（10000／10000、64 deterministic replays、failures 0）均 exit 0。
+  證據在 `specs/ui-art-refresh/evidence/c-2/`；依裁決提交後直接進 C-3 音訊。
+
 - [2026-08-19] ✅ UI Phase C-1 `RUN_MAP` 視覺化節點圖修訂後核可 — 節點圖置於
   UI 層，以 ebb9858 的 `MapNodePresentation.is_reachable` frontier 權威呈現三幕七層、
   39 節點與 78 邊；已完成／可達／不可達及目前位置均有獨立非色彩訊號。圖形點選只做
@@ -419,15 +436,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 Phase C-1 已修訂後核可並封存；C-2 戰鬥呈現依裁決直接開始，完成時才停下一個
-  視覺核可閘門。C-3 音訊尚未開始。
+- UI 線 Phase C-1 已修訂後核可並封存；C-2 戰鬥呈現與商店卡條件修訂已完成，依裁決
+  提交後直接進 C-3 音訊，C-3 完成時才停下一個核可閘門。
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
 - UI `ui-art-refresh` Phase C-2：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 與 C-1 已核可；C-2 戰鬥呈現進行中，
-  C-3 音訊尚未開始。
+  對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 與 C-1 已核可；C-2 戰鬥呈現與
+  共用商店卡修訂已完成，C-3 音訊接續開始。
 
 ## 待辦
 
@@ -438,7 +455,8 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
   局內版面已改由 `in-run-hud` 承接（見下）；局外 Phase B 與 Phase C-1 已完成。
-  C-1 已核可，直接進 C-2；C-2 完成時停視覺核可，之後仍有 C-3 與 Phase D 中文化收尾。
+  C-1 已核可；C-2 與條件修訂已完成並直接進 C-3，C-3 完成時停核可閘門，之後仍有
+  Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -453,6 +471,11 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 重要決策紀錄
 
+- [2026-08-19] UI Phase C-2 商店卡採 PREPARE／COMBAT 共用 presentation 元件；
+  `layout-reference-1920.json` 的約 197×134 是 UI100 上限，最終 182×108 是在 UI150
+  同列保留商店動作、分組動作與固定動作欄後仍完整落入安全區的實測值。羈絆名直接讀
+  content loc；12 個 display key 只改值、不改 key，並依使用者單次 app 例外走既有
+  exporter＋catalog digest reseal 配方。這批譯名是 Phase D 前的直譯佔位。
 - [2026-08-19] UI Phase C-1 RUN_MAP 採 UI 層節點圖：RUN_MAP 是需要 UI scale、鍵盤焦點、
   雙語文字與精確點擊區的決策介面，節點座標不參與 gameplay 模擬；世界棋盤維持清除。
   可達性只消費 `MapNodePresentation.is_reachable(snapshot.map, node)` 的 ebb9858 frontier

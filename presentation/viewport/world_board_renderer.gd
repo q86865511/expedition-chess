@@ -10,6 +10,7 @@ var _projection := BoardProjection.new()
 var _snapshot := WorldBoardSnapshot.new()
 var _unit_sprites: Dictionary = {}
 var _ordered_unit_ids: Array[StringName] = []
+var _background_texture: Texture2D
 
 
 func _ready() -> void:
@@ -81,12 +82,26 @@ func projection() -> BoardProjection:
 	return BoardProjection.new()
 
 
+func set_background_texture(texture: Texture2D) -> void:
+	_background_texture = texture
+	queue_redraw()
+
+
+func background_texture() -> Texture2D:
+	return _background_texture
+
+
 func _draw() -> void:
-	draw_rect(
-		Rect2(Vector2.ZERO, Vector2(BoardProjection.WORLD_SIZE)),
-		Color8(10, 18, 31),
-		true
-	)
+	var world_rect := Rect2(Vector2.ZERO, Vector2(BoardProjection.WORLD_SIZE))
+	if _background_texture != null:
+		draw_texture_rect(
+			_background_texture,
+			world_rect,
+			false,
+			ExpeditionLayoutMetrics.COMBAT_BACKGROUND_MODULATE
+		)
+	else:
+		draw_rect(world_rect, Color8(10, 18, 31), true)
 	for logical_y: int in range(BoardProjection.BOARD_SIZE.y):
 		for logical_x: int in range(BoardProjection.BOARD_SIZE.x):
 			var cell := Vector2i(logical_x, logical_y)

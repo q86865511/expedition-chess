@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "asset_id": "environment.run_combat",
+  "status": "adopted",
+  "adopted_attempt_id": "run-combat-attempt-01",
+  "generation": {
+    "mode": "built-in-imagegen",
+    "independent_call": true,
+    "imagegen_output_id": "01a01026-2c7b-7492-969a-a9bb2acc6e8b/exec-31a8127a-ba78-4a9a-8842-33cdf41f3512.png",
+    "call_id": null,
+    "call_id_exposure": "not_exposed_by_builtin_image_gen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Create candidate 1 of an original 16:9 pixel-art nighttime tactical battle environment background for a fantasy expedition game. Use the attached run-map artwork only as visual style and palette reference: crisp hand-placed pixel clusters, deep navy night, weathered stone, very restrained warm amber practical lights, subtle teal accents, atmospheric ruins and distant dark silhouettes. The center and lower-middle three quarters must remain quiet, flat, low-contrast playable ground suitable beneath an isometric 8x8 combat board, character sprites, VFX, and floating numbers. Put most environmental detail near the far horizon and outer edges. No baked board grid, no tiles, no paths, no arrows, no nodes, no units, no characters, no weapons, no combat effects, no text, no symbols, no UI frames, no logo, no watermark. Keep readability high and avoid bright hotspots behind the board. Original composition, not a copy of the reference."
+  },
+  "reference_inputs": [
+    {
+      "role": "pixel-language-and-palette-reference",
+      "path": "assets/production/environment/run_map.png",
+      "sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656"
+    }
+  ],
+  "source_attempt": {
+    "path": "assets/production/combat_attempts/run-combat-attempt-01.png",
+    "sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+    "width": 1672,
+    "height": 941
+  },
+  "output": {
+    "path": "assets/production/environment/run_combat.png",
+    "sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+    "width": 1672,
+    "height": 941,
+    "processing": "identity-copy"
+  },
+  "atlas_inputs": [
+    {
+      "role": "skill-and-hit-vfx",
+      "path": "assets/production/shared/combat_vfx.png",
+      "sha256": "1d9752d3e38b804952d82b7656fef619aeabfcf658b6a84035b38661f42bf0c6"
+    },
+    {
+      "role": "status-and-damage-vfx",
+      "path": "assets/production/shared/status_damage.png",
+      "sha256": "e5f66139c3fb82ccfe1fcf6698e8cf12641f2cca0ac0a9a682dc7b60f3ed65fb"
+    }
+  ],
+  "selection": {
+    "reviewer": "codex:visual-selection",
+    "decision": "adopted",
+    "candidate_count": 2,
+    "reason": "Candidate 1 provides dry, flat, low-contrast central stone ground that supports the existing isometric board. Its restrained edge lighting avoids competing with atlas VFX and floating damage labels. Candidate 2 was visually reviewed but its water reflections would add noise beneath the board, so it was not copied into the repository or inventory.",
+    "pending_user_visual_approval": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "suite": "C-2 focused Gut",
+  "exit_code": 0,
+  "scripts": 1,
+  "tests": 6,
+  "passing_tests": 6,
+  "assertions": 44,
+  "covered": [
+    "combat_vfx and status_damage atlas projection",
+    "damage density sampling without event-order filtering",
+    "pause and explicit presentation clock advancement",
+    "world surface background and lifecycle",
+    "inventory, provenance, dimensions and SHA",
+    "zero gameplay RNG dependency"
+  ]
+}

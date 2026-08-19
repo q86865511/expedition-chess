@@ -1,6 +1,46 @@
 class_name ExpeditionLayoutMetrics
 extends RefCounted
 
+const COMBAT_ATLAS_CELL_SIZE := Vector2i(128, 128)
+const COMBAT_EFFECT_LAYER: int = 1000
+const COMBAT_VFX_SCALE: float = 0.42
+const COMBAT_VFX_SKILL_OFFSET := Vector2(-20.0, -48.0)
+const COMBAT_VFX_ATTACK_OFFSET := Vector2(18.0, -28.0)
+const COMBAT_VFX_HIT_OFFSET := Vector2(0.0, -34.0)
+const COMBAT_VFX_STATUS_OFFSET := Vector2(22.0, -48.0)
+const COMBAT_VFX_DURATION_MS: float = 1280.0
+const COMBAT_DAMAGE_FLOAT_OFFSET := Vector2(-38.0, -98.0)
+const COMBAT_DAMAGE_FLOAT_SIZE := Vector2(84.0, 34.0)
+const COMBAT_DAMAGE_FLOAT_RISE: float = 42.0
+const COMBAT_DAMAGE_FLOAT_DURATION_MS: float = 1450.0
+const COMBAT_DAMAGE_FONT_SIZE: int = 24
+const COMBAT_DAMAGE_OUTLINE_SIZE: int = 4
+const COMBAT_DAMAGE_LABEL_LAYER: int = 1100
+const COMBAT_BACKGROUND_MODULATE := Color(0.78, 0.84, 0.94, 0.72)
+const COMBAT_PLAYBACK_CUE_HEIGHT: float = 28.0
+
+## PREPARE 與 COMBAT 共用的商店卡。in-run-hud reference 的 197×134 是
+## 1920/UI100 上限；182×108 讓五卡加商店／分組／固定動作欄後，仍在
+## UI150 的既有安全區與 111px 底帶內
+## 完整可見，仍保留同一張卡的滿版構圖比例。
+const SHOP_CARD_SIZE := Vector2(182.0, 108.0)
+const SHOP_CARD_BORDER_INSET: float = 2.0
+const SHOP_CARD_BOTTOM_INFO_HEIGHT: float = 27.0
+const SHOP_CARD_BOTTOM_GRADIENT_START: float = 0.42
+const SHOP_CARD_CONTENT_INSET: float = 5.0
+const SHOP_CARD_TRAIT_BADGE_HEIGHT: float = 19.0
+const SHOP_CARD_TRAIT_BADGE_WIDTH: float = 76.0
+const SHOP_CARD_TRAIT_BADGE_ICON_SIZE: float = 13.0
+const SHOP_CARD_TRAIT_BADGE_GAP: float = 2.0
+const SHOP_CARD_TRAIT_BADGE_MAX: int = 3
+const SHOP_CARD_TRAIT_ATLAS_CELL_SIZE := Vector2(128.0, 128.0)
+const SHOP_CARD_COST_ICON_SIZE: float = 13.0
+const SHOP_CARD_TIER_PIP_SIZE: float = 5.0
+const SHOP_CARD_TIER_CUE_WIDTH: float = 31.0
+const SHOP_CARD_OWNED_PIP_SIZE: float = 5.0
+const SHOP_CARD_OWNED_CUE_WIDTH: float = 24.0
+const SHOP_CARD_STAR_CUE_SIZE := Vector2(22.0, 12.0)
+
 ## B1 對齊/尺寸契約的唯一 setter：presentation 程式碼不得再直接寫
 ## `custom_minimum_size`。所有輸入皆為 1920×1080 reference 空間的實際值；
 ## 呼叫端若由舊 1280×720 基準遷移，必須顯式乘 1.5，避免 helper 隱藏單位。

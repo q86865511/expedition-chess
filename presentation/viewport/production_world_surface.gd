@@ -22,6 +22,7 @@ var _projection := BoardProjection.new()
 var _snapshot := WorldBoardSnapshot.new()
 var _board_renderer: WorldBoardRenderer
 var _ui_overlay: WorldBoardUiOverlay
+var _combat_effects_renderer: CombatWorldEffectsRenderer
 var _coordinate_mapper: Object
 var _cell_validator: Callable
 
@@ -66,7 +67,8 @@ func mount_board_snapshot(
 	snapshot: WorldBoardSnapshot,
 	coordinate_mapper: Object = null,
 	overlay_mount: Control = null,
-	cell_validator: Callable = Callable()
+	cell_validator: Callable = Callable(),
+	background_texture: Texture2D = null
 ) -> StringName:
 	# A direct mount is a route snapshot boundary, even when the same persistent
 	# surface and overlay nodes are reused. Mapper-only refresh_overlay() calls do
@@ -93,11 +95,14 @@ func mount_board_snapshot(
 		return INVALID_COORDINATE_MAPPER
 	var next_snapshot := snapshot.deep_clone()
 	_ensure_board_renderer()
+	_board_renderer.set_background_texture(background_texture)
 	var render_error := _board_renderer.render_snapshot(next_snapshot)
 	if not render_error.is_empty():
 		clear_board_snapshot()
 		return render_error
 	_snapshot = next_snapshot
+	if _combat_effects_renderer != null:
+		_combat_effects_renderer.sync_snapshot(_snapshot)
 	# A mount is a route boundary. An empty validator deliberately replaces the
 	# previous route's callable; only mapper refreshes/binds of the same mounted
 	# snapshot may reuse the current validator.
@@ -269,7 +274,10 @@ func clear_board_snapshot() -> void:
 	_snapshot = WorldBoardSnapshot.new()
 	_cell_validator = Callable()
 	if _board_renderer != null:
+		_board_renderer.set_background_texture(null)
 		_board_renderer.clear_snapshot()
+	if _combat_effects_renderer != null:
+		_combat_effects_renderer.clear_effects()
 	if _ui_overlay_available():
 		_ui_overlay.clear_snapshot()
 
@@ -281,6 +289,16 @@ func snapshot_clone() -> WorldBoardSnapshot:
 func board_renderer() -> WorldBoardRenderer:
 	_ensure_board_renderer()
 	return _board_renderer
+
+
+func combat_effects_renderer() -> CombatWorldEffectsRenderer:
+	_ensure_board_renderer()
+	if _combat_effects_renderer == null:
+		_combat_effects_renderer = CombatWorldEffectsRenderer.new()
+		_combat_effects_renderer.name = "CombatWorldEffects"
+		_board_renderer.add_child(_combat_effects_renderer)
+	_combat_effects_renderer.sync_snapshot(_snapshot)
+	return _combat_effects_renderer
 
 
 func ui_overlay() -> WorldBoardUiOverlay:

@@ -778,8 +778,12 @@ func _register_named_family(
 	var key := StringName("loc.trait_%s_%s" % [family, token])
 	_register(
 		key,
-		"%s：%s" % [zh_family, _title(token)],
-		"%s: %s" % [en_family, _title(token)]
+		(
+			["奧術", "燼", "霜", "鐵", "影", "翠蔭"][ELEMENTS.find(token)]
+			if family == "faction"
+			else ["神射手", "秘術師", "哨衛", "詭術師", "先鋒", "守望者"][ROLES.find(token)]
+		),
+		_title(token)
 	)
 	_register(
 		StringName(String(key) + "_description"),

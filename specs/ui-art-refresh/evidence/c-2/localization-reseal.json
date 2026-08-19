@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "approved_exception": "2026-08-19 user-approved one-time app boundary exception",
+  "display_keys_changed": 12,
+  "keys_added": 0,
+  "keys_removed": 0,
+  "catalog_rows": 941,
+  "csv_sha256": "619d20f2f064a03a1c84447b032ac115fa50d0ec70787ca81acfdb8d51367882",
+  "raw_sha256": "619d20f2f064a03a1c84447b032ac115fa50d0ec70787ca81acfdb8d51367882",
+  "bootstrap_sha256": "619d20f2f064a03a1c84447b032ac115fa50d0ec70787ca81acfdb8d51367882",
+  "export_method": "tools/content-production/export-localization-catalog.gd",
+  "manual_csv_edits": false,
+  "localization_gut": {
+    "exit_code": 0,
+    "tests": 13,
+    "passing_tests": 13,
+    "assertions": 1948
+  },
+  "smoke": {
+    "exit_code": 0,
+    "case_count": 10,
+    "failures": 0
+  },
+  "phase_d_note": "Direct-translation placeholders only; future flavor naming changes values without changing keys."
+}

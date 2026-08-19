@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "reviewer": "codex:manual-visual-qa",
+  "reviewed_at_utc": "2026-08-19T15:23:50Z",
+  "matrix_reviewed": 9,
+  "playback_states_reviewed": 4,
+  "sequence_frames_reviewed": 4,
+  "prepare_shop_frames_reviewed": 3,
+  "combat_shop_frames_reviewed": 3,
+  "issues": [],
+  "checks": {
+    "board_and_world_surface_visible": true,
+    "combat_vfx_visible": true,
+    "floating_damage_visible": true,
+    "background_low_contrast": true,
+    "controls_and_side_panels_not_overlapped": true,
+    "ui_scale_matrix_no_transient_layout_capture": true,
+    "pause_1x_2x_4x_labels_visible": true,
+    "shop_portraits_cover_cards": true,
+    "shop_trait_badges_show_icon_and_localized_name": true,
+    "shop_bottom_name_and_coin_cost_visible": true,
+    "shop_cards_have_no_visible_text_clipping": true,
+    "shop_cards_have_no_raw_english_trait_names": true
+  },
+  "notes": [
+    "All nine matrix files were inspected individually after the final recapture.",
+    "The initial UI125 capture exposed a settings-rebuild transient; the runner now waits 12 process frames and all three UI125 files were recaptured and re-reviewed.",
+    "At 720p/UI150 the existing bottom inventory channel uses its intended scroll affordance; the board, VFX, damage label and three playback controls remain visible.",
+    "The four battle-sequence frames show the same canonical processed sequence with presentation-only VFX aging differences.",
+    "The three PREPARE and three COMBAT shop frames were inspected at 720p, 1080p and 1440p after the final 182x108 fixed-height revision.",
+    "Every populated shop card shows its full-bleed portrait, localized trait badges, unit name and coin cost without truncation."
+  ]
+}

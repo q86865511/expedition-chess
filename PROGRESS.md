@@ -13,6 +13,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-20] ✅ UI Phase C-3 production 音訊接線完成，停核可閘門 — 新增
+  presentation-only `ProductionAudioDirector`，由具名 route root 擁有；17 個 production
+  routes 完整分流至 menu／camp／expedition／combat／results 五首 48 kHz stereo OGG，
+  沿用既有 `Music` bus 與 loop metadata。21 個正式 SFX 全部具名對映到 UI focus／
+  confirm／cancel／error、商店／鍛造／裝備／獎勵／事件 intent，以及 cast／physical hit／
+  magical hit／shield／heal／death／ranged attack／boss warning／勝敗 BattleEvent；使用既有
+  `UI`／`SFX` buses。戰鬥音訊依 cloned event window 原順序掃描，一般 cue 每 window 固定
+  預算 12，死亡／Boss／勝敗保留，不改事件消費或 canonical 摘要；程式零 `RngService`／
+  gameplay stream／亂數呼叫。evidence runner 實際載入並播放 5 個代表 route、21 個 SFX，
+  驗證 26 組 resource／OGG SHA、bus 與 loop，結果 `ok=true`、issues 0。focused 6／6
+  （288 assertions）、Smoke 10／10、fresh All 1499／1499（39746 assertions）、Combat
+  step 與 18／18 acceptance、Spec 4100／0 均 exit 0；`git diff --check` 與邊界掃描綠。
+  對映表與完整證據在 `specs/ui-art-refresh/evidence/c-3/`；本批未 commit、未 push，等待
+  使用者核可後才進 Phase D。
+
 - [2026-08-19] ✅ UI Phase C-2 `RUN_COMBAT` 戰鬥呈現與共用商店卡修訂完成 —
   `BattlePlayback` 的 committed event window 接至 world-layer presentation renderer，技能／普攻／
   受擊／狀態分別使用既有 `combat_vfx` 與 `status_damage` atlas；傷害飄字依既有密度設定只限制
@@ -436,15 +451,14 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 Phase C-1 已修訂後核可並封存；C-2 戰鬥呈現與商店卡條件修訂已完成，依裁決
-  提交後直接進 C-3 音訊，C-3 完成時才停下一個核可閘門。
+- UI 線 Phase C-1 已核可封存、C-2 已提交；C-3 音訊已完成，現在停在 C-3 核可閘門。
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase C-2：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
+- UI `ui-art-refresh` Phase C-3：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
   對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 與 C-1 已核可；C-2 戰鬥呈現與
-  共用商店卡修訂已完成，C-3 音訊接續開始。
+  共用商店卡修訂已完成；C-3 音訊接線與證據完成，等待使用者核可。
 
 ## 待辦
 
@@ -455,8 +469,8 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
   局內版面已改由 `in-run-hud` 承接（見下）；局外 Phase B 與 Phase C-1 已完成。
-  C-1 已核可；C-2 與條件修訂已完成並直接進 C-3，C-3 完成時停核可閘門，之後仍有
-  Phase D 中文化收尾。
+  C-1 已核可；C-2 與條件修訂已提交，C-3 已完成並停核可閘門，之後仍有 Phase D
+  中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -470,6 +484,13 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
+
+- [2026-08-20] UI Phase C-3 採 route-root-owned presentation audio director：內嵌的
+  Run composition 雖繼承 `ProductionScreen`，但 `route_kind` 為空，不另建播放器，避免
+  雙重音樂與 focus cue；生命週期跟 screen 一起結束，也不需新增 app singleton／session API。
+  音樂依 17 routes 聚成五個產品情境；戰鬥一般音效以固定 12-cue window budget 防止聲音
+  堆疊，仍完整依序掃描事件並保留死亡／Boss／terminal cue。全部取樣規則皆決定性且不碰
+  gameplay RNG。
 
 - [2026-08-19] UI Phase C-2 商店卡採 PREPARE／COMBAT 共用 presentation 元件；
   `layout-reference-1920.json` 的約 197×134 是 UI100 上限，最終 182×108 是在 UI150

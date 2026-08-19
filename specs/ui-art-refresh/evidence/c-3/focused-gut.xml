@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="288" name="GutTests" failures="0" tests="6" >
+  <testsuite name="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" tests="6" failures="0" skipped="0" time="0.435154" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_five_music_cues_cover_every_production_route" assertions="39" status="pass" classname="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" time="0.000597" >
+      </testcase>
+      <testcase name="test_twenty_one_sfx_resources_match_adopted_inventory_sha_and_bus" assertions="185" status="pass" classname="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" time="0.363841" >
+      </testcase>
+      <testcase name="test_intent_and_ui_semantics_reach_all_noncombat_sfx" assertions="37" status="pass" classname="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" time="0.000443" >
+      </testcase>
+      <testcase name="test_combat_event_audio_mapping_preserves_input_order" assertions="3" status="pass" classname="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" time="0.008938" >
+      </testcase>
+      <testcase name="test_combat_sampling_scans_every_event_and_keeps_terminal_cues" assertions="5" status="pass" classname="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" time="0.044377" >
+      </testcase>
+      <testcase name="test_production_screen_route_music_and_audio_sources_are_rng_free" assertions="19" status="pass" classname="tests/unit/ui_art_refresh/test_c3_production_audio_director.gd" time="0.016958" >
+      </testcase>
+  </testsuite>
+</testsuites>

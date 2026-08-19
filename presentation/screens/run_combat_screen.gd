@@ -401,6 +401,9 @@ func _render_damage_events(events: Array) -> void:
 
 
 func _present_combat_effects(events: Array) -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.present_combat_audio(events)
 	if _combat_effects_renderer == null or not is_instance_valid(
 		_combat_effects_renderer
 	):

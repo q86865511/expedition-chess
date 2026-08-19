@@ -176,9 +176,14 @@ var _system_menu_previous_paused: bool = false
 var _prepare_refresh_quote: ShopQuoteSnapshot
 var _prepare_xp_quote: ShopXpQuoteSnapshot
 var _route_ui_scale_percent: int = 100
+var _audio_director: ProductionAudioDirector
 
 
 func _ready() -> void:
+	# RunMap/Prepare/Combat/Reward compositions also inherit ProductionScreen,
+	# but only the route root owns audio. Their exported route_kind remains empty.
+	if not route_kind.is_empty():
+		_attach_audio_director()
 	_binding_closed = true
 
 
@@ -247,6 +252,7 @@ func open_system_menu() -> bool:
 	if not _capture_combat_pause_for_system_menu():
 		return false
 	if _system_menu_overlay.open(_ordered_focus_controls(), self):
+		_play_audio_cue(&"audio.ui_confirm", {"source": &"system_menu_open"})
 		return true
 	_restore_combat_pause_after_system_menu()
 	return false
@@ -351,6 +357,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		or not event.is_action_pressed(SYSTEM_MENU_INPUT, false, true)
 	):
 		return
+	var audio_sequence_before := _audio_playback_sequence()
 	var handled := false
 	if _modal_open:
 		handled = _cancel_active_confirmation()
@@ -362,18 +369,42 @@ func _unhandled_input(event: InputEvent) -> void:
 		handled = _system_menu_overlay.handle_system_menu_action()
 	else:
 		handled = open_system_menu()
+	if handled and _audio_playback_sequence() == audio_sequence_before:
+		_play_audio_cue(&"audio.ui_cancel", {"source": &"system_menu_input"})
 	if handled and is_inside_tree():
 		get_viewport().set_input_as_handled()
 
 
 func request_intent(intent: RunPresentationIntent) -> RunPresentationResult:
 	if _live_active and _live_context.intent_port != null:
-		return _live_context.intent_port.dispatch(intent)
-	return RunPresentationResult.failure(
+		var result := _live_context.intent_port.dispatch(intent)
+		if _audio_director != null and is_instance_valid(_audio_director):
+			_audio_director.present_intent_result(intent, result)
+		return result
+	var failure := RunPresentationResult.failure(
 		DiagnosticError.new(
 			SCREEN_NOT_ACTIVE,
 			&"error.presentation.screen_not_active"
 		)
+	)
+	if _audio_director != null and is_instance_valid(_audio_director):
+		_audio_director.present_intent_result(intent, failure)
+	return failure
+
+
+func present_combat_audio(events: Array) -> Dictionary:
+	return (
+		_audio_director.present_combat_events(events)
+		if _audio_director != null and is_instance_valid(_audio_director)
+		else {}
+	)
+
+
+func audio_playback_report() -> Dictionary:
+	return (
+		_audio_director.playback_report()
+		if _audio_director != null and is_instance_valid(_audio_director)
+		else {}
 	)
 
 
@@ -2683,6 +2714,11 @@ func _on_action_pressed(button: Button) -> void:
 					_dispatch_sell_unit_payload(deferred_payload)
 				else:
 					_dispatch_action(deferred, null)
+			else:
+				_play_audio_cue(&"audio.ui_cancel", {
+					"source": &"confirmation_cancel",
+					"action_id": action_id,
+				})
 			return
 	elif _PRESENTATION_CONFIRMATIONS.has(action_id):
 		_open_presentation_confirmation(action_id, button)
@@ -2719,6 +2755,7 @@ func _dispatch_sell_unit_payload(payload: Dictionary) -> void:
 
 
 func _dispatch_action(action_id: StringName, trigger: Button) -> void:
+	var audio_sequence_before := _audio_playback_sequence()
 	var local_result: Variant = _invoke_local_control(action_id)
 	_last_control_result = (
 		local_result
@@ -2727,6 +2764,12 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 	)
 	_status_view.show_result(_last_control_result, _text_resolver())
 	_sync_status_band_visibility()
+	if (
+		_audio_director != null
+		and is_instance_valid(_audio_director)
+		and _audio_director.playback_sequence() == audio_sequence_before
+	):
+		_audio_director.present_action_result(action_id, _last_control_result)
 	if (
 		String(action_id).begins_with("prepare.")
 		or String(action_id).begins_with("service.")
@@ -2758,6 +2801,28 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		# draft 已被消費後，不論 runtime 結果都關閉 modal。錯誤由 status
 		# view 呈現，背景控制與焦點則必須恢復，避免留下無效 lease。
 		_close_confirmation_modal()
+
+
+func _attach_audio_director() -> void:
+	if _audio_director != null and is_instance_valid(_audio_director):
+		return
+	_audio_director = ProductionAudioDirector.new()
+	_audio_director.name = "ProductionAudioDirector"
+	add_child(_audio_director)
+	_audio_director.present_route(route_kind)
+
+
+func _audio_playback_sequence() -> int:
+	return (
+		_audio_director.playback_sequence()
+		if _audio_director != null and is_instance_valid(_audio_director)
+		else -1
+	)
+
+
+func _play_audio_cue(cue_id: StringName, context: Dictionary = {}) -> void:
+	if _audio_director != null and is_instance_valid(_audio_director):
+		_audio_director.play_cue(cue_id, context)
 
 
 func _invoke_local_control(action_id: StringName) -> Variant:

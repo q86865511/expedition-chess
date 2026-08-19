@@ -1,0 +1,11 @@
+{
+  "schema_version": "c-1-asset-sha256-1",
+  "assets": {
+    "assets/production/environment/run_map.png": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+    "assets/production/map_attempts/run-map-attempt-01.png": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+    "assets/production/environment/camp.png": "c986abc40e02b39eac5d09b2a711a5583d929a70848fa6620bd83deb542ecdb0",
+    "assets/production/key_art/menu_main.png": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37"
+  },
+  "selected_attempt_identity_copy": true,
+  "unselected_candidates_in_repository": 0
+}

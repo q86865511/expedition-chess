@@ -1,0 +1,30 @@
+{
+  "schema_version": "c-1-static-gates-1",
+  "git_diff_check": {
+    "exit_code": 0,
+    "output": ""
+  },
+  "theme_override_scan": {
+    "scope": "C-1 changed files excluding the preserved project.godot user edit",
+    "match_count": 0,
+    "matches": []
+  },
+  "forbidden_layer_changes": {
+    "count": 0,
+    "paths": []
+  },
+  "authorized_localization_contract_exception": {
+    "reason": "The approved C-1 revision required three new bilingual act-title loc keys and the production catalog checksum chain.",
+    "paths": [
+      "app/content/localization_catalog.gd",
+      "app/content/project_content_bootstrap.gd",
+      "localization/catalog.v2.csv",
+      "localization/catalog.v2.csv.raw"
+    ]
+  },
+  "project_godot": {
+    "preexisting_user_edit_preserved": true,
+    "included_in_c1": false
+  },
+  "ok": true
+}

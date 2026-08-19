@@ -8,6 +8,7 @@ var _presenter: RunScreenPresenter
 var _selected_node_id: String = ""
 var _map_generation_requested: bool = false
 var _node_selector: ItemList
+var _map_graph: RunMapNodeGraph
 var _hud_shell: InRunHudShell
 var _world_board_clear_error: StringName = &""
 var _world_board_clear_deferred_pending: bool = false
@@ -33,6 +34,7 @@ func compose(
 	_selected_node_id = ""
 	_map_generation_requested = false
 	_build_hud_shell(supply_port)
+	_build_map_graph()
 	_build_node_selector()
 	_schedule_world_board_clear()
 	return &""
@@ -84,6 +86,7 @@ func request(intent: RunPresentationIntent) -> RunPresentationResult:
 	if (result.ok or result.committed) and result.snapshot != null:
 		_snapshot = result.snapshot.deep_clone()
 		_build_hud_shell()
+		_build_map_graph()
 		_build_node_selector()
 	return result
 
@@ -114,6 +117,8 @@ func select_first_node() -> String:
 					) == _selected_node_id:
 						_node_selector.select(index)
 						break
+			if _map_graph != null:
+				_map_graph.set_selected_node_id(_selected_node_id)
 			return _selected_node_id
 	_selected_node_id = ""
 	if _map_generation_requested:
@@ -198,8 +203,14 @@ func _build_node_selector() -> void:
 		existing.free()
 	_node_selector = ItemList.new()
 	_node_selector.name = "NodeSelector"
-	ExpeditionLayoutMetrics.set_min(_node_selector, 840.0, 480.0)
-	_node_selector.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_node_selector.theme_type_variation = &"ExpeditionMapAccessibility"
+	ExpeditionLayoutMetrics.set_min(
+		_node_selector,
+		0.0,
+		ExpeditionLayoutMetrics.RUN_MAP_ACCESSIBILITY_MINIMUM_HEIGHT
+	)
+	_node_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_node_selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_node_selector.focus_mode = Control.FOCUS_ALL
 	_node_selector.select_mode = ItemList.SELECT_SINGLE
 	_node_selector.set_meta(&"typed_choice_kind", &"map_node")
@@ -208,7 +219,7 @@ func _build_node_selector() -> void:
 		for node: MapNodeState in _snapshot.map.nodes:
 			if node == null or node.node_id.is_empty():
 				continue
-			_node_selector.add_item(_node_text(node))
+			_node_selector.add_item(_node_selector_text(node))
 			var index := _node_selector.item_count - 1
 			_node_selector.set_item_metadata(index, node.node_id)
 			_node_selector.set_item_disabled(
@@ -225,10 +236,11 @@ func _build_node_selector() -> void:
 			generated_id
 		)
 	_node_selector.item_selected.connect(_on_node_selected)
-	var center_host := _hud_shell.host(
-		ProductionLayoutShell.REGION_CENTER
-	) if _hud_shell != null else self
-	center_host.add_child(_node_selector)
+	var channel := find_child("MapAccessibilityChannel", true, false) as VBoxContainer
+	if channel != null:
+		channel.add_child(_node_selector)
+	else:
+		add_child(_node_selector)
 	for index: int in _node_selector.item_count:
 		if not _node_selector.is_item_disabled(index):
 			_node_selector.select(index)
@@ -248,8 +260,53 @@ func _on_node_selected(index: int) -> void:
 		_selected_node_id = String(
 			_node_selector.get_item_metadata(index)
 		)
+	if _map_graph != null:
+		_map_graph.set_selected_node_id(_selected_node_id)
 	_refresh_node_preview()
 	_update_parent_action_state()
+
+
+func _build_map_graph() -> void:
+	var existing := find_child("RunMapNodeGraph", true, false)
+	if existing != null:
+		existing.get_parent().remove_child(existing)
+		existing.free()
+	_map_graph = RunMapNodeGraph.new()
+	_map_graph.name = "RunMapNodeGraph"
+	_map_graph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_map_graph.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_map_graph.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_map_graph.clip_contents = true
+	_map_graph.mouse_filter = Control.MOUSE_FILTER_PASS
+	ExpeditionLayoutMetrics.set_fixed_min(
+		_map_graph,
+		ExpeditionLayoutMetrics.RUN_MAP_GRAPH_MINIMUM.x,
+		ExpeditionLayoutMetrics.RUN_MAP_GRAPH_MINIMUM.y
+	)
+	var center_host := _hud_shell.host(
+		ProductionLayoutShell.REGION_CENTER
+	) if _hud_shell != null else self
+	center_host.add_child(_map_graph)
+	_map_graph.bind(
+		_snapshot.map if _snapshot != null else null,
+		_selected_node_id,
+		Callable(self, "_on_graph_node_selected"),
+		Callable(self, "_localized_ui_text"),
+		Callable(self, "_localized_content_text")
+	)
+
+
+func _on_graph_node_selected(node_id: String) -> void:
+	if _node_selector == null:
+		return
+	for index: int in _node_selector.item_count:
+		if (
+			not _node_selector.is_item_disabled(index)
+			and String(_node_selector.get_item_metadata(index)) == node_id
+		):
+			_node_selector.select(index)
+			_on_node_selected(index)
+			return
 
 
 func _build_hud_shell(supply_port: LiveScreenSupplyPort = null) -> void:
@@ -275,11 +332,24 @@ func _build_hud_shell(supply_port: LiveScreenSupplyPort = null) -> void:
 		common_inspector.free()
 	var preview := VBoxContainer.new()
 	preview.name = "NodePreview"
-	preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preview.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	preview.add_child(_detail_label(
 		&"map.select", _text_or_key(&"map.select")
 	))
-	right_host.add_child(preview)
+	var channel := VBoxContainer.new()
+	channel.name = "MapAccessibilityChannel"
+	channel.theme_type_variation = &"ExpeditionMapAccessibilityChannel"
+	channel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	channel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	channel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	channel.add_child(preview)
+	var selector_heading := Label.new()
+	selector_heading.name = "MapAccessibilityHeading"
+	selector_heading.theme_type_variation = &"ExpeditionMapActLabel"
+	selector_heading.text = _text_or_key(&"map.select")
+	channel.add_child(selector_heading)
+	right_host.add_child(channel)
 
 
 func _refresh_node_preview() -> void:
@@ -339,6 +409,34 @@ func _node_text(node: MapNodeState) -> String:
 		_localized_node_kind_text(node.node_kind),
 		node.act_index,
 		node.layer_index,
+	]
+
+
+func _node_selector_text(node: MapNodeState) -> String:
+	var state_signal := "×"
+	if node.completed or _snapshot.map.completed_node_ids.has(node.node_id):
+		state_signal = String(InRunHudShell.PROGRESS_STATE_SIGNALS[&"completed"])
+	elif MapNodePresentation.is_reachable(_snapshot.map, node):
+		state_signal = "‹ ›"
+	var current_signal := (
+		String(InRunHudShell.PROGRESS_STATE_SIGNALS[&"current"])
+		if (
+			_snapshot.map.current_node_id != null
+			and _snapshot.map.current_node_id.value == node.node_id
+		)
+		else ""
+	)
+	var kind_signal := String(
+		InRunHudShell.NODE_KIND_SIGNALS.get(
+			MapNodeState.node_kind_to_token(node.node_kind),
+			"?"
+		)
+	)
+	return "%s %s %s  %s" % [
+		current_signal,
+		state_signal,
+		kind_signal,
+		_node_text(node),
 	]
 
 

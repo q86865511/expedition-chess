@@ -13,6 +13,16 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-19] ✅ UI Phase C-1 `RUN_MAP` 視覺化節點圖修訂後核可 — 節點圖置於
+  UI 層，以 ebb9858 的 `MapNodePresentation.is_reachable` frontier 權威呈現三幕七層、
+  39 節點與 78 邊；已完成／可達／不可達及目前位置均有獨立非色彩訊號。圖形點選只做
+  既有 `map.select` 預覽，`map.confirm` 仍由 domain command 裁決；文字 `NodeSelector`
+  保留作無障礙／鍵盤通道。ImageGen 地圖背景完成 provenance、inventory 與 SHA 閉環。
+  使用者裁決後將 78 邊分成 background 74／traversed 1／frontier 3，幕標改正式雙語 key，
+  不可達中央節點移除 `×` 並改用降透明度＋無框。九組矩陣及 1080p／UI100 三張互動序列
+  皆重拍通過，focused Gut 6／6（83 assertions），fresh All 1487／1487（39400 assertions）
+  exit 0；證據在 `specs/ui-art-refresh/evidence/c-1/`。本提交封存 C-1，未 push；直接進 C-2。
+
 - [2026-08-16] 🎨 UI 線 Phase B（局外視覺）整段完成 — B-out-1 `d7e91b9`（CAMP 環境圖
   ＋MENU key art，核可含兩輪修訂）、B-out-2 `20212de`（五設施進 shell＋44 portraits
   接圖鑑＋換行修訂）、B-out-3 `1c6ef32`（SETTINGS 骨架＋RESULTS 卡片化含標籤修訂＋
@@ -409,15 +419,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 Phase B（B-out-1～B-out-3）已完成並獲使用者核可；B-out-3 原 36 張矩陣與
-  修訂補圖 12 張、fresh All 皆通過。未 push，依裁決停止並等待下一批，不開始 Phase C。
+- UI 線 Phase C-1 已修訂後核可並封存；C-2 戰鬥呈現依裁決直接開始，完成時才停下一個
+  視覺核可閘門。C-3 音訊尚未開始。
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
+- UI `ui-art-refresh` Phase C-2：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 已核可；Phase B 完成，
-  Phase C 尚未開始。
+  對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 與 C-1 已核可；C-2 戰鬥呈現進行中，
+  C-3 音訊尚未開始。
 
 ## 待辦
 
@@ -427,8 +437,8 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  局內版面已改由 `in-run-hud` 承接（見下）；局外 Phase B 已完成。依使用者指示停下，
-  不先行轉入 Phase C；其後仍為 Phase C 資產接線、Phase D 中文化收尾。
+  局內版面已改由 `in-run-hud` 承接（見下）；局外 Phase B 與 Phase C-1 已完成。
+  C-1 已核可，直接進 C-2；C-2 完成時停視覺核可，之後仍有 C-3 與 Phase D 中文化收尾。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -442,6 +452,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
+
+- [2026-08-19] UI Phase C-1 RUN_MAP 採 UI 層節點圖：RUN_MAP 是需要 UI scale、鍵盤焦點、
+  雙語文字與精確點擊區的決策介面，節點座標不參與 gameplay 模擬；世界棋盤維持清除。
+  可達性只消費 `MapNodePresentation.is_reachable(snapshot.map, node)` 的 ebb9858 frontier
+  權威，不在 presentation 推測演算法。核可修訂後，已完成以 `✓` 實線框、可達以
+  `‹ ›` 雙框、不可達以節點形狀＋降透明度＋無框呈現（`×` 僅留 accessible copy），
+  現在位置另用 `▶`；78 邊分為背景／已走／frontier 三層權重。原 `NodeSelector` 留作
+  無障礙焦點通道。背景 `environment.run_map` 經 ImageGen 兩候選選稿、provenance／SHA
+  與 inventory 閉環；證據見 `specs/ui-art-refresh/evidence/c-1/`，C-1 已核可。
 
 - [2026-08-09] `in-run-hud` 使用者裁決（四項）：(1) 改造範圍為局內四個 route 全面重做；
   (2) UI 設計基準改 1920×1080 並支援 2560×1440，**既有 B1R3 樣板與舊畫面全部捨棄、

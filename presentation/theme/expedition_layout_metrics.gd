@@ -32,6 +32,30 @@ const RESULTS_AUDIT_CARD_HEIGHT: float = 96.0
 const RESULTS_METRIC_LABEL_HEIGHT: float = 36.0
 const RESULTS_METRIC_LABEL_GAP: float = 6.0
 
+## RUN_MAP 的節點圖完全位於 UI reference 空間。集中持有幾何可讓三種
+## resolution 與 UI scale 共用同一套布局，且不把 presentation 尺寸散落
+## 在畫面或繪圖程式中。
+const RUN_MAP_GRAPH_MINIMUM := Vector2(840.0, 420.0)
+const RUN_MAP_NODE_SIZE := Vector2(78.0, 34.0)
+const RUN_MAP_HORIZONTAL_INSET: float = 54.0
+const RUN_MAP_ACT_GAP: float = 6.0
+const RUN_MAP_ACT_HEADER_HEIGHT: float = 24.0
+const RUN_MAP_SLOT_COUNT: int = 3
+const RUN_MAP_LAYER_COUNT: int = 7
+const RUN_MAP_STATE_FRAME_INSET: float = 4.0
+const RUN_MAP_SELECTED_FRAME_INSET: float = 7.0
+const RUN_MAP_CURRENT_MARKER_WIDTH: float = 20.0
+const RUN_MAP_SEPARATOR_WIDTH: float = 1.0
+const RUN_MAP_EDGE_BACKGROUND_WIDTH: float = 1.0
+const RUN_MAP_EDGE_TRAVERSED_WIDTH: float = 2.0
+const RUN_MAP_EDGE_FRONTIER_WIDTH: float = 4.0
+const RUN_MAP_EDGE_BACKGROUND_ALPHA: float = 0.16
+const RUN_MAP_EDGE_TRAVERSED_ALPHA: float = 0.68
+const RUN_MAP_EDGE_FRONTIER_ALPHA: float = 0.96
+const RUN_MAP_UNREACHABLE_ALPHA: float = 0.42
+const RUN_MAP_DASH_LENGTH: float = 6.0
+const RUN_MAP_ACCESSIBILITY_MINIMUM_HEIGHT: float = 168.0
+
 
 static func set_min(control: Control, width: float, height: float) -> void:
 	_set_minimum(control, Vector2(width, height), true)

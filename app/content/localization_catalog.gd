@@ -399,6 +399,9 @@ func _register_fixed_keys() -> void:
 	_register(&"map.node_state.completed", "已完成", "Completed")
 	_register(&"map.node_state.current", "目前所在", "Current")
 	_register(&"map.node_state.unreached", "未到達", "Not Reached")
+	_register(&"map.act.1.title", "第一幕", "Act I")
+	_register(&"map.act.2.title", "第二幕", "Act II")
+	_register(&"map.act.3.title", "第三幕", "Act III")
 	# wave2-C
 	_register(
 		&"error.status.pre_commit",

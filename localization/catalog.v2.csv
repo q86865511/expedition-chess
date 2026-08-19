@@ -805,6 +805,9 @@ loc.unlock_slice_challenge_2,挑戰解鎖 3,Challenge Unlock 3
 loc.unlock_slice_challenge_3,挑戰解鎖 4,Challenge Unlock 4
 loc.unlock_slice_challenge_4,挑戰解鎖 5,Challenge Unlock 5
 loc.unlock_slice_challenge_5,挑戰解鎖 6,Challenge Unlock 6
+map.act.1.title,第一幕,Act I
+map.act.2.title,第二幕,Act II
+map.act.3.title,第三幕,Act III
 map.confirm,確認前進,Confirm Route
 map.node_kind.boss,首領,Boss
 map.node_kind.elite,菁英戰鬥,Elite Battle

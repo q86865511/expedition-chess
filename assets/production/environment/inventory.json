@@ -1,7 +1,7 @@
 {
   "$schema": "environment-visual-inventory.schema.json",
   "schema_version": 1,
-  "slice": "ui-art-refresh-b-out-1",
+  "slice": "ui-art-refresh-c-1",
   "status": "adopted",
   "visuals": [
     {
@@ -27,6 +27,18 @@
       "source_path": "assets/production/key_art_attempts/menu_main/attempt-001/raw.png",
       "source_sha256": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37",
       "provenance": "assets/production/provenance/menu_main_key_art.json"
+    },
+    {
+      "visual_id": "environment.run_map",
+      "kind": "environment",
+      "status": "adopted",
+      "path": "assets/production/environment/run_map.png",
+      "sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+      "width": 1672,
+      "height": 941,
+      "source_path": "assets/production/map_attempts/run-map-attempt-01.png",
+      "source_sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+      "provenance": "assets/production/provenance/run_map_environment.json"
     }
   ]
 }

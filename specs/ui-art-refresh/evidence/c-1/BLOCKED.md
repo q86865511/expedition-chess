@@ -1,42 +1,23 @@
-# C-1 BP-SI-003 前置硬閘阻擋報告
+# C-1 BP-SI-003 前置硬閘解除紀錄
 
-- 日期：2026-08-17
-- 基線：`9d98e4d`
-- 結果：**BLOCKED — 不開始 C-1 呈現實作**
-- 前置議題：`BP-SI-003`
+- 原始阻擋日期：2026-08-17
+- 解除基線：`ebb9858`
+- 最終狀態：**RESOLVED — C-1 已繼續並完成**
 
-## 實測方式
+## 原始缺陷
 
-使用 production content bootstrap、`BalanceProductionCaseDriver` 與真實
-`RunPresentationSession`，固定 `tempo`／seed `0`，完整走過節點進入、戰鬥、結算、
-獎勵與存檔，直到完成兩個節點。之後由該存檔重新組成 session，在 RUN_MAP 階段同時
-讀取 `snapshot.map`、`reachable_nodes()`，並以現行 `RunMapScreen` 組出
-`NodeSelector`。預檢以刻意的非零 exit code `2` 表示硬閘觸發。
+舊版 `reachable_nodes()` 使用拓撲可達語意，會把未選的歷史同層分支列為可選；domain
+同樣允許玩家回頭重刷節點收入。原 C-1 前置探針因此依約停止呈現實作。
 
-## 阻擋證據
+## 權威修復與重驗
 
-完成節點為 Act 1 layer 0 的單一入口，以及 Act 1 layer 1 的 slot 1。此時
-`reachable_nodes()` 回傳四個節點：三個位於下一層 Act 1 layer 2，另有一個位於
-已走過的 Act 1 layer 1 slot 0：
+`ebb9858` 交付與 `NodeEntryService` 同源的 frontier 權威。C-1 screens 直接使用
+`MapNodePresentation.is_reachable(snapshot.map, node)`，沒有在 presentation 建立或推測
+frontier 演算法。
 
-`node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba`
+production content、`BalanceProductionCaseDriver` 與真實 `RunPresentationSession` 走過兩個
+節點後的重驗結果：completed 2、frontier 3、historical frontier 0，RUN_MAP enabled
+historical nodes 亦為 0。完整資料見 [frontier-preflight.json](./frontier-preflight.json)，
+通過後畫面見 [frontier-preflight.png](./frontier-preflight.png)。
 
-現行 RUN_MAP 對該歷史分支的 `NodeSelector.disabled` 為 `false`；實際選取後，
-`RunMapScreen.selected_node_id()` 也等於該 node id。這證明 topology reachability
-會讓本層不可選的歷史分支進入 UI 可達／高亮語意，符合 `BP-SI-003` 的已知病徵。
-
-完整 clone-only 讀取面、39 個節點座標、四個 query 結果、所有 ItemList disabled
-狀態與截圖 SHA 見 [frontier-preflight.json](./frontier-preflight.json)。視覺證據見
-[frontier-preflight.png](./frontier-preflight.png)：Act 1 layer 1 的未選分支被高亮，
-同層已完成的 slot 1 則為 disabled；真正下一步的三個 layer 2 節點也同時 enabled。
-
-## 裁決與續作條件
-
-依 C-1 計畫的硬閘，presentation 不得自行建立、複製或推測 frontier 演算法，因此本次
-沒有修改 `domain/services/app`、`presentation/viewmodels`、
-`run_presentation_session.gd` 或任何 presentation UI；也沒有啟動 ImageGen、建立地圖
-資產、執行九組矩陣或開始 C-2／C-3。
-
-續作前需要 Claude 交付具名 current-frontier 查詢及其契約，並讓
-`RunPresentationSession` 提供可直接消費的合法下一步集合。該前置合併後，應重新執行
-本硬閘；只有歷史分支不再出現在可選集合時，才開始 C-1 節點圖實作。
+本檔保留原 hard-gate 路徑，供 source-freeze 與歷史稽核讀取；它不再表示目前工作受阻。

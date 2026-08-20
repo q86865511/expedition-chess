@@ -13,6 +13,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 已完成
 
+- [2026-08-20] ✅ UI Phase D 中文化收尾與最終文案裁決完成 — 全畫面
+  `zh_TW` 實機走查修正 RUN 頂欄、PREPARE 空羈絆提示與 RUN_COMBAT 檢視器在窄畫布／
+  高縮放的截斷／溢出；before 71、after 107 張 PNG，四組結構化 report 皆
+  `ok=true`、`issues=[]`。新增程式 loc 引用必存在 catalog 的靜態 gate，並依使用者
+  核准將 19 個 accessibility 內嵌 key＋6 個既有 `text_key` 機械遷入 catalog；薄轉接
+  保留既有 API，值回歸 catalog 單一來源。exporter 重導 966-row CSV／raw，兩檔 digest
+  最終為 `c3cad96d...e3ac73`，bootstrap seal 同步；app 差異只限 catalog／bootstrap。首開 locale
+  以 OS 初始化（`zh_TW`／`zh-Hant` → `zh_TW`，其餘 → `en`）；`.translation` 定位為
+  ignored importer 產物。最終裁決採 faction 六項候選 A、role 六項保留直譯、英文不變；
+  44 個中英文技能描述落地，並機械同步至 RUN_COMBAT 實際消費的 44 個既有 display alias。
+  補圖發現四字 faction 在 76 px 商店徽章截斷，改 96 px 後 run 23／23、collection 3／3
+  `ok=true`、`issues=[]`。fresh All 1510／1510（41532 assertions）、Smoke 10／10、loc
+  parity／reseal 16／16 與引用 gate 20／20 全部 exit 0；`git diff --check` 綠。44 個編號
+  單位名本批不改，下一批每單位提出兩候選。證據在 `specs/ui-art-refresh/evidence/phase-d/`。
+
 - [2026-08-20] ✅ UI Phase C-3 production 音訊接線完成，停核可閘門 — 新增
   presentation-only `ProductionAudioDirector`，由具名 route root 擁有；17 個 production
   routes 完整分流至 menu／camp／expedition／combat／results 五首 48 kHz stereo OGG，
@@ -25,8 +40,8 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   驗證 26 組 resource／OGG SHA、bus 與 loop，結果 `ok=true`、issues 0。focused 6／6
   （288 assertions）、Smoke 10／10、fresh All 1499／1499（39746 assertions）、Combat
   step 與 18／18 acceptance、Spec 4100／0 均 exit 0；`git diff --check` 與邊界掃描綠。
-  對映表與完整證據在 `specs/ui-art-refresh/evidence/c-3/`；本批未 commit、未 push，等待
-  使用者核可後才進 Phase D。
+  對映表與完整證據在 `specs/ui-art-refresh/evidence/c-3/`；使用者核可後已提交
+  `6a2fbd5`（`功能: 完成 C-3 production 音訊接線`），Phase C 至此完成，未 push。
 
 - [2026-08-19] ✅ UI Phase C-2 `RUN_COMBAT` 戰鬥呈現與共用商店卡修訂完成 —
   `BattlePlayback` 的 committed event window 接至 world-layer presentation renderer，技能／普攻／
@@ -451,14 +466,15 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 Phase C-1 已核可封存、C-2 已提交；C-3 音訊已完成，現在停在 C-3 核可閘門。
+- UI 線 Phase C 已全數核可提交；Phase D 已完成最終裁決與驗收，UI 線收斂。
 
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase C-3：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
+- UI `ui-art-refresh` Phase D：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
   2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外 B-out-1／B-out-2／B-out-3 與 C-1 已核可；C-2 戰鬥呈現與
-  共用商店卡修訂已完成；C-3 音訊接線與證據完成，等待使用者核可。
+  對局內畫面解除。Phase B／C 已核可封存；Phase D 的 25-key reseal、loc reference gate、
+  OS locale、`.translation` 政策、中文實機走查與最終羈絆／技能文案均完成。44 個單位
+  正式命名候選移至下一內容批次，不阻擋 UI 線收斂。
 
 ## 待辦
 
@@ -468,9 +484,9 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  局內版面已改由 `in-run-hud` 承接（見下）；局外 Phase B 與 Phase C-1 已完成。
-  C-1 已核可；C-2 與條件修訂已提交，C-3 已完成並停核可閘門，之後仍有 Phase D
-  中文化收尾。
+  局內版面已改由 `in-run-hud` 承接（見下）；Phase B／C／D 均完成，UI 線收斂。後續
+  內容批次依 44 單位的 faction／role／cost／戰鬥定位／視覺稿各提兩個正式名候選，
+  未經下一次使用者裁決不寫回 catalog。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -484,6 +500,21 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
+
+- [2026-08-20] UI Phase D 最終文案裁決：六個 faction 採候選 A（秘法同調、餘燼之盟、
+  凜霜之裔、鐵誓同盟、暮影之裔、翠蔭之盟）；六個 role 與十二個英文羈絆名不變。
+  44 個技能描述依 `base + source.attack` 提案整批定稿；RUN_COMBAT 詳情實際消費
+  `loc.effect_*_primary`，故同一份核可 copy 機械同步到 44 個既有 display alias，不新增 key。
+  44 個編號單位名本批不改，下一內容批次每單位提出兩候選再停裁決。四字 faction 使
+  共用商店卡 76 px 徽章截斷，依 metrics 擴為 96 px 並以原 clipping gate 重驗通過。
+
+- [2026-08-20] UI Phase D localization authority 收斂：經使用者核准的 25 key 依既有
+  exporter＋digest reseal 配方遷入 catalog；`ProductionAccessibilityLocalization` 保留
+  key 常數與 resolve／semantic API 作薄轉接，但不再擁有雙語值。程式引用 loc key 的
+  靜態 gate 同時辨識直接 resolve 與 accessibility `text_key`，並排除 stable ID 誤判。
+  `.translation` 維持 Godot importer 可重建且 ignored 的衍生檔，runtime 只信 sealed raw。
+  無設定檔的首開 locale 採 exact `zh_TW`／`zh-Hant` 圈，圈外一律 `en`；已存在設定檔的
+  使用者選擇仍優先。內容風味候選只寫入 evidence，未經裁決不改 catalog。
 
 - [2026-08-20] UI Phase C-3 採 route-root-owned presentation audio director：內嵌的
   Run composition 雖繼承 `ProductionScreen`，但 `route_kind` 為空，不另建播放器，避免

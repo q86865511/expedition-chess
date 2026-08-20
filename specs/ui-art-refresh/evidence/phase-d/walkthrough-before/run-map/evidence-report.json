@@ -1,0 +1,331 @@
+{
+  "exit_code": 0,
+  "expected_interaction_count": 3,
+  "expected_matrix_count": 9,
+  "interaction_count": 3,
+  "issues": [],
+  "matrix_count": 9,
+  "ok": true,
+  "production_source": {
+    "completed_node_ids": [
+      "node_c1902307b8e393535b62494e4c5d087996efe1d7c66f86198a9f14b1223c63c4",
+      "node_ec164e0494da1dacd2d7016c1f8c7d872407248385ad152b69dab8fbd8d224ac"
+    ],
+    "diagnostic_node_limit": 2,
+    "run_phase": 0,
+    "seed": 0,
+    "source": "BalanceProductionCaseDriver + production content",
+    "strategy": "TEMPO"
+  },
+  "schema_version": "c-1-evidence-1",
+  "screenshots": [
+    {
+      "case": "720p-ui100",
+      "height": 720,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-720p-ui100.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "6a962243b9671ee9a77c86101050c9807fa067c49af44edb0a956e2fff1df208",
+      "ui_scale": 100,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 1280
+    },
+    {
+      "case": "720p-ui125",
+      "height": 720,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-720p-ui125.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "c273482f9458bb1fdf1391320389d5888fef0d9121b3bd054abc7ae027960cfe",
+      "ui_scale": 125,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 1280
+    },
+    {
+      "case": "720p-ui150",
+      "height": 720,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-720p-ui150.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "ab061ce42fa51041a5ca1cb6a3ace1adeab602bcd37b65048cd184eb6b7a3349",
+      "ui_scale": 150,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 1280
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-1080p-ui100.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "270e94560b83ebf194c46e287a49b3647ccc3a515f5f9dcd746e8f5019a0675d",
+      "ui_scale": 100,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui125",
+      "height": 1080,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-1080p-ui125.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "33352e606528ea7faf22b150c70845f9c55fade19a467ad5f2a11dd6ce17fd19",
+      "ui_scale": 125,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui150",
+      "height": 1080,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-1080p-ui150.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "2126c91af34dbf38754b5ae8b92b38cf45bd4332ae74b9e58cfa67a083295f7a",
+      "ui_scale": 150,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 1920
+    },
+    {
+      "case": "1440p-ui100",
+      "height": 1440,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-1440p-ui100.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "d695fd1cba65d0a24d122ff1d2952fc538d5417eb2af421d8f41365b36321f09",
+      "ui_scale": 100,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 2560
+    },
+    {
+      "case": "1440p-ui125",
+      "height": 1440,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-1440p-ui125.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "6c69b5394a7d7e805eced83f3358f38ed948ea7e296c8d92898244658995bb58",
+      "ui_scale": 125,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 2560
+    },
+    {
+      "case": "1440p-ui150",
+      "height": 1440,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/run-map-1440p-ui150.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "de13d53763ef3454dc612efe01d227327c3ce0d587c806d29fe5f7922a696121",
+      "ui_scale": 150,
+      "validation": {
+        "accessibility_row_count": 39,
+        "act_label_count": 3,
+        "background_visual_id": "environment.run_map",
+        "current_marker_count": 1,
+        "edge_count": 78,
+        "edge_weight_counts": {
+          "background": 74,
+          "frontier": 3,
+          "traversed": 1
+        },
+        "node_count": 39,
+        "state_counts": {
+          "completed": 2,
+          "reachable": 3,
+          "unreachable": 34
+        }
+      },
+      "width": 2560
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "interaction-initial",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/interaction-01-initial.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "270e94560b83ebf194c46e287a49b3647ccc3a515f5f9dcd746e8f5019a0675d",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "interaction-selected",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/interaction-02-selected.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "4813818eb2faa7f4607895c00afef43003e5206df0073dd1874b3e87471d8e56",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "interaction-confirmed",
+      "next_route": "RUN_PREPARE",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-before/run-map/interaction-03-confirmed-next-route.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "selected_node_id": "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993",
+      "sha256": "dd4a088b79d1c316e0017803286fe1dc4baa54bbb3a9767d988a51ef7caa5e28",
+      "ui_scale": 100,
+      "width": 1920
+    }
+  ]
+}

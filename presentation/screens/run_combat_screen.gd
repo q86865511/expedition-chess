@@ -575,7 +575,10 @@ func _build_typed_combat_controls() -> void:
 	_unit_selector.focus_mode = Control.FOCUS_ALL
 	_unit_selector.select_mode = ItemList.SELECT_SINGLE
 	_unit_selector.set_meta(&"typed_choice_kind", &"combat_unit")
-	_unit_selector.set_meta(&"accessible_text", &"combat.unit_selector")
+	_unit_selector.set_meta(
+		&"accessible_text",
+		_localized_ui_text(&"combat.inspect")
+	)
 	var inspections := _model.inspection_rows()
 	if not inspections.is_empty():
 		for row: RunCombatIntelModel.InspectionIntelRow in inspections:
@@ -618,9 +621,12 @@ func _build_typed_combat_controls() -> void:
 	var panel := VBoxContainer.new()
 	panel.name = "InspectionPanel"
 	ExpeditionLayoutMetrics.set_min(panel, 0.0, 0.0)
-	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.set_meta(&"accessible_text", &"combat.inspection_panel")
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.set_meta(
+		&"accessible_text",
+		_localized_ui_text(&"combat.inspect")
+	)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.z_index = 2
 	for value_name: StringName in [
@@ -633,9 +639,11 @@ func _build_typed_combat_controls() -> void:
 	]:
 		var label := Label.new()
 		label.name = value_name
+		label.theme_type_variation = &"ExpeditionCombatInspection"
 		label.text = _localized_ui_text(INSPECTION_NONE_KEY)
-		label.clip_text = true
-		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.clip_text = false
+		label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+		label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		panel.add_child(label)
 	var right_host := _hud_shell.host(
@@ -646,6 +654,7 @@ func _build_typed_combat_controls() -> void:
 		right_host.remove_child(common_inspector)
 		common_inspector.free()
 	right_host.add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build_semantic_controls()
 	if _unit_selector.item_count > 0:
 		_unit_selector.select(0)

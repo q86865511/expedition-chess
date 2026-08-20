@@ -18,6 +18,7 @@ const COMBAT_DAMAGE_OUTLINE_SIZE: int = 4
 const COMBAT_DAMAGE_LABEL_LAYER: int = 1100
 const COMBAT_BACKGROUND_MODULATE := Color(0.78, 0.84, 0.94, 0.72)
 const COMBAT_PLAYBACK_CUE_HEIGHT: float = 28.0
+const RUN_PREPARE_TRAIT_EMPTY_HEIGHT: float = 150.0
 
 ## PREPARE 與 COMBAT 共用的商店卡。in-run-hud reference 的 197×134 是
 ## 1920/UI100 上限；182×108 讓五卡加商店／分組／固定動作欄後，仍在
@@ -29,7 +30,9 @@ const SHOP_CARD_BOTTOM_INFO_HEIGHT: float = 27.0
 const SHOP_CARD_BOTTOM_GRADIENT_START: float = 0.42
 const SHOP_CARD_CONTENT_INSET: float = 5.0
 const SHOP_CARD_TRAIT_BADGE_HEIGHT: float = 19.0
-const SHOP_CARD_TRAIT_BADGE_WIDTH: float = 76.0
+# Phase D finalized faction names are four CJK glyphs. 96 px preserves the
+# icon, capsule padding, and full label inside the existing 182 px card.
+const SHOP_CARD_TRAIT_BADGE_WIDTH: float = 96.0
 const SHOP_CARD_TRAIT_BADGE_ICON_SIZE: float = 13.0
 const SHOP_CARD_TRAIT_BADGE_GAP: float = 2.0
 const SHOP_CARD_TRAIT_BADGE_MAX: int = 3

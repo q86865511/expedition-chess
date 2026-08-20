@@ -290,9 +290,9 @@ func _apply_case(case: Dictionary) -> bool:
 		return false
 	# Applying UI scale rebuilds the route-local shell and remounts the world
 	# surface over several deferred layout passes.  Capture only after that
-	# mount has settled; three frames can observe a transient bottom-edge-only
-	# board at 125 percent.
-	for _settle_frame: int in 12:
+	# mount has settled; route-local HUD replacement can remain visible beyond
+	# the board remount at high UI scales, so evidence waits for the whole shell.
+	for _settle_frame: int in 30:
 		await process_frame
 	var active := Support.active_screen(_harness)
 	var current_combat := (

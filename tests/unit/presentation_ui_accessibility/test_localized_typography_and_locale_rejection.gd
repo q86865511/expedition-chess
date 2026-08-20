@@ -78,6 +78,77 @@ func test_bundled_font_is_first_for_zh_tw_and_en_visible_text() -> void:
 		assert_gt(int(report.get("required_glyph_count", 0)), 0)
 
 
+func test_all_zh_tw_catalog_values_are_covered_by_bundled_font() -> void:
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
+	var visible_text := ""
+	for key: StringName in catalog.keys_for_locale(&"zh_TW"):
+		var resolved := catalog.resolve(&"zh_TW", key)
+		assert_true(resolved.ok, "catalog key must resolve: %s" % String(key))
+		if resolved.ok:
+			visible_text += resolved.value
+	var report := LocalizedTypographyPolicy.new().readability_report(
+		&"zh_TW",
+		visible_text
+	)
+	assert_true(bool(report.get("ok", false)), str(report))
+	assert_eq(
+		StringName(report.get("font_source", &"")),
+		LocalizedTypographyPolicy.FONT_SOURCE_BUNDLED
+	)
+	assert_false(bool(report.get("fallback_used", true)))
+	assert_true((report.get("missing_glyphs", []) as Array).is_empty())
+
+
+func test_production_accessibility_copy_resolves_from_catalog_single_source() -> void:
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
+	var localization := ProductionAccessibilityLocalization.new(catalog)
+	var keys: Array[StringName] = [
+		ProductionAccessibilityLocalization.COMBAT_RULE_KEY,
+		ProductionAccessibilityLocalization.SUMMARY_KEY,
+		ProductionAccessibilityLocalization.RULE_INFORMATION_KEY,
+		ProductionAccessibilityLocalization.PATTERN_CUE_KEY,
+		ProductionAccessibilityLocalization.MOTION_KEY,
+		ProductionAccessibilityLocalization.FLASH_KEY,
+		ProductionAccessibilityLocalization.PARTICLES_KEY,
+		ProductionAccessibilityLocalization.DAMAGE_EVENT_KEY,
+		ProductionAccessibilityLocalization.STATE_FULL_KEY,
+		ProductionAccessibilityLocalization.STATE_REDUCED_KEY,
+	]
+	keys.append_array(ProductionAccessibilityLocalization.DAMAGE_SAMPLE_KEYS)
+	for semantic_key: Variant in ProductionAccessibilityLocalization.SEMANTIC_KEYS.values():
+		keys.append(StringName(semantic_key))
+	assert_eq(keys.size(), 19, "source table contains 19 unique keys")
+	for locale: StringName in [&"zh_TW", &"en"]:
+		for key: StringName in keys:
+			var expected := catalog.resolve(locale, key)
+			assert_true(expected.ok, "%s/%s" % [String(locale), String(key)])
+			assert_eq(localization.resolve(locale, key), expected.value)
+
+
+func test_accessibility_text_keys_mechanically_reuse_existing_semantic_copy() -> void:
+	var catalog := LocalizationCatalog.restricted_emergency_catalog()
+	var source_keys := {
+		&"accessibility.allegiance.ally": &"accessibility.semantic.ally",
+		&"accessibility.allegiance.enemy": &"accessibility.semantic.enemy",
+		&"accessibility.bond.active": &"accessibility.semantic.trait",
+		&"accessibility.rarity.legendary": &"accessibility.semantic.rarity",
+		&"accessibility.damage.arcane": &"accessibility.semantic.damage",
+		&"accessibility.danger.lethal": &"accessibility.semantic.danger",
+	}
+	assert_eq(source_keys.size(), 6, "six existing text_key references are resealed")
+	for locale: StringName in [&"zh_TW", &"en"]:
+		for destination_key: StringName in source_keys:
+			var source_key := StringName(source_keys[destination_key])
+			var source := catalog.resolve(locale, source_key)
+			var destination := catalog.resolve(locale, destination_key)
+			assert_true(source.ok, "%s/%s" % [String(locale), String(source_key)])
+			assert_true(
+				destination.ok,
+				"%s/%s" % [String(locale), String(destination_key)]
+			)
+			assert_eq(destination.value, source.value)
+
+
 func test_real_missing_glyph_is_not_reported_as_readable() -> void:
 	var report := LocalizedTypographyPolicy.new().readability_report(
 		&"en",

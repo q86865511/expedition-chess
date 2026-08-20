@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "suite": "Gut",
+  "exit_code": 0,
+  "message": "Requested suites completed.",
+  "started_at_utc": "2026-08-20T12:28:39Z",
+  "finished_at_utc": "2026-08-20T12:28:49Z",
+  "toolchain": {
+    "ExitCode": 0,
+    "Message": "Toolchain lock verified.",
+    "GodotVersion": "4.7.stable.official",
+    "GodotSha256": "b2ca888d5115a6cedee564764a2ee494a625f2ec2edbabd010fe33c9a88a6bf8",
+    "GutVersion": "9.7.1",
+    "GutTreeSha256": "94cfb2346fa189bb358a499179161cabf6c3602485ce7f592683d5d3bb7f18d2",
+    "GutFileCount": 259
+  },
+  "runs": [
+    {
+      "name": "Import",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:28:40Z",
+      "finished_at_utc": "2026-08-20T12:28:46Z",
+      "arguments": [
+        "--headless",
+        "--editor",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\import.godot.log",
+        "--import",
+        "--quit"
+      ]
+    },
+    {
+      "name": "Gut",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:28:46Z",
+      "finished_at_utc": "2026-08-20T12:28:49Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\gut.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://tests/unit/presentation_ui_static_gate"
+      ]
+    }
+  ]
+}

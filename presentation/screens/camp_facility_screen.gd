@@ -105,7 +105,10 @@ func _build_facility_data() -> void:
 		if _parent_route_kind() == &"COLLECTION":
 			data.set_meta(&"semantic_kind", &"rarity")
 			data.set_meta(&"semantic_pattern", &"double-frame")
-	data.set_meta(&"accessible_text", &"camp.facility_data")
+	var accessible_rows := PackedStringArray()
+	for index: int in data.item_count:
+		accessible_rows.append(data.get_item_text(index))
+	data.set_meta(&"accessible_text", "\n".join(accessible_rows))
 	add_child(data)
 	_apply_card_metrics()
 	refresh_layout_rects()

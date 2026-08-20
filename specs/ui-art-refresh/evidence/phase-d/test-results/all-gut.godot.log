@@ -1,0 +1,3052 @@
+Godot Engine v4.7.stable.official.5b4e0cb0f - https://godotengine.org
+
+---  GUT  ---
+[INFO]:  using [C:/Users/q86865511/AppData/Local/Temp/expedition-test-appdata-20260820122930-22872/Godot/app_userdata/遠征棋] for temporary output.
+Godot version:  4.7.0
+GUT version:  9.7.1
+
+
+res://tests/unit/app/test_app_root.gd
+* test_main_scene_has_fixed_node_contract
+* test_autoload_instances_do_not_match_implementation_classes
+* test_scene_router_rejects_invalid_input_without_mutation
+* test_settings_reject_invalid_pixel_scale
+4/4 passed.
+
+
+res://tests/unit/app/test_app_root_boot_route.gd
+* test_first_boot_bootstraps_a_playable_profile_and_opens_camp
+* test_boot_with_persisted_active_run_resumes_it_without_touching_the_save
+* test_invalid_save_fails_boot_without_composing_a_null_profile_camp
+Unicode parsing error, some characters were replaced with � (U+FFFD): Invalid UTF-8 leading byte (80)
+* test_storage_io_failure_fails_boot_while_not_found_still_bootstraps
+* test_bind_services_succeeds_only_before_tree_entry_and_late_call_keeps_old_services
+* test_compose_failure_preserves_run_until_player_explicitly_discards_it
+6/6 passed.
+
+
+res://tests/unit/app/test_app_root_start_compose_failure_r3.gd
+* test_start_compose_failure_refreshes_camp_projection_from_committed_profile
+* test_incompatible_preserved_run_boots_menu_with_recovery_and_preserves_original_bytes
+2/2 passed.
+
+
+res://tests/unit/balance_playtest/test_app_root_playtest_session_lifecycle.gd
+* test_cross_process_abandon_recovers_report_from_pending_sidecar
+* test_null_receipt_terminal_handoff_clears_session_state_without_writing_a_report
+* test_report_playtest_candidate_invalid_writes_marker_and_logs_error
+ERROR: balance-playtest: production candidate invalid，本次 session 不會寫出任何報告（BALANCE_CANDIDATE_INVALID）
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _report_playtest_candidate_invalid (res://app/app_root.gd:2231)
+       [1] test_report_playtest_candidate_invalid_writes_marker_and_logs_error (res://tests/unit/balance_playtest/test_app_root_playtest_session_lifecycle.gd:130)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+* test_begin_playtest_session_wires_candidate_invalid_marker_to_provisional_rc_feature
+* test_rc_smoke_confirm_required_only_for_destructive_phase_without_confirm_flag
+5/5 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_act_elimination_gate.gd
+* test_golden_scenarios_match_pinned_act_curve_token_and_gate_reasons
+* test_report_json_publishes_act_curve_aggregate_block
+* test_gate_is_disabled_below_tune_threshold_and_enabled_at_it
+* test_gate_ignores_cohorts_without_any_elimination
+4/4 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_bot_act_snapshot_observability.gd
+* test_opaque_reward_placeholder_counts_toward_opaque_selected_id_stat
+* test_act_snapshot_schema_includes_battle_outcome_and_elimination_fields
+* test_canonical_token_is_deterministic_and_reflects_battle_and_elimination_fields
+3/3 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_bot_report_sampling.gd
+* test_replay_sampling_is_deterministic_five_percent_by_absolute_seed
+* test_report_records_replay_sample_list_and_split_elapsed_metrics
+* test_report_serializes_authoritative_case_proof_and_regression_evidence
+* test_report_regression_gate_rejects_old_artifact_pathologies
+* test_build_none_is_visible_but_excluded_from_build_dominance_gate
+5/5 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_bot_shop_action_triggers.gd
+* test_max_reachable_cost_tier_reads_the_level_odds_table
+* test_interest_preserved_after_spend_matches_the_max_interest_water_line
+* test_tempo_reroll_bonus_needs_full_board_gold_reserve_and_a_better_reachable_tier
+* test_synergy_reroll_bonus_needs_a_shop_with_no_trait_overlap
+* test_economy_reroll_only_spends_gold_that_still_keeps_max_interest
+* test_sell_triggers_follow_each_strategy_semantics
+* test_trait_overlap_count_discounts_the_units_own_share
+* test_worst_bench_index_is_deterministic_on_ties
+* test_tempo_rerolls_instead_of_buying_the_cheapest_junk
+* test_tempo_still_buys_when_a_higher_tier_offer_is_affordable
+* test_synergy_rerolls_only_when_the_shop_has_no_trait_overlap
+* test_economy_rerolls_in_the_gap_where_xp_is_unaffordable_but_interest_is_safe
+* test_tempo_sells_the_worst_bench_unit_when_the_shop_has_an_upgrade
+13/13 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_candidate_and_strategy.gd
+* test_production_case_driver_script_loads
+* test_reward_proof_is_serial_free_and_flags_true_duplicate
+* test_candidate_digest_is_order_independent_and_codec_round_trips
+* test_candidate_rejects_duplicate_and_fixed_rule_fields
+* test_scanner_policy_is_shared_and_unknown_numeric_fields_fail_closed
+* test_scanner_fails_closed_on_unclosed_tracked_field_continuation_line
+* test_pinned_production_constants_match_scanner_computed_digest
+* test_pinned_production_candidate_matches_source_and_fails_closed
+* test_candidate_archive_is_append_only_and_conflict_fails
+* test_candidate_archive_preserves_same_tune_across_manifest_revisions
+* test_strategies_choose_different_scores_and_stable_ties
+* test_observation_and_selected_action_are_clone_only
+* test_illegal_and_unaffordable_actions_are_rejected
+* test_economy_policy_fills_board_then_spends_only_above_max_interest
+* test_bench_pressure_score_requires_full_board_and_at_least_two_overflow_units
+* test_tempo_buys_xp_when_bench_pressure_is_high
+* test_tempo_still_prioritizes_buy_unit_on_empty_board
+* test_three_strategies_rank_actions_differently_under_shared_bench_pressure
+* test_build_attribution_requires_active_faction_and_tie_is_run_bound
+* test_appendix_c_tune_values_are_exact
+20/20 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_checkpoint_ledger.gd
+* test_case_key_matches_the_powershell_side_format
+* test_parse_skip_list_dedupes_sorts_and_drops_malformed_lines
+* test_parse_skip_list_of_empty_text_is_empty
+* test_should_skip_reads_the_skip_list_file
+* test_missing_skip_list_skips_nothing
+* test_pause_flag_is_polled_from_disk_not_cached
+* test_append_line_survives_a_reopened_ledger
+* test_status_path_is_derived_from_the_checkpoint_path
+* test_write_status_publishes_the_shard_tail_record
+* test_checkpoint_line_round_trips_the_case_proof
+10/10 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_convergence_warnings.gd
+* test_golden_scenarios_match_pinned_convergence_token_and_warnings
+* test_report_json_publishes_convergence_block
+* test_warnings_never_enter_gate_reasons
+* test_band_boundaries_are_inclusive_on_both_ends
+* test_all_wins_at_observed_ceiling_warns_even_when_win_rates_are_in_band
+5/5 passed.
+
+
+res://tests/unit/balance_playtest/test_balance_production_case_driver_act_snapshot_delta.gd
+* test_build_act_snapshot_isolates_per_act_wins_and_losses_across_three_acts
+* test_build_act_snapshot_zero_battle_act_yields_zero_delta_not_negative
+2/2 passed.
+
+
+res://tests/unit/balance_playtest/test_playtest_session_report_codec.gd
+* test_session_report_round_trip_has_only_anonymous_allowlisted_fields
+* test_session_report_rejects_future_schema_and_unknown_privacy_field
+* test_session_report_rejects_non_string_route_values_and_non_hex_digest
+* test_session_report_writer_publishes_readable_local_json
+* test_session_report_rejects_path_like_or_unknown_prefix_values
+* test_session_report_requires_hour_bucket_and_three_terminal_outcomes
+6/6 passed.
+
+
+res://tests/unit/balance_playtest/test_playtest_session_report_error_codes.gd
+* test_uppercase_underscore_error_codes_are_accepted
+* test_lowercase_or_symbol_error_code_is_rejected
+* test_error_code_length_and_count_are_bounded
+* test_non_ascii_folding_is_rejected_in_all_string_fields
+* test_codec_round_trip_rejects_report_with_invalid_error_code
+5/5 passed.
+
+
+res://tests/unit/balance_playtest/test_playtest_session_report_pending.gd
+* test_try_parse_round_trips_a_well_formed_sidecar
+* test_try_parse_rejects_missing_key_or_wrong_type
+* test_to_json_refuses_incomplete_fields
+* test_build_abandoned_report_derives_hour_bucket_and_duration
+* test_build_abandoned_report_fails_closed_on_empty_or_malformed_pending
+* test_write_load_clear_file_lifecycle
+6/6 passed.
+
+
+res://tests/unit/battle_codec/test_battle_codec_v1.gd
+* test_1559_byte_golden_round_trip_and_hash_builder
+1/1 passed.
+
+
+res://tests/unit/battle_codec/test_battle_codec_v2.gd
+* test_v2_round_trip_hash_envelope_and_v1_golden_compatibility
+* test_v2_unknown_effect_operation_is_rejected_without_partial_acceptance
+* test_v2_effect_source_location_and_owner_are_hashed_and_strict
+3/3 passed.
+
+
+res://tests/unit/battle_codec/test_battle_event_codec_v1.gd
+* test_all_fourteen_event_payloads_round_trip_canonical_bytes
+* test_unknown_type_wrong_payload_and_noncanonical_bytes_are_rejected
+2/2 passed.
+
+
+res://tests/unit/battle_effects/test_battle_timed_stack_resolver.gd
+* test_replace_uses_larger_amount_then_duration_canonical_tuple
+* test_refresh_keeps_amount_and_only_extends_duration
+* test_add_stacks_clamps_count_amount_and_takes_longer_duration
+* test_independent_preserves_separate_application_sequences
+4/4 passed.
+
+
+res://tests/unit/battle_effects/test_effect_resolver_matrix.gd
+* test_all_nine_triggers_and_four_stacking_modes_are_accepted
+* test_all_ten_conditions_have_matching_positive_fixture
+* test_all_nine_battle_operations_produce_typed_atomic_operations
+* test_three_run_intents_are_descriptors_and_do_not_mutate_entities
+* test_unknown_operation_and_budget_failure_return_no_partial_resolution
+5/5 passed.
+
+
+res://tests/unit/battle_effects/test_run_mutation_proposal.gd
+* test_proposal_source_codec_builds_every_canonical_source_shape
+* test_proposal_source_codec_rejects_enemy_summon_leading_zero_and_bad_slots
+* test_rmp2_payload_digest_golden_and_restore_are_exact
+* test_rmp2_rejects_unknown_scope_operation_source_and_u32_overflow
+4/4 passed.
+
+
+res://tests/unit/battle_encounter/test_battle_entity_id_codec_v1.gd
+* test_bei1_enemy_golden_uses_u32_be_ascii_and_first_16_hex
+* test_bsi1_summon_golden_uses_raw_setup_digest_and_u32_fields
+* test_enemy_rejects_non_ascii_or_noncanonical_spawn_keys
+* test_summon_rejects_wrong_digest_ascii_and_u32_bounds
+4/4 passed.
+
+
+res://tests/unit/battle_encounter/test_encounter_compile_request.gd
+* test_request_has_only_pinned_encounter_and_difficulty_context
+* test_request_source_does_not_admit_build_or_rng_inputs
+* test_request_deep_clone_is_value_isolated
+3/3 passed.
+
+
+res://tests/unit/battle_encounter/test_encounter_compiler.gd
+* test_compile_is_deterministic_and_persists_boss_source_id
+* test_wrong_pinned_generation_is_rejected_without_latest_fallback
+* test_duplicate_spawn_key_is_rejected_before_preview_publication
+* test_boss_phase_requires_explicit_spawn_key_in_same_encounter
+* test_missing_compiled_unit_rule_is_fatal
+5/5 passed.
+
+
+res://tests/unit/battle_encounter/test_encounter_compiler_affix_error_priority.gd
+* test_duplicate_affix_id_that_is_also_missing_reports_rule_missing_first
+* test_duplicate_affix_id_present_in_catalog_still_reports_rule_invalid
+2/2 passed.
+
+
+res://tests/unit/battle_encounter/test_encounter_compiler_challenge_affixes.gd
+* test_challenge_affix_effect_ids_field_survives_deep_clone
+* test_empty_challenge_affix_ids_behaves_identically_to_pre_s5_baseline
+* test_challenge_affix_ids_merge_with_native_affix_ids_sorted
+* test_challenge_affix_id_duplicating_a_native_affix_id_is_deduplicated_not_rejected
+* test_unresolvable_challenge_affix_id_is_rejected_as_rule_missing
+* test_compile_with_challenge_affixes_is_deterministic_across_calls
+* test_elite_affix_only_scenario_is_unaffected_by_absent_challenge_field
+7/7 passed.
+
+
+res://tests/unit/battle_encounter/test_encounter_preview_validator.gd
+* test_valid_preview_keeps_explicit_boss_source_through_clone
+* test_player_enemy_id_collision_is_fatal_without_retry
+* test_duplicate_enemy_id_is_fatal
+* test_phase_source_must_resolve_to_enemy_in_same_preview
+4/4 passed.
+
+
+res://tests/unit/battle_preparation/test_board_preparation.gd
+* test_population_sources_are_sorted_and_added_without_abstract_cap
+* test_population_duplicate_identity_is_rejected
+* test_population_sources_are_strictly_positive
+* test_population_checked_addition_reaches_i32_max_without_abstract_cap
+* test_twelve_deployed_units_fit_capacity_and_thirteen_do_not
+* test_all_thirty_two_player_half_cells_are_a_valid_physical_bound
+* test_issue_order_compares_signed_coordinates_numerically
+* test_board_validator_collects_and_sorts_all_errors
+* test_bench_compaction_preserves_player_relative_order
+9/9 passed.
+
+
+res://tests/unit/battle_preparation/test_commit_board_layout_command.gd
+* test_command_compacts_validates_and_returns_complete_draft
+* test_command_rejects_wrong_half_without_success_draft
+* test_command_rejects_pool_held_copy_mismatch
+* test_command_rejects_catalog_from_a_different_pinned_generation
+* test_command_uses_level_only_until_authoritative_population_builder_exists
+* test_command_applies_an_injected_try_commander_population_source
+6/6 passed.
+
+
+res://tests/unit/battle_preparation/test_run_state_validator_preparation_invariants.gd
+* test_bench_is_ordered_player_data_but_need_not_be_sorted_by_instance_id
+* test_pool_held_copies_must_equal_weighted_roster_copies
+* test_bound_item_must_be_listed_on_exactly_its_owner_unit
+* test_unbound_item_must_be_in_inventory_or_overflow_exactly_once
+* test_every_roster_unit_must_have_one_board_or_bench_location
+5/5 passed.
+
+
+res://tests/unit/battle_preparation/test_unit_merge_service.gd
+* test_nine_one_star_units_chain_to_one_three_star_and_conserve_copies
+* test_equipment_moves_by_consumed_unit_and_slot_with_inventory_overflow
+* test_board_presence_then_cell_order_choose_primary_before_instance_id
+* test_bench_order_chooses_primary_before_instance_id
+* test_duplicate_or_unlocated_item_instances_are_rejected
+* test_malformed_null_entry_returns_typed_failure_before_clone
+6/6 passed.
+
+
+res://tests/unit/battle_simulation/test_battle_combat_math.gd
+* test_integer_resistance_true_damage_and_minimum_damage_vectors
+* test_progress_damage_mana_and_overtime_use_fixed_integer_thresholds
+* test_modifier_recompute_is_sorted_and_clamped_without_float_math
+3/3 passed.
+
+
+res://tests/unit/battle_simulation/test_battle_simulation.gd
+* test_initialize_rejects_hash_tamper_without_entering_lifecycle
+* test_first_tick_emits_spawn_and_deterministic_movement_events
+* test_same_setup_produces_identical_result_and_summary_hash
+* test_simultaneous_lethal_attacks_resolve_both_deaths_as_player_loss
+* test_damage_wave_uses_shared_final_health_and_deterministic_killer
+* test_result_is_unavailable_before_finish_and_step_is_rejected_after_finish
+* test_full_mana_cast_has_priority_and_applies_resolved_damage_next_tick
+* test_boss_phase_uses_explicit_source_instance_and_fixed_phase_order
+* test_overtime_starts_at_1200_and_forces_result_before_hard_limit
+* test_boss_loss_uses_act_snapshot_and_encounter_survivor_formula_without_mutation
+* test_path_tie_uses_fixed_direction_order_and_blocks_corner_cutting
+* test_target_cell_rank_is_side_relative_before_instance_id_tie_break
+* test_initial_unit_attack_event_uses_hashed_presentation_profile
+* test_random_target_is_seeded_reproducible_and_stream_driven
+* test_runtime_dispatches_all_non_cast_triggers_and_persists_battle_end_intent
+* test_fatal_effect_budget_rolls_back_tick_rng_events_and_enters_failed_lifecycle
+16/16 passed.
+
+
+res://tests/unit/build_items/test_dismantle_equipment_command.gd
+* test_dismantle_unbinds_equipment_and_consumes_exactly_one_consumable_instance
+* test_dismantle_sends_recovered_equipment_to_overflow_when_inventory_is_full
+* test_dismantle_rejects_unbound_target_and_does_not_consume_consumable
+* test_dismantle_rejects_missing_consumable_and_does_not_unbind_target
+* test_dismantle_rejects_non_dismantle_consumable_and_destroys_nothing
+* test_equip_then_dismantle_then_equip_again_preserves_single_item_instance
+6/6 passed.
+
+
+res://tests/unit/build_items/test_equip_item_command.gd
+* test_equip_moves_exactly_one_item_instance_from_inventory_to_unit
+* test_equip_rejects_fourth_item_and_leaves_state_unchanged
+* test_equip_rejects_unique_group_conflict_and_leaves_state_unchanged
+* test_equip_rejects_stale_catalog_generation_and_leaves_state_unchanged
+* test_equip_rejects_component_item_and_leaves_state_unchanged
+5/5 passed.
+
+
+res://tests/unit/build_items/test_forge_equipment_command.gd
+* test_forge_consumes_two_distinct_components_and_produces_exactly_one_equipment_instance
+* test_forge_self_pair_consumes_two_same_def_id_instances_and_produces_equipment
+* test_forge_rejects_missing_recipe_and_leaves_inventory_unchanged
+* test_forge_rejects_component_not_in_inventory_and_leaves_state_unchanged
+* test_forge_rejects_duplicate_instance_id_for_both_slots_and_leaves_state_unchanged
+* test_forge_sends_new_equipment_to_overflow_when_inventory_is_full
+* test_forge_rejects_stale_catalog_generation_and_leaves_state_unchanged
+7/7 passed.
+
+
+res://tests/unit/build_items/test_resolve_overflow_command.gd
+* test_equip_disposition_binds_overflow_item_and_clears_it_from_tray
+* test_equip_disposition_rejects_when_unit_already_at_equipment_cap
+* test_equip_disposition_rejects_unique_group_conflict_and_leaves_tray_unchanged
+* test_forge_disposition_consumes_overflow_component_and_inventory_component
+* test_forge_disposition_rejects_unregistered_pair_and_leaves_tray_unchanged
+* test_abandon_disposition_removes_the_instance_without_a_trace
+* test_forge_disposition_consumes_tray_partner_and_leaves_no_residual_tray_id
+* test_equip_disposition_rejects_stale_catalog_generation_and_leaves_state_unchanged
+* test_forge_disposition_rejects_stale_forge_table_generation_and_leaves_state_unchanged
+* test_forge_disposition_rejects_when_partner_component_is_not_available
+* test_forge_disposition_rejects_when_item_serial_is_exhausted_and_leaves_state_unchanged
+* test_any_disposition_rejects_an_item_that_is_not_in_the_tray
+12/12 passed.
+
+
+res://tests/unit/build_items/test_run_state_validator_equipment_kind_invariant.gd
+* test_validate_run_accepts_bound_equipment_item_when_catalog_confirms_equipment_kind
+* test_validate_run_rejects_component_bound_as_equipment_when_catalog_provided
+* test_validate_run_without_catalog_argument_stays_backward_compatible
+3/3 passed.
+
+
+res://tests/unit/build_items/test_run_state_validator_overflow_phase_gate.gd
+* test_validator_accepts_non_empty_tray_during_prepare
+* test_validator_rejects_non_empty_tray_after_committed_map_transition
+* test_validator_rejects_non_empty_tray_in_terminal_results
+3/3 passed.
+
+
+res://tests/unit/build_systems/test_battle_setup_source_compiler.gd
+* test_trait_not_active_when_distinct_board_def_id_count_below_threshold
+* test_trait_becomes_active_when_distinct_board_def_id_count_reaches_threshold
+* test_third_tag_unit_counts_toward_three_traits_simultaneously
+* test_trait_tier_upgrades_when_distinct_def_id_count_crosses_next_threshold
+* test_compile_is_deterministic_for_same_roster_and_catalog
+* test_compiled_bundle_passes_start_combat_event_committed_roster_check
+* test_compiled_bundle_with_equipment_passes_start_combat_event
+* test_equipped_item_produces_equipment_effect_snapshot_bound_to_wearer
+* test_unequipped_bench_item_produces_no_equipment_effect
+* test_relic_effects_follow_slot_order_and_skip_relics_missing_from_battle_catalog
+* test_compiled_bundle_carries_catalog_manifest_digest
+11/11 passed.
+
+
+res://tests/unit/build_systems/test_forge_recipe_table.gd
+* test_forge_recipe_table_builder_produces_21_closed_recipes_with_symmetric_lookup
+* test_forge_recipe_table_reverse_lookup_by_component_returns_all_six_recipes
+* test_forge_recipe_table_builder_rejects_non_equipment_content_id
+* test_forge_recipe_table_only_resolves_from_pinned_manifest_digest
+* test_forge_recipe_table_deep_clone_isolated_from_lookup_mutation
+* test_forge_recipe_table_builder_rejects_component_pair_outside_one_or_two_shape
+6/6 passed.
+
+
+res://tests/unit/build_systems/test_forge_view_model.gd
+* test_inventory_components_reflects_roster_snapshot_and_is_isolated_from_domain
+* test_recipe_preview_returns_recipes_containing_component
+* test_forge_success_dispatches_command_and_commits_forged_equipment
+* test_forge_missing_recipe_returns_named_error_and_leaves_inventory_unchanged
+4/4 passed.
+
+
+res://tests/unit/build_systems/test_inventory_view_model.gd
+* test_inventory_items_reflects_roster_snapshot_and_is_isolated_from_domain
+* test_equipped_items_returns_only_items_bound_to_the_given_unit
+* test_overflow_items_returns_items_in_pending_item_overflow
+* test_equip_success_dispatches_command_and_removes_item_from_inventory_snapshot
+* test_equip_rejects_component_as_equipment_with_named_error
+* test_dismantle_rejects_wrong_consumable_kind_with_named_error
+* test_resolve_overflow_equip_moves_item_from_tray_to_equipped_items
+* test_resolve_overflow_rejects_item_not_in_tray_with_named_error
+8/8 passed.
+
+
+res://tests/unit/build_systems/test_relic_run_layer_regression.gd
+* test_replacing_a_relic_slot_updates_the_derived_effect_set_not_stale
+* test_derived_effect_set_survives_a_save_reload_round_trip
+* test_multi_slot_ascending_order_survives_a_save_reload_round_trip
+3/3 passed.
+
+
+res://tests/unit/build_systems/test_relic_slot_view_model.gd
+* test_active_slots_reflects_roster_snapshot_and_is_isolated_from_domain
+* test_pending_replacement_candidate_returns_offered_relic_during_relic_resolution
+* test_pending_replacement_candidate_is_null_outside_relic_resolution
+* test_choose_slot_success_replaces_relic_in_chosen_slot
+* test_choose_slot_rejects_wrong_run_phase_with_named_error
+5/5 passed.
+
+
+res://tests/unit/build_systems/test_run_relic_claim_scope_rule.gd
+* test_validator_flags_economy_relic_referencing_mixed_effect_with_non_always_run_scope
+* test_validator_flags_economy_relic_referencing_pure_run_effect_with_non_always_scope
+* test_validator_accepts_economy_relic_referencing_always_run_effect
+* test_validator_leaves_battle_relic_run_scope_semantics_untouched
+* test_builder_rejects_non_battle_relic_referencing_mixed_effect_with_non_always_run_scope
+* test_builder_accepts_non_battle_relic_referencing_mixed_effect_with_always_run_scope
+6/6 passed.
+
+
+res://tests/unit/build_systems/test_run_relic_table.gd
+* test_run_relic_table_builder_categorizes_relics_and_excludes_battle_category
+* test_run_relic_table_builder_rejects_battle_category_relic_id
+* test_run_relic_table_try_rule_returns_typed_non_dictionary_intent
+* test_run_relic_table_only_resolves_from_pinned_manifest_digest
+* test_run_relic_table_deep_clone_isolated_from_lookup_mutation
+5/5 passed.
+
+
+res://tests/unit/build_systems/test_run_relic_table_builder_claim_scope_guard.gd
+* test_builder_rejects_economy_relic_whose_only_run_intent_has_a_non_always_claim_scope
+* test_builder_accepts_economy_relic_whose_run_intent_uses_the_always_claim_scope
+2/2 passed.
+
+
+res://tests/unit/build_systems/test_run_relic_table_operations.gd
+* test_builder_decodes_run_operations_from_referenced_effect_for_economy_relic
+* test_builder_run_operations_isolated_from_lookup_mutation
+* test_builder_rejects_effect_ref_that_is_not_an_effect_definition
+* test_ordered_rules_preserves_caller_supplied_order_and_skips_unknown_ids
+* test_active_relic_ids_are_derived_in_ascending_slot_index_order_regardless_of_array_position
+* test_builder_rejects_relic_whose_run_intents_are_all_unsupported_for_its_category
+6/6 passed.
+
+
+res://tests/unit/build_systems/test_trait_preview_view_model.gd
+* test_trait_snapshots_matches_direct_compile_and_reports_active_tier
+* test_mutating_returned_trait_snapshots_does_not_affect_domain_or_later_reads
+* test_trait_not_active_when_distinct_def_id_count_below_threshold
+3/3 passed.
+
+
+res://tests/unit/combat_transactions/test_combat_transaction_commands.gd
+* test_start_combat_builds_committed_v2_setup_from_preview_and_roster
+* test_start_combat_rejects_unresolved_or_null_sources_without_mutation
+* test_record_result_requires_exact_setup_result_and_receipt_hashes
+3/3 passed.
+
+
+res://tests/unit/common/test_result_mutual_exclusion.gd
+* test_success_cannot_carry_an_error
+SCRIPT ERROR: Assertion failed: RESULT_MUTUAL_EXCLUSION
+   at: require (res://domain/common/result_invariant.gd:22)
+   GDScript backtrace (most recent call first):
+       [0] require (res://domain/common/result_invariant.gd:22)
+       [1] _init (res://domain/run/dto_validation_result.gd:14)
+       [2] test_success_cannot_carry_an_error (res://tests/unit/common/test_result_mutual_exclusion.gd:6)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[ExpectedError]Expected engine error containing 'RESULT_MUTUAL_EXCLUSION'.
+* test_success_cannot_omit_its_required_payload
+SCRIPT ERROR: Assertion failed: RESULT_MUTUAL_EXCLUSION
+   at: require (res://domain/common/result_invariant.gd:22)
+   GDScript backtrace (most recent call first):
+       [0] require (res://domain/common/result_invariant.gd:22)
+       [1] _init (res://content/registry/content_resolve_result.gd:21)
+       [2] test_success_cannot_omit_its_required_payload (res://tests/unit/common/test_result_mutual_exclusion.gd:11)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[ExpectedError]Expected engine error containing 'RESULT_MUTUAL_EXCLUSION'.
+* test_failure_cannot_carry_a_success_payload
+SCRIPT ERROR: Assertion failed: RESULT_MUTUAL_EXCLUSION
+   at: require (res://domain/common/result_invariant.gd:22)
+   GDScript backtrace (most recent call first):
+       [0] require (res://domain/common/result_invariant.gd:22)
+       [1] _init (res://services/save/storage_read_result.gd:15)
+       [2] test_failure_cannot_carry_a_success_payload (res://tests/unit/common/test_result_mutual_exclusion.gd:20)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[ExpectedError]Expected engine error containing 'RESULT_MUTUAL_EXCLUSION'.
+* test_failure_requires_an_error
+SCRIPT ERROR: Assertion failed: RESULT_MUTUAL_EXCLUSION
+   at: require (res://domain/common/result_invariant.gd:22)
+   GDScript backtrace (most recent call first):
+       [0] require (res://domain/common/result_invariant.gd:22)
+       [1] _init (res://services/save/storage_void_result.gd:14)
+       [2] test_failure_requires_an_error (res://tests/unit/common/test_result_mutual_exclusion.gd:25)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[ExpectedError]Expected engine error containing 'RESULT_MUTUAL_EXCLUSION'.
+4/4 passed.
+
+
+res://tests/unit/common/test_stable_name_sort.gd
+* test_id_less_sorts_shuffled_string_names_in_dictionary_order
+* test_id_less_is_strict_weak_ordering_consistent_with_string_comparison
+2/2 passed.
+
+
+res://tests/unit/common/test_u64_and_stable_id.gd
+* test_u64_boundaries_arithmetic_shifts_and_stable_id_contract
+1/1 passed.
+
+
+res://tests/unit/content_production/test_wave1_content_contracts.gd
+* test_wave1_public_types_exist_as_separate_scripts
+* test_codec_v3_manifest_tuple_and_extended_payloads_round_trip
+* test_new_definition_categories_compile_with_exact_v3_shapes
+* test_localization_loader_is_digest_bound_fail_closed_and_keeps_public_api
+* test_tooltip_formatter_uses_catalog_value_and_enforces_depth_two
+5/5 passed.
+
+
+res://tests/unit/content_production_regression/test_node_choice_acknowledge_and_replay.gd
+* test_reward_outcome_leaves_the_receipt_unacknowledged
+* test_acknowledge_command_flips_only_the_wrapper_flag
+* test_acknowledge_rejects_foreign_run_and_unknown_receipt
+* test_repeat_commit_after_acknowledge_still_returns_already_committed
+* test_re_begin_after_cancel_draws_a_fresh_nonce_and_pending_digest
+5/5 passed.
+
+
+res://tests/unit/content_production_regression/test_node_choice_commit_payload_gate.gd
+* test_matching_payload_commits_and_repeat_commit_is_already_committed
+* test_every_payload_field_has_its_own_named_rejection
+* test_stale_payload_from_a_cancelled_lifecycle_is_rejected
+* test_begin_and_commit_reject_a_catalog_from_another_generation
+* test_command_requires_a_concrete_payload_and_pinned_catalog
+5/5 passed.
+
+
+res://tests/unit/content_production_regression/test_node_choice_ledger_lifecycle.gd
+* test_lethal_battle_settlement_clears_the_ledger
+* test_non_lethal_battle_settlement_keeps_the_ledger
+* test_abandon_boss_retry_clears_the_ledger
+* test_act_three_boss_reward_advance_clears_the_ledger
+* test_begin_reports_the_generation_field_instead_of_the_nonce
+5/5 passed.
+
+
+res://tests/unit/content_production_regression/test_node_choice_outcome_runtime.gd
+* test_treasure_choice_opens_exact_pinned_reward_table
+1/1 passed.
+
+
+res://tests/unit/content_production_regression/test_node_choice_receipt_binding.gd
+* test_committed_dismantle_service_run_is_the_valid_baseline
+* test_receipt_pointing_at_a_foreign_transaction_is_rejected
+* test_transaction_command_kind_mismatch_is_rejected
+* test_transaction_serial_mismatch_is_rejected
+* test_transaction_node_mismatch_is_rejected
+* test_transaction_run_mismatch_is_rejected
+* test_transaction_payload_digest_mismatch_is_rejected
+* test_unknown_transaction_digest_keeps_its_own_failure_path
+* test_reward_service_kind_is_rejected
+* test_service_node_must_be_the_current_node
+* test_service_receipt_from_another_node_is_rejected
+* test_service_receipt_with_non_dismantle_outcome_is_rejected
+* test_service_receipt_digest_must_exist_in_the_ledger
+13/13 passed.
+
+
+res://tests/unit/content_production_regression/test_node_service_dismantle_and_exit.gd
+* test_service_dismantle_needs_no_consumable_and_repeats_without_completing_node
+* test_exit_releases_shop_offers_completes_node_and_returns_to_map
+* test_exit_is_reachable_with_no_bound_equipment_and_no_consumable
+* test_service_commands_require_matching_service_authority
+* test_general_dismantle_command_no_longer_completes_the_node
+5/5 passed.
+
+
+res://tests/unit/content_production_wave2/test_wave2_save_migration_contracts.gd
+* test_save_schema_four_and_wave2_public_types_exist
+* test_content_snapshot_persists_catalog_and_codec_versions
+* test_node_choice_pending_digest_is_canonical_clone_isolated_and_tamper_sensitive
+* test_cgm2_normative_golden_vectors_are_exact
+4/4 passed.
+
+
+res://tests/unit/content_production_wave2b/test_codec2_to3_allowlist_port.gd
+* test_codec_two_source_migrates_only_to_exact_allowlisted_codec_three_receipt
+* test_missing_or_ambiguous_allowlist_pack_is_rejected
+2/2 passed.
+
+
+res://tests/unit/content_production_wave2c/test_schema3_codec2_history_fixtures.gd
+* test_three_historical_schema_three_codec_two_fixtures_migrate_exactly_once
+    [GUT WARNING]:  Warn:  Float/Int comparison.  Got FLOAT but expected INT
+    [GUT WARNING]:  Warn:  Float/Int comparison.  Got FLOAT but expected INT
+    [GUT WARNING]:  Warn:  Float/Int comparison.  Got FLOAT but expected INT
+* test_unsafe_historical_active_state_is_preserved_byte_for_byte
+2/2 passed.
+
+
+res://tests/unit/content_production_wave2d/test_codec2_to3_port_fails_closed.gd
+* test_reference_without_mapping_is_rejected_instead_of_identity_assumed
+* test_empty_mapping_pack_is_rejected_even_when_allowlisted
+* test_identity_mapping_must_keep_the_same_id
+* test_alias_mapping_must_change_the_id
+* test_target_entry_digest_must_match_installed_entry
+* test_mapping_category_must_match_installed_target_entry
+* test_localization_digest_must_match_installed_catalog
+* test_structural_reference_cannot_be_tombstoned
+* test_ledger_bound_reference_cannot_be_aliased
+* test_ledger_bound_reference_accepts_identity_mapping
+* test_duplicate_mapping_target_is_rejected
+* test_request_without_traversed_references_is_rejected
+* test_fully_declared_pack_migrates_and_signs_receipt
+13/13 passed.
+
+
+res://tests/unit/content_production_wave2d/test_production_generation_migration_wiring.gd
+* test_production_repository_upgrades_historical_schema3_codec2_save
+* test_aliased_discovered_content_id_is_rewritten_in_the_run
+* test_tombstoned_discovered_content_id_is_removed_from_the_run
+* test_unmapped_roster_unit_def_is_preserved_incompatible
+* test_unmapped_map_node_def_is_preserved_incompatible
+* test_unmapped_discovered_content_id_is_preserved_incompatible
+* test_production_port_rejects_unknown_source_generation
+7/7 passed.
+
+
+res://tests/unit/content_production_wave3/test_wave3_formal_content_contracts.gd
+* test_every_unit_has_one_formal_ability_primary_effect_and_presentation
+* test_formal_roster_preserves_player_monster_split_and_base_economy
+* test_event_rest_and_treasure_choice_sets_are_substantive
+* test_at_least_one_boss_has_multiple_ordered_phases
+* test_node_choice_commit_runtime_exists_as_named_api
+5/5 passed.
+
+
+res://tests/unit/content_production_wave4/test_wave4_production_assets.gd
+* test_production_asset_inventory_passes_formal_contract
+* test_attempt_ledger_has_one_independently_reviewed_adoption_per_unit
+* test_sprite_frames_expose_action_direction_star_animation_grammar
+* test_formal_unit_presentations_only_reference_adopted_assets
+4/4 passed.
+
+
+res://tests/unit/content_production_wave4b/test_wave4b_production_audio.gd
+* test_production_audio_inventory_passes_locked_ogg_contract
+1/1 passed.
+
+
+res://tests/unit/content_production_wave5/test_wave5_choice_presentation_contract.gd
+* test_choice_runtime_uses_typed_catalog_and_existing_confirmation_port
+* test_prepare_screen_exposes_choice_overlay_without_second_app_state
+2/2 passed.
+
+
+res://tests/unit/content_production_wave5b/test_wave5b_tooltip_consumers.gd
+* test_tooltip_formatter_rejects_nesting_beyond_two
+* test_formal_screens_consume_snapshot_tooltip_port
+* test_tooltip_keys_exist_in_both_locales
+3/3 passed.
+
+
+res://tests/unit/content_registry/test_content_generation_migration_adapter.gd
+* test_valid_v1_to_v2_publishes_pinned_non_latest_generation
+* test_alias_selection_migrates_to_active_identity
+* test_required_tombstone_is_incompatible_and_publishes_nothing
+* test_missing_legacy_generation_fails_without_publish
+* test_ambiguous_pack_fails_before_catalog_mutation
+* test_invalid_combat_config_is_rejected_atomically
+* test_invalid_boss_source_mapping_is_rejected_atomically
+* test_target_digest_mismatch_is_rejected_atomically
+8/8 passed.
+
+
+res://tests/unit/content_registry/test_content_registry.gd
+* test_content_codec_golden_and_roundtrip
+* test_registry_generation_pinning_and_clone_isolation
+* test_registry_failed_builds_do_not_publish_partial_generations
+* test_codec_and_lookup_negative_contracts
+* test_unknown_operation_subclasses_fail_compilation
+* test_filtered_case_reports_only_executed_coverage
+* test_alias_probe_compiles_new_pinned_receipt
+* test_required_tombstone_never_guesses_safe_replacement
+* test_content_ref_requires_digest_and_stable_id
+* test_authoring_resource_tres_roundtrip_compiles
+10/10 passed.
+
+
+res://tests/unit/content_validation/test_battle_relic_rule_catalog.gd
+* test_battle_rule_catalog_builder_decodes_battle_relic_rule_from_pinned_manifest
+* test_battle_rule_catalog_legacy_construction_without_relics_has_no_relic_rules
+* test_battle_relic_rule_deep_clone_isolated_from_catalog_mutation
+* test_battle_relic_rule_only_resolves_from_pinned_manifest_digest
+4/4 passed.
+
+
+res://tests/unit/content_validation/test_build_systems_content_pack.gd
+* test_pack_directory_has_expected_definition_counts
+* test_trait_thresholds_reference_distinct_effects_with_strictly_increasing_amounts
+* test_pack_equipment_recipes_are_a_closed_set_of_21_unique_pairs
+* test_pack_relics_cover_all_four_categories
+* test_pack_has_at_least_one_dismantle_consumable_with_no_run_operations
+* test_pack_installs_validated_with_zero_issues_via_content_registry
+6/6 passed.
+
+
+res://tests/unit/content_validation/test_challenge_affix_operation_validation.gd
+* test_modify_stat_flat_mode_is_rejected_by_content_validator
+* test_modify_stat_add_and_bounded_multiply_modes_are_accepted
+* test_modify_stat_multiply_bps_above_canonical_bound_is_rejected
+* test_shop_surcharge_negative_amount_is_forbidden_on_effect
+* test_drain_expedition_hp_negative_amount_is_forbidden_on_effect
+* test_shop_surcharge_invalid_claim_scope_is_forbidden
+* test_shop_surcharge_and_drain_with_valid_amount_and_scope_are_known_operations
+* test_challenge_chain_modifier_pointing_to_non_challenge_affix_role_is_rejected
+* test_challenge_chain_modifier_with_challenge_affix_role_and_full_coverage_has_no_new_issues
+* test_challenge_affix_missing_drain_bucket_is_rejected
+* test_challenge_affix_coverage_missing_battle_track_is_rejected
+* test_challenge_chain_modifier_with_non_always_claim_scope_is_rejected
+* test_challenge_dual_track_battle_and_run_operations_is_rejected_at_lifecycle
+13/13 passed.
+
+
+res://tests/unit/content_validation/test_challenge_affix_role_excludes_neutral_role.gd
+* test_challenge_chain_modifier_pointing_to_neutral_role_is_rejected
+* test_challenge_chain_modifier_with_challenge_affix_role_is_accepted
+2/2 passed.
+
+
+res://tests/unit/content_validation/test_commander_passive_effect_scope_is_single_sided.gd
+* test_no_commander_passive_effect_mixes_battle_and_run_operations
+* test_app_root_battle_passive_filter_keeps_only_pure_battle_effects
+2/2 passed.
+
+
+res://tests/unit/content_validation/test_commander_passive_mechanism_diversity.gd
+* test_three_commanders_with_identical_single_operation_passives_is_rejected
+* test_three_commanders_with_distinct_mechanisms_is_accepted
+2/2 passed.
+
+
+res://tests/unit/content_validation/test_commander_passive_mechanism_diversity_pairwise.gd
+* test_two_of_three_share_mechanism_one_distinct_is_rejected
+* test_three_commanders_with_no_passives_at_all_is_accepted
+* test_three_commanders_all_pairwise_distinct_mechanisms_is_accepted
+3/3 passed.
+
+
+res://tests/unit/content_validation/test_content_v2_and_battle_catalog.gd
+* test_content_v2_compiles_combat_config_and_boss_source_round_trip
+* test_battle_rule_catalog_is_pinned_transitive_and_clone_isolated
+* test_battle_rule_catalog_never_falls_through_to_latest_generation
+* test_battle_rule_catalog_payload_arity_is_exact_per_resource_schema_version
+* test_battle_rule_catalog_rejects_non_cast_trigger_for_ability_primary_effect
+5/5 passed.
+
+
+res://tests/unit/content_validation/test_content_validator.gd
+* test_valid_vertical_slice_and_population_reports
+* test_every_locked_invariant_has_a_failing_mutation
+* test_validation_issue_order_is_deterministic
+* test_reactive_damage_cycle_requires_finite_max_uses_guard
+* test_expedition_generators_and_reward_stages_are_content_gated
+* test_economy_config_missing_required_fields_are_rejected
+* test_economy_config_missing_interest_step_gold_is_rejected
+* test_economy_config_missing_gold_cap_is_rejected
+* test_economy_config_negative_reroll_cost_is_rejected
+* test_economy_config_missing_xp_buy_cost_is_rejected
+* test_economy_config_missing_xp_buy_amount_is_rejected
+* test_missing_meta_reward_table_is_rejected
+12/12 passed.
+
+
+res://tests/unit/content_validation/test_content_validator_build_systems.gd
+* test_compliant_baseline_has_no_build_systems_issues
+* test_equipment_flagged_unique_group_requires_non_empty_stable_id
+* test_equipment_flagged_unique_group_requires_valid_stable_id_shape
+* test_equipment_unflagged_unique_group_must_not_carry_stale_value
+* test_relic_category_outside_the_four_supported_kinds_is_rejected
+* test_relic_category_coverage_requires_all_four_kinds_present
+* test_relic_activation_limit_must_be_at_least_one
+* test_relic_activation_limit_must_not_exceed_upper_bound
+* test_battle_relic_effect_refs_must_resolve_to_a_battle_capable_effect
+* test_non_battle_relic_effect_refs_must_carry_a_supported_run_intent
+* test_relic_effect_refs_must_not_be_empty
+* test_relic_effect_refs_pointing_at_a_non_effect_definition_is_rejected_not_skipped
+* test_dismantle_consumable_must_not_carry_run_operations
+* test_grant_item_operation_must_not_target_an_item_component
+* test_reward_candidate_item_kind_must_not_target_an_item_component
+* test_map_node_rule_count_parity_flags_normal_elite_imbalance
+* test_map_node_rule_count_parity_allows_matched_normal_and_elite_counts
+17/17 passed.
+
+
+res://tests/unit/content_validation/test_economy_xp_thresholds_gate_parity.gd
+* test_xp_thresholds_covering_only_levels_3_to_8_is_rejected_by_validator
+* test_xp_thresholds_covering_only_levels_3_to_8_is_rejected_by_builder
+2/2 passed.
+
+
+res://tests/unit/content_validation/test_global_effect_source_lifecycle_validation.gd
+* test_all_global_reference_kinds_reject_self_target
+* test_all_global_reference_kinds_accept_all_allies_lifecycle
+* test_unit_scoped_self_target_remains_legal
+* test_global_hit_trigger_and_challenge_dual_track_run_operation_are_rejected
+* test_challenge_pure_run_operation_without_battle_operations_is_accepted
+* test_encounter_affix_run_operation_rejected_regardless_of_source_side
+* test_operation_enums_reject_illegal_stat_damage_type_and_target
+7/7 passed.
+
+
+res://tests/unit/content_validation/test_meta_growth_forbids_base_power_and_validator_rejects.gd
+* test_compiled_unit_stats_unchanged_before_and_after_unlock_purchase
+* test_unlock_referencing_zero_reroll_cost_economy_config_is_forbidden_growth
+* test_unlock_referencing_population_source_effect_is_forbidden_growth
+* test_unlock_modifier_refs_pointing_directly_to_unit_def_is_forbidden_growth
+* test_unmodified_baseline_has_no_forbidden_growth_issue
+5/5 passed.
+
+
+res://tests/unit/content_validation/test_meta_reward_table_challenge_multiplier_bps_coverage.gd
+* test_missing_challenge_level_is_rejected
+* test_basis_points_below_10000_is_rejected
+* test_full_zero_to_five_coverage_with_minimum_10000_is_accepted
+3/3 passed.
+
+
+res://tests/unit/content_validation/test_tres_block_internal_comment_gate.gd
+* test_no_pack_tres_file_has_a_block_internal_comment_before_a_property_line
+* test_recovered_effect_amounts_match_authored_values
+2/2 passed.
+
+
+res://tests/unit/content_validation/test_vertical_slice_content_pack.gd
+* test_vertical_slice_pack_has_expected_definition_counts
+* test_vertical_slice_players_cover_cost_distribution_and_three_tag_count
+* test_vertical_slice_map_nodes_cover_all_kinds_with_normal_elite_parity
+* test_vertical_slice_encounters_match_difficulty_curve_spawn_table
+* test_vertical_slice_faction_distribution_meets_tier1_and_library_thresholds
+* test_vertical_slice_challenge_chain_covers_three_buckets_and_regresses_when_surcharge_missing
+* test_combined_manifest_installs_validated_with_zero_issues_and_pins_into_canonical_snapshot
+* test_vertical_slice_economy_config_builds_via_production_builder
+8/8 passed.
+
+
+res://tests/unit/difficulty_curve/test_act_scaling.gd
+* test_act_multiplier_scales_only_the_four_combat_stats
+* test_pace_and_reach_stats_are_identical_across_all_three_acts
+* test_act1_multiplier_is_identity_and_pinned_to_ten_thousand
+* test_recompiling_the_same_request_is_byte_identical
+* test_act_scaled_value_outside_i32_is_rejected
+* test_missing_combat_config_rule_fails_closed
+* test_act_index_outside_one_to_three_fails_closed
+* test_combat_config_payload_carries_the_three_act_multipliers
+* test_act_multipliers_are_part_of_the_canonical_battle_setup
+9/9 passed.
+
+
+res://tests/unit/dto/test_run_dto.gd
+* test_valid_fixture_and_deep_clone_isolation
+* test_view_projection_does_not_share_nested_state
+* test_content_snapshot_factories_normalize_order_and_reject_invalid_inputs
+* test_runtime_key_digest_tamper_is_rejected
+* test_map_cycle_is_rejected_after_fixed_order_edge_validation
+* test_rng_snapshot_zero_increment_is_rejected
+* test_rng_snapshot_even_increment_is_rejected
+* test_rng_snapshot_missing_state_and_counter_are_rejected
+* test_combat_rng_snapshot_uses_the_same_pcg_invariant
+* test_phase_and_resolution_kind_must_match
+* test_active_reservation_owner_must_have_exactly_one_live_reference
+* test_pool_reserved_total_must_equal_active_owner_ledger
+* test_selected_unit_reward_must_own_its_exact_reservation
+* test_non_unit_and_ready_reward_phases_reject_leftover_unit_reservations
+* test_four_resolution_subclasses_have_one_payload_path
+15/15 passed.
+
+
+res://tests/unit/economy_expediton/test_battle_settlement_and_rewards.gd
+* test_loss_settlement_discards_proposals_pays_stipend_once_and_releases_shop
+* test_boss_loss_retries_without_income_reward_or_shop_release
+* test_lethal_normal_and_boss_losses_enter_terminal_results
+* test_act_three_boss_final_reward_enters_terminal_results
+* test_win_applies_scalar_claims_once_and_persists_reward_before_choice
+* test_standard_reward_always_contains_a_non_unit_and_reserves_unit_copies
+* test_reward_conditions_filter_roster_inventory_hp_and_pool_deterministically
+* test_elite_standard_then_relic_keeps_shop_until_final_exit
+* test_full_bench_unit_reward_can_be_abandoned_without_softlock
+* test_item_overflow_and_full_relic_slots_remain_recoverable_subphases
+* test_unit_reward_sell_equipment_overflow_keeps_exact_reservation
+11/11 passed.
+
+
+res://tests/unit/economy_expediton/test_battle_settlement_relics.gd
+* test_existing_two_arg_settle_call_still_compiles_and_behaves_unchanged
+* test_win_settlement_adds_rule_relic_heal_bonus_after_existing_proposals
+* test_win_settlement_heal_bonus_is_capped_at_expedition_hp_cap
+* test_multiple_rule_relics_sum_the_settlement_heal_bonus
+* test_economy_category_relic_does_not_affect_settlement_hp
+* test_loss_settlement_reduces_expedition_damage_by_rule_relic_bonus
+* test_loss_damage_reduction_floors_at_zero_and_never_heals
+7/7 passed.
+
+
+res://tests/unit/economy_expediton/test_economy_catalog_builder.gd
+* test_catalog_decodes_from_pinned_generation_and_is_clone_isolated
+1/1 passed.
+
+
+res://tests/unit/economy_expediton/test_economy_catalog_builder_sort_order.gd
+* test_shop_units_and_event_map_nodes_are_built_in_dictionary_id_order
+1/1 passed.
+
+
+res://tests/unit/economy_expediton/test_income_service_relics.gd
+* test_baseline_without_relic_params_matches_existing_income_result
+* test_single_active_economy_relic_adds_flat_gold_bonus
+* test_multiple_active_economy_relics_sum_deterministically
+* test_relic_bonus_is_still_clamped_by_gold_cap
+* test_empty_active_relic_ids_with_non_null_table_has_no_effect
+* test_non_economy_category_relic_does_not_contribute_to_income
+6/6 passed.
+
+
+res://tests/unit/economy_expediton/test_map_and_income.gd
+* test_map_generation_is_deterministic_and_has_three_valid_acts
+* test_income_uses_pre_gold_and_versioned_streak_rules
+2/2 passed.
+
+
+res://tests/unit/economy_expediton/test_map_service_relic_table_generation_guard.gd
+* test_map_service_rejects_a_relic_table_whose_manifest_digest_does_not_match_the_catalog
+1/1 passed.
+
+
+res://tests/unit/economy_expediton/test_map_service_relics.gd
+* test_baseline_without_relic_params_matches_existing_generation
+* test_single_route_relic_forces_first_branch_anchor_to_elite_without_new_entropy
+* test_two_route_relics_claim_first_two_anchors_in_generation_order
+* test_non_route_category_relic_does_not_affect_map_generation
+4/4 passed.
+
+
+res://tests/unit/economy_expediton/test_node_entry_service_boss_mapping.gd
+* test_boss_node_encounter_is_decided_by_act_index
+* test_non_boss_node_encounter_id_is_unaffected_by_act_mapping
+* test_boss_node_fails_closed_when_pinned_encounter_missing_for_act
+* test_boss_node_fails_closed_for_act_outside_fixed_table
+4/4 passed.
+
+
+res://tests/unit/economy_expediton/test_relic_table_generation_guard.gd
+* test_income_service_rejects_a_relic_table_whose_manifest_digest_does_not_match_the_catalog
+* test_shop_service_rejects_a_relic_table_whose_manifest_digest_does_not_match_the_catalog
+* test_battle_settlement_service_rejects_a_relic_table_whose_manifest_digest_does_not_match_the_content_snapshot
+3/3 passed.
+
+
+res://tests/unit/economy_expediton/test_shop_service.gd
+* test_generate_refresh_and_buy_conserve_pool_and_reservations
+* test_sell_and_xp_follow_versioned_rules
+* test_buy_rejects_insufficient_gold_and_full_bench_without_mutation
+* test_sell_prices_all_stars_and_moves_equipment_to_overflow
+* test_xp_curve_consumes_164_xp_and_preserves_cross_level_overflow
+5/5 passed.
+
+
+res://tests/unit/economy_expediton/test_shop_service_relics.gd
+* test_baseline_without_relic_params_matches_existing_shop_cost
+* test_generate_offers_applies_economy_relic_discount_to_every_offer_cost
+* test_generate_offers_discount_floors_at_one_gold
+* test_refresh_shop_applies_the_same_economy_relic_discount
+* test_route_category_relic_does_not_affect_shop_price
+5/5 passed.
+
+
+res://tests/unit/in_run_hud/test_active_trait_progress_projection.gd
+* test_projection_copies_active_authority_and_full_pinned_thresholds
+* test_manifest_mismatch_and_missing_active_rule_fail_closed
+* test_snapshot_clone_isolates_nested_thresholds_and_effect_ids
+3/3 passed.
+
+
+res://tests/unit/in_run_hud/test_board_draft_move_adapter.gd
+* test_board_swap_and_bench_to_board_share_one_clone_only_adapter
+* test_board_to_occupied_bench_swaps_without_losing_identity
+* test_bench_to_occupied_bench_swaps_without_losing_identity
+* test_adapter_never_retains_callers_mutable_board_or_bench
+* test_player_half_and_capacity_rejections_fail_closed
+5/5 passed.
+
+
+res://tests/unit/in_run_hud/test_board_draft_preview_view_model.gd
+* test_population_matches_a_direct_validator_call_through_the_factory
+* test_over_capacity_draft_is_rejected_with_the_validators_named_issue
+* test_draft_trait_progress_differs_from_the_committed_layout
+* test_incomplete_and_out_of_half_drafts_forward_validator_issues_verbatim
+* test_preview_is_read_only_for_inputs_canonical_state_and_outputs
+5/5 passed.
+
+
+res://tests/unit/in_run_hud/test_board_projection_t27.gd
+* test_all_sixty_four_cell_centers_round_trip_through_one_affine_inverse
+* test_half_open_boundaries_round_to_nearest_center_and_fail_closed
+* test_screen_hit_uses_window_mapper_and_centers_land_on_integer_output_pixels
+3/3 passed.
+
+
+res://tests/unit/in_run_hud/test_combat_world_event_projection.gd
+* test_after_values_and_move_destination_drive_renderer_snapshot
+* test_unknown_target_rejects_whole_window_without_partial_update
+* test_invalid_payload_type_and_move_origin_fail_closed
+* test_unknown_codec_event_is_rejected_without_touching_snapshot
+* test_death_removes_rendered_unit_by_authoritative_source_id
+* test_late_events_for_dead_rendered_id_are_no_ops_within_window
+* test_setup_id_spawn_after_death_is_no_op_without_resurrection
+* test_setup_spawn_is_explicit_no_op_and_does_not_hide_rendered_unit
+* test_unrenderable_spawn_lifecycle_does_not_rollback_rendered_updates
+* test_same_nonsetup_id_spawn_starts_new_unrenderable_lifecycle
+* test_failed_window_does_not_leak_dead_tombstone
+* test_codec_rejects_malformed_known_event_and_rolls_back_tracking_atomically
+12/12 passed.
+
+
+res://tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd
+* test_sequence_uses_explicit_coordinate_and_state_order
+* test_each_node_kind_has_a_distinct_non_color_signal
+* test_missing_or_mismatched_typed_data_fails_closed
+* test_transition_banner_is_large_and_never_blocks_input
+* test_detached_bind_arms_banner_timer_after_entering_tree
+* test_bind_and_snapshot_clone_isolate_progress_source
+6/6 passed.
+
+
+res://tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd
+* test_drag_button_and_stable_focus_w_commit_the_same_canonical_layout
+* test_keyboard_exact_board_target_matches_drag_and_supports_swap
+* test_keyboard_exact_bench_slot_matches_drag_swap
+* test_inventory_selector_resolves_only_canonical_inventory_membership
+* test_real_input_delivery_w_bypasses_build_selector_search_and_guard
+* test_real_input_delivery_w_bypasses_placement_target_search
+* test_empty_focus_metadata_clears_stale_w_target
+* test_w_is_blocked_by_system_menu_states_and_confirmation_modal
+    154 Orphans
+        * [Surface:<Control#234877584692200>] + 8
+        * [Surface:<Control#234870991264287>] + 8
+        * [Surface:<Control#234877215616218>] + 6
+        * [Surface:<Control#234876846530225>] + 8
+        * [Surface:<Control#234871461059195>] + 62
+* test_prepare_button_preview_exposes_source_target_and_non_color_swap_cue
+* test_typed_drop_preview_drives_population_trait_legality_and_clear
+* test_preview_cache_keys_revision_target_and_authoritative_drop_recheck
+* test_public_commit_resets_draft_cache_and_next_preview_uses_new_canonical
+* test_system_menu_blocks_preview_query_clears_panel_and_never_dispatches
+* test_preview_panel_preserves_scaled_minimum_and_clips_overflow
+14/14 passed.
+
+
+res://tests/unit/in_run_hud/test_prepare_economy_hud_t14.gd
+* test_mapper_contains_the_complete_shop_error_table
+* test_hud_renders_max_streaks_and_five_authored_odds_from_bind_clone
+* test_revoked_supply_and_named_quotes_fail_closed_without_phase_guessing
+* test_formal_prepare_lifecycle_keeps_quotes_reasons_and_locale_coherent
+4/4 passed.
+
+
+res://tests/unit/in_run_hud/test_prepare_focus_graph_covers_actions.gd
+* test_run_prepare_focus_graph_covers_exactly_the_screen_actions
+* test_run_prepare_high_cost_action_stays_at_the_end_of_the_button_run
+* test_blocked_prepare_actions_are_dropped_from_the_order
+3/3 passed.
+
+
+res://tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd
+* test_one_star_unequipped_sells_without_modal
+* test_high_value_sell_cancel_is_zero_dispatch_and_restores_background
+* test_high_value_sell_confirm_dispatches_original_action_exactly_once
+* test_rejected_and_unknown_quotes_keep_sell_fail_closed_with_named_copy
+* test_formal_live_route_captures_unit_identity_and_freezes_background
+* test_formal_live_route_missing_inspection_is_fail_closed
+6/6 passed.
+
+
+res://tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd
+* test_projection_includes_board_and_bench_with_catalog_fields
+* test_manifest_mismatch_fails_closed_without_partial_rows
+* test_snapshot_clone_out_isolates_nested_inspection_and_stats
+* test_shell_renders_typed_fields_fixed_slots_stats_and_portrait_fallback
+* test_empty_selection_clears_previous_inspector_state
+* test_sell_quote_uses_authoritative_gain_and_named_rejection
+* test_relocalize_redraws_visible_inspector_from_saved_clone_only_state
+* test_relocalize_preserves_combat_inspector_clone_and_identity
+* test_sell_confirmation_query_uses_inspection_snapshot_only
+* test_prepare_composition_updates_the_single_mounted_inspector
+* test_projected_hover_exit_relays_through_surface_and_restores_selector
+* test_shared_hud_does_not_mislabel_trait_tier_or_relic_slots
+12/12 passed.
+
+
+res://tests/unit/in_run_hud/test_prepare_world_board_layering.gd
+* test_prepare_world_board_is_not_covered_across_output_and_ui_scales
+* test_board_routes_cap_bottom_below_projection_and_other_routes_do_not
+* test_prepare_keyboard_paths_survive_hidden_legacy_board_grid
+* test_world_unit_hover_supplies_w_target_without_click
+* test_world_unit_drop_commits_the_exact_projected_player_cell
+5/5 passed.
+
+
+res://tests/unit/in_run_hud/test_progress_accessibility_states_t25.gd
+* test_progress_accessibility_copy_localizes_all_three_node_states
+1/1 passed.
+
+
+res://tests/unit/in_run_hud/test_run_combat_screen_summon_authority_wiring.gd
+* test_screen_injects_pinned_summon_authority_into_renderer_projection
+* test_screen_without_supply_keeps_summon_unrenderable
+2/2 passed.
+
+
+res://tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd
+* test_forge_inventory_components_match_forge_view_model
+* test_forge_recipes_containing_match_forge_view_model
+* test_forge_pair_recipe_matches_the_pinned_table_and_fails_closed
+* test_forge_pair_recipe_rejects_unregistered_pairs_and_bound_items
+* test_shop_quotes_match_shop_economy_view_model_and_shop_service
+* test_shop_quotes_are_read_only_and_isolated_between_calls
+* test_shop_quotes_report_named_generation_mismatch
+* test_absent_supply_returns_empty_state_instead_of_crashing
+* test_release_clears_supply_and_keeps_reads_answerable
+* test_board_draft_and_trait_progress_forwarding_match_direct_view_models
+* test_board_draft_and_trait_progress_absent_supply_fail_closed
+11/11 passed.
+
+
+res://tests/unit/in_run_hud/test_shop_economy_view_model.gd
+* test_refresh_quote_matches_direct_quote_refresh
+* test_refresh_quote_reports_named_gold_insufficient_but_still_prices
+* test_buy_xp_quote_matches_domain_level_folding
+* test_buy_xp_quote_reports_max_level_instead_of_a_price
+* test_sell_quote_matches_quote_sell_and_unknown_id_is_named
+* test_economy_status_projects_streaks_progress_and_authored_odds
+* test_economy_status_reports_max_level_when_thresholds_are_exhausted
+* test_quotes_never_mutate_the_run_and_snapshots_are_isolated
+* test_catalog_generation_mismatch_is_reported_with_a_named_code
+9/9 passed.
+
+
+res://tests/unit/in_run_hud/test_system_menu_overlay.gd
+* test_state_machine_embeds_shared_settings_and_never_routes
+    138 Orphans
+        * [Surface:<Control#235852659714632>] + 8
+        * [Surface:<Control#235858498247807>] + 8
+        * [Surface:<Control#235853079210071>] + 62
+* test_confirm_states_cancel_to_root_and_emit_only_after_confirm
+    41 Orphans
+        * [Surface:<Control#235860159112213>] + 6
+        * [Surface:<Control#235860461147252>] + 8
+        * [Surface:<Control#235859068653009>] + 8
+        * [Surface:<Control#235859756536970>] + 8
+        * [Surface:<Control#235859437774576>] + 6
+* test_focus_is_trapped_and_restored_across_dynamic_pages
+3/3 passed.
+
+
+res://tests/unit/in_run_hud/test_trait_detail_popover_t16.gd
+* test_supply_progress_renders_inactive_and_active_rows_with_detail_popover
+* test_trait_model_builder_clones_supply_data_at_single_hook
+2/2 passed.
+
+
+res://tests/unit/in_run_hud/test_trait_progress_authority.gd
+* test_active_rows_match_compile_player_active_traits_field_by_field
+* test_inactive_traits_are_listed_with_zero_count_and_next_threshold
+* test_max_tier_row_reports_next_required_as_minus_one
+* test_view_model_forwards_progress_and_returned_rows_are_isolated
+* test_empty_board_and_missing_catalog_behave_explicitly
+5/5 passed.
+
+
+res://tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd
+* test_board_unit_preview_matches_direct_compile_field_by_field
+* test_bench_unit_gets_star_scaled_preview_although_compile_excludes_it
+* test_preview_reports_equipped_instance_ids_without_folding_effects_into_stats
+* test_mutating_returned_preview_does_not_affect_domain_or_later_reads
+* test_unknown_instance_id_returns_null_and_all_stats_is_deterministic
+5/5 passed.
+
+
+res://tests/unit/in_run_hud/test_world_board_overlay_t29.gd
+* test_group_mount_places_fixed_pixel_hud_above_world_and_vfx
+* test_overlay_placement_order_matches_renderer_logical_depth
+* test_duplicate_logical_cells_fail_snapshot_and_overlay_closed
+* test_health_mana_selection_and_drag_visibility_come_from_one_snapshot_clone
+* test_world_overlay_is_below_transition_menu_and_modal_input_layers
+* test_overlay_is_recreated_after_its_route_mount_is_destroyed
+* test_persistent_surface_prepare_to_combat_reparents_and_disables_drag
+* test_failed_route_reparent_rolls_overlay_back_and_disables_input
+* test_projected_drag_uses_inverse_mapping_and_relays_one_typed_drop
+* test_resize_in_place_refreshes_overlay_and_projected_drag_mapper
+* test_mount_adapter_requires_exactly_one_surface_and_returns_surface_error
+* test_mount_before_coordinator_sync_fails_with_mapper_configuration_error
+12/12 passed.
+
+
+res://tests/unit/in_run_hud/test_world_board_renderer_t28.gd
+* test_renderer_preserves_native_sprite_pivot_filter_and_integer_pixels
+* test_depth_order_uses_projected_foot_y_then_x_for_unique_cells
+* test_renderer_keeps_a_clone_instead_of_the_callers_mutable_snapshot
+* test_missing_sprite_frames_or_animation_fails_closed_without_a_stale_sprite
+4/4 passed.
+
+
+res://tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd
+* test_prepare_mount_failure_reaches_player_visible_status
+* test_prepare_detached_compose_retries_mount_when_candidate_enters_tree
+* test_combat_mount_failure_reaches_player_visible_status
+* test_persistent_surface_prepare_to_combat_uses_route_local_overlay_hosts
+* test_combat_event_window_remounts_sprite_and_overlay_from_after_values
+* test_map_detached_compose_retries_clear_when_candidate_enters_tree
+* test_reward_detached_compose_retries_clear_when_candidate_enters_tree
+* test_map_clear_missing_surface_reaches_player_visible_status
+* test_reward_clear_ambiguous_surface_reaches_player_visible_status
+* test_prepare_missing_values_never_render_raw_identity_or_dash
+10/10 passed.
+
+
+res://tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd
+* test_prepare_missing_visual_keeps_invalid_unit_and_stops_build
+* test_combat_missing_animation_keeps_invalid_unit_and_stops_build
+* test_required_null_sources_return_invalid_sentinel_snapshots
+* test_prepare_null_canonical_entries_fail_the_whole_build
+* test_combat_null_inspection_invalidates_prior_units_in_the_build
+* test_combat_empty_inspections_return_invalid_typed_sentinel
+* test_committed_summary_recovery_allows_a_genuinely_empty_world
+* test_combat_missing_stable_presentation_identity_fails_closed
+* test_invalid_factory_snapshot_clears_previous_surface_renderer
+* test_complete_pinned_visuals_build_valid_prepare_and_combat_snapshots
+10/10 passed.
+
+
+res://tests/unit/in_run_hud/test_world_board_summon_authority.gd
+* test_spawned_unit_matches_pinned_domain_template_field_by_field
+* test_missing_template_visual_or_invalid_stats_fail_closed
+* test_authority_is_clone_isolated_from_pinned_input_and_callers
+* test_projection_renders_summon_from_authority_and_keeps_after_values
+* test_session_forwards_pinned_summoned_templates_clone_only
+5/5 passed.
+
+
+res://tests/unit/map_frontier/test_map_frontier_authority.gd
+* test_frontier_before_any_entry_is_the_act1_layer0_start_set
+* test_frontier_after_the_first_step_is_the_current_node_out_edges
+* test_frontier_excludes_the_unchosen_sibling_branch_of_the_previous_layer
+* test_frontier_excludes_completed_successors_of_the_current_node
+* test_frontier_fails_closed_on_missing_empty_and_self_contradictory_map
+* test_frontier_nodes_keep_canonical_order_and_hand_out_clones_only
+* test_presentation_predicate_agrees_with_the_domain_frontier_on_every_node
+7/7 passed.
+
+
+res://tests/unit/map_frontier/test_node_entry_rejects_historical_branch.gd
+* test_node_entry_rejects_the_unchosen_sibling_branch_with_a_named_error
+* test_the_same_sibling_is_accepted_while_it_is_still_on_the_frontier
+* test_frontier_query_matches_what_node_entry_actually_accepts
+3/3 passed.
+
+
+res://tests/unit/meta_progression/test_battle_settlement_challenge_drain.gd
+* test_challenge_drain_increases_loss_damage_with_no_heal_bonus
+* test_drain_stacks_additively_with_existing_heal_reduction_on_loss
+* test_drain_floors_at_zero_expedition_hp
+* test_drain_bonus_does_not_affect_win_settlement_hp
+* test_economy_category_drain_rule_does_not_affect_settlement_hp
+* test_slot_gated_drain_relic_increases_loss_damage_on_loss
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_battle_settlement_commander_challenge_modifiers.gd
+* test_commander_always_active_heal_bonus_applies_on_win_with_no_relic_slots_active
+* test_always_active_heal_bonus_stacks_with_slot_gated_rule_relic_on_win
+* test_always_active_heal_bonus_is_still_capped_at_expedition_hp_cap
+* test_always_active_bonus_reduces_expedition_damage_on_loss
+* test_always_active_damage_reduction_floors_at_zero_and_never_heals
+* test_economy_category_always_active_rule_does_not_affect_settlement_hp
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_battle_setup_source_compiler_commander_passive.gd
+* test_compile_without_commander_ids_still_compiles_and_yields_empty_commander_effects
+* test_compile_with_commander_passive_effect_ids_produces_commander_player_snapshots
+* test_compile_with_empty_commander_passive_effect_ids_array_yields_no_commander_effects
+* test_compile_is_deterministic_for_same_commander_passive_effect_ids
+* test_compiled_commander_effects_pass_start_combat_event_and_enter_combat
+* test_different_commander_passive_effect_ids_yield_different_battle_setup_hash
+* test_baseline_without_commander_ids_still_matches_existing_start_combat_event_behavior
+7/7 passed.
+
+
+res://tests/unit/meta_progression/test_camp_save_root_factory.gd
+* test_build_produces_null_run_root_with_current_schema_and_versions
+* test_build_accepts_an_arbitrary_content_version_string_when_run_is_null
+* test_build_round_trips_through_save_repository_as_run_status_none
+3/3 passed.
+
+
+res://tests/unit/meta_progression/test_camp_view_model.gd
+* test_all_five_facilities_derive_from_the_same_profile_state
+* test_changing_the_profile_changes_every_facility_view
+* test_view_model_holds_a_clone_not_a_live_profile_reference
+* test_expedition_gate_last_selection_is_null_for_a_profile_that_never_started_a_run
+4/4 passed.
+
+
+res://tests/unit/meta_progression/test_challenge_affix_resolver.gd
+* test_challenge_level_zero_returns_no_entries
+* test_battle_operation_only_effect_is_classified_into_battle_affix_track
+* test_run_operation_only_challenge_effect_is_accepted_at_content_boundary
+* test_entries_accumulate_across_levels_one_to_n
+* test_duplicate_effect_id_within_the_same_level_is_rejected_at_the_content_boundary
+* test_duplicate_effect_id_across_different_levels_is_deduplicated_to_the_lowest_level
+* test_resolve_is_deterministic_for_identical_inputs
+* test_unknown_manifest_digest_returns_named_failure
+8/8 passed.
+
+
+res://tests/unit/meta_progression/test_claim_scope_semantics.gd
+* test_validator_and_builder_accept_once_per_node_run_intent_for_non_battle_relic
+* test_validator_and_builder_accept_on_first_clear_run_intent_for_non_battle_relic
+* test_once_per_node_relic_bonus_ignores_loss_then_claims_once_on_win_and_retriggers_on_a_different_node
+* test_on_first_clear_relic_bonus_ignores_loss_then_claims_once_for_the_whole_run_and_never_retriggers
+* test_always_relic_bonus_still_applies_unconditionally_every_settlement_regression
+* test_run_state_validator_rejects_duplicate_claim_receipt_tuple_for_once_per_node_and_on_first_clear
+* test_two_effect_refs_on_the_same_relic_sharing_operation_index_claim_independently_without_colliding
+* test_existing_claim_hit_with_mismatched_payload_digest_is_rejected_not_silently_skipped
+8/8 passed.
+
+
+res://tests/unit/meta_progression/test_collection_view_model.gd
+* test_discovered_ids_for_category_filters_by_prefix_and_preserves_order
+* test_discovered_ids_for_category_is_empty_for_unknown_category
+* test_unlocked_ids_for_category_filters_by_prefix
+* test_is_discovered_reflects_membership_in_profile_discovered_content_ids
+* test_is_unlocked_reflects_membership_in_profile_unlocked_content_ids
+* test_view_model_holds_a_clone_not_a_live_profile_reference
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_expedition_gate_view_model.gd
+* test_last_selection_reflects_profile_last_selection
+* test_last_selection_is_null_when_profile_has_never_started_an_expedition
+* test_highest_cleared_level_reflects_commander_challenge_records
+* test_highest_cleared_level_is_zero_for_a_commander_with_no_record
+* test_view_model_holds_a_clone_not_a_live_profile_reference
+* test_affix_entries_for_challenge_zero_is_empty
+* test_affix_entries_lists_generated_challenge_affixes_before_the_run_is_created
+* test_affix_entries_surfaces_resolver_failure_distinctly_from_no_affixes
+8/8 passed.
+
+
+res://tests/unit/meta_progression/test_income_service_commander_challenge_modifiers.gd
+* test_commander_always_active_add_gold_applies_with_no_relic_slots_active
+* test_challenge_always_active_add_gold_applies_with_no_relic_slots_active
+* test_always_active_contribution_stacks_on_top_of_slot_gated_relic
+* test_always_active_contribution_is_unaffected_by_which_relic_slots_are_active
+* test_always_active_contribution_is_still_clamped_by_gold_cap
+* test_non_economy_category_always_active_rule_does_not_contribute_to_income
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_map_service_commander_challenge_modifiers.gd
+* test_commander_always_active_route_forces_first_anchor_without_new_entropy
+* test_always_active_route_count_stacks_with_slot_gated_route_relic
+* test_always_active_route_contribution_ignores_which_relic_slots_are_active
+* test_non_route_category_always_active_rule_does_not_affect_map_generation
+4/4 passed.
+
+
+res://tests/unit/meta_progression/test_meta_reward_compute_service.gd
+* test_meta_reward_compute_matches_table_formula
+* test_meta_reward_compute_adds_completion_only_for_completed_outcome
+* test_meta_reward_compute_ignores_failure_reward_field_regardless_of_value
+* test_meta_reward_compute_ignores_non_combat_node_scores
+* test_meta_reward_compute_is_pure_and_deterministic
+5/5 passed.
+
+
+res://tests/unit/meta_progression/test_meta_reward_table_reader.gd
+* test_reader_rebuilds_every_meta_reward_field_from_pinned_canonical_payload
+* test_mutating_reader_clone_does_not_change_registry_view_digest_or_next_read
+2/2 passed.
+
+
+res://tests/unit/meta_progression/test_meta_reward_table_slice_default_alignment.gd
+* test_slice_default_meta_reward_table_matches_section_7_3_alignment
+1/1 passed.
+
+
+res://tests/unit/meta_progression/test_meta_settlement_service.gd
+* test_settle_completed_creates_first_time_commander_record_and_updates_global_highest
+* test_settle_completed_updates_commander_record_to_max_without_regressing
+* test_settle_completed_leaves_other_commanders_records_untouched
+* test_settle_completed_inserts_new_commander_record_in_sorted_position
+* test_settle_failed_outcome_does_not_touch_challenge_records_or_global_highest
+* test_settle_completed_outcome_precedes_zero_expedition_hp_check
+* test_settle_receipt_key_equals_build_settlement_receipt_for_run_id
+* test_settle_is_idempotent_when_run_id_already_has_a_receipt
+* test_settle_does_not_mutate_input_profile_or_terminal_run
+9/9 passed.
+
+
+res://tests/unit/meta_progression/test_profile_state_meta_fields.gd
+* test_profile_last_selection_state_deep_clone_is_independent_copy
+* test_commander_challenge_record_state_deep_clone_is_independent_copy
+* test_profile_state_deep_clone_copies_last_selection_as_independent_instance
+* test_profile_state_deep_clone_handles_null_last_selection
+* test_profile_state_deep_clone_copies_commander_challenge_records_as_independent_list
+* test_run_state_deep_clone_copies_discovered_content_ids_as_independent_array
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_purchase_unlock_command.gd
+* test_is_concrete_true_when_unlock_def_present
+* test_is_concrete_false_when_unlock_def_missing
+* test_apply_to_rejects_when_not_concrete_without_touching_profile
+* test_apply_to_delegates_to_default_service_and_returns_success
+* test_apply_to_propagates_named_error_from_injected_service
+* test_apply_to_uses_injected_service_override
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_run_bootstrap_service.gd
+* test_build_rejects_null_inputs
+* test_build_rejects_catalog_from_a_different_pinned_generation
+* test_build_locks_commander_id_and_challenge_level_on_run
+* test_build_pins_content_snapshot_to_current_generation
+* test_build_seeds_roster_from_starting_pack_and_excludes_commander
+* test_build_canonicalizes_starting_pack_before_assigning_unit_serials
+* test_build_rejects_starting_pack_larger_than_the_bench
+* test_build_accepts_a_starting_pack_exactly_filling_the_bench
+* test_build_pool_is_the_whole_catalog_minus_the_starting_pack
+* test_build_gives_a_commander_exclusive_unit_a_player_only_pool_entry
+* test_build_rejects_a_starting_pack_exceeding_the_catalog_pool_supply
+* test_bootstrapped_run_can_open_a_shop_and_receive_offers
+* test_build_keeps_population_bonus_out_of_the_starting_economy_level
+* test_try_commander_population_source_carries_the_bonus
+* test_build_rejects_a_negative_population_bonus
+* test_build_seeds_four_named_rng_streams
+* test_build_run_seed_is_deterministic_from_profile_id_and_next_run_serial
+* test_build_result_passes_full_run_state_validation
+18/18 passed.
+
+
+res://tests/unit/meta_progression/test_run_command_factory.gd
+* test_factory_builds_all_four_command_types_and_each_is_concrete
+* test_settle_battle_result_command_relic_table_bonus_is_observable
+* test_settle_battle_result_command_without_relic_table_has_no_bonus
+* test_refresh_shop_command_surcharge_raises_the_reroll_price
+* test_enter_node_event_relic_table_income_bonus_is_observable
+* test_generate_expedition_map_command_accepts_a_non_empty_relic_table
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_run_command_factory_commit_board_layout.gd
+* test_commit_board_command_injects_the_commander_population_source
+* test_commit_board_command_without_a_commander_bonus_keeps_the_base_cap
+* test_commit_board_command_is_not_concrete_without_a_battle_catalog
+* test_commit_board_command_does_not_alias_the_caller_board
+4/4 passed.
+
+
+res://tests/unit/meta_progression/test_run_composition_support.gd
+* test_required_battle_ids_appends_challenge_chain_in_ascending_level_order
+* test_required_battle_ids_does_not_mutate_the_callers_base_array
+* test_required_battle_ids_at_challenge_zero_returns_base_ids_unchanged
+* test_required_battle_ids_with_empty_base_and_challenge_one_yields_only_unlock_id
+* test_population_sources_with_zero_bonus_is_empty
+* test_population_sources_with_negative_bonus_is_empty
+* test_population_sources_with_positive_bonus_yields_one_commander_source
+* test_population_sources_output_actually_changes_board_capacity_via_commit_command
+8/8 passed.
+
+
+res://tests/unit/meta_progression/test_run_discovery_log.gd
+* test_mark_appends_new_content_id_in_sorted_order
+* test_mark_inserts_before_a_lexically_later_existing_id
+* test_mark_is_idempotent_when_content_id_already_present
+* test_mark_on_empty_ledger_produces_single_entry
+* test_mark_does_not_mutate_rng_stream_states
+* test_mark_result_still_satisfies_run_state_validator
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_run_modifier_table_builder.gd
+* test_relic_only_resolution_matches_standalone_run_relic_table_builder
+* test_commander_with_no_run_operations_does_not_fail_build_and_contributes_nothing
+* test_commander_passive_run_operations_become_always_active_contribution
+* test_commander_always_active_contribution_stacks_with_slot_gated_relic_end_to_end_via_income_service
+* test_challenge_level_zero_yields_no_run_contribution_when_higher_levels_have_battle_content
+* test_challenge_battle_track_at_requested_level_does_not_enter_run_modifier_table
+* test_challenge_battle_tracks_across_levels_do_not_enter_run_modifier_table
+* test_invalid_commander_id_returns_named_failure
+* test_commander_passive_with_unconsumed_run_kind_returns_named_failure
+* test_same_battle_effect_on_two_challenge_levels_does_not_enter_run_modifier_table
+10/10 passed.
+
+
+res://tests/unit/meta_progression/test_run_relic_rule_source.gd
+* test_source_defaults_to_relic_when_not_set
+* test_source_can_be_set_to_commander
+* test_source_can_be_set_to_challenge
+* test_deep_clone_preserves_explicit_source
+* test_deep_clone_preserves_default_relic_source
+* test_run_relic_table_constructor_preserves_source_through_its_internal_deep_clone
+6/6 passed.
+
+
+res://tests/unit/meta_progression/test_run_relic_table_always_active.gd
+* test_sum_always_active_includes_commander_sourced_rule
+* test_sum_always_active_includes_challenge_sourced_rule
+* test_sum_always_active_sums_commander_and_challenge_together
+* test_sum_always_active_excludes_relic_sourced_rule_even_with_matching_category_and_kind
+* test_sum_always_active_excludes_default_source_rule_built_without_explicit_source
+* test_sum_always_active_filters_by_category
+* test_sum_always_active_filters_by_kind_within_same_category
+* test_sum_always_active_on_empty_table_is_zero
+* test_sum_always_active_does_not_depend_on_any_slot_or_active_id_information
+* test_always_active_count_counts_commander_and_challenge_rules_for_category
+* test_always_active_count_excludes_relic_sourced_rules
+* test_always_active_count_filters_by_category
+* test_always_active_count_on_empty_table_is_zero
+13/13 passed.
+
+
+res://tests/unit/meta_progression/test_run_state_validator_meta_progression_fields.gd
+* test_profile_validates_with_null_last_selection
+* test_profile_validates_with_well_formed_last_selection
+* test_profile_rejects_last_selection_with_non_stable_commander_id
+* test_profile_rejects_last_selection_with_negative_challenge_level
+* test_profile_validates_with_empty_commander_challenge_records
+* test_profile_validates_with_sorted_unique_commander_challenge_records
+* test_profile_rejects_commander_challenge_records_with_duplicate_commander_id
+* test_profile_rejects_commander_challenge_records_out_of_canonical_order
+* test_profile_rejects_commander_challenge_record_with_non_stable_commander_id
+* test_profile_rejects_commander_challenge_record_with_negative_highest_cleared_level
+* test_run_validates_with_empty_discovered_content_ids
+* test_run_validates_with_sorted_unique_discovered_content_ids
+* test_run_rejects_duplicate_discovered_content_ids
+* test_run_rejects_discovered_content_ids_out_of_canonical_order
+* test_run_rejects_non_stable_discovered_content_id
+15/15 passed.
+
+
+res://tests/unit/meta_progression/test_run_state_validator_settlement_receipt_uniqueness.gd
+* test_profile_validates_with_empty_settlement_receipts
+* test_profile_validates_with_single_well_formed_settlement_receipt
+* test_profile_validates_with_multiple_receipts_in_strict_digest_order
+* test_profile_rejects_two_receipts_with_the_same_run_id_tuple
+* test_profile_rejects_settlement_receipts_out_of_canonical_digest_order
+* test_profile_rejects_settlement_receipt_whose_key_does_not_reencode
+* test_profile_rejects_settlement_receipt_with_malformed_payload_digest
+7/7 passed.
+
+
+res://tests/unit/meta_progression/test_shop_service_challenge_surcharge.gd
+* test_challenge_surcharge_increases_offer_cost_with_no_relic_slots_active
+* test_surcharge_nets_against_slot_gated_and_always_active_discount
+* test_surcharge_cannot_push_cost_below_the_existing_one_gold_floor
+* test_refresh_shop_applies_the_same_challenge_surcharge
+* test_refresh_shop_reroll_cost_increases_with_challenge_surcharge
+* test_refresh_shop_reroll_cost_unaffected_at_challenge_zero
+* test_route_category_surcharge_does_not_affect_shop_price
+7/7 passed.
+
+
+res://tests/unit/meta_progression/test_shop_service_commander_challenge_modifiers.gd
+* test_commander_always_active_shop_discount_applies_with_no_relic_slots_active
+* test_always_active_discount_stacks_on_top_of_slot_gated_relic_discount
+* test_always_active_discount_still_floors_at_one_gold
+* test_refresh_shop_applies_the_same_always_active_discount
+* test_route_category_always_active_rule_does_not_affect_shop_price
+5/5 passed.
+
+
+res://tests/unit/meta_progression/test_start_expedition_command.gd
+* test_is_concrete_false_when_commander_def_missing
+* test_is_concrete_false_when_pinned_receipt_missing
+* test_is_concrete_false_when_catalog_missing
+* test_apply_to_rejects_exhausted_run_serial_with_zero_profile_mutation
+* test_apply_to_rejects_locked_commander_with_zero_profile_mutation
+* test_apply_to_rejects_challenge_prerequisite_unmet_with_zero_profile_mutation
+* test_apply_to_allows_challenge_level_zero_with_no_records_at_all
+* test_apply_to_allows_challenge_level_at_exact_prerequisite_boundary
+* test_apply_to_success_bumps_next_run_serial_and_sets_last_selection
+9/9 passed.
+
+
+res://tests/unit/meta_progression/test_unlock_purchase_service.gd
+* test_purchase_succeeds_deducts_currency_and_appends_sorted_unique_ids
+* test_purchase_appends_multiple_new_ids_into_canonical_sorted_order
+* test_purchase_rejects_insufficient_currency_and_leaves_profile_unchanged
+* test_purchase_rejects_already_owned_and_leaves_profile_unchanged
+* test_purchase_rejects_unmet_prerequisite_and_leaves_profile_unchanged
+* test_purchase_succeeds_when_prerequisite_is_already_unlocked
+* test_purchase_rejects_null_unlock_def
+7/7 passed.
+
+
+res://tests/unit/presentation_ui_accessibility/test_keyboard_focus_graph_reaches_primary_actions_at_150_percent.gd
+* test_keyboard_focus_reaches_every_primary_action_at_all_ui_scales
+* test_hidden_or_disabled_controls_are_removed_without_trapping_focus
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd
+* test_zh_tw_and_en_use_readable_cjk_and_latin_fallback_tokens
+* test_locale_wire_set_is_exact_and_unsupported_locale_is_named
+* test_bundled_font_is_first_for_zh_tw_and_en_visible_text
+* test_all_zh_tw_catalog_values_are_covered_by_bundled_font
+* test_production_accessibility_copy_resolves_from_catalog_single_source
+* test_accessibility_text_keys_mechanically_reuse_existing_semantic_copy
+* test_real_missing_glyph_is_not_reported_as_readable
+7/7 passed.
+
+
+res://tests/unit/presentation_ui_accessibility/test_presentation_errors_distinguish_commit_boundary.gd
+* test_precommit_failure_preserves_old_authoritative_state_and_source_error
+* test_postcommit_route_failure_keeps_new_commit_and_enters_retryable_fallback
+* test_commander_challenge_prerequisite_has_named_player_message
+3/3 passed.
+
+
+res://tests/unit/presentation_ui_accessibility/test_semantic_cues_effect_reduction_and_tooltip_depth.gd
+* test_every_color_mode_keeps_icon_pattern_and_text_decision_cues
+* test_reduced_effects_damage_density_and_tooltip_depth_are_explicit
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_all_camp_writers_share_atomic_repository_transaction.gd
+* test_all_camp_writers_share_atomic_repository_transaction
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_boot_always_routes_to_menu.gd
+* test_boot_always_routes_to_menu
+Unicode parsing error, some characters were replaced with � (U+FFFD): Invalid UTF-8 leading byte (80)
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_camp_start_expedition_typed_transaction_and_route.gd
+* test_camp_start_expedition_typed_transaction_and_route
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_exit_request_root_contract_is_single_flight_and_interceptable.gd
+* test_exit_request_root_contract_is_single_flight_and_interceptable
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_menu_continue_start_and_recovery_are_guarded.gd
+* test_menu_continue_start_and_recovery_are_guarded
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_supported_dev_cli_entries_consume_production_facade.gd
+* test_supported_dev_cli_entries_consume_production_facade
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_app_lifecycle/test_terminal_postcommit_revokes_run_writers_before_results_route.gd
+* test_terminal_postcommit_revokes_run_writers_before_results_route
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_audio/test_audio_coordinator_atomic_contract.gd
+* test_audio_coordinator_applies_four_buses_atomically
+* test_missing_bus_preflight_is_named_and_leaves_all_four_buses_unchanged
+* test_before_commit_adapter_fault_is_named_and_zero_mutation
+* test_snapshot_result_and_consumer_boundaries_are_clone_only
+4/4 passed.
+
+
+res://tests/unit/presentation_ui_content/test_localization_catalog_raw_parity.gd
+* test_csv_and_raw_localization_catalog_are_byte_identical
+* test_raw_localization_catalog_matches_pinned_bootstrap_digest
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_content/test_phase_d_finalized_localization_copy.gd
+* test_finalized_trait_display_copy_matches_phase_d_decision
+* test_all_44_ability_descriptions_match_approved_effect_values
+* test_unit_names_remain_numbered_until_the_follow_up_naming_decision
+3/3 passed.
+
+
+res://tests/unit/presentation_ui_content/test_project_content_bootstrap.gd
+* test_production_bootstrap_is_injectable_and_returns_one_pinned_receipt
+* test_production_bootstrap_names_missing_asset_without_installing
+* test_production_bootstrap_names_missing_localization_key_without_installing
+* test_localization_catalog_defaults_to_nonempty_zh_tw_and_en_has_exact_key_set
+* test_localization_catalog_rejects_other_locale_and_missing_key_by_name
+* test_real_dependency_port_checks_resource_and_catalog_instead_of_returning_true
+* test_build_lab_adapter_consumes_project_bootstrap_without_second_content_graph
+* test_production_bootstrap_fails_closed_when_localization_catalog_load_fails
+* test_app_root_does_not_bypass_localization_catalog_typed_load
+* test_app_root_localizes_screens_with_the_loaded_production_catalog
+* test_production_sources_never_construct_the_localization_catalog_directly
+11/11 passed.
+
+
+res://tests/unit/presentation_ui_contract/test_presentation_ui_contract_scaffold.gd
+* test_t00_contract_files_exist_and_are_loadable
+* test_t00_contract_sources_expose_required_typed_shape
+* test_t00_existing_app_event_declares_new_stable_kinds
+* test_t00_settings_wire_values_are_stable_strings
+4/4 passed.
+
+
+res://tests/unit/presentation_ui_menu_camp/test_collection_filter_search_compare_is_clone_only.gd
+* test_collection_filter_search_compare_is_clone_only
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_menu_camp/test_exit_button_host_binding_keeps_fake_runner_alive.gd
+* test_exit_button_host_binding_keeps_fake_runner_alive
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_menu_camp/test_recovery_confirmation_cancel_is_zero_dispatch.gd
+* test_recovery_confirmation_cancel_is_zero_dispatch
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_menu_camp/test_settings_screen_submits_typed_draft_through_injected_port.gd
+* test_settings_screen_submits_typed_draft_through_injected_port
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_playback/test_pending_transcript_commit_boundary_and_budget_fallback.gd
+* test_precommit_transcript_is_private_and_save_failure_discards_it
+* test_save_success_seals_transfers_and_clears_the_only_precommit_owner
+* test_encoded_byte_budget_keeps_commit_and_falls_back_to_summary_warning
+* test_combat_coordinator_buffers_before_record_result_commit
+4/4 passed.
+
+
+res://tests/unit/presentation_ui_playback/test_playback_speed_pause_preserves_committed_sequence.gd
+* test_invalid_multiplier_matrix_is_named_and_state_preserving
+* test_pause_and_1x_2x_4x_only_move_the_presentation_cursor
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_playback/test_session_transcript_drain_backpressure_and_lifecycle.gd
+* test_session_drain_is_identity_checked_clone_only_and_backpressured
+* test_new_battle_leave_revoke_acknowledge_and_reload_have_no_transcript
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_run_facade/test_dev_lab_facade_boundary.gd
+* test_run_lab_is_a_thin_consumer_of_the_production_facade
+* test_combat_lab_consumes_an_injected_production_battle_port
+* test_dev_component_wrappers_do_not_own_cli_parse_or_app_root_binding
+3/3 passed.
+
+
+res://tests/unit/presentation_ui_run_facade/test_run_presentation_intent_factory_mapping.gd
+* test_run_presentation_intent_declares_every_existing_player_writer
+* test_run_command_factory_owns_every_intent_construction_path
+* test_session_has_an_explicit_exhaustive_intent_mapping
+* test_intent_clone_is_consumer_owned_and_never_dictionary_payload
+4/4 passed.
+
+
+res://tests/unit/presentation_ui_run_facade/test_run_presentation_session_behavior.gd
+* test_run_presentation_session_dispatch_is_not_the_t00_placeholder
+* test_public_snapshots_results_and_signal_contract_are_clone_only
+* test_no_playback_is_a_named_typed_result_not_null
+* test_command_error_prefers_diagnostic_source_code_without_wrapper_prefix
+* test_command_error_never_falls_back_to_top_level_apply_failed_code
+* test_session_routes_every_writer_through_factory_and_controller
+* test_result_shape_distinguishes_precommit_and_postcommit_failure
+7/7 passed.
+
+
+res://tests/unit/presentation_ui_run_screens/test_combat_unit_inspection_is_typed_and_read_only.gd
+* test_combat_unit_inspection_is_typed_and_read_only
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_run_screens/test_irreversible_confirmation_cancel_and_exactly_once.gd
+* test_irreversible_confirmation_cancel_and_exactly_once
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_run_screens/test_prepare_equipment_drag_semantics.gd
+* test_component_pair_preview_gates_drop_and_emits_only_valid_recipe
+* test_component_to_unit_is_rejected_with_non_color_cue_and_copy
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_run_screens/test_run_screen_command_only_flow_maps_all_facade_intents.gd
+* test_run_screen_command_only_flow_maps_all_facade_intents
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_scene_routing/test_formal_scene_routes_and_command_only_writes.gd
+* test_formal_scene_routes_and_command_only_writes
+* test_results_fallback_catalog_entry_is_results_only
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_scene_routing/test_live_screen_intent_port_rejects_stale_dispatch_and_confirmation.gd
+* test_live_screen_intent_port_rejects_stale_dispatch_and_confirmation
+* test_new_live_port_dispatches_only_while_lease_is_current
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_scene_routing/test_live_screen_supply_port_lease_and_clone_out.gd
+* test_context_derives_supply_port_without_exposing_session
+* test_revoked_supply_port_fails_closed_and_reveals_no_previous_values
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_scene_routing/test_parent_bound_subroute_tokens_and_screen_leases.gd
+* test_parent_bound_subroute_tokens_and_screen_leases
+* test_run_subroute_keeps_session_until_parent_changes
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_screen_contexts/test_screen_context_snapshot_clone_fails_closed.gd
+* test_staged_screen_context_flags_unknown_snapshot_type
+* test_production_live_screen_context_flags_unknown_snapshot_type
+* test_snapshot_clone_accessor_does_not_repeat_or_lose_the_diagnostic
+3/3 passed.
+
+
+res://tests/unit/presentation_ui_settings_application/test_settings_application_coordinator_two_phase_apply.gd
+* test_entry_clone_private_plans_save_then_fixed_activation_order
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_settings_application/test_settings_application_precommit_faults_and_single_flight.gd
+* test_each_adapter_preflight_and_repository_fault_is_zero_runtime_mutation
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_settings_application/test_settings_postcommit_fallback_and_fresh_rebuild.gd
+* test_postcommit_activation_diagnostic_keeps_commit_and_rebuilds_all
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_settings_application/test_settings_production_binding_round_trips_locale_and_four_buses.gd
+* test_concrete_port_round_trips_locale_and_four_buses_after_rebuild
+1/1 passed.
+
+
+res://tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd
+* test_first_launch_uses_os_locale_and_defaults_outside_zh_tw_to_english
+* test_settings_repository_atomic_round_trip_and_faults
+* test_schema_one_defaults_wire_values_and_exact_validation_rejections
+* test_corrupt_v1_is_archived_and_future_schema_is_preserved_until_digest_reset
+* test_public_snapshot_results_signals_and_consumers_never_alias_repository_state
+5/5 passed.
+
+
+res://tests/unit/presentation_ui_settings_repository/test_settings_repository_storage_port_is_named_type.gd
+* test_settings_storage_port_exists_with_the_named_result_contract
+* test_settings_repository_holds_storage_through_the_named_port_type
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_static_gate/test_static_gate_accepts_clean_production_candidate.gd
+* test_clean_candidate_passes_and_non_production_artifacts_are_ignored
+* test_checked_out_production_localization_passes_reference_gate
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd
+* test_unreachable_required_focus_action_is_named_and_fails_gate
+* test_missing_system_menu_focus_trap_is_named_and_fails_gate
+* test_resident_run_menu_contract_is_named_and_fails_gate
+* test_wrong_world_viewport_contract_is_named_and_fails_gate
+* test_legacy_1280_ui_reference_is_named_and_fails_gate
+* test_non_nearest_world_filter_is_named_and_fails_gate
+* test_missing_required_theme_tokens_is_named_and_fails_gate
+* test_direct_custom_minimum_size_assignment_is_named_and_fails_gate
+* test_layout_assignment_scanner_ignores_comments_strings_and_only_allows_helper
+9/9 passed.
+
+
+res://tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd
+* test_production_dev_reference_is_named_and_fails_gate
+* test_hardcoded_player_text_is_named_and_fails_gate
+* test_zh_tw_and_en_key_set_mismatch_is_named_and_fails_gate
+* test_program_referenced_localization_key_must_exist_in_catalog
+* test_accessibility_text_key_must_exist_in_catalog
+* test_non_localization_stable_ids_do_not_trip_reference_gate
+* test_missing_referenced_asset_is_named_and_fails_gate
+7/7 passed.
+
+
+res://tests/unit/presentation_ui_static_gate/test_static_gate_rejects_tune_and_writer_boundary_breaks.gd
+* test_ui_tune_literal_duplicate_is_named_and_fails_gate
+* test_production_screen_direct_writer_dependency_is_named_and_fails_gate
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd
+* test_project_uses_single_theme_with_font_tokens_and_focus_style
+* test_shop_cost_tiers_have_five_distinct_authored_border_variations
+* test_compact_action_bar_reuses_panel_texture_with_small_vertical_margin
+* test_b1_layout_regions_stay_inside_reference_safe_area
+* test_b1_layout_constants_match_the_1920_reference
+* test_layout_metrics_accept_explicit_1920_reference_values
+* test_runtime_scaling_is_centralized_on_a_theme_copy
+* test_scale_rebuild_does_not_capture_scaled_combined_minimum
+* test_button_text_contributes_to_combined_minimum_width
+* test_production_viewport_paths_have_resolving_defaults
+10/10 passed.
+
+
+res://tests/unit/presentation_ui_viewport/test_b1_evidence_contract.gd
+* test_evidence_runner_declares_the_nine_case_matrix
+* test_isolated_script_restricts_output_to_in_run_hud_evidence
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_viewport/test_b1_reference_and_input_contract.gd
+* test_project_and_runtime_share_the_1920_reference
+* test_ui_policy_fits_all_supported_16_by_9_windows
+* test_dedicated_input_actions_use_escape_and_w
+* test_five_autoload_entries_remain_exactly_unchanged
+4/4 passed.
+
+
+res://tests/unit/presentation_ui_viewport/test_window_coordinate_mapper_round_trip_targets.gd
+* test_world_tile_and_camp_hotspot_round_trip_across_resolution_matrix
+* test_ui_control_round_trip_uses_reference_space_at_all_supported_scales
+2/2 passed.
+
+
+res://tests/unit/presentation_ui_viewport/test_world_viewport_policy_integer_scale_and_letterbox.gd
+* test_world_and_ui_reference_contract_is_fixed_and_pixel_safe
+* test_layout_uses_largest_integer_world_scale_and_centered_letterbox
+2/2 passed.
+
+
+res://tests/unit/rng/test_rng_v1.gd
+* test_pcg_reference_bounded_derive_and_stream_isolation
+1/1 passed.
+
+
+res://tests/unit/runtime_key/test_runtime_key_codec_v1.gd
+* test_six_typed_schemas_goldens_negatives_and_ledger
+1/1 passed.
+
+
+res://tests/unit/save_codec/test_content_generation_migration_codec.gd
+* test_bsm1_cgm1_and_cgr1_golden_vectors_are_stable
+* test_bsm1_rejects_unsorted_duplicate_and_invalid_spawn_entries
+* test_pack_validation_recomputes_every_digest_and_requires_allowlist
+* test_cgm1_rejects_tampering_of_every_pack_field
+* test_cgr1_rejects_tampering_of_every_receipt_field
+5/5 passed.
+
+
+res://tests/unit/save_codec/test_save_json_codec.gd
+* test_schema_two_round_trip_is_byte_identical
+* test_results_phase_round_trips_as_terminal_run_state
+* test_unknown_duplicate_and_noncanonical_fields_are_rejected
+* test_decode_bytes_rejects_non_round_trip_utf8_with_named_error
+Unicode parsing error, some characters were replaced with � (U+FFFD): Invalid UTF-8 leading byte (80)
+* test_every_u64_boundary_uses_fixed_lowercase_hex
+* test_schema_zero_to_one_is_idempotent
+* test_schema_one_prepare_and_pending_runs_preserve_profile_and_original_bytes
+* test_schema_one_idle_map_requires_explicit_generation_migration_pack
+* test_schema_one_idle_map_migrates_generation_atomically_and_is_idempotent
+* test_schema_zero_active_run_uses_ordered_zero_to_one_to_two_steps
+* test_receipt_failure_preserves_profile_and_marks_run_incompatible
+* test_four_resolution_shapes_round_trip_without_new_identity
+* test_schema_two_combat_pending_round_trips_full_v2_setup_envelope
+* test_schema_two_map_preview_round_trips_v2_source_fields
+14/14 passed.
+
+
+res://tests/unit/save_codec/test_save_json_codec_meta_progression_fields.gd
+* test_last_selection_null_round_trips
+* test_last_selection_present_round_trips
+* test_commander_challenge_records_round_trip
+* test_commander_challenge_records_empty_round_trips
+* test_run_discovered_content_ids_round_trip
+* test_run_discovered_content_ids_default_empty_round_trips
+* test_existing_eight_profile_fields_round_trip_unchanged
+* test_schema_two_reject_tests_still_document_unknown_and_duplicate_field_shape
+8/8 passed.
+
+
+res://tests/unit/save_codec/test_save_migration_v2_to_v3.gd
+* test_schema_two_fixture_is_frozen_pre_meta_progression_shape
+* test_schema_two_migrates_to_three_with_defaulted_new_fields
+* test_schema_two_migration_preserves_existing_profile_and_run_data
+* test_schema_two_profile_only_migrates_with_null_run_and_defaulted_profile_fields
+* test_schema_two_migration_is_idempotent
+* test_schema_two_migrated_root_passes_current_validator
+6/6 passed.
+
+
+res://tests/unit/save_codec/test_save_schema_contract_v3.gd
+* test_current_schema_version_is_four
+1/1 passed.
+
+
+res://tests/unit/ui_art_refresh/test_b_out_1_visual_catalog.gd
+* test_catalog_loads_the_adopted_environment_visuals
+* test_environment_manifest_paths_and_hashes_match_disk
+* test_new_theme_variations_keep_the_expedition_prefix
+* test_camp_shell_uses_a_route_local_main_visual_geometry
+* test_read_only_focus_graph_already_names_all_scene_facilities
+5/5 passed.
+
+
+res://tests/unit/ui_art_refresh/test_b_out_2_facility_shell_and_portraits.gd
+* test_five_facilities_use_route_local_shell_geometry
+* test_camp_shell_yields_the_only_visible_frame_to_environment_view
+* test_production_portrait_catalog_resolves_adopted_unit_portraits
+* test_collection_content_entries_become_portrait_cards_without_node_drift
+* test_b_out_2_theme_variations_keep_expedition_contracts
+5/5 passed.
+
+
+res://tests/unit/ui_art_refresh/test_b_out_3_outgame_shell_results_and_system_menu.gd
+* test_settings_uses_shell_without_changing_editor_paths
+* test_results_offsets_live_in_metrics_and_values_render_as_cards
+* test_results_system_menu_keeps_embedded_settings_and_confirmation
+* test_main_world_targets_are_non_drawing_hit_areas
+* test_b_out_3_sources_have_no_scattered_theme_overrides
+5/5 passed.
+
+
+res://tests/unit/ui_art_refresh/test_c1_run_map_node_graph.gd
+* test_three_acts_seven_layers_edges_and_sorting_are_deterministic
+* test_node_kinds_states_and_current_marker_have_non_color_signals
+* test_graph_click_is_local_preview_and_item_list_stays_in_sync
+* test_unreachable_and_completed_nodes_cannot_submit_and_rejection_surfaces
+* test_keyboard_channel_order_is_unchanged
+* test_background_provenance_sha_and_dimensions_match_selected_source
+6/6 passed.
+
+
+res://tests/unit/ui_art_refresh/test_c2_combat_world_effects.gd
+* test_skill_hit_status_use_both_adopted_atlases_on_world_projection
+* test_damage_density_samples_labels_without_filtering_event_order
+* test_visual_clock_fades_and_moves_only_when_explicitly_advanced
+* test_world_surface_owns_effects_and_route_clear_removes_background
+* test_combat_environment_inventory_provenance_and_sha_match_disk
+* test_visual_scripts_do_not_touch_gameplay_rng_service
+6/6 passed.
+
+
+res://tests/unit/ui_art_refresh/test_c3_production_audio_director.gd
+* test_five_music_cues_cover_every_production_route
+* test_twenty_one_sfx_resources_match_adopted_inventory_sha_and_bus
+* test_intent_and_ui_semantics_reach_all_noncombat_sfx
+* test_combat_event_audio_mapping_preserves_input_order
+* test_combat_sampling_scans_every_event_and_keeps_terminal_cues
+* test_production_screen_route_music_and_audio_sources_are_rng_free
+6/6 passed.
+
+
+res://tests/integration/balance_playtest/test_balance_driver_boss_retry_terminals.gd
+* test_boss_loss_retries_prepare_until_hp_exhausted_then_failed_terminal
+* test_abandon_boss_retry_settles_abandoned_terminal_exactly_once
+2/2 passed.
+
+
+res://tests/integration/balance_playtest/test_balance_driver_full_expedition.gd
+* test_three_strategies_share_one_cohort_world_and_reach_results
+* test_save_reload_equivalence_matches_in_memory_continuation
+2/2 passed.
+
+
+res://tests/integration/balance_playtest/test_balance_driver_prepare_actions.gd
+* test_prepare_commands_change_canonical_snapshot
+* test_production_reward_tables_still_yield_no_items
+2/2 passed.
+
+
+res://tests/integration/balance_playtest/test_production_boss_battle_setup_validation.gd
+* test_real_pack_boss_setup_passes_battle_input_validation
+1/1 passed.
+
+
+res://tests/integration/build_items/test_forge_equipment_command_transaction.gd
+* test_forge_dispatch_success_commits_forged_equipment_into_inventory
+* test_forge_commit_failure_leaves_canonical_inventory_unchanged
+2/2 passed.
+
+
+res://tests/integration/build_items/test_overflow_phase_gate.gd
+* test_start_combat_event_rejects_when_overflow_tray_is_non_empty
+* test_resolve_non_combat_node_rejects_when_overflow_tray_is_non_empty
+2/2 passed.
+
+
+res://tests/integration/build_items/test_sell_equipped_unit_crash_load.gd
+* test_crash_before_save_leaves_reload_at_pre_sale_state
+* test_completed_sale_reload_reflects_post_sale_state_exactly_once
+2/2 passed.
+
+
+res://tests/integration/build_systems/test_build_lab.gd
+* test_lab_scene_initializes_real_content_and_exposes_controls
+* test_lab_operation_flow_forges_equips_dismantles_and_resolves_overflow
+2/2 passed.
+
+
+res://tests/integration/build_systems/test_trait_effect_persists_through_member_death.gd
+* test_trait_effect_keeps_firing_periodically_after_a_member_dies_mid_combat
+1/1 passed.
+
+
+res://tests/integration/combat/test_combat_coordinator.gd
+* test_speed_one_and_four_publish_identical_committed_result
+* test_result_commit_failure_hides_terminal_then_retry_publishes_once
+* test_reload_of_committed_result_never_initializes_or_steps_simulation
+* test_pause_advances_zero_ticks_and_invalid_speed_is_rejected
+4/4 passed.
+
+
+res://tests/integration/combat/test_combat_lab.gd
+* test_lab_builds_64_cells_nine_bench_slots_and_starts_proxy_battle
+* test_lab_proxy_factory_builds_normal_and_source_bound_two_phase_boss
+* test_presenter_returns_clone_isolated_setup_events_and_result
+3/3 passed.
+
+
+res://tests/integration/difficulty_curve/test_act_scaling_and_formation_structural.gd
+* test_act2_and_act3_enemy_totals_strictly_exceed_previous_act_for_every_encounter
+* test_boss_encounter_ids_are_distinct_per_act_and_all_compile
+* test_multi_enemy_formation_counts_match_design_table
+3/3 passed.
+
+
+res://tests/integration/difficulty_curve/test_curve_pressure_and_report_trend.gd
+* test_at_least_one_act2_plus_snapshot_shows_real_damage_from_curve
+* test_report_exposes_per_act_reach_counts_and_act_snapshots_for_trend_reading
+2/2 passed.
+
+
+res://tests/integration/expedition/test_expedition_lab.gd
+* test_lab_scene_exposes_route_status_combat_and_reward_controls
+* test_lab_session_demonstrates_income_boss_retry_and_commit_before_reward
+2/2 passed.
+
+
+res://tests/integration/meta_progression/test_camp_controller_active_run_guard.gd
+* test_second_start_is_rejected_by_name_and_leaves_the_committed_run_untouched
+1/1 passed.
+
+
+res://tests/integration/meta_progression/test_camp_controller_discard_active_run.gd
+* test_matching_expected_run_id_atomically_clears_run_and_preserves_profile
+* test_stale_expected_run_id_is_named_rejection_and_byte_for_byte_no_op
+* test_discard_without_active_run_is_named_rejection_and_no_op
+* test_discard_save_failure_keeps_committed_run_and_controller_profile_unchanged
+4/4 passed.
+
+
+res://tests/integration/meta_progression/test_camp_controller_purchase_unlock.gd
+* test_dispatch_success_commits_currency_and_unlocked_ids_atomically
+* test_dispatch_rejects_insufficient_currency_with_zero_persisted_change
+* test_dispatch_rejects_already_owned_with_zero_persisted_change
+* test_dispatch_rejects_unmet_prerequisite_with_zero_persisted_change
+* test_dispatch_rejects_missing_unlock_def_as_invalid_command_without_touching_store
+* test_dispatch_rejects_invalid_profile_from_command_before_saving
+* test_dispatch_save_failure_leaves_canonical_profile_and_store_unchanged
+7/7 passed.
+
+
+res://tests/integration/meta_progression/test_camp_controller_start_expedition.gd
+* test_dispatch_locks_each_commander_distinctly_and_excludes_from_board
+* test_dispatch_run_id_is_independent_of_the_selected_commander
+* test_dispatch_commits_profile_and_run_atomically_and_round_trips
+* test_dispatch_rejects_locked_commander_with_zero_persisted_change
+* test_dispatch_rejects_challenge_prerequisite_unmet_with_zero_persisted_change
+* test_dispatch_rejects_missing_command_as_invalid_without_touching_store
+* test_dispatch_run_seed_deterministic_from_profile_id_and_next_run_serial
+7/7 passed.
+
+
+res://tests/integration/meta_progression/test_camp_to_results_composition.gd
+* test_start_then_complete_settlement_transitions_camp_run_results_camp_atomically
+* test_expedition_hp_zero_failure_settlement_is_also_atomic_and_returns_to_camp
+2/2 passed.
+
+
+res://tests/integration/meta_progression/test_camp_writer_fail_closed_r3.gd
+* test_purchase_unlock_rejects_loaded_run_without_clearing_persisted_bytes
+* test_start_expedition_load_io_failure_is_named_and_writes_nothing
+* test_start_expedition_incompatible_preserved_run_is_rejected_byte_for_byte
+3/3 passed.
+
+
+res://tests/integration/meta_progression/test_challenge_affix_battle_catalog.gd
+* test_dual_track_challenge_affix_is_rejected_at_content_boundary
+* test_challenge_unlock_pins_track_a_affix_effect_into_catalog
+* test_run_only_challenge_affix_is_not_pinned_into_battle_catalog
+* test_track_a_affix_compiles_into_encounter_through_real_builder_path
+4/4 passed.
+
+
+res://tests/integration/meta_progression/test_challenge_affix_content_authoring.gd
+* test_only_current_battle_challenge_layers_reference_affix_effects
+* test_challenge_unlock_0_still_has_no_modifiers
+* test_five_challenge_affix_effects_exist_with_challenge_affix_content_role_and_localization
+* test_currently_referenced_challenge_affixes_are_battle_only
+* test_elite_affix_effects_are_unchanged
+* test_treasure_rest_merchant_generator_refs_are_unchanged
+* test_combined_pack_still_installs_validated_with_zero_issues
+7/7 passed.
+
+
+res://tests/integration/meta_progression/test_challenge_affix_end_to_end.gd
+* test_challenge_three_accumulates_three_battle_affixes_deterministically
+* test_challenge_two_has_not_yet_accumulated_level_three_battle_affix
+* test_challenge_zero_run_modifier_table_has_no_challenge_contribution
+3/3 passed.
+
+
+res://tests/integration/meta_progression/test_in_progress_snapshot_isolated_from_later_unlock.gd
+* test_in_progress_run_content_snapshot_unaffected_by_later_unlock_purchase
+1/1 passed.
+
+
+res://tests/integration/meta_progression/test_meta_settlement_command.gd
+* test_dispatch_commits_currency_receipt_records_and_clears_run_in_one_atomic_save
+* test_dispatch_failed_outcome_still_commits_currency_and_clears_run
+* test_dispatch_fails_named_error_when_no_active_run_to_settle
+* test_dispatch_rejects_non_results_run_without_changing_save_receipt_or_run
+* test_each_storage_fault_point_terminates_leaving_prior_state_intact_then_retry_succeeds_exactly_once
+5/5 passed.
+
+
+res://tests/integration/meta_progression/test_run_command_factory_challenge_world_consistency.gd
+* test_challenge_battle_affix_reaches_the_encounter_only_with_required_ids_helper
+1/1 passed.
+
+
+res://tests/integration/meta_progression/test_run_lab_result_pending_resume_r3.gd
+* test_start_combat_accepts_committed_result_without_restarting_or_recommitting
+1/1 passed.
+
+
+res://tests/integration/meta_progression/test_run_lab_session_factory_chain.gd
+* test_run_driver_consumes_every_factory_construction_in_one_node_cycle
+* test_driver_rejects_out_of_phase_operations_by_name_without_committing
+* test_second_board_commit_reassigns_existing_board_and_new_bench_units_together
+* test_start_combat_resumes_a_committed_combat_pending_setup_without_restarting_event
+4/4 passed.
+
+
+res://tests/integration/meta_progression/test_vertical_slice_xp_threshold_gap.gd
+* test_slice_default_xp_thresholds_must_cover_levels_one_and_two
+* test_a_fresh_runs_first_xp_gain_does_not_get_rejected_as_config_invalid
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_ac_closure/test_pinned_presentation_and_simulation_share_generation.gd
+* test_pinned_presentation_and_simulation_share_generation
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_ac_closure/test_runtime_color_modes_and_focus_cues.gd
+* test_runtime_world_and_ui_hosts_cover_the_screenshot_matrix
+* test_runtime_four_color_modes_keep_non_color_cues_and_visible_focus_at_150
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_ac_closure/test_ui_tune_projection_tracks_authoritative_content.gd
+* test_ui_tune_projection_tracks_authoritative_content
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_b1r3/test_layout_geometry_audit.gd
+* test_menu_camp_settings_geometry_across_scales
+* test_run_prepare_geometry_across_scales
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_b1r3/test_run_action_band_container_geometry.gd
+* test_map_and_reward_actions_are_enclosed_by_bottom_content_at_all_scales
+* test_service_dismantle_keeps_full_accessible_copy_with_compact_visual_key
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_b1r3/test_world_viewport_resolution.gd
+* test_world_subviewport_renders_at_authored_640x360
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_g2_combat_flow/test_combat_inspection_panel_is_player_readable.gd
+* test_inspection_panel_shows_localized_values_instead_of_raw_state
+* test_ally_enemy_and_rarity_cues_do_not_share_one_position
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_g2_combat_flow/test_combat_playback_speed_pause_and_settle_gate.gd
+* test_speed_multiplier_only_changes_the_presentation_consumption_rate
+* test_paused_playback_freezes_the_cursor_and_never_reports_exhausted
+* test_invalid_multiplier_is_typed_and_leaves_playback_untouched
+* test_exhausted_transcript_is_reported_once_the_last_tick_is_presented
+* test_lease_bound_port_forwards_frame_advance_and_goes_stale_with_the_route
+* test_frame_advance_without_a_committed_transcript_is_typed
+6/6 passed.
+
+
+res://tests/integration/presentation_ui_g2_combat_flow/test_combat_read_only_shop_and_bench.gd
+* test_combat_keeps_shop_and_bench_as_read_only_snapshot_surfaces
+* test_combat_layout_source_has_no_runtime_absolute_assignments
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_g2_combat_flow/test_production_combat_flow_settles_into_reward.gd
+* test_formal_combat_screen_drives_playback_from_the_scene_tree
+* test_formal_combat_screen_settles_with_a_fresh_fixed_delta_driver
+* test_committed_result_without_transcript_still_reaches_reward
+* test_combat_intel_star_comes_from_the_committed_battle_snapshot
+4/4 passed.
+
+
+res://tests/integration/presentation_ui_g2_combat_flow/test_run_scope_release_breaks_session_coordinator_cycle.gd
+* test_release_unbinds_both_directions_and_frees_the_object_graph
+* test_release_drops_the_committed_transcript_with_the_run_scope
+* test_app_root_release_unbinds_the_live_run_coordinator
+* test_terminal_session_invalidation_also_unbinds_the_coordinator
+4/4 passed.
+
+
+res://tests/integration/presentation_ui_g2_combat_flow/test_settle_failure_is_visible_and_retryable.gd
+* test_retry_interval_matches_the_screen_contract
+* test_visibility_contract_settles_at_750ms_not_749ms
+* test_invalid_world_projection_fails_composition_before_playback
+* test_mount_must_succeed_before_first_frame_clock_and_settlement
+* test_mount_recovery_does_not_clear_a_newer_action_status
+* test_advance_playback_window_reduces_and_mounts_authoritative_event
+* test_paused_playback_does_not_advance_visibility_clock
+* test_settle_retry_freezes_while_paused_or_system_menu_blocks_background
+    9 Orphans
+        * [Surface:<Control#4269032941344880>] + 8
+* test_initial_settle_waits_for_every_system_menu_state_and_confirmation_modal
+* test_failed_settle_is_visible_and_retries_until_it_lands_exactly_once
+* test_playback_stops_driving_once_settle_is_requested
+11/11 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_action_failures_are_visible_on_screen.gd
+* test_failed_camp_action_renders_localized_precommit_status
+* test_successful_action_clears_the_status_surface
+* test_precommit_and_postcommit_failures_read_differently
+* test_unknown_failure_uses_localized_generic_instead_of_raw_key
+* test_prepare_capacity_failures_use_specific_status_messages
+* test_settings_activation_fallback_uses_diagnostic_instead_of_generic
+* test_settings_draft_rejection_is_visible_on_the_settings_screen
+7/7 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_focus_ring_visibility_and_ordering.gd
+* test_hidden_row_removes_its_editor_from_the_focus_ring
+* test_start_combat_is_the_last_action_in_the_prepare_focus_ring
+* test_prepare_groups_keep_every_action_reachable_inside_reference_canvas
+* test_prepare_with_node_choice_defaults_to_advance_group
+* test_global_focus_indicator_tracks_button_focus
+5/5 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_irreversible_exits_require_confirmation.gd
+* test_leaving_an_active_run_asks_first_and_cancel_is_zero_dispatch
+    32 Orphans
+        * [Surface:<Control#4448888304048465>] + 6
+        * [Surface:<Control#4448887599444616>] + 6
+        * [Surface:<Control#4448886878026151>] + 8
+        * [Surface:<Control#4448887901466836>] + 8
+* test_camp_returns_to_menu_without_a_confirmation
+* test_exit_signal_is_emitted_only_after_confirmation
+* test_confirmation_modal_reopens_within_the_same_frame
+    25 Orphans
+        * [Surface:<Control#4468436612850435>] + 8
+        * [Surface:<Control#4468437602710104>] + 8
+        * [Surface:<Control#4468437334340680>] + 6
+25 orphans
+4/4 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_prepared_route_discard_reclaims_candidates.gd
+* test_commit_without_a_staged_lease_reclaims_the_prepared_candidate
+* test_discard_reclaims_a_candidate_even_when_validation_already_failed
+* test_discard_from_a_foreign_router_is_reported_without_touching_the_candidate
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_recovery_modal_always_has_an_exit.gd
+* test_failed_confirm_still_closes_the_modal_and_restores_the_background
+* test_failed_cancel_also_closes_the_modal
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_route_commit_failure_is_fail_closed.gd
+* test_return_to_menu_reports_committed_presentation_failure
+* test_results_and_camp_route_commits_share_the_fail_closed_helper
+* test_activation_lost_after_scene_commit_revokes_every_lease
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_status_surface_is_actually_visible.gd
+* test_failed_action_status_bar_has_a_readable_rect_inside_the_design_space
+* test_status_bar_draws_above_the_full_rect_composition_and_title
+* test_settings_draft_status_bar_does_not_overlap_the_screen_status_bar
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_g2_findings/test_unknown_snapshot_type_fails_route_prepare_closed.gd
+* test_route_prepare_rejects_a_snapshot_type_no_context_can_clone
+* test_both_contexts_still_record_the_named_diagnostic
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_in_run_drag_canonical/test_forge_drag_matches_button_canonical_state.gd
+* test_forge_drag_matches_button_full_canonical_run_state
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_in_run_drag_canonical/test_projected_drag_matches_button_canonical_layout.gd
+* test_projected_drag_matches_button_canonical_run_state_layout
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_in_run_drag_canonical/test_t19_production_drag_preview_commit.gd
+* test_world_drop_uses_typed_preview_before_commit_and_rejects_without_dispatch
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_in_run_supply/test_app_root_injects_run_session_supply.gd
+* test_prepare_route_session_exposes_pinned_forge_and_shop_supply
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_in_run_system_menu/test_system_menu_four_route_contract.gd
+* test_four_run_routes_replace_resident_run_menu_with_system_button
+* test_system_menu_input_prioritizes_modal_popup_and_text_edit
+* test_combat_menu_restores_true_false_pause_and_canonical_digest
+* test_confirmed_exit_uses_injected_safe_exit_handler_once
+    16 Orphans
+        * [Surface:<Control#4564119105763468>] + 6
+        * [Surface:<Control#4564118384405877>] + 8
+* test_shared_hud_focus_is_trapped_once_and_raw_fallback_is_localized
+* test_open_menu_traps_unlisted_late_added_and_late_enabled_background_focus
+    9 Orphans
+        * [Surface:<Control#4564124138897078>] + 8
+9 orphans
+6/6 passed.
+
+
+res://tests/integration/presentation_ui_in_run_system_menu/test_system_menu_settings_port_injection.gd
+* test_in_run_system_menu_applies_settings_through_the_injected_port
+* test_route_reload_rebinds_the_current_port_and_committed_snapshot
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_nonterminal_scene_composition/test_camp_facilities_share_one_profile_projection_and_round_trip.gd
+* test_camp_facilities_share_one_profile_projection_and_round_trip
+* test_camp_unlocks_challenge_one_after_clearing_challenge_zero
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_nonterminal_scene_composition/test_run_combat_and_reward_render_authoritative_reloadable_snapshots.gd
+* test_run_combat_and_reward_render_authoritative_reloadable_snapshots
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_nonterminal_scene_composition/test_run_prepare_renders_all_deployment_reasons_and_keeps_build_recovery_reachable.gd
+* test_run_prepare_renders_all_deployment_reasons_and_keeps_build_recovery_reachable
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r12_accessibility/test_runtime_effect_flags_and_damage_density.gd
+* test_each_reduced_toggle_changes_its_runtime_effect_only_and_keeps_rules
+* test_damage_density_has_three_distinct_runtime_event_budgets
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r12_accessibility/test_tooltip_depth_runtime_guard.gd
+* test_tooltip_depth_above_two_is_named_rejection_without_partial_apply
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r12_accessibility/test_zh_tw_runtime_glyph_readability.gd
+* test_zh_tw_probe_has_engine_font_fallback_and_all_required_glyphs
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r12_playback/test_invalid_playback_multiplier_preserves_committed_session_ownership.gd
+* test_invalid_multiplier_matrix_preserves_committed_session_ownership
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r12_terminal/test_terminal_handoff_captures_authoritative_snapshot_before_release.gd
+* test_terminal_handoff_captures_authoritative_snapshot_before_release
+* test_application_port_orders_root_install_before_root_free_concrete_adapter
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r13_accessibility_production/test_committed_settings_drive_run_combat_production_nodes.gd
+* test_committed_reduced_flags_drive_distinct_production_effect_hosts
+* test_committed_density_controls_real_production_damage_emitters
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r13_accessibility_production/test_production_tooltip_cjk_and_screenshot_contract.gd
+* test_run_combat_tooltip_guard_and_cjk_font_use_production_hosts
+* test_english_activation_uses_bundled_font_without_false_cjk_failure
+* test_production_screenshot_runner_uses_no_accessibility_fixture
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r13_accessibility_production/test_static_gate_requires_production_accessibility_binding.gd
+* test_missing_run_combat_accessibility_binding_is_named_and_rejected
+* test_incomplete_production_accessibility_capabilities_are_rejected
+* test_complete_run_combat_accessibility_binding_passes_static_gate
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r13_playback_port/test_live_screen_playback_port_guards_every_operation.gd
+* test_session_exposes_typed_pause_without_raw_controller_access
+* test_live_port_validates_speed_pause_and_clone_only_read
+* test_stale_lease_rejects_all_operations_without_side_effects
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r13_playback_port/test_run_combat_binds_typed_playback_port.gd
+* test_production_combat_screen_binds_live_port_without_raw_session
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r13_terminal/test_installed_snapshot_digest_and_retry_are_drift_safe.gd
+* test_unlock_time_caller_mutation_cannot_replace_installed_snapshot
+* test_unbound_retry_rejects_without_not_implemented_fallback
+* test_unrelated_profile_write_allows_fresh_retry_but_stales_prior_observation
+* test_receipt_removal_or_replacement_is_stale
+4/4 passed.
+
+
+res://tests/integration/presentation_ui_r13_terminal/test_production_joint_fallback_recovers_after_results_install_fault.gd
+* test_real_application_install_and_concrete_adapter_atomically_install_fallback
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r13_terminal/test_terminal_capability_is_consumed_inside_repository_ownership.gd
+* test_terminal_capability_is_consumed_before_application_and_never_reaches_router
+* test_direct_application_commit_and_duplicate_present_are_rejected_without_route_change
+* test_manual_terminal_capability_and_non_consuming_adapter_fail_closed
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r14_accessibility_joint/test_app_root_settings_route_reload.gd
+* test_app_root_settings_port_applies_to_replaced_run_combat_scene
+* test_real_settings_repository_rebuilds_run_combat_after_app_restart
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_accessibility_joint/test_production_runtime_matrix_contract.gd
+* test_layered_matrix_declares_every_required_dimension_without_fixture_scenes
+* test_machine_checks_cover_focus_cues_clipping_and_all_pointer_spaces
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_functional_controls/test_combat_playback_controls.gd
+* test_real_combat_buttons_use_live_playback_port_and_never_gameplay_dispatch
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_functional_controls/test_menu_camp_and_settings_controls.gd
+* test_real_menu_start_and_default_camp_selection_start_a_run
+* test_camp_settings_opens_typed_draft_and_commits_locale
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_functional_controls/test_prepare_keyboard_only_purchase_deploy_equip_start.gd
+* test_keyboard_only_purchase_deploy_equip_and_start_combat
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_functional_controls/test_required_control_handler_completeness.gd
+* test_every_declared_required_action_has_a_non_placeholder_handler
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_functional_controls/test_run_intent_controls.gd
+* test_map_buttons_generate_select_and_confirm_through_typed_intents
+* test_prepare_and_reward_controls_dispatch_route_specific_intents
+* test_prepare_inventory_is_visible_focusable_and_shop_dispatches_once
+* test_shop_cards_relocalize_without_shadowing_exact_buy_action
+* test_shop_offer_preview_must_match_canonical_offer_or_fail_closed
+* test_prepare_shop_five_tiers_and_both_star_results_are_explicit
+* test_combat_shop_active_and_empty_cards_relocalize_read_only
+* test_node_choice_disables_every_shop_card
+* test_route_preconditions_never_collapse_to_generic_action_not_available
+* test_service_dismantle_and_exit_dispatch_node_service_intents
+* test_choice_ack_dispatches_acknowledge_node_choice_result_intent
+* test_choice_ack_is_reachable_on_the_map_and_reward_routes
+* test_choice_ack_targets_the_result_that_is_displayed
+* test_result_surface_is_hidden_without_a_receipt_and_fails_soft_on_missing_text
+14/14 passed.
+
+
+res://tests/integration/presentation_ui_r14_production_route/test_app_root_atomic_route_transactions.gd
+* test_menu_to_camp_bind_fault_preserves_state_scene_and_live_identity
+* test_run_to_menu_bind_fault_keeps_run_session_and_old_live_port
+* test_results_exit_actions_share_root_guard_and_both_install_target_scene
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r14_production_route/test_live_production_controls_and_leases.gd
+* test_real_menu_and_camp_scenes_expose_localized_keyboard_controls
+* test_real_camp_composition_uses_live_navigation_and_old_port_becomes_stale
+* test_real_run_screen_receives_intent_and_combat_playback_ports
+* test_staged_context_and_route_coordinator_expose_no_raw_session_surface
+4/4 passed.
+
+
+res://tests/integration/presentation_ui_r14_production_route/test_static_gate_complete_writer_and_visible_text.gd
+* test_complete_raw_writer_and_facade_type_set_is_rejected
+* test_english_and_mixed_visible_scene_text_is_rejected
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_responsive_color/test_color_modes_change_visible_semantics.gd
+* test_four_color_modes_change_real_visible_semantic_styling
+* test_color_mode_keeps_text_and_pattern_cues_visible
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_responsive_color/test_four_three_safe_layout.gd
+* test_real_combat_information_stays_inside_1024x768_safe_area
+* test_four_three_layout_preserves_non_color_decision_information
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_responsive_color/test_ui_scale_changes_real_geometry.gd
+* test_ui_100_125_150_change_meaningful_production_geometry
+* test_scaled_layout_remains_inside_4_3_safe_area
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_app_root_control_lifecycle_joint.gd
+* test_real_buttons_advance_joint_app_root_router_and_stale_controls_do_not_dispatch
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_app_root_run_route_fallback_joint.gd
+* test_joint_route_fault_installs_retryable_live_fallback_without_redispatch
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_camp_five_facility_controls.gd
+* test_five_real_focusable_controls_open_composed_facilities_and_back
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_confirmation_draft_identity.gd
+* test_manual_and_foreign_draft_copies_are_rejected
+* test_payload_and_digest_tampering_are_rejected
+* test_confirm_dispatches_authoritative_issued_clone_and_replay_is_rejected
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_intent_postcommit_route_failure.gd
+* test_committed_phase_route_fault_revokes_old_lease_and_blocks_reentry
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_live_screen_lease_identity.gd
+* test_manual_and_foreign_leases_cannot_forge_active_identity
+* test_issued_clone_is_valid_but_becomes_stale_after_reactivation
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_malformed_composition_and_atomic_commit.gd
+* test_missing_and_wrong_composition_children_return_named_bind_errors
+* test_app_root_invalid_activation_returns_typed_failure_without_mutation
+* test_install_production_propagates_typed_commit_result
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_menu_recovery_projection_and_confirmation.gd
+* test_menu_actions_are_conditional_on_typed_snapshot_state
+* test_decoded_and_opaque_recovery_confirm_exactly_once
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_prepared_route_capability_security.gd
+* test_default_and_wrong_router_prepared_routes_are_typed_rejections
+* test_prepared_route_is_single_use_and_replay_is_typed
+* test_prepared_route_uses_opaque_issuer_bound_identity
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_settings_real_editor_controls.gd
+* test_settings_scene_exposes_focusable_typed_editor_controls
+* test_keyboard_edit_changes_draft_without_mutating_staged_snapshot
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_route_security/test_start_postcommit_route_failure.gd
+* test_committed_start_route_failure_revokes_run_and_camp_writers
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_same_route_refresh/test_app_root_same_route_refresh.gd
+* test_generate_map_atomically_refreshes_same_route_and_old_control_is_stale
+* test_prepare_board_commit_atomically_refreshes_same_route_once
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r14_self_audit/test_accessibility_root_size_contract.gd
+* test_detached_zero_size_accessibility_root_fails_closed
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_self_audit/test_production_ui_contracts.gd
+* test_dotted_action_ids_produce_stable_unique_node_names
+* test_focus_graph_covers_every_production_route_action
+* test_static_gate_rejects_english_visible_text_in_gdscript
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r14_terminal_core/test_application_handoff_uses_route_authority_generation.gd
+* test_installed_capability_uses_generation_prepared_by_route_authority
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r14_terminal_core/test_terminal_postcommit_authority_and_fail_closed.gd
+* test_terminal_commit_uses_authoritative_save_result_without_storage_digest_reread
+* test_capability_issue_fault_installs_sealed_results_fail_closed
+* test_capability_consume_fault_installs_sealed_results_fail_closed
+* test_application_install_fault_installs_sealed_results_fail_closed
+4/4 passed.
+
+
+res://tests/integration/presentation_ui_r14_terminal_core_security/test_terminal_fallback_capability_is_repository_bound.gd
+* test_manual_foreign_wrong_snapshot_and_replay_are_rejected
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r15_architecture/test_results_retry_root_transaction.gd
+* test_atomic_retry_owns_root_guard_before_repository_issue_until_route_commit
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r15_behavior/test_real_typed_choice_surfaces.gd
+* test_app_root_camp_and_map_use_visible_typed_selections
+* test_reward_offer_and_combat_inspection_are_real_typed_controls
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r15_behavior/test_real_viewport_scale_and_semantics.gd
+* test_main_scene_owns_real_world_viewport_and_ui_reference_layer
+* test_app_root_ui_scale_changes_real_menu_action_rect_and_font
+* test_combat_semantic_cues_are_bound_to_authoritative_typed_data
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r15_behavior/test_recovery_modal_focus_trap.gd
+* test_recovery_modal_traps_focus_blocks_background_and_restores_trigger
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r15_behavior/test_ui_probe_zero_size_fail_closed.gd
+* test_missing_or_zero_size_ui_probe_returns_precise_typed_failure
+* test_valid_probe_resize_to_zero_fails_and_restore_rechecks_real_bounds
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r15_terminal/test_double_fault_revokes_all_run_callbacks.gd
+* test_results_and_fallback_double_fault_fail_closed_and_allow_fresh_host_recovery
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r15_terminal/test_postcommit_fallback_authority_fault_is_no_fail.gd
+* test_fallback_capability_issue_fault_still_seals_results_and_revokes_run
+* test_fallback_capability_consume_fault_still_seals_results_and_revokes_run
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r16_architecture/test_r16_committed_combat_projection.gd
+* test_committed_setup_projects_through_real_session_and_lease_port
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r16_architecture/test_r16_retry_and_inspection_contract.gd
+* test_results_retry_exposes_only_the_root_owned_atomic_surface
+* test_atomic_retry_blocks_direct_app_root_camp_and_menu_at_all_three_phases
+* test_real_session_reads_clone_only_two_sided_combat_projection
+3/3 passed.
+
+
+res://tests/integration/presentation_ui_r16_formal/test_r16_formal_collection_glossary_compare_and_localized_search.gd
+* test_collection_search_matches_localized_display_text
+* test_collection_glossary_category_withdraws_the_compare_entry_point
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_r16_formal/test_r16_formal_run_map_reachability_and_localized_kind.gd
+* test_run_map_disables_unreachable_nodes_and_localizes_kind_text
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r16_formal/test_r16_formal_run_prepare_localizes_display_text.gd
+* test_run_prepare_renders_localized_names_instead_of_raw_ids
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r16_formal/test_r16_formal_screen_contract.gd
+* test_prepare_uses_authoritative_report_and_exposes_the_player_loop
+* test_collection_has_three_queryable_categories_and_typed_compare
+* test_live_collection_uses_authoritative_content_recipe_and_glossary_projection
+* test_results_and_fallback_render_the_sealed_settlement_pair
+* test_settings_focus_cycle_contains_every_visible_editor
+5/5 passed.
+
+
+res://tests/integration/presentation_ui_r16_formal/test_r16_prepare_uses_production_board_validation_path.gd
+* test_prepare_snapshot_board_validation_report_reflects_real_economy_level_and_commander_bonus
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r16_formal/test_r16_results_reward_and_profile_values_are_not_swapped.gd
+* test_reward_value_and_profile_value_render_their_own_source_field_not_swapped
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_r16_viewport/test_r16_live_viewport_and_combat_contract.gd
+* test_main_world_viewport_owns_live_targets_and_receives_pointer_input
+* test_ui_mapper_matches_the_live_canvas_transform_not_reflow_scale
+* test_ui_layer_transform_round_trips_pointer_to_ui_without_double_scaling_at_125_and_150_percent
+* test_combat_accessibility_runtime_does_not_cover_or_intercept_typed_controls
+* test_combat_semantics_bind_damage_events_and_color_mode_without_losing_patterns
+5/5 passed.
+
+
+res://tests/integration/presentation_ui_recovery/test_recovery_discard_rejects_stale_tokens_and_preserves_committed_copy_on_faults.gd
+* test_recovery_discard_rejects_stale_tokens_and_preserves_committed_copy_on_faults
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_recovery/test_recovery_restart_cartesian_tmp_residue_matrix.gd
+* test_recovery_restart_cartesian_tmp_residue_matrix
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_scene_routing/test_scene_router_atomic_install_and_app_root_production_shell.gd
+* test_scene_router_stages_binds_and_preserves_live_scene_on_fault
+* test_application_root_boot_and_camp_use_production_shell_without_dev_casts
+2/2 passed.
+
+
+res://tests/integration/presentation_ui_settings_runtime/test_app_root_binds_typed_settings_application_port.gd
+* test_app_root_binds_and_exposes_typed_settings_application_port
+1/1 passed.
+
+
+res://tests/integration/presentation_ui_settings_runtime/test_concrete_settings_adapters_apply_and_rebuild.gd
+* test_concrete_adapters_apply_and_rebuild_all_runtime_settings
+1/1 passed.
+
+
+res://tests/integration/resolution_retry/test_resolution_retry.gd
+* test_all_resolution_kinds_preserve_full_retry_identity
+1/1 passed.
+
+
+res://tests/integration/run_controller/test_app_state_machine.gd
+* test_all_declared_app_edges_are_accepted_with_repository_proofs
+* test_loaded_active_run_requires_a_repository_issued_load_proof
+* test_forged_success_result_and_reused_proof_are_rejected
+* test_invalid_edge_does_not_consume_commit_and_abandon_needs_fresh_save
+4/4 passed.
+
+
+res://tests/integration/run_controller/test_battle_settlement_commands.gd
+* test_win_settlement_choice_and_advance_commit_each_subphase
+* test_settlement_save_failure_preserves_result_hp_claims_rng_and_serial
+* test_elite_two_stage_reward_reloads_each_stage_and_rolls_back_failed_transition
+3/3 passed.
+
+
+res://tests/integration/run_controller/test_build_item_commands.gd
+* test_equip_fourth_item_via_controller_discards_whole_draft
+* test_dismantle_missing_consumable_via_controller_discards_whole_draft
+* test_dispatch_rejects_component_bound_as_equipment_at_commit
+3/3 passed.
+
+
+res://tests/integration/run_controller/test_commit_board_layout_command.gd
+* test_success_saves_then_swaps_and_reloads_merged_layout_once
+* test_equipment_bindings_inventory_and_overflow_survive_save_reload
+* test_board_validation_failure_has_zero_canonical_or_storage_mutation
+* test_tmp_write_and_final_read_failures_have_zero_canonical_mutation
+4/4 passed.
+
+
+res://tests/integration/run_controller/test_discovery_log_marking.gd
+* test_buy_offer_command_marks_purchased_unit_discovered_atomically_in_profile_and_run
+* test_refresh_shop_command_marks_shop_offer_units_discovered
+* test_enter_node_event_marks_encounter_enemy_unit_discovered
+* test_commit_board_layout_command_marks_newly_boarded_unit_discovered
+* test_forge_equipment_command_marks_forged_equipment_discovered
+* test_choose_reward_command_marks_granted_relic_discovered
+* test_repeated_purchase_of_same_unit_def_id_does_not_duplicate_discovery
+* test_reload_then_repeat_refresh_does_not_duplicate_discovery
+* test_buy_offer_save_failure_leaves_discovery_and_purchase_both_uncommitted_then_succeeds_on_retry
+* test_enter_node_event_marks_freshly_generated_shop_offer_units_discovered
+* test_choose_reward_command_marks_granted_item_discovered
+11/11 passed.
+
+
+res://tests/integration/run_controller/test_node_entry_and_shop_commands.gd
+* test_node_entry_and_buy_commit_once_through_run_controller
+* test_node_entry_save_failure_preserves_income_shop_rng_and_phase
+* test_refresh_save_failure_preserves_gold_offers_rng_and_ledger
+* test_generated_map_entry_persists_preview_and_can_start_combat
+* test_generated_non_combat_and_rest_nodes_have_committed_exits
+* test_event_unit_grant_reservation_is_atomic_on_save_failure
+* test_unit_only_event_with_exhausted_pool_commits_noop_fallback_and_exits
+7/7 passed.
+
+
+res://tests/integration/run_controller/test_run_controller_transactions.gd
+* test_declared_run_phase_edge_matrix
+* test_success_commits_then_swaps_and_publishes_once
+* test_transition_commits_phase_and_payload_together
+* test_publish_listener_cannot_reenter_and_reorder_commits
+* test_invalid_edge_and_apply_rejection_have_zero_mutation
+* test_validation_failure_discards_draft_before_storage
+* test_command_cannot_replace_the_run_pinned_content_snapshot
+* test_released_catalog_pin_rejects_commit_before_storage
+* test_storage_and_final_readback_failures_never_publish_draft
+* test_publication_serial_exhaustion_fails_before_save
+10/10 passed.
+
+
+res://tests/integration/save_repository/test_file_save_storage_port_contract.gd
+* test_write_handle_failures_are_null_type_and_closed_safe
+* test_read_handle_failures_are_null_type_and_closed_safe
+* test_invalid_logical_paths_return_stable_named_errors
+3/3 passed.
+
+
+res://tests/integration/save_repository/test_save_repository.gd
+* test_first_save_and_load_commit_canonical_main
+* test_second_save_rotates_main_to_backup
+* test_invalid_main_loads_backup_and_repairs_without_moving_only_backup_first
+* test_invalid_utf8_main_returns_named_error_when_no_backup_exists
+Unicode parsing error, some characters were replaced with � (U+FFFD): Invalid UTF-8 leading byte (80)
+* test_invalid_utf8_backup_returns_named_error_when_main_is_missing
+Unicode parsing error: Overlong encoding (c0 af)
+Unicode parsing error, some characters were replaced with � (U+FFFD): Invalid UTF-8 leading byte (af)
+* test_invalid_utf8_main_falls_back_to_valid_backup
+Unicode parsing error, some characters were replaced with � (U+FFFD): Missing f5 80 UTF-8 continuation byte
+Unicode parsing error, some characters were replaced with � (U+FFFD): Invalid UTF-8 leading byte (80)
+* test_schema_one_prepare_load_preserves_profile_and_original_committed_bytes
+* test_schema_one_idle_load_uses_generation_port_without_mutating_source_file
+* test_invalid_rng_dto_is_rejected_before_clone_or_storage_mutation
+* test_every_initial_save_storage_invocation_can_be_faulted
+* test_existing_committed_copy_survives_each_second_save_fault
+* test_same_thread_reentrant_save_and_load_are_busy_before_second_storage_call
+* test_registry_adapter_loads_matching_run_and_session_holds_generation_lease
+* test_content_port_composition_is_one_shot
+* test_run_session_factory_rejects_every_snapshot_receipt_mismatch_without_lease
+15/15 passed.
+
+
+res://tests/integration/save_repository/test_save_repository_item_categories.gd
+* test_production_item_categories_survive_repository_save_and_load
+* test_item_def_id_of_a_non_item_category_is_still_rejected
+2/2 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+Totals
+------
+Warnings              3
+
+Scripts             357
+Tests              1510
+Passing Tests      1510
+Asserts           41532
+Time              977.35s
+
+
+---- All tests passed! ----

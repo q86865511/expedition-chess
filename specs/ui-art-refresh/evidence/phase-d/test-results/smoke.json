@@ -1,0 +1,31 @@
+{
+	"artifact_schema_version": 1,
+	"runner": "smoke",
+	"started_at_utc": "2026-08-20T12:30:09Z",
+	"finished_at_utc": "2026-08-20T12:30:10Z",
+	"versions": {
+		"engine_version": "4.7-stable (official)",
+		"app_version": "0.2.0",
+		"schema_version": 4,
+		"content_codec_version": 3,
+		"rng_version": 1,
+		"hash_version": 1,
+		"simulation_version": 1,
+		"battle_event_codec_version": 1,
+		"battle_result_codec_version": 1
+	},
+	"completed_scopes": [
+		"main_scene",
+		"autoload_set",
+		"minimal_boot"
+	],
+	"deferred_scopes": [
+		"gameplay_ui",
+		"combat",
+		"shop",
+		"effects"
+	],
+	"case_count": 10,
+	"failures": [],
+	"passed": true
+}

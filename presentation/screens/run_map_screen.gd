@@ -214,7 +214,7 @@ func _build_node_selector() -> void:
 	_node_selector.focus_mode = Control.FOCUS_ALL
 	_node_selector.select_mode = ItemList.SELECT_SINGLE
 	_node_selector.set_meta(&"typed_choice_kind", &"map_node")
-	_node_selector.set_meta(&"accessible_text", &"map.node_selector")
+	_node_selector.set_meta(&"accessible_text", _localized_ui_text(&"map.select"))
 	if _snapshot != null and _snapshot.map != null:
 		for node: MapNodeState in _snapshot.map.nodes:
 			if node == null or node.node_id.is_empty():

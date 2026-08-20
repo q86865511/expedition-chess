@@ -9,7 +9,7 @@ const PACK_IDS: Array[StringName] = [&"pack.build_systems", &"pack.vertical_slic
 # 讀取 byte-identical `.raw` 副本，顯示用 Translation resources 仍由原 CSV 產生。
 const LOCALIZATION_CATALOG_PATH: String = "res://localization/catalog.v2.csv.raw"
 const LOCALIZATION_CATALOG_SHA256: String = \
-	"619d20f2f064a03a1c84447b032ac115fa50d0ec70787ca81acfdb8d51367882"
+	"c3cad96d04179ea278c9138b47c69cc70f5581d2fc3c3e53bc3f870729e3ac73"
 const REQUIRED_ASSET_PATHS: Array[String] = [
 	"res://content/packs/build_systems/traits/faction_arcane.tres",
 	"res://content/packs/vertical_slice/units/slice_player_00.tres",

@@ -143,6 +143,55 @@ func _register_fixed_keys() -> void:
 	_register(&"settings.value.damage_number_density.off", "關閉", "Off")
 	_register(&"settings.value.damage_number_density.reduced", "減少", "Reduced")
 	_register(&"settings.value.damage_number_density.full", "完整", "Full")
+	# Phase D：production accessibility 不再持有第二份雙語值表。這些 key
+	# 與所有 production UI 文案一起由 sealed catalog／CSV 單一來源供應。
+	_register(
+		&"accessibility.combat.rule_probe",
+		"戰鬥規則：護盾破裂後，敵方會進入第二階段。",
+		"Battle rule: after the shield breaks, the enemy enters phase two."
+	)
+	_register(
+		&"accessibility.combat.state_summary",
+		"動態：%s　閃光：%s　粒子：%s　傷害數字：%s",
+		"Motion: %s  Flash: %s  Particles: %s  Damage numbers: %s"
+	)
+	_register(
+		&"accessibility.combat.rule_information",
+		"規則資訊會同時使用文字、圖示與圖樣提示。",
+		"Rules use text, icons, and pattern cues together."
+	)
+	_register(
+		&"accessibility.combat.pattern_cue",
+		"[///] 傷害　[!] 危險",
+		"[///] Damage  [!] Danger"
+	)
+	_register(&"accessibility.combat.motion", "動態效果", "Motion effects")
+	_register(&"accessibility.combat.flash", "閃光效果", "Flash effects")
+	_register(&"accessibility.combat.particles", "粒子效果", "Particle effects")
+	_register(
+		&"accessibility.combat.damage_event",
+		"[傷害|%s] %s %d → %s",
+		"[Damage|%s] %s %d -> %s"
+	)
+	_register(&"accessibility.combat.damage_sample_1", "[DMG] 128", "[DMG] 128")
+	_register(&"accessibility.combat.damage_sample_2", "[DMG] 64", "[DMG] 64")
+	_register(&"accessibility.combat.damage_sample_3", "[DMG] 32", "[DMG] 32")
+	_register(&"accessibility.state.full", "完整", "Full")
+	_register(&"accessibility.state.reduced", "減少", "Reduced")
+	_register(&"accessibility.semantic.ally", "[A] 我方", "[A] Ally")
+	_register(&"accessibility.semantic.enemy", "[E] 敵方", "[E] Enemy")
+	_register(&"accessibility.semantic.trait", "[T] 特性", "[T] Trait")
+	_register(&"accessibility.semantic.rarity", "[*] 稀有度", "[*] Rarity")
+	_register(&"accessibility.semantic.danger", "[!] 危險", "[!] Danger")
+	_register(&"accessibility.semantic.damage", "[DMG] 傷害", "[DMG] Damage")
+	# AccessibilitySemanticTokens 原有 text_key 沒有獨立值來源；機械沿用同類
+	# semantic cue 的既有字串，避免在這次 reseal 順手創作文案。
+	_register(&"accessibility.allegiance.ally", "[A] 我方", "[A] Ally")
+	_register(&"accessibility.allegiance.enemy", "[E] 敵方", "[E] Enemy")
+	_register(&"accessibility.bond.active", "[T] 特性", "[T] Trait")
+	_register(&"accessibility.rarity.legendary", "[*] 稀有度", "[*] Rarity")
+	_register(&"accessibility.damage.arcane", "[DMG] 傷害", "[DMG] Damage")
+	_register(&"accessibility.danger.lethal", "[!] 危險", "[!] Danger")
 	_register(&"camp.collection", "圖鑑", "Collection")
 	_register(&"camp.forge", "工坊", "Workshop")
 	_register(&"camp.expedition_gate", "遠征之門", "Expedition Gate")
@@ -656,12 +705,18 @@ func _register_generated_keys() -> void:
 		_register_indexed("loc.map_node_slice_event_", index, "事件節點", "Event Node")
 		_register_indexed("loc.unit_slice_monster_", index, "怪物", "Monster")
 		_register_formal_unit_content(
-			"slice_monster_%02d" % index, "怪物技能", "Monster Ability"
+			"slice_monster_%02d" % index,
+			"怪物技能",
+			"Monster Ability",
+			32 + index * 3
 		)
 	for index: int in range(32):
 		_register_indexed("loc.unit_slice_player_", index, "遠征棋士", "Expedition Unit")
 		_register_formal_unit_content(
-			"slice_player_%02d" % index, "棋士技能", "Unit Ability"
+			"slice_player_%02d" % index,
+			"棋士技能",
+			"Unit Ability",
+			48 + index * 2
 		)
 	for index: int in range(12):
 		var event_suffix := "%02d" % index
@@ -779,7 +834,14 @@ func _register_named_family(
 	_register(
 		key,
 		(
-			["奧術", "燼", "霜", "鐵", "影", "翠蔭"][ELEMENTS.find(token)]
+			[
+				"秘法同調",
+				"餘燼之盟",
+				"凜霜之裔",
+				"鐵誓同盟",
+				"暮影之裔",
+				"翠蔭之盟",
+			][ELEMENTS.find(token)]
 			if family == "faction"
 			else ["神射手", "秘術師", "哨衛", "詭術師", "先鋒", "守望者"][ROLES.find(token)]
 		),
@@ -826,7 +888,8 @@ func _register_named_family(
 func _register_formal_unit_content(
 	token: String,
 	zh_ability: String,
-	en_ability: String
+	en_ability: String,
+	damage_base: int
 ) -> void:
 	_register(
 		StringName("loc.ability_" + token),
@@ -835,13 +898,15 @@ func _register_formal_unit_content(
 	)
 	_register(
 		StringName("loc.ability_%s_description" % token),
-		"對主要敵人造成依攻擊力計算的傷害。",
-		"Deals attack-scaled damage to the primary enemy."
+		"對目前目標造成「自身攻擊力＋%d」點物理傷害。" % damage_base,
+		"Deals physical damage equal to this unit's Attack + %d to the current target."
+		% damage_base
 	)
 	_register(
 		StringName("loc.effect_%s_primary" % token),
-		"%s的主要技能效果" % _title(token),
-		"%s Primary Ability Effect" % _title(token)
+		"對目前目標造成「自身攻擊力＋%d」點物理傷害。" % damage_base,
+		"Deals physical damage equal to this unit's Attack + %d to the current target."
+		% damage_base
 	)
 	_register(
 		StringName("loc.effect_%s_primary_description" % token),

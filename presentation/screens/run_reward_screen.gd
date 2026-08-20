@@ -209,7 +209,10 @@ func _build_offer_selector() -> void:
 		&"semantic_pattern",
 		&"double-frame"
 	)
-	_offer_selector.set_meta(&"accessible_text", &"reward.offer_selector")
+	_offer_selector.set_meta(
+		&"accessible_text",
+		_localized_ui_text(&"reward.select")
+	)
 	for offer: RewardOfferState in _model.offers():
 		var offer_id := offer.choice_id
 		_offer_selector.add_item(

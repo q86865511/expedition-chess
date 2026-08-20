@@ -30,6 +30,7 @@ const _VALID_COLOR_VISION_MODES: Array[StringName] = [
 const _VALID_DAMAGE_DENSITIES: Array[StringName] = [&"off", &"reduced", &"full"]
 
 var _storage: SettingsStoragePort
+var _os_locale_provider: Callable
 var _committed: SettingsSnapshot = SettingsSnapshot.new()
 var _future_bytes: PackedByteArray = PackedByteArray()
 var _future_digest: String = ""
@@ -176,12 +177,16 @@ func _init(storage: SettingsStoragePort = null) -> void:
 	_storage = storage if storage != null else FileSettingsStorage.new()
 
 
+func bind_os_locale_provider(provider: Callable) -> void:
+	_os_locale_provider = provider
+
+
 func load() -> SettingsRepositoryResult:
 	var read_result: SettingsStorageResult = _storage.read_bytes(MAIN_PATH)
 	if not _storage_ok(read_result):
 		return _failure(STORAGE_FAULT)
 	if not read_result.exists:
-		_commit_in_memory(SettingsSnapshot.new(), false)
+		_commit_in_memory(_first_launch_snapshot(), false)
 		_clear_future_lock()
 		return _success(_committed)
 
@@ -215,6 +220,24 @@ func load() -> SettingsRepositoryResult:
 	_commit_in_memory(decoded.get("snapshot") as SettingsSnapshot, true)
 	_clear_future_lock()
 	return _success(_committed)
+
+
+static func locale_for_os(os_locale: String) -> StringName:
+	var normalized := os_locale.strip_edges().replace("-", "_").to_lower()
+	if normalized == "zh_tw" or normalized.begins_with("zh_hant"):
+		return &"zh_TW"
+	return &"en"
+
+
+func _first_launch_snapshot() -> SettingsSnapshot:
+	var snapshot := SettingsSnapshot.new()
+	var os_locale := (
+		String(_os_locale_provider.call())
+		if _os_locale_provider.is_valid()
+		else OS.get_locale()
+	)
+	snapshot.locale = locale_for_os(os_locale)
+	return snapshot
 
 
 func current_snapshot() -> SettingsSnapshot:

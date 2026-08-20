@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="312" name="GutTests" failures="0" tests="20" >
+  <testsuite name="tests/unit/presentation_ui_static_gate/test_static_gate_accepts_clean_production_candidate.gd" tests="2" failures="0" skipped="0" time="0.202342" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_clean_candidate_passes_and_non_production_artifacts_are_ignored" assertions="15" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_accepts_clean_production_candidate.gd" time="0.027647" >
+      </testcase>
+      <testcase name="test_checked_out_production_localization_passes_reference_gate" assertions="14" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_accepts_clean_production_candidate.gd" time="0.174695" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" tests="9" failures="0" skipped="0" time="0.008157" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_unreachable_required_focus_action_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.001085" >
+      </testcase>
+      <testcase name="test_missing_system_menu_focus_trap_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000886" >
+      </testcase>
+      <testcase name="test_resident_run_menu_contract_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000893" >
+      </testcase>
+      <testcase name="test_wrong_world_viewport_contract_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000853" >
+      </testcase>
+      <testcase name="test_legacy_1280_ui_reference_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000855" >
+      </testcase>
+      <testcase name="test_non_nearest_world_filter_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000816" >
+      </testcase>
+      <testcase name="test_missing_required_theme_tokens_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000833" >
+      </testcase>
+      <testcase name="test_direct_custom_minimum_size_assignment_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000958" >
+      </testcase>
+      <testcase name="test_layout_assignment_scanner_ignores_comments_strings_and_only_allows_helper" assertions="15" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_accessibility_and_render_breaks.gd" time="0.000978" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" tests="7" failures="0" skipped="0" time="0.005952" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_production_dev_reference_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000877" >
+      </testcase>
+      <testcase name="test_hardcoded_player_text_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000876" >
+      </testcase>
+      <testcase name="test_zh_tw_and_en_key_set_mismatch_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000716" >
+      </testcase>
+      <testcase name="test_program_referenced_localization_key_must_exist_in_catalog" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000887" >
+      </testcase>
+      <testcase name="test_accessibility_text_key_must_exist_in_catalog" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000916" >
+      </testcase>
+      <testcase name="test_non_localization_stable_ids_do_not_trip_reference_gate" assertions="12" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000806" >
+      </testcase>
+      <testcase name="test_missing_referenced_asset_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_dependency_and_localization_breaks.gd" time="0.000874" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_tune_and_writer_boundary_breaks.gd" tests="2" failures="0" skipped="0" time="0.001896" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_ui_tune_literal_duplicate_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_tune_and_writer_boundary_breaks.gd" time="0.000919" >
+      </testcase>
+      <testcase name="test_production_screen_direct_writer_dependency_is_named_and_fails_gate" assertions="16" status="pass" classname="tests/unit/presentation_ui_static_gate/test_static_gate_rejects_tune_and_writer_boundary_breaks.gd" time="0.000977" >
+      </testcase>
+  </testsuite>
+</testsuites>

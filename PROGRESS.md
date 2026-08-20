@@ -475,6 +475,9 @@ T11 Git gate 與兩項規格修訂於 2026-08-20 核准）。進行中：Codex 4
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
 - Codex 44 單位正式命名候選批：純提案（每單位兩候選，依 faction／role／cost／
   戰鬥定位／視覺稿），產物只落 evidence，未經使用者裁決不寫回 catalog。
+- Phase E 體驗版整備批已立項（2026-08-20 美術上板審核：條件性可上板，P0 四項＋
+  P1 八項，設施頁採補內容框架、P0＋P1 全收同一批）；範圍與驗收見
+  `specs/ui-art-refresh/ea-ready-batch.md`，命名裁決後與命名 reseal 併批啟動。
 
 ## 待辦
 

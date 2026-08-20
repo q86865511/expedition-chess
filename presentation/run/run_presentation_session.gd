@@ -84,14 +84,31 @@ func snapshot() -> RunPresentationSnapshot:
 	return _snapshot.deep_clone()
 
 
-func reachable_nodes() -> Array:
-	var result: Array = []
+## 目前可選節點（frontier）：自 current_node_id 出發、下一步合法可進入的節點集合；
+## 還沒進過任何節點時＝ act 1 / layer 0 的起始集合。判準與 domain 的
+## NodeEntryService 同源（MapFrontier），因此節點圖亮起的集合恆等於 domain 會受理
+## 的集合，不會出現「亮著卻進不去」或「進得去卻沒亮」。回傳 clone。
+func frontier_nodes() -> Array[MapNodePresentation]:
+	var result: Array[MapNodePresentation] = []
 	if _snapshot.map == null:
 		return result
-	for node: MapNodeState in _snapshot.map.nodes:
-		var reachable := node_is_reachable(_snapshot.map, node)
-		if reachable:
-			result.append(MapNodePresentationType.from_state(node, true))
+	for node: MapNodeState in MapFrontier.frontier_nodes(_snapshot.map):
+		result.append(MapNodePresentationType.from_state(node, true))
+	return result
+
+
+## frontier 節點的 id 清單（順序同 frontier_nodes()）。只要 id 的呼叫端用這個，
+## 不必自行過濾整張節點表。
+func frontier_node_ids() -> Array[String]:
+	return MapFrontier.frontier_node_ids(_snapshot.map)
+
+
+## 既有呼叫端（balance driver、dev run lab）的保留別名。C-1 之前它回的是「拓撲
+## 可達」的寬鬆集合——含上一層沒選走的兄弟分支；判準收斂到 MapFrontier 之後，
+## 它與 frontier_nodes() 同義。新程式碼直接用 frontier_nodes()。
+func reachable_nodes() -> Array:
+	var result: Array = []
+	result.assign(frontier_nodes())
 	return result
 
 
@@ -1056,7 +1073,8 @@ func _mark_progress_transitions(
 ## (presentation/run/map_node_presentation.gd) so RunMapScreen can call it
 ## without a presentation/screens/*.gd file naming RunPresentationSession,
 ## which the PUI_SCREEN_WRITER_DEPENDENCY static gate treats as a canonical
-## writer dependency.
+## writer dependency. C-1 起這條規則的權威是 domain 的 MapFrontier——判的是
+## 「目前可選（frontier）」而非「拓撲可達」。
 static func node_is_reachable(map_state: MapState, node: MapNodeState) -> bool:
 	return MapNodePresentationType.is_reachable(map_state, node)
 

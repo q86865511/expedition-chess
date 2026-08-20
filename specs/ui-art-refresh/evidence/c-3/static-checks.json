@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "phase": "C-3",
+  "git_diff_check_exit_code": 0,
+  "new_file_trailing_whitespace_findings": 0,
+  "added_theme_override_lines": 0,
+  "presentation_rng_findings": 0,
+  "forbidden_changed_paths": 0,
+  "forbidden_boundaries": [
+    "app/",
+    "domain/",
+    "services/",
+    "presentation/viewmodels/",
+    "run_presentation_session.gd"
+  ],
+  "scanned_rng_tokens": [
+    "RngService",
+    "gameplay_stream",
+    "randf(",
+    "randi(",
+    "randomize("
+  ],
+  "user_owned_dirty_file_preserved": "project.godot",
+  "sha256": {
+    "production_audio_director": "fd205ef5248627ed2413622c1033f3205372c0b9d2bb9b306df1d0a8a7f5739f",
+    "evidence_runner": "f44af46d7be56a90946a9cc54ca0c7a6764e2f89dd8a9e40985be7ebfd057524",
+    "focused_test": "0e10d480c33be6ab08532d860e0a55f82732c8daa7846540e20b5b9f2f795211",
+    "audio_routing_report": "1b8444e5aa0bbdde325e2a6863bcc660c640ff7cd00b15036e62bade9b812276",
+    "focused_runner_execution": "10470c55c93064e3ec43c39f225ebff041596a95ae0d089d620dc65122211578",
+    "focused_gut_xml": "d1d2e793eed06d25ecfce39394c32007343c17fc1da5b0e9a5b72bee6464baf1"
+  }
+}

@@ -4,9 +4,9 @@ extends RefCounted
 const PINNED_PRODUCTION_CANDIDATE_PATH: String = (
 	"res://application/balance/production_balance_candidate.json"
 )
-const PINNED_PRODUCTION_CANDIDATE_ID: StringName = &"balance.g2.041458b08bb5"
+const PINNED_PRODUCTION_CANDIDATE_ID: StringName = &"balance.g2.6dfc5cb624a9"
 const PINNED_PRODUCTION_TUNE_DIGEST: String = (
-	"041458b08bb5ea574b3d4b7448614cd6e76abb18bdd989e363534e23ec57258a"
+	"6dfc5cb624a9f645f127e930c17443542ea5af4d75ce1ad5077d2cc6115ec17a"
 )
 
 

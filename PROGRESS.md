@@ -4,14 +4,127 @@
 
 ## 目前狀態
 
-G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/PR）Phase 1
-實作完成：六項機制（act 縮放、三幕 Boss、多敵編成、trait 階梯、池重標、challenge
-回鏈）＋觀測性＋per-act gate 全數落地；3k screening fresh gate **PASS**（candidate
-`balance.g2.041458b08bb5`、勝率 tempo 65.7%／economy 23.5%／synergy 84.1%、act1/act3
-皆有淘汰）、fresh All 1,193/1,193、10k soak passed。T11 雙 fresh reviewer 進行中；
-大樣本（10k/30k）依裁決屬 Phase 2。AC-032 維持 `PENDING_EXTERNAL`。
+UI 線（`codex/g2-ui-art-refresh-b`）Phase B-out／C／D 全數核可收斂於 `cd71986`
+（fresh All 1510/1510、Smoke 10/10），未 push；44 單位正式命名候選移下一內容批次。
+G2 `difficulty-curve`（`codex/g2-difficulty-curve`）Phase 1 實作完成、3k screening
+gate PASS，T11 停 Git gate 待裁決；平衡 Phase 2 依裁決延後至專案最後期。
 
 ## 已完成
+
+- [2026-08-20] ✅ UI Phase D 中文化收尾與最終文案裁決完成 — 全畫面
+  `zh_TW` 實機走查修正 RUN 頂欄、PREPARE 空羈絆提示與 RUN_COMBAT 檢視器在窄畫布／
+  高縮放的截斷／溢出；before 71、after 107 張 PNG，四組結構化 report 皆
+  `ok=true`、`issues=[]`。新增程式 loc 引用必存在 catalog 的靜態 gate，並依使用者
+  核准將 19 個 accessibility 內嵌 key＋6 個既有 `text_key` 機械遷入 catalog；薄轉接
+  保留既有 API，值回歸 catalog 單一來源。exporter 重導 966-row CSV／raw，兩檔 digest
+  最終為 `c3cad96d...e3ac73`，bootstrap seal 同步；app 差異只限 catalog／bootstrap。首開 locale
+  以 OS 初始化（`zh_TW`／`zh-Hant` → `zh_TW`，其餘 → `en`）；`.translation` 定位為
+  ignored importer 產物。最終裁決採 faction 六項候選 A、role 六項保留直譯、英文不變；
+  44 個中英文技能描述落地，並機械同步至 RUN_COMBAT 實際消費的 44 個既有 display alias。
+  補圖發現四字 faction 在 76 px 商店徽章截斷，改 96 px 後 run 23／23、collection 3／3
+  `ok=true`、`issues=[]`。fresh All 1510／1510（41532 assertions）、Smoke 10／10、loc
+  parity／reseal 16／16 與引用 gate 20／20 全部 exit 0；`git diff --check` 綠。44 個編號
+  單位名本批不改，下一批每單位提出兩候選。證據在 `specs/ui-art-refresh/evidence/phase-d/`。
+
+- [2026-08-20] ✅ UI Phase C-3 production 音訊接線完成，停核可閘門 — 新增
+  presentation-only `ProductionAudioDirector`，由具名 route root 擁有；17 個 production
+  routes 完整分流至 menu／camp／expedition／combat／results 五首 48 kHz stereo OGG，
+  沿用既有 `Music` bus 與 loop metadata。21 個正式 SFX 全部具名對映到 UI focus／
+  confirm／cancel／error、商店／鍛造／裝備／獎勵／事件 intent，以及 cast／physical hit／
+  magical hit／shield／heal／death／ranged attack／boss warning／勝敗 BattleEvent；使用既有
+  `UI`／`SFX` buses。戰鬥音訊依 cloned event window 原順序掃描，一般 cue 每 window 固定
+  預算 12，死亡／Boss／勝敗保留，不改事件消費或 canonical 摘要；程式零 `RngService`／
+  gameplay stream／亂數呼叫。evidence runner 實際載入並播放 5 個代表 route、21 個 SFX，
+  驗證 26 組 resource／OGG SHA、bus 與 loop，結果 `ok=true`、issues 0。focused 6／6
+  （288 assertions）、Smoke 10／10、fresh All 1499／1499（39746 assertions）、Combat
+  step 與 18／18 acceptance、Spec 4100／0 均 exit 0；`git diff --check` 與邊界掃描綠。
+  對映表與完整證據在 `specs/ui-art-refresh/evidence/c-3/`；使用者核可後已提交
+  `6a2fbd5`（`功能: 完成 C-3 production 音訊接線`），Phase C 至此完成，未 push。
+
+- [2026-08-19] ✅ UI Phase C-2 `RUN_COMBAT` 戰鬥呈現與共用商店卡修訂完成 —
+  `BattlePlayback` 的 committed event window 接至 world-layer presentation renderer，技能／普攻／
+  受擊／狀態分別使用既有 `combat_vfx` 與 `status_damage` atlas；傷害飄字依既有密度設定只限制
+  實例預算，不過濾或重排 0～15 canonical event sequence。暫停時 VFX 時鐘不前進，1×／2×／
+  4× 只縮放 presentation delta；視覺層零 `RngService`／gameplay stream 引用。ImageGen 新產
+  1672×941 夜色低對比石地背景供三幕共用，兩候選中採第一稿，未採用變體未進 repository／
+  inventory，provenance 與 SHA 閉環。九組矩陣、暫停／1×／2×／4× 與四張真實戰鬥播放序列
+  均重拍並逐張檢視，evidence 17／17、`issues=[]`；focused 6／6（44 assertions）、播放回歸
+  2／2（52）。依使用者條件核可追加 PREPARE／COMBAT 共用 182×108 商店卡：滿版 portrait、
+  左上最多三枚在地化羈絆徽章、底部單位名＋金幣費用，費用階／持有／升星的非色彩訊號保留；
+  六張 route／解析度證據無截斷。依 2026-08-19 單次 app 例外核准，只改 12 個既有 trait
+  display 值與 bootstrap seal，exporter 重導 941-row CSV／raw，digest
+  `619d20f2...7882`；loc parity 13／13（1948）與 Smoke 10／10 綠。最後商店卡版本 focused
+  14／14（314）、fresh All 1493／1493（39458）、獨立 Combat 18／18 AC，以及 fresh 10k
+  combat soak（10000／10000、64 deterministic replays、failures 0）均 exit 0。
+  證據在 `specs/ui-art-refresh/evidence/c-2/`；依裁決提交後直接進 C-3 音訊。
+
+- [2026-08-19] ✅ UI Phase C-1 `RUN_MAP` 視覺化節點圖修訂後核可 — 節點圖置於
+  UI 層，以 ebb9858 的 `MapNodePresentation.is_reachable` frontier 權威呈現三幕七層、
+  39 節點與 78 邊；已完成／可達／不可達及目前位置均有獨立非色彩訊號。圖形點選只做
+  既有 `map.select` 預覽，`map.confirm` 仍由 domain command 裁決；文字 `NodeSelector`
+  保留作無障礙／鍵盤通道。ImageGen 地圖背景完成 provenance、inventory 與 SHA 閉環。
+  使用者裁決後將 78 邊分成 background 74／traversed 1／frontier 3，幕標改正式雙語 key，
+  不可達中央節點移除 `×` 並改用降透明度＋無框。九組矩陣及 1080p／UI100 三張互動序列
+  皆重拍通過，focused Gut 6／6（83 assertions），fresh All 1487／1487（39400 assertions）
+  exit 0；證據在 `specs/ui-art-refresh/evidence/c-1/`。本提交封存 C-1，未 push；直接進 C-2。
+
+- [2026-08-16] 🎨 UI 線 Phase B（局外視覺）整段完成 — B-out-1 `d7e91b9`（CAMP 環境圖
+  ＋MENU key art，核可含兩輪修訂）、B-out-2 `20212de`（五設施進 shell＋44 portraits
+  接圖鑑＋換行修訂）、B-out-3 `1c6ef32`（SETTINGS 骨架＋RESULTS 卡片化含標籤修訂＋
+  ESC 局外放行；app/main.tscn 點擊靶查證本為不可見）。最終 All 1471/1471、
+  39232 asserts、Spec 4096/0、loc parity 13/13 全綠；三批均經視覺核可閘門。
+  剩餘：Phase C 資產接線、Phase D 中文化收尾。
+
+- [2026-08-17] ✅ G2 `ui-art-refresh` B-out-3 使用者核可（含四項修訂），Phase B 完成 — `SETTINGS`
+  保留單一標籤欄／縮放權威與既有節點路徑，進入無側欄的 route-local shell 主面板並新增
+  accessibility／audio 分區；`RESULTS`／fallback 的 `.tscn` offset 全數收進
+  `ExpeditionLayoutMetrics`，五項結算資料卡片化。ESC 系統選單放行營地、五設施、圖鑑、
+  設定、結算與既有 RUN routes，內嵌設定及雙確認不變；`MENU_MAIN` 維持排除。實查
+  `app/main.tscn` 兩個世界靶已是不可繪製 `Control`，故無該場景 diff。1280／1920／2560 ×
+  UI 100／125／150 的四組畫面狀態共 36 張已逐張人工檢視；修正結算 label 在 125%
+  minimum 臨界點往左生長後，evidence 36/36、36 unique SHA、`issues=[]`。Fresh All exit 0：
+  使用者核可後，兩張大數字卡補上本次獎勵／目前持有貨幣雙語標籤，receipt／digest 降為
+  輔助小字；設定捲動區吃滿面板；頂欄入口依實際行為改標「選單」；結算橫幅收為單框。
+  補圖檢視另修正營地 metrics 與選單入口重疊，三組受影響尺寸 × 四狀態共 12 張補圖為
+  12/12、12 unique SHA、`issues=[]`，均已逐張檢視。最終 All exit 0：1471/1471 tests、
+  39232 assertions、0 failures／errors／orphans，Spec 4096／0；loc parity 13/13、
+  1936 assertions。證據見 `specs/ui-art-refresh/evidence/b-out-3/`；Phase B 至此完成，未 push。
+
+- [2026-08-17] ✅ G2 `ui-art-refresh` B-out-2 使用者核可（含圖鑑換行修訂）— 五個營地設施
+  全數進入 `ProductionLayoutShell` 的 route-local 分支；四個單區設施移除空左右欄，
+  `COLLECTION` 保留右側比較區並把內容清單改為 production portrait cards，搜尋／比較／
+  focus／既有節點契約不變。44 張單位 portrait 經既有 manifest catalog 接線，未虛構
+  commander→unit 對映。`CAMP_WORLD` 中央由環境圖框獨佔單一可見框線，底帶左半定案為
+  focus／hover 設施名稱提示。1280／1920／2560 × UI 100／125／150 共 54 張逐張人工
+  檢視，evidence 54/54、54 個唯一 SHA、`issues=[]`。Fresh All exit 0：1466/1466 tests、
+  39116 assertions、0 failures／errors／orphans，Spec 4096／0。核可後再把圖鑑 content
+  卡寬收為 190 reference px；受影響的 1280／1920／2560 × UI 125／150 共 6 張補圖逐張
+  複檢，6/6、`issues=[]`，定向契約 5/5、83 assertions。B-out-2 已可提交並轉入 B-out-3。
+
+- [2026-08-15] ✅ 平衡 screening 可暫停／續跑（逐案 checkpoint）— 分片改為每完成一個
+  case 就 append 一行 JSONL 到 `artifacts/test/screening-checkpoint/shard-NN.jsonl`
+  （含完整 case_proof 與執行度量），合併端改由 JSONL 全量重算，分片 JSON 降為診斷產物。
+  新增 `-Resume`（比對 source freeze digest 與 candidate，不符即具名拒絕
+  `BALANCE_RESUME_SOURCE_DRIFT`／`_CANDIDATE_MISMATCH`／`_PARAM_MISMATCH`）、
+  `-MergeOnly`、優雅暫停（`pause.flag` 在 case 邊界輪詢，分片寫 paused 尾記錄後 exit 0，
+  合併端遇 paused 以 exit 4 收場不出報告）、`screening-ctl.ps1`（start/pause/resume/status）
+  與 `screening-server.py`＋`screening-progress.html`（localhost:8765，逐案精確進度、ETA、
+  暫停／續跑按鈕）。**重開機後續跑＝同一條 `resume` 指令**，不依賴駐留行程。
+  證據：2 seeds × 2 shards 同一棵樹「一次跑完 vs 暫停→續跑」合併報告 1192 欄逐欄位相同
+  （只有 12 個時間類欄位與 resume_count 不同，`canonical_replay_digest` 一致）；另一組
+  「跑一半強殺→續跑」1192 欄僅 `source_freeze_digest` 不同（兩輪之間確實改過樹）。
+  新 golden `tools/balance/tests/test-screening-checkpoint.ps1`（53 斷言，含合併相等性、
+  半行截斷修復、續跑具名拒絕、paused 不得誤判完成）已接進 `-Suite ActEliminationGate`；
+  GDScript 端 `tests/unit/balance_playtest/test_balance_checkpoint_ledger.gd` 10/10。
+
+- [2026-08-14] ✅ G2 `ui-art-refresh` B-out-1 使用者核可 — `MENU_MAIN` 移除右側
+  大面積底板，三個操作按鈕直接疊在 ImageGen key art；`CAMP_WORLD` 以 `camp.png`
+  撐滿主區域，移除重複左列並把五個場景標記升為正式 click/focus 控制項，遠征資訊
+  收成半寬緊湊卡，頂／底欄採 CAMP-only shell 幾何。readonly focus graph 五項無缺；
+  1280／1920／2560 × UI 100／125／150 共 18 張逐張人工檢視，evidence 18/18、
+  `issues=[]`。Fresh All exit 0：1451/1451、38993 assertions、0 failures／errors／
+  orphans。下一批 B-out-2 為五設施進 shell＋portraits 接線＋圖鑑卡片化；另記中央區
+  三層框線收單框、底部帶左半用途待裁決。
 
 - [2026-08-13] ✅ `in-run-hud` T31 總收斂 — commit `0d120ea` 將 pinned
   `SummonedUnitRuleSnapshot` 經 lease-protected supply port 注入 `RunCombatScreen` 的
@@ -348,22 +461,25 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 
 ## 進行中
 
+- **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
+  performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
+  `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase B：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
-  2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。局外畫面的正式視覺重設計仍留在 Phase B，待局內完成後再排。
+- UI 線已於 2026-08-20 收斂（`cd71986`，未 push）；剩餘追蹤項只有 44 單位正式
+  命名候選（下一內容批次，未經裁決不寫回 catalog）。
 
 ## 待辦
 
 - UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；Phase B1、B1R 均未核可，B1R2 修訂已完成並停重新視覺核可。Phase A
+  2026-08-07）；B-out-1 已於 2026-08-14 使用者核可。Phase A
   三項移交追蹤均已關閉：(1) locale-aware glyph probe 與實機常駐 viewport probe
   均已修，留存真實 Windows before/after evidence；
   (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
   (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  局內版面已改由 `in-run-hud` 承接（見下）；Phase B 剩餘工作為局外畫面視覺重設計，
-  其後仍為 Phase C 資產接線、Phase D 中文化收尾。
+  局內版面已改由 `in-run-hud` 承接（見下）；Phase B／C／D 均完成，UI 線收斂。後續
+  內容批次依 44 單位的 faction／role／cost／戰鬥定位／視覺稿各提兩個正式名候選，
+  未經下一次使用者裁決不寫回 catalog。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。
@@ -377,6 +493,42 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
+
+- [2026-08-20] UI Phase D 最終文案裁決：六個 faction 採候選 A（秘法同調、餘燼之盟、
+  凜霜之裔、鐵誓同盟、暮影之裔、翠蔭之盟）；六個 role 與十二個英文羈絆名不變。
+  44 個技能描述依 `base + source.attack` 提案整批定稿；RUN_COMBAT 詳情實際消費
+  `loc.effect_*_primary`，故同一份核可 copy 機械同步到 44 個既有 display alias，不新增 key。
+  44 個編號單位名本批不改，下一內容批次每單位提出兩候選再停裁決。四字 faction 使
+  共用商店卡 76 px 徽章截斷，依 metrics 擴為 96 px 並以原 clipping gate 重驗通過。
+
+- [2026-08-20] UI Phase D localization authority 收斂：經使用者核准的 25 key 依既有
+  exporter＋digest reseal 配方遷入 catalog；`ProductionAccessibilityLocalization` 保留
+  key 常數與 resolve／semantic API 作薄轉接，但不再擁有雙語值。程式引用 loc key 的
+  靜態 gate 同時辨識直接 resolve 與 accessibility `text_key`，並排除 stable ID 誤判。
+  `.translation` 維持 Godot importer 可重建且 ignored 的衍生檔，runtime 只信 sealed raw。
+  無設定檔的首開 locale 採 exact `zh_TW`／`zh-Hant` 圈，圈外一律 `en`；已存在設定檔的
+  使用者選擇仍優先。內容風味候選只寫入 evidence，未經裁決不改 catalog。
+
+- [2026-08-20] UI Phase C-3 採 route-root-owned presentation audio director：內嵌的
+  Run composition 雖繼承 `ProductionScreen`，但 `route_kind` 為空，不另建播放器，避免
+  雙重音樂與 focus cue；生命週期跟 screen 一起結束，也不需新增 app singleton／session API。
+  音樂依 17 routes 聚成五個產品情境；戰鬥一般音效以固定 12-cue window budget 防止聲音
+  堆疊，仍完整依序掃描事件並保留死亡／Boss／terminal cue。全部取樣規則皆決定性且不碰
+  gameplay RNG。
+
+- [2026-08-19] UI Phase C-2 商店卡採 PREPARE／COMBAT 共用 presentation 元件；
+  `layout-reference-1920.json` 的約 197×134 是 UI100 上限，最終 182×108 是在 UI150
+  同列保留商店動作、分組動作與固定動作欄後仍完整落入安全區的實測值。羈絆名直接讀
+  content loc；12 個 display key 只改值、不改 key，並依使用者單次 app 例外走既有
+  exporter＋catalog digest reseal 配方。這批譯名是 Phase D 前的直譯佔位。
+- [2026-08-19] UI Phase C-1 RUN_MAP 採 UI 層節點圖：RUN_MAP 是需要 UI scale、鍵盤焦點、
+  雙語文字與精確點擊區的決策介面，節點座標不參與 gameplay 模擬；世界棋盤維持清除。
+  可達性只消費 `MapNodePresentation.is_reachable(snapshot.map, node)` 的 ebb9858 frontier
+  權威，不在 presentation 推測演算法。核可修訂後，已完成以 `✓` 實線框、可達以
+  `‹ ›` 雙框、不可達以節點形狀＋降透明度＋無框呈現（`×` 僅留 accessible copy），
+  現在位置另用 `▶`；78 邊分為背景／已走／frontier 三層權重。原 `NodeSelector` 留作
+  無障礙焦點通道。背景 `environment.run_map` 經 ImageGen 兩候選選稿、provenance／SHA
+  與 inventory 閉環；證據見 `specs/ui-art-refresh/evidence/c-1/`，C-1 已核可。
 
 - [2026-08-09] `in-run-hud` 使用者裁決（四項）：(1) 改造範圍為局內四個 route 全面重做；
   (2) UI 設計基準改 1920×1080 並支援 2560×1440，**既有 B1R3 樣板與舊畫面全部捨棄、

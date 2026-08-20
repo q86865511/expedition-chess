@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="2574" name="GutTests" failures="0" tests="16" >
+  <testsuite name="tests/unit/presentation_ui_content/test_localization_catalog_raw_parity.gd" tests="2" failures="0" skipped="0" time="0.001721" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_csv_and_raw_localization_catalog_are_byte_identical" assertions="3" status="pass" classname="tests/unit/presentation_ui_content/test_localization_catalog_raw_parity.gd" time="0.000954" >
+      </testcase>
+      <testcase name="test_raw_localization_catalog_matches_pinned_bootstrap_digest" assertions="4" status="pass" classname="tests/unit/presentation_ui_content/test_localization_catalog_raw_parity.gd" time="0.000767" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_content/test_phase_d_finalized_localization_copy.gd" tests="3" failures="0" skipped="0" time="0.012109" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_finalized_trait_display_copy_matches_phase_d_decision" assertions="48" status="pass" classname="tests/unit/presentation_ui_content/test_phase_d_finalized_localization_copy.gd" time="0.00272" >
+      </testcase>
+      <testcase name="test_all_44_ability_descriptions_match_approved_effect_values" assertions="352" status="pass" classname="tests/unit/presentation_ui_content/test_phase_d_finalized_localization_copy.gd" time="0.005571" >
+      </testcase>
+      <testcase name="test_unit_names_remain_numbered_until_the_follow_up_naming_decision" assertions="176" status="pass" classname="tests/unit/presentation_ui_content/test_phase_d_finalized_localization_copy.gd" time="0.003818" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" tests="11" failures="0" skipped="0" time="2.999683" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_production_bootstrap_is_injectable_and_returns_one_pinned_receipt" assertions="7" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="1.373557" >
+      </testcase>
+      <testcase name="test_production_bootstrap_names_missing_asset_without_installing" assertions="6" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.000493" >
+      </testcase>
+      <testcase name="test_production_bootstrap_names_missing_localization_key_without_installing" assertions="6" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.145323" >
+      </testcase>
+      <testcase name="test_localization_catalog_defaults_to_nonempty_zh_tw_and_en_has_exact_key_set" assertions="1938" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.033661" >
+      </testcase>
+      <testcase name="test_localization_catalog_rejects_other_locale_and_missing_key_by_name" assertions="6" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.002713" >
+      </testcase>
+      <testcase name="test_real_dependency_port_checks_resource_and_catalog_instead_of_returning_true" assertions="8" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.002556" >
+      </testcase>
+      <testcase name="test_build_lab_adapter_consumes_project_bootstrap_without_second_content_graph" assertions="5" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.000356" >
+      </testcase>
+      <testcase name="test_production_bootstrap_fails_closed_when_localization_catalog_load_fails" assertions="7" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.000422" >
+      </testcase>
+      <testcase name="test_app_root_does_not_bypass_localization_catalog_typed_load" assertions="2" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.000448" >
+      </testcase>
+      <testcase name="test_app_root_localizes_screens_with_the_loaded_production_catalog" assertions="5" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="1.409817" >
+      </testcase>
+      <testcase name="test_production_sources_never_construct_the_localization_catalog_directly" assertions="1" status="pass" classname="tests/unit/presentation_ui_content/test_project_content_bootstrap.gd" time="0.030337" >
+      </testcase>
+  </testsuite>
+</testsuites>

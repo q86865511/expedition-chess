@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="1458" name="GutTests" failures="0" tests="14" >
+  <testsuite name="tests/unit/presentation_ui_accessibility/test_keyboard_focus_graph_reaches_primary_actions_at_150_percent.gd" tests="2" failures="0" skipped="0" time="0.001278" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_keyboard_focus_reaches_every_primary_action_at_all_ui_scales" assertions="99" status="pass" classname="tests/unit/presentation_ui_accessibility/test_keyboard_focus_graph_reaches_primary_actions_at_150_percent.gd" time="0.001089" >
+      </testcase>
+      <testcase name="test_hidden_or_disabled_controls_are_removed_without_trapping_focus" assertions="8" status="pass" classname="tests/unit/presentation_ui_accessibility/test_keyboard_focus_graph_reaches_primary_actions_at_150_percent.gd" time="0.000189" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" tests="7" failures="0" skipped="0" time="0.045076" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_zh_tw_and_en_use_readable_cjk_and_latin_fallback_tokens" assertions="15" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.000329" >
+      </testcase>
+      <testcase name="test_locale_wire_set_is_exact_and_unsupported_locale_is_named" assertions="10" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.007814" >
+      </testcase>
+      <testcase name="test_bundled_font_is_first_for_zh_tw_and_en_visible_text" assertions="8" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.000912" >
+      </testcase>
+      <testcase name="test_all_zh_tw_catalog_values_are_covered_by_bundled_font" assertions="970" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.022733" >
+      </testcase>
+      <testcase name="test_production_accessibility_copy_resolves_from_catalog_single_source" assertions="77" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.002912" >
+      </testcase>
+      <testcase name="test_accessibility_text_keys_mechanically_reuse_existing_semantic_copy" assertions="37" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.002376" >
+      </testcase>
+      <testcase name="test_real_missing_glyph_is_not_reported_as_readable" assertions="3" status="pass" classname="tests/unit/presentation_ui_accessibility/test_localized_typography_and_locale_rejection.gd" time="0.008" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_accessibility/test_presentation_errors_distinguish_commit_boundary.gd" tests="3" failures="0" skipped="0" time="0.000698" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_precommit_failure_preserves_old_authoritative_state_and_source_error" assertions="13" status="pass" classname="tests/unit/presentation_ui_accessibility/test_presentation_errors_distinguish_commit_boundary.gd" time="0.000328" >
+      </testcase>
+      <testcase name="test_postcommit_route_failure_keeps_new_commit_and_enters_retryable_fallback" assertions="13" status="pass" classname="tests/unit/presentation_ui_accessibility/test_presentation_errors_distinguish_commit_boundary.gd" time="0.000265" >
+      </testcase>
+      <testcase name="test_commander_challenge_prerequisite_has_named_player_message" assertions="1" status="pass" classname="tests/unit/presentation_ui_accessibility/test_presentation_errors_distinguish_commit_boundary.gd" time="0.000105" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_accessibility/test_semantic_cues_effect_reduction_and_tooltip_depth.gd" tests="2" failures="0" skipped="0" time="0.002511" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_every_color_mode_keeps_icon_pattern_and_text_decision_cues" assertions="171" status="pass" classname="tests/unit/presentation_ui_accessibility/test_semantic_cues_effect_reduction_and_tooltip_depth.gd" time="0.001952" >
+      </testcase>
+      <testcase name="test_reduced_effects_damage_density_and_tooltip_depth_are_explicit" assertions="33" status="pass" classname="tests/unit/presentation_ui_accessibility/test_semantic_cues_effect_reduction_and_tooltip_depth.gd" time="0.000559" >
+      </testcase>
+  </testsuite>
+</testsuites>

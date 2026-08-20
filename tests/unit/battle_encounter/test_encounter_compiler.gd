@@ -15,10 +15,10 @@ func test_compile_is_deterministic_and_persists_boss_source_id() -> void:
 	assert_eq(first.preview.enemy_units.size(), 2)
 	assert_eq(first.preview.enemy_units[0].logical_y, 4)
 	assert_eq(first.preview.enemy_units[1].logical_y, 6)
-	# DC-REQ-001 重算：request.act_index = 2，星級縮放後再套 act2 乘數 13000 bps
-	# （180 → 234、18 → 23；★1 的 100 → 130）。
-	assert_eq(first.preview.enemy_units[1].health, 234)
-	assert_eq(first.preview.enemy_units[1].attack, 23)
+	# DC-REQ-001 重算：request.act_index = 2，星級縮放後再套 act2 乘數 14000 bps
+	# （180 → 252、18 → 25；★1 的 100 → 140）。R1 TUNE act2 14000 重算
+	assert_eq(first.preview.enemy_units[1].health, 252)
+	assert_eq(first.preview.enemy_units[1].attack, 25)
 	assert_eq(first.preview.active_traits.size(), 1)
 	assert_eq(first.preview.active_traits[0].tier, 2)
 	assert_eq(first.preview.enemy_units[0].effect_assignments.size(), 1)
@@ -61,7 +61,7 @@ func test_compile_is_deterministic_and_persists_boss_source_id() -> void:
 		second.preview.boss_phases[0].source_instance_id
 	)
 	first.preview.enemy_units[0].health = 1
-	assert_eq(second.preview.enemy_units[0].health, 130)
+	assert_eq(second.preview.enemy_units[0].health, 140)  # R1 TUNE act2 14000 重算
 
 func test_wrong_pinned_generation_is_rejected_without_latest_fallback() -> void:
 	var result := _compiler.compile(

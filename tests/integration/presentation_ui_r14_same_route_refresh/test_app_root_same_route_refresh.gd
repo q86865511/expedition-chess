@@ -47,8 +47,13 @@ func test_generate_map_atomically_refreshes_same_route_and_old_control_is_stale(
 	target.app_phase = &"MAP"
 	target.manifest_digest = "after-map"
 	# The same-route fixture represents a freshly generated map, so its first
-	# node must satisfy the same entry-layer reachability guard as production.
+	# node must satisfy the same entry-layer selectability guard as production.
+	# 借用的 combat_snapshot() 是「站在 elite.node 上」的戰鬥快照（有 current_node_id、
+	# 沒有任何邊）；可選節點的判準是 MapFrontier＝目前所在節點的出邊，所以光把
+	# layer_index 設 0 不夠——還要還原成 MapService.generate_map() 的產出形狀：
+	# 尚未進入任何節點（current_node_id 為 null），此時 frontier ＝ act1／layer0 起始集合。
 	target.map.nodes[0].layer_index = 0
+	target.map.current_node_id = null
 	var fixture := _install(source, target, RunPresentationIntent.Kind.GENERATE_MAP)
 	if fixture.is_empty():
 		return

@@ -1,0 +1,721 @@
+{
+    "golden_id":  "balance-playtest.phase2-r0.convergence.v1",
+    "note":  "g2-roadmap 6.3b 另兩項收斂判準（三策略勝率 45~60% 帶、勝局血量分佈非滿血）的雙實作 golden。case_proofs 的欄位形狀與 balance report 的 case_proofs[] 相同（只取本判準用得到的欄位）；GDScript(BalanceBotReport._convergence) 與 PowerShell(tools/balance/convergence-warnings.ps1) 兩側各自消費本檔，必須對每個 scenario 產出逐字相同的 convergence token 與 WARN 清單。WARN 不進 gate_reasons，故本 golden 不涉及 PASS/FAIL。",
+    "token_format":  "CONVERGENCE-V1|band=\u003clow\u003e-\u003chigh\u003e|\u003cstrategy\u003e:\u003ccases\u003e:\u003cwins\u003e:\u003cwin_rate_bps\u003e:\u003cevaluated\u003e:\u003cin_band\u003e(x3)|hp:\u003cwin_cases\u003e:\u003cdistinct\u003e:\u003cmin\u003e:\u003cmax\u003e:\u003cceiling_wins\u003e:\u003cceiling_rate_bps\u003e:\u003cevaluated\u003e:\u003cdistributed\u003e|warn=\u003c逗號分隔的 WARN\u003e",
+    "scenarios":  [
+                      {
+                          "name":  "in_band_with_hp_spread",
+                          "expected_convergence_token":  "CONVERGENCE-V1|band=4500-6000|tempo:2:1:5000:1:1|economy:2:1:5000:1:1|synergy:2:1:5000:1:1|hp:3:3:10:30:1:3333:1:1|warn=",
+                          "expected_warnings":  [
+
+                                                ],
+                          "case_proofs":  [
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  10
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  20
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  30
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              }
+                                          ]
+                      },
+                      {
+                          "name":  "tempo_above_band",
+                          "expected_convergence_token":  "CONVERGENCE-V1|band=4500-6000|tempo:4:3:7500:1:0|economy:2:1:5000:1:1|synergy:2:1:5000:1:1|hp:5:5:10:30:1:2000:1:1|warn=BALANCE_WARN_TEMPO_WIN_RATE_OUT_OF_BAND",
+                          "expected_warnings":  [
+                                                    "BALANCE_WARN_TEMPO_WIN_RATE_OUT_OF_BAND"
+                                                ],
+                          "case_proofs":  [
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  10
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  20
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  2,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  30
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  3,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  15
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  25
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              }
+                                          ]
+                      },
+                      {
+                          "name":  "economy_below_band",
+                          "expected_convergence_token":  "CONVERGENCE-V1|band=4500-6000|tempo:2:1:5000:1:1|economy:4:1:2500:1:0|synergy:2:1:5000:1:1|hp:3:3:10:14:1:3333:1:1|warn=BALANCE_WARN_ECONOMY_WIN_RATE_OUT_OF_BAND",
+                          "expected_warnings":  [
+                                                    "BALANCE_WARN_ECONOMY_WIN_RATE_OUT_OF_BAND"
+                                                ],
+                          "case_proofs":  [
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  10
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  12
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  2,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  3,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  14
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              }
+                                          ]
+                      },
+                      {
+                          "name":  "all_wins_at_hp_ceiling",
+                          "expected_convergence_token":  "CONVERGENCE-V1|band=4500-6000|tempo:2:1:5000:1:1|economy:2:1:5000:1:1|synergy:2:1:5000:1:1|hp:3:1:30:30:3:10000:1:0|warn=BALANCE_WARN_WIN_HP_NOT_DISTRIBUTED",
+                          "expected_warnings":  [
+                                                    "BALANCE_WARN_WIN_HP_NOT_DISTRIBUTED"
+                                                ],
+                          "case_proofs":  [
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  30
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  30
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  30
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              }
+                                          ]
+                      },
+                      {
+                          "name":  "no_wins_at_all",
+                          "expected_convergence_token":  "CONVERGENCE-V1|band=4500-6000|tempo:2:0:0:1:0|economy:2:0:0:1:0|synergy:2:0:0:1:0|hp:0:0:0:0:0:0:0:0|warn=BALANCE_WARN_TEMPO_WIN_RATE_OUT_OF_BAND,BALANCE_WARN_ECONOMY_WIN_RATE_OUT_OF_BAND,BALANCE_WARN_SYNERGY_WIN_RATE_OUT_OF_BAND",
+                          "expected_warnings":  [
+                                                    "BALANCE_WARN_TEMPO_WIN_RATE_OUT_OF_BAND",
+                                                    "BALANCE_WARN_ECONOMY_WIN_RATE_OUT_OF_BAND",
+                                                    "BALANCE_WARN_SYNERGY_WIN_RATE_OUT_OF_BAND"
+                                                ],
+                          "case_proofs":  [
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              }
+                                          ]
+                      },
+                      {
+                          "name":  "band_edges_are_inclusive",
+                          "expected_convergence_token":  "CONVERGENCE-V1|band=4500-6000|tempo:20:9:4500:1:1|economy:20:12:6000:1:1|synergy:20:10:5000:1:1|hp:31:12:5:16:1:322:1:1|warn=",
+                          "expected_warnings":  [
+
+                                                ],
+                          "case_proofs":  [
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  5
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  6
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  2,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  7
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  3,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  8
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  4,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  9
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  5,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  10
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  6,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  11
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  7,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  12
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  8,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  13
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  9,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  10,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  11,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  12,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  13,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  14,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  15,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  16,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  17,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  18,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "tempo",
+                                                  "seed_index":  19,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  5
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  6
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  2,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  7
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  3,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  8
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  4,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  9
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  5,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  10
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  6,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  11
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  7,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  12
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  8,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  13
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  9,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  14
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  10,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  15
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  11,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  16
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  12,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  13,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  14,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  15,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  16,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  17,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  18,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "economy",
+                                                  "seed_index":  19,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  0,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  5
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  1,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  6
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  2,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  7
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  3,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  8
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  4,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  9
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  5,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  10
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  6,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  11
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  7,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  12
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  8,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  13
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  9,
+                                                  "terminal":  true,
+                                                  "won":  true,
+                                                  "ending_hp":  14
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  10,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  11,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  12,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  13,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  14,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  15,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  16,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  17,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  18,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              },
+                                              {
+                                                  "strategy_id":  "synergy",
+                                                  "seed_index":  19,
+                                                  "terminal":  true,
+                                                  "won":  false,
+                                                  "ending_hp":  0
+                                              }
+                                          ]
+                      }
+                  ]
+}

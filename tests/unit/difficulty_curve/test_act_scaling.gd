@@ -9,17 +9,18 @@ const BattleSetupFixture = preload("res://tests/fixtures/canonical/battle_setup_
 
 const DIGEST := "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 const ACT1_BPS: int = 10000
-const ACT2_BPS: int = 13000
+const ACT2_BPS: int = 14000  # R1 TUNE: act2 淘汰 0 上調(phase2-iteration-log R1)
 const ACT3_BPS: int = 16000
 
 var _compiler := EncounterCompiler.new()
 
 ## act1 = 星級縮放值本身(★1 100/10/5/5、★2 180/18/9/9);
-## act2 = ×1.3 逐步截斷;act3 = ×1.6 逐步截斷。
+## act2 = ×1.4 逐步截斷;act3 = ×1.6 逐步截斷。
 func test_act_multiplier_scales_only_the_four_combat_stats() -> void:
 	var expectations: Array = [
 		[1, [100, 10, 5, 5], [180, 18, 9, 9]],
-		[2, [130, 13, 6, 6], [234, 23, 11, 11]],
+		# R1 TUNE act2 14000 重算
+		[2, [140, 14, 7, 7], [252, 25, 12, 12]],
 		[3, [160, 16, 8, 8], [288, 28, 14, 14]],
 	]
 	for row: Array in expectations:

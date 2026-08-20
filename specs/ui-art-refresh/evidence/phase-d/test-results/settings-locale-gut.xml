@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="451" name="GutTests" failures="0" tests="7" >
+  <testsuite name="tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd" tests="5" failures="0" skipped="0" time="0.012905" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_first_launch_uses_os_locale_and_defaults_outside_zh_tw_to_english" assertions="25" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd" time="0.001637" >
+      </testcase>
+      <testcase name="test_settings_repository_atomic_round_trip_and_faults" assertions="234" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd" time="0.006223" >
+      </testcase>
+      <testcase name="test_schema_one_defaults_wire_values_and_exact_validation_rejections" assertions="63" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd" time="0.001475" >
+      </testcase>
+      <testcase name="test_corrupt_v1_is_archived_and_future_schema_is_preserved_until_digest_reset" assertions="94" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd" time="0.00296" >
+      </testcase>
+      <testcase name="test_public_snapshot_results_signals_and_consumers_never_alias_repository_state" assertions="12" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_atomic_contract.gd" time="0.00061" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/presentation_ui_settings_repository/test_settings_repository_storage_port_is_named_type.gd" tests="2" failures="0" skipped="0" time="0.000838" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_settings_storage_port_exists_with_the_named_result_contract" assertions="12" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_storage_port_is_named_type.gd" time="0.000297" >
+      </testcase>
+      <testcase name="test_settings_repository_holds_storage_through_the_named_port_type" assertions="11" status="pass" classname="tests/unit/presentation_ui_settings_repository/test_settings_repository_storage_port_is_named_type.gd" time="0.000541" >
+      </testcase>
+  </testsuite>
+</testsuites>

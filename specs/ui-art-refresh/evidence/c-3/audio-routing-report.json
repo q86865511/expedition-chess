@@ -1,0 +1,646 @@
+{
+  "asset_count": 26,
+  "asset_manifest": [
+    {
+      "bus": "Music",
+      "cue_id": "audio.menu",
+      "loop": true,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/menu.tres",
+      "resource_sha256": "8db175d50ba39c97b326a32c41eea385c5cb08f202838a44e2136fb40172f515",
+      "stream_path": "res://assets/production/audio/music/menu.ogg",
+      "stream_sha256": "9c2a9d7ecc36d54f2d7ee415d4304502508498dfd20c2e0407791d6bb324953d"
+    },
+    {
+      "bus": "Music",
+      "cue_id": "audio.camp",
+      "loop": true,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/camp.tres",
+      "resource_sha256": "b14518a5fc7448941a3023c758da10222109839e46b4686584665b66dbca8ad5",
+      "stream_path": "res://assets/production/audio/music/camp.ogg",
+      "stream_sha256": "a82dd02c1acebc0547aed2943abccfd0f7d1dbfb1c1cfc5e4788063a06403275"
+    },
+    {
+      "bus": "Music",
+      "cue_id": "audio.expedition",
+      "loop": true,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/expedition.tres",
+      "resource_sha256": "25adde7c8f801ab15531046ac95a9eeb257db7bc33262e7411910092b22b917c",
+      "stream_path": "res://assets/production/audio/music/expedition.ogg",
+      "stream_sha256": "8819d5a378351160944efebb6c98bdeadfa19de442ea6d724f964d318054adbf"
+    },
+    {
+      "bus": "Music",
+      "cue_id": "audio.combat",
+      "loop": true,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat.tres",
+      "resource_sha256": "7f9c252d6980415f22df0252e8dace3c9235d83523021ff8105334270eeb7e42",
+      "stream_path": "res://assets/production/audio/music/combat.ogg",
+      "stream_sha256": "ad37e42de519500738c7a35984219655df086fc90d4d0cb9952cf0944e65a42e"
+    },
+    {
+      "bus": "Music",
+      "cue_id": "audio.results",
+      "loop": true,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/results.tres",
+      "resource_sha256": "b79bd900e05d18c33b6d3fb18171a565e968ea98fe84ada53c0c43cded271303",
+      "stream_path": "res://assets/production/audio/music/results.ogg",
+      "stream_sha256": "f1157e62def6455bf1e26179b4385513984d2919f10aa96e258805e0d930ea7e"
+    },
+    {
+      "bus": "UI",
+      "cue_id": "audio.ui_confirm",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/ui_confirm.tres",
+      "resource_sha256": "bb554799e83be4b907a478284d3945465640b136baff2449f783dd952cefcc16",
+      "stream_path": "res://assets/production/audio/sfx/ui_confirm.ogg",
+      "stream_sha256": "81220e0bf3d228679646e77463a8c745c3ce5d6dfe03a30b699b87fc77ab7cc3"
+    },
+    {
+      "bus": "UI",
+      "cue_id": "audio.ui_cancel",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/ui_cancel.tres",
+      "resource_sha256": "735f4751ba46315067706ae8f28ee889a3b8868ebe76d953316f65b5ba6c4755",
+      "stream_path": "res://assets/production/audio/sfx/ui_cancel.ogg",
+      "stream_sha256": "e8b6e559bc4b801c956b29d8ce316a6233af4436e935f1720425cab96bca51b6"
+    },
+    {
+      "bus": "UI",
+      "cue_id": "audio.ui_focus",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/ui_focus.tres",
+      "resource_sha256": "518f74d63ce1dd6fde40ba2e8fc882022cad38f4d75768f4e6fa07ebe8593d6c",
+      "stream_path": "res://assets/production/audio/sfx/ui_focus.ogg",
+      "stream_sha256": "59079ea05e1be6131f69f64da8e2d01ed23ca2e782118d6570ab1b360c75f138"
+    },
+    {
+      "bus": "UI",
+      "cue_id": "audio.ui_error",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/ui_error.tres",
+      "resource_sha256": "8c3859f93c0254cd5898301410747a7a87df6c1ff713f23884fc6b06acfdc87f",
+      "stream_path": "res://assets/production/audio/sfx/ui_error.ogg",
+      "stream_sha256": "9652269ce20c64d72c419d91308705522f1e6973f2b01be8d42ce3c1707fbf27"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.shop_buy",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/shop_buy.tres",
+      "resource_sha256": "009898bf8df62caae89c73e2df390abe8d1ed62a0feb8d947716f12971ef6416",
+      "stream_path": "res://assets/production/audio/sfx/shop_buy.ogg",
+      "stream_sha256": "16ba6b47261a67e3c78b19c5059ae2e379e7e5ac5d4d4bb498e6ff034bf9ccc1"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.shop_sell",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/shop_sell.tres",
+      "resource_sha256": "1a85619f24dec94df468bfd88b64b520199bb4124b4e797255972be582e9aa49",
+      "stream_path": "res://assets/production/audio/sfx/shop_sell.ogg",
+      "stream_sha256": "30343ea23d74cf9b394903a8601bf29a746bcfd7c9a7c53b3dab4e53f9f5ccd0"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.shop_refresh",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/shop_refresh.tres",
+      "resource_sha256": "1f36c30e75293f87f9d8cf02ad3248671d828572de753de6e41250ab6c9e6f12",
+      "stream_path": "res://assets/production/audio/sfx/shop_refresh.ogg",
+      "stream_sha256": "e3728a81a1e1fff0d07caf7aa305ab0bfb612462ff272b830857feddb3c2ec73"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.forge",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/forge.tres",
+      "resource_sha256": "1af9c1e3ae47cd6cf73ee3b2cb987e6aa20ecfbb9c0b1e98989eac53638608ff",
+      "stream_path": "res://assets/production/audio/sfx/forge.ogg",
+      "stream_sha256": "166de9f28a51701d2bb49715cf4efca0ecdc4bca445d6af4a851889fa8f8f32b"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.equip",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/equip.tres",
+      "resource_sha256": "c333fcd6ad1bbfd75e823387f82f21f1b736bae8a56c90d6866a931e7324d132",
+      "stream_path": "res://assets/production/audio/sfx/equip.ogg",
+      "stream_sha256": "0a0d1d90b7eb6f9a4fd0c1d4a44920350b06dfffc6d28068939d540ac8f5c986"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.reward_select",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/reward_select.tres",
+      "resource_sha256": "bb78a43c8b465d8a498de7f14387ae8b66d818086e2c47cd0aafd3968964aef6",
+      "stream_path": "res://assets/production/audio/sfx/reward_select.ogg",
+      "stream_sha256": "8113e003c502dbe06f59dc030955964170de3409b522a176d5f2874023f4c74e"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.event_select",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/event_select.tres",
+      "resource_sha256": "aa32f276d3ec864826f60a0c5b919d9c53e07fc6e63a1acdbbba89bf570b1056",
+      "stream_path": "res://assets/production/audio/sfx/event_select.ogg",
+      "stream_sha256": "a89178394ac9f4d09f98f68f349c2f52628fae5c3fd2abf287032ff8a59c813d"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_cast",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_cast.tres",
+      "resource_sha256": "20dc683197ce81fdb5db4e52e7dd130f556a33a82f07419a8a99162c581d28d8",
+      "stream_path": "res://assets/production/audio/sfx/combat_cast.ogg",
+      "stream_sha256": "79db7f470aa843df290ed3909e218fe186e931c881697de6cd86167da63baaf7"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_melee_hit",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_melee_hit.tres",
+      "resource_sha256": "51541aa40f275abaeeebd3474b05d54f8f78ed8d77af6b9887196737fb0c6119",
+      "stream_path": "res://assets/production/audio/sfx/combat_melee_hit.ogg",
+      "stream_sha256": "75c29bb33f2c2c4d33a8e3f464c8bbfb9e1fe2691f71fa10026496a5108f33ff"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_defeat",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_defeat.tres",
+      "resource_sha256": "9384c8875669355f2df9d76dff0daae0a529bec1123dd7f3ea38e1b529edaa84",
+      "stream_path": "res://assets/production/audio/sfx/combat_defeat.ogg",
+      "stream_sha256": "cd4cf7222fc6c868fef7829a48b040a7cb1ab3125b384a7f708879255d320df6"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_shield",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_shield.tres",
+      "resource_sha256": "db5d0ff00b3441a3472458a1854354beae5d9a3182afd1186538283d6695e697",
+      "stream_path": "res://assets/production/audio/sfx/combat_shield.ogg",
+      "stream_sha256": "be98ea47059d8a90e688892e3c9b27513c99e34df86634089aeb56b5bea07980"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_heal",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_heal.tres",
+      "resource_sha256": "39d84ff84c6d77c8586d1ea9f37db5cd66b8ee7ad016ee4ef2158b3a9e14b992",
+      "stream_path": "res://assets/production/audio/sfx/combat_heal.ogg",
+      "stream_sha256": "930956b23fb47c6a078d7e806bcbde02216268a50dae0f329e81441174cf86dc"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_death",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_death.tres",
+      "resource_sha256": "c2057308987ae33c2a0a55a4759813023d72b909f29f2d3b552de455887bab65",
+      "stream_path": "res://assets/production/audio/sfx/combat_death.ogg",
+      "stream_sha256": "ef05f6dca372fcf2be802a2b037ebe12bd025311d7e0f4da40a41bc003c9d91b"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_ranged_attack",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_ranged_attack.tres",
+      "resource_sha256": "9b868ec07db02167a0944159c7bf5ff6aabb8f9feb7b1e12539bcb946af5e801",
+      "stream_path": "res://assets/production/audio/sfx/combat_ranged_attack.ogg",
+      "stream_sha256": "4126361a1d932dab0f2c710e1e37132815bc4cf8510c699f774ae921cf873cfb"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_magic_hit",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_magic_hit.tres",
+      "resource_sha256": "e92003e03046a8c295f0f801e2bc8b3c4e9620f718fd414bd702832931c82a3c",
+      "stream_path": "res://assets/production/audio/sfx/combat_magic_hit.ogg",
+      "stream_sha256": "423aacb4de68f97417c45ab15a7165443c2959224373e127964b5eb77903f7ab"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_boss_warning",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_boss_warning.tres",
+      "resource_sha256": "784577a0bff67f0fd3bed8c2b31b562ef2bca065b7ec0cbeb13f0de8009dc57a",
+      "stream_path": "res://assets/production/audio/sfx/combat_boss_warning.ogg",
+      "stream_sha256": "aeb6e6e3c13ac275d1b85c93e6e361809f120b5c69cdf2aed3aa3b1d3d10adf2"
+    },
+    {
+      "bus": "SFX",
+      "cue_id": "audio.combat_victory",
+      "loop": false,
+      "resource_path": "res://content/packs/vertical_slice/audio_cues/combat_victory.tres",
+      "resource_sha256": "a056139a0cc558083705e28470319a8ff6399cd7702137a9031634f54a004ef0",
+      "stream_path": "res://assets/production/audio/sfx/combat_victory.ogg",
+      "stream_sha256": "c47dc2a93eb35118718eaeac1d287f9a22993a6da64696be7cdfc46d8328c29d"
+    }
+  ],
+  "combat_order_probe": {
+    "mapped_events": 6,
+    "mapping_sequence": [
+      {
+        "cue_id": "audio.combat_ranged_attack",
+        "event_index": 0,
+        "event_sequence": 101,
+        "event_tick": 101,
+        "event_type": "attack"
+      },
+      {
+        "cue_id": "audio.combat_melee_hit",
+        "event_index": 1,
+        "event_sequence": 102,
+        "event_tick": 102,
+        "event_type": "damage"
+      },
+      {
+        "cue_id": "audio.combat_magic_hit",
+        "event_index": 2,
+        "event_sequence": 103,
+        "event_tick": 103,
+        "event_type": "damage"
+      },
+      {
+        "cue_id": "audio.combat_heal",
+        "event_index": 3,
+        "event_sequence": 104,
+        "event_tick": 104,
+        "event_type": "heal"
+      },
+      {
+        "cue_id": "audio.combat_boss_warning",
+        "event_index": 4,
+        "event_sequence": 105,
+        "event_tick": 105,
+        "event_type": "boss_phase"
+      },
+      {
+        "cue_id": "audio.combat_victory",
+        "event_index": 5,
+        "event_sequence": 106,
+        "event_tick": 106,
+        "event_type": "battle_finished"
+      }
+    ],
+    "noncritical_budget": 12,
+    "played_cues": 6,
+    "processed_events": 6
+  },
+  "issues": [],
+  "music_cue_count": 5,
+  "music_route_count": 17,
+  "ok": true,
+  "phase": "C-3",
+  "rng_boundary_scan": [
+    {
+      "findings": [],
+      "path": "res://presentation/common/production_audio_director.gd"
+    },
+    {
+      "findings": [],
+      "path": "res://presentation/screens/production_screen.gd"
+    },
+    {
+      "findings": [],
+      "path": "res://presentation/screens/run_combat_screen.gd"
+    }
+  ],
+  "route_music_mappings": [
+    {
+      "cue_id": "audio.menu",
+      "route_kind": "MENU_MAIN"
+    },
+    {
+      "cue_id": "audio.menu",
+      "route_kind": "SETTINGS"
+    },
+    {
+      "cue_id": "audio.camp",
+      "route_kind": "CAMP_WORLD"
+    },
+    {
+      "cue_id": "audio.camp",
+      "route_kind": "FACILITY_EXPEDITION_GATE"
+    },
+    {
+      "cue_id": "audio.camp",
+      "route_kind": "FACILITY_COMMANDER_HALL"
+    },
+    {
+      "cue_id": "audio.camp",
+      "route_kind": "COLLECTION"
+    },
+    {
+      "cue_id": "audio.camp",
+      "route_kind": "FACILITY_UNLOCK_WORKSHOP"
+    },
+    {
+      "cue_id": "audio.camp",
+      "route_kind": "FACILITY_CHALLENGE_MONUMENT"
+    },
+    {
+      "cue_id": "audio.expedition",
+      "route_kind": "RUN_CONTAINER"
+    },
+    {
+      "cue_id": "audio.expedition",
+      "route_kind": "RUN_MAP"
+    },
+    {
+      "cue_id": "audio.expedition",
+      "route_kind": "RUN_PREPARE"
+    },
+    {
+      "cue_id": "audio.combat",
+      "route_kind": "RUN_COMBAT"
+    },
+    {
+      "cue_id": "audio.expedition",
+      "route_kind": "RUN_REWARD"
+    },
+    {
+      "cue_id": "audio.expedition",
+      "route_kind": "RUN_ROUTE_FALLBACK"
+    },
+    {
+      "cue_id": "audio.menu",
+      "route_kind": "APP_ROUTE_FALLBACK"
+    },
+    {
+      "cue_id": "audio.results",
+      "route_kind": "RESULTS"
+    },
+    {
+      "cue_id": "audio.results",
+      "route_kind": "RESULTS_FALLBACK"
+    }
+  ],
+  "runtime_music_probe": [
+    {
+      "actual_cue_id": "audio.menu",
+      "bus": "Music",
+      "expected_cue_id": "audio.menu",
+      "played": true,
+      "route_kind": "MENU_MAIN"
+    },
+    {
+      "actual_cue_id": "audio.camp",
+      "bus": "Music",
+      "expected_cue_id": "audio.camp",
+      "played": true,
+      "route_kind": "CAMP_WORLD"
+    },
+    {
+      "actual_cue_id": "audio.expedition",
+      "bus": "Music",
+      "expected_cue_id": "audio.expedition",
+      "played": true,
+      "route_kind": "RUN_MAP"
+    },
+    {
+      "actual_cue_id": "audio.combat",
+      "bus": "Music",
+      "expected_cue_id": "audio.combat",
+      "played": true,
+      "route_kind": "RUN_COMBAT"
+    },
+    {
+      "actual_cue_id": "audio.results",
+      "bus": "Music",
+      "expected_cue_id": "audio.results",
+      "played": true,
+      "route_kind": "RESULTS"
+    }
+  ],
+  "runtime_sfx_probe": [
+    {
+      "cue_id": "audio.ui_confirm",
+      "played": true
+    },
+    {
+      "cue_id": "audio.ui_cancel",
+      "played": true
+    },
+    {
+      "cue_id": "audio.ui_focus",
+      "played": true
+    },
+    {
+      "cue_id": "audio.ui_error",
+      "played": true
+    },
+    {
+      "cue_id": "audio.shop_buy",
+      "played": true
+    },
+    {
+      "cue_id": "audio.shop_sell",
+      "played": true
+    },
+    {
+      "cue_id": "audio.shop_refresh",
+      "played": true
+    },
+    {
+      "cue_id": "audio.forge",
+      "played": true
+    },
+    {
+      "cue_id": "audio.equip",
+      "played": true
+    },
+    {
+      "cue_id": "audio.reward_select",
+      "played": true
+    },
+    {
+      "cue_id": "audio.event_select",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_cast",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_melee_hit",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_defeat",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_shield",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_heal",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_death",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_ranged_attack",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_magic_hit",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_boss_warning",
+      "played": true
+    },
+    {
+      "cue_id": "audio.combat_victory",
+      "played": true
+    }
+  ],
+  "schema_version": 1,
+  "sfx_mapping_count": 21,
+  "sfx_semantic_mappings": [
+    {
+      "cue_id": "audio.ui_confirm",
+      "triggers": [
+        "action.success",
+        "intent.default_success",
+        "system_menu.open"
+      ]
+    },
+    {
+      "cue_id": "audio.ui_cancel",
+      "triggers": [
+        "action.*.cancel",
+        "system_menu.dismiss",
+        "confirmation.cancel"
+      ]
+    },
+    {
+      "cue_id": "audio.ui_focus",
+      "triggers": [
+        "viewport.gui_focus_changed"
+      ]
+    },
+    {
+      "cue_id": "audio.ui_error",
+      "triggers": [
+        "result.failure",
+        "battle.summon_failure"
+      ]
+    },
+    {
+      "cue_id": "audio.shop_buy",
+      "triggers": [
+        "intent.BUY_UNIT",
+        "intent.BUY_XP"
+      ]
+    },
+    {
+      "cue_id": "audio.shop_sell",
+      "triggers": [
+        "intent.SELL_UNIT"
+      ]
+    },
+    {
+      "cue_id": "audio.shop_refresh",
+      "triggers": [
+        "intent.REFRESH_SHOP"
+      ]
+    },
+    {
+      "cue_id": "audio.forge",
+      "triggers": [
+        "intent.FORGE_EQUIPMENT"
+      ]
+    },
+    {
+      "cue_id": "audio.equip",
+      "triggers": [
+        "intent.EQUIP_ITEM",
+        "intent.DISMANTLE_EQUIPMENT",
+        "intent.DISMANTLE_WITH_NODE_SERVICE"
+      ]
+    },
+    {
+      "cue_id": "audio.reward_select",
+      "triggers": [
+        "intent.CHOOSE_STANDARD_REWARD",
+        "intent.RESOLVE_*_REWARD",
+        "intent.*_OVERFLOW",
+        "intent.REPLACE_OR_ABANDON_RELIC"
+      ]
+    },
+    {
+      "cue_id": "audio.event_select",
+      "triggers": [
+        "intent.ENTER_NODE",
+        "intent.RESOLVE_NON_COMBAT",
+        "intent.COMMIT_OR_ACK_NODE_CHOICE",
+        "intent.EXIT_NODE_SERVICE"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_cast",
+      "triggers": [
+        "battle.cast",
+        "battle.attack.basic.magic_projectile"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_melee_hit",
+      "triggers": [
+        "battle.damage.physical_or_true"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_defeat",
+      "triggers": [
+        "battle.finished.player_loss"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_shield",
+      "triggers": [
+        "battle.shield"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_heal",
+      "triggers": [
+        "battle.heal"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_death",
+      "triggers": [
+        "battle.death"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_ranged_attack",
+      "triggers": [
+        "battle.attack.basic.ranged"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_magic_hit",
+      "triggers": [
+        "battle.damage.magical"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_boss_warning",
+      "triggers": [
+        "battle.boss_phase"
+      ]
+    },
+    {
+      "cue_id": "audio.combat_victory",
+      "triggers": [
+        "battle.finished.player_win"
+      ]
+    }
+  ]
+}

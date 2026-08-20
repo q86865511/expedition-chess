@@ -2,9 +2,13 @@ class_name CampFacilityScreen
 extends ProductionScreen
 
 const COMPOSE_INVALID: StringName = &"CAMP_FACILITY_COMPOSE_INVALID"
+const CARD_WIDTH: float = 300.0
+const CARD_ICON_SIZE: float = 144.0
 
 var _bundle: CampFacilityBundle
 var _navigation_port: LiveScreenNavigationPort
+var _visuals := ProductionUnitVisualCatalog.new()
+var _ui_scale_percent: int = 100
 
 
 func compose(
@@ -71,10 +75,15 @@ func _build_facility_data() -> void:
 		existing.queue_free()
 	var data := ItemList.new()
 	data.name = "FacilityData"
-	data.position = Vector2(72.0, 112.0)
-	ExpeditionLayoutMetrics.set_min(data, 960.0, 480.0)
+	data.theme_type_variation = &"ExpeditionFacilityCardGrid"
 	data.focus_mode = Control.FOCUS_ALL
+	data.allow_reselect = true
+	data.icon_mode = ItemList.ICON_MODE_TOP
+	data.same_column_width = true
+	data.fixed_column_width = roundi(CARD_WIDTH)
+	data.fixed_icon_size = Vector2i.ONE * roundi(CARD_ICON_SIZE)
 	data.set_meta(&"typed_data_kind", _parent_route_kind())
+	data.set_meta(&"portrait_catalog_error", _visuals.load_error())
 	var values: Array[StringName] = []
 	match _parent_route_kind():
 		&"FACILITY_COMMANDER_HALL", &"FACILITY_EXPEDITION_GATE":
@@ -86,13 +95,50 @@ func _build_facility_data() -> void:
 		&"FACILITY_UNLOCK_WORKSHOP":
 			values.append(StringName(str(workshop_currency())))
 	for value: StringName in values:
-		data.add_item(_localized_content_text(value))
+		var portrait := _visuals.try_portrait(value)
+		data.add_item(_localized_content_text(value), portrait)
 		data.set_item_metadata(data.item_count - 1, value)
+		data.set_item_tooltip(
+			data.item_count - 1,
+			_localized_content_text(value)
+		)
 		if _parent_route_kind() == &"COLLECTION":
 			data.set_meta(&"semantic_kind", &"rarity")
 			data.set_meta(&"semantic_pattern", &"double-frame")
-	data.set_meta(&"accessible_text", &"camp.facility_data")
+	var accessible_rows := PackedStringArray()
+	for index: int in data.item_count:
+		accessible_rows.append(data.get_item_text(index))
+	data.set_meta(&"accessible_text", "\n".join(accessible_rows))
 	add_child(data)
+	_apply_card_metrics()
+	refresh_layout_rects()
+
+
+func apply_theme_scale_layout(scale_percent: int) -> void:
+	_ui_scale_percent = clampi(scale_percent, 100, 150)
+	_apply_card_metrics()
+	refresh_layout_rects()
+
+
+func refresh_layout_rects() -> void:
+	var data := get_node_or_null(^"FacilityData") as ItemList
+	var parent_screen := get_parent() as ProductionScreen
+	if data == null or parent_screen == null:
+		return
+	var rect := parent_screen.layout_region_content_rect(
+		ProductionLayoutShell.REGION_CENTER
+	)
+	data.position = rect.position
+	data.size = rect.size
+
+
+func _apply_card_metrics() -> void:
+	var data := get_node_or_null(^"FacilityData") as ItemList
+	if data == null:
+		return
+	var factor := float(_ui_scale_percent) / 100.0
+	data.fixed_column_width = roundi(CARD_WIDTH * factor)
+	data.fixed_icon_size = Vector2i.ONE * roundi(CARD_ICON_SIZE * factor)
 
 
 func _parent_route_kind() -> StringName:

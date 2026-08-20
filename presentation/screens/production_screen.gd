@@ -12,11 +12,51 @@ const SCREEN_COMPOSITION_TYPE_INVALID: StringName = \
 const SYSTEM_MENU_BIND_INVALID: StringName = &"SYSTEM_MENU_BIND_INVALID"
 const SYSTEM_MENU_INPUT: StringName = &"system_menu"
 const SYSTEM_MENU_BUTTON_NODE: StringName = &"SystemMenuButton"
+const SYSTEM_MENU_BUTTON_LOCALIZATION_KEY: StringName = &"system_menu.open"
 const RUN_ROUTES: Array[StringName] = [
 	&"RUN_MAP",
 	&"RUN_PREPARE",
 	&"RUN_COMBAT",
 	&"RUN_REWARD",
+]
+const CAMP_FACILITY_ROUTES: Array[StringName] = [
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+]
+const SHELL_ROUTES: Array[StringName] = [
+	&"SETTINGS",
+	&"CAMP_WORLD",
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+	&"RUN_MAP",
+	&"RUN_PREPARE",
+	&"RUN_COMBAT",
+	&"RUN_REWARD",
+	&"RESULTS",
+	&"RESULTS_FALLBACK",
+]
+const SYSTEM_MENU_ROUTES: Array[StringName] = [
+	&"SETTINGS",
+	&"CAMP_WORLD",
+	&"FACILITY_EXPEDITION_GATE",
+	&"FACILITY_COMMANDER_HALL",
+	&"COLLECTION",
+	&"FACILITY_UNLOCK_WORKSHOP",
+	&"FACILITY_CHALLENGE_MONUMENT",
+	&"RUN_MAP",
+	&"RUN_PREPARE",
+	&"RUN_COMBAT",
+	&"RUN_REWARD",
+	&"RUN_ROUTE_FALLBACK",
+	&"APP_ROUTE_FALLBACK",
+	&"RESULTS",
+	&"RESULTS_FALLBACK",
 ]
 
 const RECOVERY_MODAL_NODE: String = "RecoveryConfirmation"
@@ -78,6 +118,9 @@ const _SHOP_REJECTION_MESSAGE_KEYS: Dictionary = {
 	&"SHOP_SERIAL_EXHAUSTED": &"error.shop.internal_failure",
 	&"SHOP_MERGE_FAILED": &"error.shop.internal_failure",
 }
+const _SHOP_TRAIT_ATLAS: Texture2D = preload(
+	"res://assets/production/shared/trait.png"
+)
 
 ## G2 M2／建議項1：不可逆（或代價高）的離開動作先出確認 modal，確認前零 dispatch。
 ## `menu.recovery` 不在此表——它的確認狀態由 app 層的 RecoveryConfirmationPresenter 持有，
@@ -132,9 +175,15 @@ var _system_menu_pause_captured: bool = false
 var _system_menu_previous_paused: bool = false
 var _prepare_refresh_quote: ShopQuoteSnapshot
 var _prepare_xp_quote: ShopXpQuoteSnapshot
+var _route_ui_scale_percent: int = 100
+var _audio_director: ProductionAudioDirector
 
 
 func _ready() -> void:
+	# RunMap/Prepare/Combat/Reward compositions also inherit ProductionScreen,
+	# but only the route root owns audio. Their exported route_kind remains empty.
+	if not route_kind.is_empty():
+		_attach_audio_director()
 	_binding_closed = true
 
 
@@ -151,11 +200,7 @@ func bind_system_menu_settings(
 	_system_menu_settings_snapshot = snapshot.deep_clone()
 	_system_menu_settings_port = port
 	if _system_menu_overlay != null:
-		_system_menu_overlay.configure(
-			_localized_text_clone(),
-			_system_menu_settings_snapshot,
-			_system_menu_settings_port
-		)
+		_configure_system_menu_overlay()
 	return &""
 
 
@@ -197,7 +242,7 @@ func is_background_input_blocked() -> bool:
 
 func open_system_menu() -> bool:
 	if (
-		route_kind not in RUN_ROUTES
+		route_kind not in SYSTEM_MENU_ROUTES
 		or not _live_active
 		or _modal_open
 		or _system_menu_overlay == null
@@ -207,6 +252,7 @@ func open_system_menu() -> bool:
 	if not _capture_combat_pause_for_system_menu():
 		return false
 	if _system_menu_overlay.open(_ordered_focus_controls(), self):
+		_play_audio_cue(&"audio.ui_confirm", {"source": &"system_menu_open"})
 		return true
 	_restore_combat_pause_after_system_menu()
 	return false
@@ -262,6 +308,7 @@ func prepare_live_binding(
 		return composition_error
 	_apply_prepare_shop_quote_controls()
 	_live_context = context
+	_configure_system_menu_overlay()
 	return &""
 
 
@@ -305,11 +352,12 @@ func activate_live() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if (
-		route_kind not in RUN_ROUTES
+		route_kind not in SYSTEM_MENU_ROUTES
 		or event == null
 		or not event.is_action_pressed(SYSTEM_MENU_INPUT, false, true)
 	):
 		return
+	var audio_sequence_before := _audio_playback_sequence()
 	var handled := false
 	if _modal_open:
 		handled = _cancel_active_confirmation()
@@ -321,18 +369,42 @@ func _unhandled_input(event: InputEvent) -> void:
 		handled = _system_menu_overlay.handle_system_menu_action()
 	else:
 		handled = open_system_menu()
+	if handled and _audio_playback_sequence() == audio_sequence_before:
+		_play_audio_cue(&"audio.ui_cancel", {"source": &"system_menu_input"})
 	if handled and is_inside_tree():
 		get_viewport().set_input_as_handled()
 
 
 func request_intent(intent: RunPresentationIntent) -> RunPresentationResult:
 	if _live_active and _live_context.intent_port != null:
-		return _live_context.intent_port.dispatch(intent)
-	return RunPresentationResult.failure(
+		var result := _live_context.intent_port.dispatch(intent)
+		if _audio_director != null and is_instance_valid(_audio_director):
+			_audio_director.present_intent_result(intent, result)
+		return result
+	var failure := RunPresentationResult.failure(
 		DiagnosticError.new(
 			SCREEN_NOT_ACTIVE,
 			&"error.presentation.screen_not_active"
 		)
+	)
+	if _audio_director != null and is_instance_valid(_audio_director):
+		_audio_director.present_intent_result(intent, failure)
+	return failure
+
+
+func present_combat_audio(events: Array) -> Dictionary:
+	return (
+		_audio_director.present_combat_events(events)
+		if _audio_director != null and is_instance_valid(_audio_director)
+		else {}
+	)
+
+
+func audio_playback_report() -> Dictionary:
+	return (
+		_audio_director.playback_report()
+		if _audio_director != null and is_instance_valid(_audio_director)
+		else {}
 	)
 
 
@@ -547,6 +619,25 @@ func _bind_localized_controls() -> void:
 		add_child(result_label)
 	if route_kind == &"CAMP_WORLD" and _layout_shell != null:
 		_build_camp_action_controls(action_ids)
+	elif route_kind in CAMP_FACILITY_ROUTES and _layout_shell != null:
+		var facility_actions := HBoxContainer.new()
+		facility_actions.name = "Actions"
+		facility_actions.alignment = BoxContainer.ALIGNMENT_END
+		facility_actions.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		facility_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(
+			facility_actions
+		)
+		for action_id: StringName in action_ids:
+			var facility_action := _new_action_button(action_id)
+			facility_action.theme_type_variation = \
+				&"ExpeditionCampSecondaryAction"
+			ExpeditionLayoutMetrics.set_fixed_min(
+				facility_action, 240.0, 72.0
+			)
+			facility_action.size_flags_horizontal = Control.SIZE_SHRINK_END
+			facility_action.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			facility_actions.add_child(facility_action)
 	elif route_kind == &"RUN_PREPARE" and _layout_shell != null:
 		var controls := HBoxContainer.new()
 		controls.name = "Actions"
@@ -588,13 +679,16 @@ func _bind_localized_controls() -> void:
 			action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
 	else:
+		var uses_outgame_shell := route_kind in [
+			&"SETTINGS", &"RESULTS", &"RESULTS_FALLBACK",
+		]
 		var controls: BoxContainer = (
 			HBoxContainer.new()
-			if route_kind == &"SETTINGS"
+			if uses_outgame_shell
 			else VBoxContainer.new()
 		)
 		controls.name = "Actions"
-		if route_kind == &"SETTINGS":
+		if uses_outgame_shell:
 			controls.z_index = 6
 		else:
 			# 動作欄真置中：PRESET_CENTER 的錨點在中心，但預設 grow 會讓
@@ -607,24 +701,62 @@ func _bind_localized_controls() -> void:
 		add_child(controls)
 		for action_id: StringName in action_ids:
 			var action := _new_action_button(action_id)
-			if route_kind == &"SETTINGS":
+			if uses_outgame_shell:
 				action.theme_type_variation = &"ExpeditionBottomAction"
 				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
+		if route_kind == &"MENU_MAIN":
+			_apply_menu_layout(controls)
 		_apply_settings_layout(100)
+		_apply_results_layout()
 	_install_system_menu()
 
 
+func _apply_menu_layout(controls: BoxContainer, scale_percent: int = 100) -> void:
+	if route_kind != &"MENU_MAIN" or controls == null:
+		return
+	var factor := clampf(float(scale_percent) / 100.0, 1.0, 1.5)
+	var actions_rect := ExpeditionLayoutMetrics.MENU_ACTIONS_RECT
+	var actions_right := actions_rect.end.x
+	actions_rect.size.x = roundf(actions_rect.size.x * factor)
+	actions_rect.position.x = actions_right - actions_rect.size.x
+	# MENU actions sit directly on the ImageGen-authored quiet area. The fixed
+	# right edge keeps 100/125/150% hit-rect growth inside the safe canvas without
+	# reintroducing a full-height backing panel.
+	var obsolete_panel := get_node_or_null(^"MenuActionPanel")
+	if obsolete_panel != null:
+		obsolete_panel.queue_free()
+	controls.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	controls.grow_horizontal = Control.GROW_DIRECTION_END
+	controls.grow_vertical = Control.GROW_DIRECTION_END
+	controls.position = actions_rect.position
+	controls.size = actions_rect.size
+	controls.alignment = BoxContainer.ALIGNMENT_CENTER
+	controls.z_index = 3
+	for node: Node in controls.get_children():
+		var button := node as Button
+		if button == null:
+			continue
+		button.theme_type_variation = &"ExpeditionMenuAction"
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		if not button.has_meta(ExpeditionLayoutMetrics.META_BASE_MINIMUM):
+			ExpeditionLayoutMetrics.set_min(button, 0.0, 72.0)
+
+
 func _install_system_menu() -> void:
-	if route_kind not in RUN_ROUTES or _system_menu_overlay != null:
+	if route_kind not in SYSTEM_MENU_ROUTES or _system_menu_overlay != null:
 		return
 	_system_menu_button = Button.new()
 	_system_menu_button.name = SYSTEM_MENU_BUTTON_NODE
-	_system_menu_button.text = _context.resolve_text(&"screen.run_container.title")
+	_system_menu_button.text = _context.resolve_text(
+		SYSTEM_MENU_BUTTON_LOCALIZATION_KEY
+	)
 	_system_menu_button.focus_mode = Control.FOCUS_ALL
 	_system_menu_button.disabled = true
 	# Visible text, accessibility text, and stable metadata share one exact key.
-	_system_menu_button.set_meta(&"localization_key", &"screen.run_container.title")
+	_system_menu_button.set_meta(
+		&"localization_key", SYSTEM_MENU_BUTTON_LOCALIZATION_KEY
+	)
 	_system_menu_button.set_meta(
 		&"accessible_text", _system_menu_button.text
 	)
@@ -656,11 +788,7 @@ func _install_system_menu() -> void:
 		overlay_host.add_child(_system_menu_overlay)
 	else:
 		add_child(_system_menu_overlay)
-	_system_menu_overlay.configure(
-		_localized_text_clone(),
-		_system_menu_settings_snapshot,
-		_system_menu_settings_port
-	)
+	_configure_system_menu_overlay()
 	_system_menu_overlay.closed.connect(_on_system_menu_closed)
 	_system_menu_overlay.return_to_menu_requested.connect(
 		_on_system_menu_return_to_menu_requested
@@ -684,12 +812,37 @@ func _on_system_menu_closed() -> void:
 
 func _on_system_menu_return_to_menu_requested() -> void:
 	close_system_menu()
+	var action_id := _system_menu_return_action_id()
 	if (
-		_live_active
+		not action_id.is_empty()
+		and _live_active
 		and _live_context != null
 		and _live_context.action_port != null
 	):
-		_dispatch_action(&"run.menu", null)
+		_dispatch_action(action_id, null)
+
+
+func _configure_system_menu_overlay() -> void:
+	if _system_menu_overlay == null:
+		return
+	_system_menu_overlay.configure(
+		_localized_text_clone(),
+		_system_menu_settings_snapshot,
+		_system_menu_settings_port,
+		not _system_menu_return_action_id().is_empty()
+	)
+
+
+func _system_menu_return_action_id() -> StringName:
+	if _live_context == null or _live_context.action_port == null:
+		return &""
+	var available := _live_context.action_port.action_ids()
+	for action_id: StringName in [
+		&"run.menu", &"camp.menu", &"results.menu",
+	]:
+		if action_id in available:
+			return action_id
+	return &""
 
 
 func _on_system_menu_exit_requested() -> void:
@@ -791,7 +944,7 @@ func _dismiss_focused_text_edit() -> bool:
 
 
 func _install_b1_layout() -> void:
-	if route_kind != &"CAMP_WORLD" and route_kind not in RUN_ROUTES:
+	if route_kind not in SHELL_ROUTES:
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layout_shell = ProductionLayoutShell.new()
@@ -822,7 +975,7 @@ func _install_b1_layout() -> void:
 
 
 func _install_fullscreen_ui_background() -> void:
-	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
+	if route_kind != &"MENU_MAIN":
 		return
 	var background := Panel.new()
 	background.name = "FullscreenBackground"
@@ -834,24 +987,55 @@ func _install_fullscreen_ui_background() -> void:
 
 
 func _configure_non_b1_layout(title: Label) -> void:
-	if route_kind not in [&"MENU_MAIN", &"SETTINGS"]:
+	if route_kind != &"MENU_MAIN":
 		return
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	if title != null:
-		title.position = Vector2(108.0, 42.0)
-		title.size = Vector2(1704.0, 84.0)
-		ExpeditionLayoutMetrics.set_fixed_min(title, 0.0, 84.0)
-		title.theme_type_variation = &"ExpeditionTitle"
-		title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	if route_kind != &"SETTINGS":
+	if route_kind == &"MENU_MAIN":
+		_install_menu_key_art()
+		if title != null:
+			title.position = ExpeditionLayoutMetrics.MENU_TITLE_RECT.position
+			title.size = ExpeditionLayoutMetrics.MENU_TITLE_RECT.size
+			ExpeditionLayoutMetrics.set_fixed_min(
+				title,
+				ExpeditionLayoutMetrics.MENU_TITLE_RECT.size.x,
+				ExpeditionLayoutMetrics.MENU_TITLE_RECT.size.y
+			)
+			title.theme_type_variation = &"ExpeditionTitle"
+			title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			title.z_index = 3
 		return
-	_apply_settings_layout(100)
+
+
+func _install_menu_key_art() -> void:
+	if route_kind != &"MENU_MAIN" or get_node_or_null(^"MenuKeyArt") != null:
+		return
+	var visuals := ProductionEnvironmentVisualCatalog.new()
+	var texture := visuals.try_texture(&"key_art.menu_main")
+	if texture == null:
+		return
+	var key_art := TextureRect.new()
+	key_art.name = "MenuKeyArt"
+	key_art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	key_art.texture = texture
+	key_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	key_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	key_art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	key_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	key_art.set_meta(&"visual_id", &"key_art.menu_main")
+	add_child(key_art)
+	move_child(key_art, mini(1, get_child_count() - 1))
 
 
 func apply_theme_scale_layout(scale_percent: int) -> void:
-	_apply_settings_layout(scale_percent)
+	_route_ui_scale_percent = clampi(scale_percent, 100, 150)
+	if route_kind == &"MENU_MAIN":
+		_apply_menu_layout(
+			get_node_or_null(^"Actions") as BoxContainer, scale_percent
+		)
 	if _layout_shell != null:
-		_layout_shell.set_scale_factor(float(scale_percent) / 100.0)
+		_layout_shell.set_scale_factor(
+			float(_route_ui_scale_percent) / 100.0
+		)
 		var title := get_node_or_null(^"Label") as Label
 		if title != null:
 			var title_rect := _layout_shell.current_content_rect(
@@ -861,6 +1045,7 @@ func apply_theme_scale_layout(scale_percent: int) -> void:
 			title_rect.size.x = ProductionLayoutShell.TITLE_WIDTH
 			title.position = title_rect.position
 			title.size = title_rect.size
+		_refresh_route_layout()
 		_sync_status_band_visibility()
 		# 主題切換後子節點 minimum 的重算是延遲的；立即量測會拿到舊值。
 		# 下一影格再收斂一次（shell 帶高實測＋composition rect 重排）。
@@ -871,67 +1056,121 @@ func apply_theme_scale_layout(scale_percent: int) -> void:
 ## 其上為畫面狀態帶、其上為 Composition（draft 驗證列保留在 Composition
 ## 可見高度內）。所有高度隨 UI 縮放 ×factor，任何縮放下不出安全區。
 func _apply_settings_layout(scale_percent: int) -> void:
-	if route_kind != &"SETTINGS":
+	if route_kind != &"SETTINGS" or _layout_shell == null:
 		return
 	var factor := float(scale_percent) / 100.0
-	var safe_bottom := 1080.0 - ProductionLayoutShell.SAFE_MARGIN
-	var actions_height := ceilf(72.0 * factor)
-	var actions_top := safe_bottom - actions_height
-	var status_height := ceilf(66.0 * factor)
-	var gap := ceilf(12.0 * factor)
-	var status_top := actions_top - gap - status_height
-	var composition_top := 150.0
-	var composition_height := status_top - gap - composition_top
+	var center := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_CENTER
+	)
+	var bottom := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_BOTTOM
+	)
+	var draft_status_height := ceilf(
+		ExpeditionLayoutMetrics.SETTINGS_DRAFT_STATUS_HEIGHT * factor
+	)
 	var actions := get_node_or_null(^"Actions") as Control
 	if actions != null:
-		actions.position = Vector2(108.0, actions_top)
-		actions.size = Vector2(1704.0, actions_height)
+		actions.position = bottom.position
+		actions.size = bottom.size
 	var composition := get_node_or_null(^"Composition") as Control
 	if composition != null:
-		composition.position = Vector2(108.0, composition_top)
+		composition.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		composition.grow_horizontal = Control.GROW_DIRECTION_END
+		composition.grow_vertical = Control.GROW_DIRECTION_END
+		composition.position = center.position
 		ExpeditionLayoutMetrics.set_fixed_min(
-			composition, 1704.0, composition_height
+			composition, center.size.x, center.size.y
 		)
-		composition.size = Vector2(1704.0, composition_height)
+		composition.size = center.size
 		composition.clip_contents = true
 		if composition.has_method(&"apply_status_rect"):
 			composition.call(
 				&"apply_status_rect",
 				Rect2(
 					0.0,
-					composition_height - status_height,
-					1704.0,
-					status_height
+					center.size.y - draft_status_height,
+					center.size.x,
+					draft_status_height
 				)
 			)
-	_status_view.attach(
-		self,
-		0,
-		Rect2(108.0, status_top, 1704.0, status_height)
+
+
+func _apply_results_layout() -> void:
+	if (
+		route_kind not in [&"RESULTS", &"RESULTS_FALLBACK"]
+		or _layout_shell == null
+	):
+		return
+	var center := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_CENTER
 	)
+	var bottom := _layout_shell.current_content_rect(
+		ProductionLayoutShell.REGION_BOTTOM
+	)
+	var actions := get_node_or_null(^"Actions") as Control
+	if actions != null:
+		actions.position = bottom.position
+		actions.size = bottom.size
+	var composition := get_node_or_null(^"Composition") as Control
+	if composition != null:
+		composition.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		composition.grow_horizontal = Control.GROW_DIRECTION_END
+		composition.grow_vertical = Control.GROW_DIRECTION_END
+		composition.position = center.position
+		composition.size = center.size
+		composition.clip_contents = true
+		if composition.has_method(&"refresh_layout_rects"):
+			composition.call(&"refresh_layout_rects")
+
+
+func _refresh_route_layout() -> void:
+	_apply_settings_layout(_route_ui_scale_percent)
+	_apply_results_layout()
 
 
 func _build_camp_action_controls(action_ids: Array[StringName]) -> void:
-	var facilities := VBoxContainer.new()
-	facilities.name = "Actions"
-	facilities.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	facilities.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	# 設施鈕在左欄垂直置中，不留「上滿下空」的殘缺觀感。
-	facilities.alignment = BoxContainer.ALIGNMENT_CENTER
-	layout_content(ProductionLayoutShell.REGION_LEFT).add_child(facilities)
+	var composition := get_node_or_null(^"Composition") as CampWorldScreen
+	var staging := Control.new()
+	staging.name = "CampActionStaging"
+	staging.visible = false
+	staging.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if composition != null:
+		composition.add_child(staging)
+	else:
+		add_child(staging)
+	var first_facility_text := ""
 	for action_id: StringName in action_ids.slice(0, 5):
 		var facility := _new_action_button(action_id)
-		facility.set_meta(&"expedition_theme_fixed_minimum", true)
-		facilities.add_child(facility)
-	var primary := HBoxContainer.new()
-	primary.name = "CampPrimaryActions"
-	primary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	primary.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(primary)
-	for action_id: StringName in action_ids.slice(5):
+		facility.theme_type_variation = &"ExpeditionCampFacilityMarker"
+		staging.add_child(facility)
+		if first_facility_text.is_empty():
+			first_facility_text = facility.text
+	var start := _new_action_button(&"camp.start")
+	start.theme_type_variation = &"ExpeditionCampStartAction"
+	staging.add_child(start)
+	var secondary := HBoxContainer.new()
+	secondary.name = "CampSecondaryActions"
+	secondary.alignment = BoxContainer.ALIGNMENT_END
+	secondary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout_content(ProductionLayoutShell.REGION_BOTTOM).add_child(secondary)
+	# B-out-2：左半帶作為目前設施的情境提示，不再是無意義留白；文字沿用
+	# 已解析的設施 loc key，避免新增另一套玩家可見字串。
+	var facility_context := Label.new()
+	facility_context.name = "CampFacilityContext"
+	facility_context.text = first_facility_text
+	facility_context.theme_type_variation = &"ExpeditionCampFooterContext"
+	facility_context.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	facility_context.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	facility_context.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	secondary.add_child(facility_context)
+	for action_id: StringName in [&"camp.settings", &"camp.menu"]:
 		var button := _new_action_button(action_id)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		primary.add_child(button)
+		button.theme_type_variation = &"ExpeditionCampSecondaryAction"
+		ExpeditionLayoutMetrics.set_fixed_min(button, 240.0, 72.0)
+		button.size_flags_horizontal = Control.SIZE_SHRINK_END
+		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		secondary.add_child(button)
 
 
 func _new_action_button(action_id: StringName) -> Button:
@@ -1502,7 +1741,9 @@ func _new_shop_card(
 	)
 	card.theme_type_variation = &"ExpeditionShopCard"
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	# PREPARE 的相鄰分組動作頁可能高於商店列；卡片維持 layout-reference
+	# 的固定高度，不被整條 bottom scroll content 拉伸而把底列推到 viewport 外。
+	card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	card.set_meta(&"shop_slot_index", slot_index)
 	card.set_meta(
 		&"shop_offer_id",
@@ -1525,7 +1766,11 @@ func _new_shop_card(
 			)
 		)
 	)
-	ExpeditionLayoutMetrics.set_fixed_min(card, 168.0, 108.0)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		card,
+		ExpeditionLayoutMetrics.SHOP_CARD_SIZE.x,
+		ExpeditionLayoutMetrics.SHOP_CARD_SIZE.y
+	)
 	if preview == null:
 		var empty_key := (
 			&"error.presentation.action_not_available"
@@ -1582,86 +1827,205 @@ func _add_shop_card_content(
 	card: Button,
 	portrait: Texture2D
 ) -> void:
-	var content := VBoxContainer.new()
+	var content := MarginContainer.new()
 	content.name = "CardContent"
 	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content.theme_type_variation = &"ExpeditionShopCardInnerMargin"
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.clip_contents = true
 	card.add_child(content)
-
-	var identity_row := HBoxContainer.new()
-	identity_row.name = "IdentityRow"
-	identity_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ExpeditionLayoutMetrics.set_fixed_min(identity_row, 0.0, 48.0)
-	content.add_child(identity_row)
 
 	var portrait_view := TextureRect.new()
 	portrait_view.name = "Portrait"
-	ExpeditionLayoutMetrics.set_fixed_min(portrait_view, 48.0, 48.0)
 	portrait_view.texture = portrait
 	portrait_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	portrait_view.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	portrait_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	identity_row.add_child(portrait_view)
+	content.add_child(portrait_view)
 
-	var identity_text := VBoxContainer.new()
-	identity_text.name = "IdentityText"
-	identity_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity_row.add_child(identity_text)
+	var gradient_texture := GradientTexture2D.new()
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([
+		0.0,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_GRADIENT_START,
+		1.0,
+	])
+	gradient.colors = PackedColorArray([
+		Color(0.0156863, 0.027451, 0.0470588, 0.0),
+		Color(0.0156863, 0.027451, 0.0470588, 0.72),
+		Color(0.0156863, 0.027451, 0.0470588, 0.98),
+	])
+	gradient_texture.gradient = gradient
+	gradient_texture.fill_from = Vector2(0.5, 0.0)
+	gradient_texture.fill_to = Vector2(0.5, 1.0)
+	var gradient_view := TextureRect.new()
+	gradient_view.name = "BottomReadabilityGradient"
+	gradient_view.texture = gradient_texture
+	gradient_view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	gradient_view.stretch_mode = TextureRect.STRETCH_SCALE
+	gradient_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(gradient_view)
+
+	var foreground_margin := MarginContainer.new()
+	foreground_margin.name = "ForegroundMargin"
+	foreground_margin.theme_type_variation = &"ExpeditionShopForegroundMargin"
+	foreground_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(foreground_margin)
+
+	var foreground := VBoxContainer.new()
+	foreground.name = "ForegroundLayout"
+	foreground.theme_type_variation = &"ExpeditionShopForegroundLayout"
+	foreground.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	foreground_margin.add_child(foreground)
+
+	var top_info := HBoxContainer.new()
+	top_info.name = "TopInfo"
+	top_info.theme_type_variation = &"ExpeditionShopTopInfo"
+	top_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	foreground.add_child(top_info)
+
+	var badge_stack := VBoxContainer.new()
+	badge_stack.name = "TraitBadges"
+	badge_stack.theme_type_variation = &"ExpeditionShopTraitBadgeStack"
+	badge_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge_stack.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	top_info.add_child(badge_stack)
+
+	var top_spacer := Control.new()
+	top_spacer.name = "TopSpacer"
+	top_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top_info.add_child(top_spacer)
+
+	var ownership_cues := HBoxContainer.new()
+	ownership_cues.name = "OwnershipCues"
+	ownership_cues.theme_type_variation = &"ExpeditionShopOwnershipCues"
+	ownership_cues.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ownership_cues.size_flags_horizontal = Control.SIZE_SHRINK_END
+	top_info.add_child(ownership_cues)
+
+	var owned_cue := HBoxContainer.new()
+	owned_cue.name = "OwnedCueShapes"
+	owned_cue.theme_type_variation = &"ExpeditionShopTinyCueRow"
+	owned_cue.alignment = BoxContainer.ALIGNMENT_END
+	owned_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		owned_cue,
+		ExpeditionLayoutMetrics.SHOP_CARD_OWNED_CUE_WIDTH,
+		ExpeditionLayoutMetrics.SHOP_CARD_STAR_CUE_SIZE.y
+	)
+	ownership_cues.add_child(owned_cue)
+
+	var star_cue := HBoxContainer.new()
+	star_cue.name = "StarUpCueShape"
+	star_cue.theme_type_variation = &"ExpeditionShopTinyCueRow"
+	star_cue.alignment = BoxContainer.ALIGNMENT_END
+	star_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		star_cue,
+		ExpeditionLayoutMetrics.SHOP_CARD_STAR_CUE_SIZE.x,
+		ExpeditionLayoutMetrics.SHOP_CARD_STAR_CUE_SIZE.y
+	)
+	ownership_cues.add_child(star_cue)
+
+	var vertical_spacer := Control.new()
+	vertical_spacer.name = "VerticalSpacer"
+	vertical_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vertical_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	foreground.add_child(vertical_spacer)
+
+	var bottom_info := HBoxContainer.new()
+	bottom_info.name = "BottomInfo"
+	bottom_info.theme_type_variation = &"ExpeditionShopCardBottomInfo"
+	bottom_info.alignment = BoxContainer.ALIGNMENT_CENTER
+	bottom_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		bottom_info,
+		0.0,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_INFO_HEIGHT
+	)
+	foreground.add_child(bottom_info)
 
 	var name_label := Label.new()
 	name_label.name = "UnitName"
-	name_label.add_theme_font_size_override(&"font_size", 18)
+	name_label.theme_type_variation = &"ExpeditionShopCardName"
 	name_label.clip_text = true
 	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity_text.add_child(name_label)
+	bottom_info.add_child(name_label)
+
+	var cost_block := HBoxContainer.new()
+	cost_block.name = "CostBlock"
+	cost_block.theme_type_variation = &"ExpeditionShopCardCostBlock"
+	cost_block.alignment = BoxContainer.ALIGNMENT_END
+	cost_block.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bottom_info.add_child(cost_block)
+
+	var coin_icon := Label.new()
+	coin_icon.name = "CoinIcon"
+	coin_icon.theme_type_variation = &"ExpeditionShopCoinGlyph"
+	coin_icon.text = "●"
+	coin_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	coin_icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	coin_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		coin_icon,
+		ExpeditionLayoutMetrics.SHOP_CARD_COST_ICON_SIZE,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_INFO_HEIGHT
+	)
+	cost_block.add_child(coin_icon)
 
 	var price_label := Label.new()
-	price_label.name = "PriceTier"
-	price_label.add_theme_font_size_override(&"font_size", 18)
-	price_label.clip_text = true
-	price_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	price_label.name = "CostValue"
+	price_label.theme_type_variation = &"ExpeditionShopCardCost"
+	price_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	price_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	price_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	identity_text.add_child(price_label)
+	cost_block.add_child(price_label)
+
 	var tier_cues := HBoxContainer.new()
 	tier_cues.name = "TierCueShapes"
-	tier_cues.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	tier_cues.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	tier_cues.grow_vertical = Control.GROW_DIRECTION_BOTH
+	tier_cues.theme_type_variation = &"ExpeditionShopTinyCueRow"
 	tier_cues.alignment = BoxContainer.ALIGNMENT_END
 	tier_cues.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ExpeditionLayoutMetrics.set_fixed_min(tier_cues, 48.0, 12.0)
-	price_label.add_child(tier_cues)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		tier_cues,
+		ExpeditionLayoutMetrics.SHOP_CARD_TIER_CUE_WIDTH,
+		ExpeditionLayoutMetrics.SHOP_CARD_BOTTOM_INFO_HEIGHT
+	)
+	cost_block.add_child(tier_cues)
 
-	var trait_label := Label.new()
-	trait_label.name = "Traits"
-	trait_label.add_theme_font_size_override(&"font_size", 18)
-	trait_label.clip_text = true
-	trait_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	trait_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	trait_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_child(trait_label)
-
-	var ownership_label := Label.new()
-	ownership_label.name = "OwnedAndStarUp"
-	ownership_label.add_theme_font_size_override(&"font_size", 18)
-	ownership_label.clip_text = true
-	ownership_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	ownership_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ownership_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_child(ownership_label)
-	var star_cue := HBoxContainer.new()
-	star_cue.name = "StarUpCueShape"
-	star_cue.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	star_cue.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	star_cue.grow_vertical = Control.GROW_DIRECTION_BOTH
-	star_cue.alignment = BoxContainer.ALIGNMENT_END
-	star_cue.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ExpeditionLayoutMetrics.set_fixed_min(star_cue, 30.0, 12.0)
-	ownership_label.add_child(star_cue)
+	# 舊路徑降為不可見的 accessible compatibility copy：既有唯讀語意
+	# probe／screen-reader metadata 可繼續讀取，玩家可見卡面不會出現長句。
+	var legacy_identity := HBoxContainer.new()
+	legacy_identity.name = "IdentityRow"
+	legacy_identity.visible = false
+	content.add_child(legacy_identity)
+	var legacy_identity_text := VBoxContainer.new()
+	legacy_identity_text.name = "IdentityText"
+	legacy_identity.add_child(legacy_identity_text)
+	var legacy_name := Label.new()
+	legacy_name.name = "UnitName"
+	legacy_identity_text.add_child(legacy_name)
+	var legacy_price := Label.new()
+	legacy_price.name = "PriceTier"
+	legacy_identity_text.add_child(legacy_price)
+	var legacy_tier_cues := HBoxContainer.new()
+	legacy_tier_cues.name = "TierCueShapes"
+	legacy_price.add_child(legacy_tier_cues)
+	var legacy_traits := Label.new()
+	legacy_traits.name = "Traits"
+	legacy_traits.visible = false
+	content.add_child(legacy_traits)
+	var legacy_ownership := Label.new()
+	legacy_ownership.name = "OwnedAndStarUp"
+	legacy_ownership.visible = false
+	content.add_child(legacy_ownership)
+	var legacy_star_cue := HBoxContainer.new()
+	legacy_star_cue.name = "StarUpCueShape"
+	legacy_ownership.add_child(legacy_star_cue)
 
 
 func _refresh_shop_card_localization(card: Button) -> void:
@@ -1699,62 +2063,133 @@ func _refresh_shop_card_localization(card: Button) -> void:
 	var star_key: StringName = &"tooltip.star"
 	var ownership_key: StringName = &"prepare.panel.units"
 	var name_label := card.get_node_or_null(
-		"CardContent/IdentityRow/IdentityText/UnitName"
+		"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/UnitName"
 	) as Label
 	if name_label != null:
 		name_label.text = unit_name
 		name_label.set_meta(&"content_localization_id", unit_def_id)
 		name_label.set_meta(&"accessible_text", unit_name)
+	var legacy_name := card.get_node_or_null(
+		"CardContent/IdentityRow/IdentityText/UnitName"
+	) as Label
+	if legacy_name != null:
+		legacy_name.text = unit_name
+		legacy_name.set_meta(&"content_localization_id", unit_def_id)
+		legacy_name.set_meta(&"accessible_text", unit_name)
 	var price_label := card.get_node_or_null(
-		"CardContent/IdentityRow/IdentityText/PriceTier"
+		"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 	) as Label
 	if price_label != null:
-		price_label.text = "%s %d" % [
-			_context.resolve_text(cost_key),
-			cost,
-		]
+		price_label.text = str(cost)
 		price_label.set_meta(&"localization_key", cost_key)
 		price_label.set_meta(&"authoritative_cost", cost)
 		price_label.set_meta(&"authoritative_cost_tier", cost_tier)
-		price_label.set_meta(&"accessible_text", price_label.text)
-		_refresh_shop_tier_cue(price_label, cost_tier)
-	var trait_label := card.get_node_or_null(
+		price_label.set_meta(
+			&"accessible_text",
+			"%s %d" % [_context.resolve_text(cost_key), cost]
+		)
+		_refresh_shop_tier_cue(
+			card.get_node_or_null(
+				"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/TierCueShapes"
+			) as HBoxContainer,
+			price_label.get_theme_color(&"font_color"),
+			cost_tier
+		)
+	var legacy_price := card.get_node_or_null(
+		"CardContent/IdentityRow/IdentityText/PriceTier"
+	) as Label
+	if legacy_price != null:
+		legacy_price.text = "%s %d" % [
+			_context.resolve_text(cost_key), cost,
+		]
+		legacy_price.set_meta(&"localization_key", cost_key)
+		legacy_price.set_meta(&"authoritative_cost", cost)
+		legacy_price.set_meta(&"authoritative_cost_tier", cost_tier)
+		legacy_price.set_meta(&"accessible_text", legacy_price.text)
+		_refresh_shop_tier_cue(
+			legacy_price.get_node_or_null(^"TierCueShapes") as HBoxContainer,
+			price_label.get_theme_color(&"font_color") if price_label != null else Color.WHITE,
+			cost_tier
+		)
+	var badge_stack := card.get_node_or_null(
+		"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/TraitBadges"
+	) as VBoxContainer
+	_refresh_shop_trait_badges(
+		badge_stack,
+		stored_trait_ids,
+		trait_labels
+	)
+	var legacy_traits := card.get_node_or_null(
 		"CardContent/Traits"
 	) as Label
-	if trait_label != null:
-		trait_label.text = " / ".join(trait_labels)
-		trait_label.set_meta(
-			&"content_localization_ids",
-			stored_trait_ids.duplicate()
+	if legacy_traits != null:
+		legacy_traits.text = " / ".join(trait_labels)
+		legacy_traits.set_meta(
+			&"content_localization_ids", stored_trait_ids.duplicate()
 		)
-		trait_label.set_meta(&"accessible_text", trait_label.text)
-	var ownership_label := card.get_node_or_null(
-		"CardContent/OwnedAndStarUp"
-	) as Label
+		legacy_traits.set_meta(&"accessible_text", legacy_traits.text)
+	var ownership_cues := card.get_node_or_null(
+		"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/OwnershipCues"
+	) as HBoxContainer
 	var star_result := (
 		_context.resolve_text(star_key)
 		if star_up_after_purchase
 		else ""
 	)
-	if ownership_label != null:
-		ownership_label.text = "%s %d" % [
+	if ownership_cues != null:
+		var ownership_accessible := "%s %d" % [
 			_context.resolve_text(ownership_key), owned_unit_count,
 		]
 		if star_up_after_purchase:
-			ownership_label.text += " · %s" % star_result
-		ownership_label.set_meta(
+			ownership_accessible += " · %s" % star_result
+		ownership_cues.set_meta(
 			&"localization_keys",
 			[ownership_key, star_key]
 		)
-		ownership_label.set_meta(
+		ownership_cues.set_meta(
 			&"star_up_after_purchase_value",
 			1 if star_up_after_purchase else 0
 		)
-		ownership_label.set_meta(
-			&"accessible_text",
-			ownership_label.text
+		ownership_cues.set_meta(&"accessible_text", ownership_accessible)
+		var cue_color := (
+			price_label.get_theme_color(&"font_color")
+			if price_label != null
+			else Color(0.960784, 0.941176, 0.87451, 1.0)
 		)
-		_refresh_shop_star_cue(ownership_label, star_up_after_purchase)
+		_refresh_shop_owned_cue(
+			ownership_cues.get_node_or_null(^"OwnedCueShapes") as HBoxContainer,
+			cue_color,
+			owned_unit_count
+		)
+		_refresh_shop_star_cue(
+			ownership_cues.get_node_or_null(^"StarUpCueShape") as HBoxContainer,
+			cue_color,
+			star_up_after_purchase
+		)
+	var legacy_ownership := card.get_node_or_null(
+		"CardContent/OwnedAndStarUp"
+	) as Label
+	if legacy_ownership != null:
+		legacy_ownership.text = "%s %d" % [
+			_context.resolve_text(ownership_key), owned_unit_count,
+		]
+		if star_up_after_purchase:
+			legacy_ownership.text += " · %s" % star_result
+		legacy_ownership.set_meta(
+			&"localization_keys", [ownership_key, star_key]
+		)
+		legacy_ownership.set_meta(
+			&"star_up_after_purchase_value",
+			1 if star_up_after_purchase else 0
+		)
+		legacy_ownership.set_meta(
+			&"accessible_text", legacy_ownership.text
+		)
+		_refresh_shop_star_cue(
+			legacy_ownership.get_node_or_null(^"StarUpCueShape") as HBoxContainer,
+			price_label.get_theme_color(&"font_color") if price_label != null else Color.WHITE,
+			star_up_after_purchase
+		)
 
 	var detail_lines: Array[String] = [
 		unit_name,
@@ -1779,8 +2214,91 @@ func _refresh_shop_card_localization(card: Button) -> void:
 	card.set_meta(&"accessible_text", detail_text)
 
 
-func _refresh_shop_tier_cue(price_label: Label, cost_tier: int) -> void:
-	var cue := price_label.get_node_or_null(^"TierCueShapes") as HBoxContainer
+func _refresh_shop_trait_badges(
+	badge_stack: VBoxContainer,
+	trait_ids: Array,
+	trait_labels: Array[String]
+) -> void:
+	if badge_stack == null:
+		return
+	_clear_shop_cue_children(badge_stack)
+	badge_stack.set_meta(&"content_localization_ids", trait_ids.duplicate())
+	badge_stack.set_meta(&"accessible_text", " / ".join(trait_labels))
+	var visible_count := mini(
+		ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_MAX,
+		mini(trait_ids.size(), trait_labels.size())
+	)
+	badge_stack.set_meta(&"visible_badge_count", visible_count)
+	for index: int in visible_count:
+		var trait_id := StringName(trait_ids[index])
+		var badge := PanelContainer.new()
+		badge.name = "TraitBadge%d" % index
+		badge.theme_type_variation = &"ExpeditionShopTraitBadge"
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(
+			badge,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_WIDTH,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_HEIGHT
+		)
+		badge_stack.add_child(badge)
+		var row := HBoxContainer.new()
+		row.name = "BadgeContent"
+		row.theme_type_variation = &"ExpeditionShopTraitBadgeContent"
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.add_child(row)
+		var icon := TextureRect.new()
+		icon.name = "Icon"
+		icon.texture = _shop_trait_icon_texture(trait_id)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(
+			icon,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_ICON_SIZE,
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_ICON_SIZE
+		)
+		row.add_child(icon)
+		var label := Label.new()
+		label.name = "TraitName"
+		label.theme_type_variation = &"ExpeditionShopTraitBadgeLabel"
+		label.text = trait_labels[index]
+		label.clip_text = true
+		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.set_meta(&"content_localization_id", trait_id)
+		label.set_meta(&"accessible_text", label.text)
+		row.add_child(label)
+
+
+func _shop_trait_icon_texture(trait_id: StringName) -> AtlasTexture:
+	var cell := _shop_trait_atlas_cell(trait_id)
+	var icon := AtlasTexture.new()
+	icon.atlas = _SHOP_TRAIT_ATLAS
+	icon.region = Rect2(
+		Vector2(cell) * ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_ATLAS_CELL_SIZE,
+		ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_ATLAS_CELL_SIZE
+	)
+	return icon
+
+
+func _shop_trait_atlas_cell(trait_id: StringName) -> Vector2i:
+	var token := String(trait_id)
+	var faction_tokens := ["arcane", "ember", "frost", "iron", "shadow", "verdant"]
+	if token.begins_with("trait.faction_"):
+		return Vector2i(maxi(0, faction_tokens.find(token.trim_prefix("trait.faction_"))), 0)
+	var role_tokens := ["marksman", "mystic", "sentinel", "trickster", "vanguard", "warden"]
+	if token.begins_with("trait.role_"):
+		return Vector2i(0, maxi(0, role_tokens.find(token.trim_prefix("trait.role_"))) + 1)
+	return Vector2i(0, 7)
+
+
+func _refresh_shop_tier_cue(
+	cue: HBoxContainer,
+	color: Color,
+	cost_tier: int
+) -> void:
 	if cue == null:
 		return
 	_clear_shop_cue_children(cue)
@@ -1789,19 +2307,44 @@ func _refresh_shop_tier_cue(price_label: Label, cost_tier: int) -> void:
 	for index: int in maxi(1, cost_tier):
 		var pip := ColorRect.new()
 		pip.name = "TierPip%d" % index
-		pip.color = price_label.get_theme_color(&"font_color")
+		pip.color = color
 		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ExpeditionLayoutMetrics.set_fixed_min(pip, 6.0, 6.0)
+		ExpeditionLayoutMetrics.set_fixed_min(
+			pip,
+			ExpeditionLayoutMetrics.SHOP_CARD_TIER_PIP_SIZE,
+			ExpeditionLayoutMetrics.SHOP_CARD_TIER_PIP_SIZE
+		)
+		cue.add_child(pip)
+
+
+func _refresh_shop_owned_cue(
+	cue: HBoxContainer,
+	color: Color,
+	owned_unit_count: int
+) -> void:
+	if cue == null:
+		return
+	_clear_shop_cue_children(cue)
+	cue.set_meta(&"owned_unit_count", owned_unit_count)
+	cue.set_meta(&"non_color_cue", &"owned-copy-pips")
+	for index: int in mini(3, maxi(0, owned_unit_count)):
+		var pip := ColorRect.new()
+		pip.name = "OwnedPip%d" % index
+		pip.color = color
+		pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ExpeditionLayoutMetrics.set_fixed_min(
+			pip,
+			ExpeditionLayoutMetrics.SHOP_CARD_OWNED_PIP_SIZE,
+			ExpeditionLayoutMetrics.SHOP_CARD_OWNED_PIP_SIZE
+		)
 		cue.add_child(pip)
 
 
 func _refresh_shop_star_cue(
-	ownership_label: Label,
+	cue: HBoxContainer,
+	color: Color,
 	star_up_after_purchase: bool
 ) -> void:
-	var cue := ownership_label.get_node_or_null(
-		^"StarUpCueShape"
-	) as HBoxContainer
 	if cue == null:
 		return
 	_clear_shop_cue_children(cue)
@@ -1812,12 +2355,12 @@ func _refresh_shop_star_cue(
 	)
 	var primary := ColorRect.new()
 	primary.name = "PrimaryShape"
-	primary.color = ownership_label.get_theme_color(&"font_color")
+	primary.color = color
 	primary.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ExpeditionLayoutMetrics.set_fixed_min(
 		primary,
-		6.0 if star_up_after_purchase else 18.0,
-		12.0 if star_up_after_purchase else 4.0
+		5.0 if star_up_after_purchase else 16.0,
+		10.0 if star_up_after_purchase else 4.0
 	)
 	cue.add_child(primary)
 	if star_up_after_purchase:
@@ -1825,7 +2368,7 @@ func _refresh_shop_star_cue(
 		secondary.name = "SecondaryShape"
 		secondary.color = primary.color
 		secondary.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		ExpeditionLayoutMetrics.set_fixed_min(secondary, 12.0, 6.0)
+		ExpeditionLayoutMetrics.set_fixed_min(secondary, 10.0, 5.0)
 		cue.add_child(secondary)
 
 
@@ -2171,6 +2714,11 @@ func _on_action_pressed(button: Button) -> void:
 					_dispatch_sell_unit_payload(deferred_payload)
 				else:
 					_dispatch_action(deferred, null)
+			else:
+				_play_audio_cue(&"audio.ui_cancel", {
+					"source": &"confirmation_cancel",
+					"action_id": action_id,
+				})
 			return
 	elif _PRESENTATION_CONFIRMATIONS.has(action_id):
 		_open_presentation_confirmation(action_id, button)
@@ -2207,6 +2755,7 @@ func _dispatch_sell_unit_payload(payload: Dictionary) -> void:
 
 
 func _dispatch_action(action_id: StringName, trigger: Button) -> void:
+	var audio_sequence_before := _audio_playback_sequence()
 	var local_result: Variant = _invoke_local_control(action_id)
 	_last_control_result = (
 		local_result
@@ -2215,6 +2764,12 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 	)
 	_status_view.show_result(_last_control_result, _text_resolver())
 	_sync_status_band_visibility()
+	if (
+		_audio_director != null
+		and is_instance_valid(_audio_director)
+		and _audio_director.playback_sequence() == audio_sequence_before
+	):
+		_audio_director.present_action_result(action_id, _last_control_result)
 	if (
 		String(action_id).begins_with("prepare.")
 		or String(action_id).begins_with("service.")
@@ -2246,6 +2801,28 @@ func _dispatch_action(action_id: StringName, trigger: Button) -> void:
 		# draft 已被消費後，不論 runtime 結果都關閉 modal。錯誤由 status
 		# view 呈現，背景控制與焦點則必須恢復，避免留下無效 lease。
 		_close_confirmation_modal()
+
+
+func _attach_audio_director() -> void:
+	if _audio_director != null and is_instance_valid(_audio_director):
+		return
+	_audio_director = ProductionAudioDirector.new()
+	_audio_director.name = "ProductionAudioDirector"
+	add_child(_audio_director)
+	_audio_director.present_route(route_kind)
+
+
+func _audio_playback_sequence() -> int:
+	return (
+		_audio_director.playback_sequence()
+		if _audio_director != null and is_instance_valid(_audio_director)
+		else -1
+	)
+
+
+func _play_audio_cue(cue_id: StringName, context: Dictionary = {}) -> void:
+	if _audio_director != null and is_instance_valid(_audio_director):
+		_audio_director.play_cue(cue_id, context)
 
 
 func _invoke_local_control(action_id: StringName) -> Variant:
@@ -2737,6 +3314,7 @@ func _sync_status_band_visibility() -> void:
 		return
 	var visible := not _status_view.message_text().is_empty()
 	_layout_shell.set_status_visible(visible)
+	_refresh_route_layout()
 	_status_view.attach(
 		self,
 		0,

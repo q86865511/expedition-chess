@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "assets": [
+    {
+      "visual_id": "environment.run_combat",
+      "path": "assets/production/environment/run_combat.png",
+      "sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "attempt_id": "run-combat-attempt-01",
+      "path": "assets/production/combat_attempts/run-combat-attempt-01.png",
+      "sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "atlas_id": "combat_vfx",
+      "path": "assets/production/shared/combat_vfx.png",
+      "sha256": "1d9752d3e38b804952d82b7656fef619aeabfcf658b6a84035b38661f42bf0c6",
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "atlas_id": "status_damage",
+      "path": "assets/production/shared/status_damage.png",
+      "sha256": "e5f66139c3fb82ccfe1fcf6698e8cf12641f2cca0ac0a9a682dc7b60f3ed65fb",
+      "width": 1024,
+      "height": 1024
+    }
+  ],
+  "candidate_count": 2,
+  "unadopted_candidates_in_repository": 0
+}

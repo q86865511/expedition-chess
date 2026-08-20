@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "asset_id": "environment.run_map",
+  "status": "adopted",
+  "adopted_attempt_id": "run-map-attempt-01",
+  "generation": {
+    "mode": "built-in-imagegen",
+    "independent_call": true,
+    "imagegen_output_id": "01a01026-2c7b-7492-969a-a9bb2acc6e8b/exec-c492fdd5-6ea8-4a94-8bb9-ec6c9bd0c2d2.png",
+    "call_id": null,
+    "call_id_exposure": "not_exposed_by_builtin_image_gen",
+    "model_native_seed": "not_exposed_by_builtin_image_gen",
+    "prompt": "Use case: stylized-concept\nAsset type: 16:9 game environment background for the RUN_MAP decision screen in a pixel-art roguelite expedition game\nPrimary request: an original pixel-art expedition map backdrop whose atmosphere and pixel language align with the repository's camp scene and moonlit main-menu key art\nScene/backdrop: a mysterious expedition landscape divided subtly into three low-contrast horizontal terrain bands suggesting three acts—weathered coastal stone in the lower band, drowned teal-lit ruins in the middle band, and a distant dark citadel ridge beneath a moonlit navy sky in the upper band\nStyle/medium: crisp authored pixel art, chunky readable clusters, restrained detail, no painterly blur, no photorealism\nComposition/framing: 16:9 landscape; quiet central field and generous negative space for an overlaid three-act node graph; environmental detail concentrated near outer edges; the three terrain bands should be atmospheric hints, not literal lanes\nLighting/mood: deep ocean-night navy, worn stone, sparse warm amber lamps, subtle teal bioluminescent accents; solemn adventurous mood; low contrast behind future UI\nColor palette: deep navy and blue-black dominant, cool slate stone, warm amber highlights, restrained teal accents, consistent with the established camp and key-art palette\nMaterials/textures: old stone, mist, distant water, soft pixel clouds, tiny lantern glow, no glossy rendering\nConstraints: original composition; background only; no baked nodes, no node markers, no paths, no route lines, no arrows, no text, no UI frames, no buttons, no characters, no creatures, no logo, no watermark; preserve clean readability for foreground UI\nAvoid: bright central focal points, high-frequency noise, modern objects, map parchment, isometric board, hex grid, gradients that look non-pixel-art"
+  },
+  "reference_inputs": [
+    {
+      "role": "pixel-language-and-palette-reference",
+      "path": "assets/production/environment/camp.png",
+      "sha256": "c986abc40e02b39eac5d09b2a711a5583d929a70848fa6620bd83deb542ecdb0"
+    },
+    {
+      "role": "key-art-and-atmosphere-reference",
+      "path": "assets/production/key_art/menu_main.png",
+      "sha256": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37"
+    }
+  ],
+  "source_attempt": {
+    "path": "assets/production/map_attempts/run-map-attempt-01.png",
+    "sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+    "width": 1672,
+    "height": 941
+  },
+  "output": {
+    "path": "assets/production/environment/run_map.png",
+    "sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+    "width": 1672,
+    "height": 941,
+    "processing": "identity-copy"
+  },
+  "selection": {
+    "reviewer": "codex:visual-selection",
+    "decision": "adopted",
+    "candidate_count": 2,
+    "reason": "The selected second candidate preserves the quietest central field, keeps amber and teal accents restrained, and suggests three acts without baking nodes, routes, text, or UI into the image. The unselected first candidate was not copied into the repository or inventory.",
+    "pending_user_visual_approval": false
+  }
+}

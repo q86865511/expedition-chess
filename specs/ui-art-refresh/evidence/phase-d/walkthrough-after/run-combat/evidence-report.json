@@ -1,0 +1,1154 @@
+{
+  "battle_sequence_count": 4,
+  "combat_shop_count": 3,
+  "exit_code": 0,
+  "expected_combat_shop_count": 3,
+  "expected_matrix_count": 9,
+  "expected_playback_state_count": 4,
+  "expected_prepare_shop_count": 3,
+  "issues": [],
+  "matrix_count": 9,
+  "ok": true,
+  "playback_state_count": 4,
+  "prepare_shop_count": 3,
+  "schema_version": "c-2-evidence-1",
+  "screenshots": [
+    {
+      "case": "720p-ui100",
+      "height": 720,
+      "kind": "prepare-shop-revision",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/shop-prepare-720p-ui100.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "7981bbdb0dfd429f336d6d4783eacc81d1b85075e7feb1df36777cb255b1dc5a",
+      "ui_scale": 100,
+      "validation": {
+        "card_count": 5,
+        "clipped_labels": [],
+        "first_card_geometry": {
+          "badges": {
+            "height": 50.0,
+            "visible": true,
+            "width": 76.0,
+            "x": 67.0,
+            "y": 876.0
+          },
+          "bottom": {
+            "height": 27.0,
+            "visible": true,
+            "width": 173.0,
+            "x": 67.0,
+            "y": 943.0
+          },
+          "card": {
+            "height": 108.0,
+            "visible": true,
+            "width": 187.0,
+            "x": 60.0,
+            "y": 869.0
+          },
+          "foreground": {
+            "height": 94.0,
+            "visible": true,
+            "width": 173.0,
+            "x": 67.0,
+            "y": 876.0
+          }
+        },
+        "invalid_cards": [],
+        "leaked_english": [],
+        "ok": true,
+        "populated_count": 5
+      },
+      "width": 1280
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "prepare-shop-revision",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/shop-prepare-1080p-ui100.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "f7e75bc45998f3106249a8956401352dc06ebb0284a7c54c3f27fefb9d2c6ffa",
+      "ui_scale": 100,
+      "validation": {
+        "card_count": 5,
+        "clipped_labels": [],
+        "first_card_geometry": {
+          "badges": {
+            "height": 50.0,
+            "visible": true,
+            "width": 76.0,
+            "x": 67.0,
+            "y": 876.0
+          },
+          "bottom": {
+            "height": 27.0,
+            "visible": true,
+            "width": 173.0,
+            "x": 67.0,
+            "y": 943.0
+          },
+          "card": {
+            "height": 108.0,
+            "visible": true,
+            "width": 187.0,
+            "x": 60.0,
+            "y": 869.0
+          },
+          "foreground": {
+            "height": 94.0,
+            "visible": true,
+            "width": 173.0,
+            "x": 67.0,
+            "y": 876.0
+          }
+        },
+        "invalid_cards": [],
+        "leaked_english": [],
+        "ok": true,
+        "populated_count": 5
+      },
+      "width": 1920
+    },
+    {
+      "case": "1440p-ui100",
+      "height": 1440,
+      "kind": "prepare-shop-revision",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/shop-prepare-1440p-ui100.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "f0cafdbd9ec1e93ef13836947292a50b100cceb25907947f38ff0357e8399d07",
+      "ui_scale": 100,
+      "validation": {
+        "card_count": 5,
+        "clipped_labels": [],
+        "first_card_geometry": {
+          "badges": {
+            "height": 50.0,
+            "visible": true,
+            "width": 76.0,
+            "x": 67.0,
+            "y": 876.0
+          },
+          "bottom": {
+            "height": 27.0,
+            "visible": true,
+            "width": 173.0,
+            "x": 67.0,
+            "y": 943.0
+          },
+          "card": {
+            "height": 108.0,
+            "visible": true,
+            "width": 187.0,
+            "x": 60.0,
+            "y": 869.0
+          },
+          "foreground": {
+            "height": 94.0,
+            "visible": true,
+            "width": 173.0,
+            "x": 67.0,
+            "y": 876.0
+          }
+        },
+        "invalid_cards": [],
+        "leaked_english": [],
+        "ok": true,
+        "populated_count": 5
+      },
+      "width": 2560
+    },
+    {
+      "case": "720p-ui100",
+      "height": 720,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-720p-ui100.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "447a8148a4ea416fd9971f8f598138d2227be0b5066184bc7d554ebf5a45aa06",
+      "ui_scale": 100,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 1280
+    },
+    {
+      "case": "720p-ui125",
+      "height": 720,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-720p-ui125.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "058f9ce62e05aab7b765750c1871e731c9726bdbb2c75614bfddc47ab8b63902",
+      "ui_scale": 125,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 1280
+    },
+    {
+      "case": "720p-ui150",
+      "height": 720,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-720p-ui150.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "145f855b80b471bdb1e2713d6d92d4cb278b16442913f63ad7e7d27932ee57cc",
+      "ui_scale": 150,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 1280
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-1080p-ui100.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "0a611df81e850059564bdbcb899ac4179ecb096cb9bc97e8f56720f8f8388b0e",
+      "ui_scale": 100,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui125",
+      "height": 1080,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-1080p-ui125.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "1fda856f3a2b96d95570d9c77fe7e3a69cf6a1f84418bd746ecd84d0041fa9b2",
+      "ui_scale": 125,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui150",
+      "height": 1080,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-1080p-ui150.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "81fe09cafe20638949f327a83c17fa605b657c7d6994012a46b9dcd9d9e542a8",
+      "ui_scale": 150,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 1920
+    },
+    {
+      "case": "1440p-ui100",
+      "height": 1440,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-1440p-ui100.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "6147d57a74e4bac6a7998b5347be101fe7c6f35a5d2c726b86af3b2f4ffce087",
+      "ui_scale": 100,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 2560
+    },
+    {
+      "case": "1440p-ui125",
+      "height": 1440,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-1440p-ui125.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "5495548e6d05e5b59b5ee448acf03a3ddc690272e8a7a254b6efb1d1bf5f4b00",
+      "ui_scale": 125,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 2560
+    },
+    {
+      "case": "1440p-ui150",
+      "height": 1440,
+      "kind": "matrix",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/run-combat-1440p-ui150.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "644a004b325efb3d04a0287618245f3003c493f9ace97027a3135f48e4f8d2f7",
+      "ui_scale": 150,
+      "validation": {
+        "background_ok": true,
+        "board_visible": true,
+        "effects": {
+          "active_damage_labels": 1,
+          "active_vfx": 4,
+          "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+          "processed_sequences": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "spawned_by_kind": {
+            "attack": 2,
+            "floating_damage": 1,
+            "hit": 1,
+            "skill": 1
+          },
+          "status_damage_path": "res://assets/production/shared/status_damage.png"
+        },
+        "ok": true,
+        "playback_cue": "暫停",
+        "surface_count": 1
+      },
+      "width": 2560
+    },
+    {
+      "case": "720p-ui100",
+      "height": 720,
+      "kind": "combat-shop-revision",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/shop-combat-720p-ui100.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "sha256": "ec70f6f4d829e1ed1ef87c11386aba4f57d2e2533a4e0a339cd4f4b0ed109132",
+      "ui_scale": 100,
+      "validation": {
+        "card_count": 5,
+        "clipped_labels": [],
+        "first_card_geometry": {
+          "badges": {
+            "height": 50.0,
+            "visible": true,
+            "width": 76.0,
+            "x": 67.0,
+            "y": 841.0
+          },
+          "bottom": {
+            "height": 27.0,
+            "visible": true,
+            "width": 168.0,
+            "x": 67.0,
+            "y": 908.0
+          },
+          "card": {
+            "height": 108.0,
+            "visible": true,
+            "width": 182.0,
+            "x": 60.0,
+            "y": 834.0
+          },
+          "foreground": {
+            "height": 94.0,
+            "visible": true,
+            "width": 168.0,
+            "x": 67.0,
+            "y": 841.0
+          }
+        },
+        "invalid_cards": [],
+        "leaked_english": [],
+        "ok": true,
+        "populated_count": 5
+      },
+      "width": 1280
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "kind": "combat-shop-revision",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/shop-combat-1080p-ui100.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "sha256": "ee11d52bd89a0853ed2df7645042a0a0aafcd9e823726367aba666ad382b66dd",
+      "ui_scale": 100,
+      "validation": {
+        "card_count": 5,
+        "clipped_labels": [],
+        "first_card_geometry": {
+          "badges": {
+            "height": 50.0,
+            "visible": true,
+            "width": 76.0,
+            "x": 67.0,
+            "y": 841.0
+          },
+          "bottom": {
+            "height": 27.0,
+            "visible": true,
+            "width": 168.0,
+            "x": 67.0,
+            "y": 908.0
+          },
+          "card": {
+            "height": 108.0,
+            "visible": true,
+            "width": 182.0,
+            "x": 60.0,
+            "y": 834.0
+          },
+          "foreground": {
+            "height": 94.0,
+            "visible": true,
+            "width": 168.0,
+            "x": 67.0,
+            "y": 841.0
+          }
+        },
+        "invalid_cards": [],
+        "leaked_english": [],
+        "ok": true,
+        "populated_count": 5
+      },
+      "width": 1920
+    },
+    {
+      "case": "1440p-ui100",
+      "height": 1440,
+      "kind": "combat-shop-revision",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/shop-combat-1440p-ui100.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "sha256": "3c51b0d1bc83e447bcd0f8e01e68d228c07cfbaf5804543d60d0e6b966da98c1",
+      "ui_scale": 100,
+      "validation": {
+        "card_count": 5,
+        "clipped_labels": [],
+        "first_card_geometry": {
+          "badges": {
+            "height": 50.0,
+            "visible": true,
+            "width": 76.0,
+            "x": 67.0,
+            "y": 841.0
+          },
+          "bottom": {
+            "height": 27.0,
+            "visible": true,
+            "width": 168.0,
+            "x": 67.0,
+            "y": 908.0
+          },
+          "card": {
+            "height": 108.0,
+            "visible": true,
+            "width": 182.0,
+            "x": 60.0,
+            "y": 834.0
+          },
+          "foreground": {
+            "height": 94.0,
+            "visible": true,
+            "width": 168.0,
+            "x": 67.0,
+            "y": 841.0
+          }
+        },
+        "invalid_cards": [],
+        "leaked_english": [],
+        "ok": true,
+        "populated_count": 5
+      },
+      "width": 2560
+    },
+    {
+      "actual_paused": true,
+      "actual_speed": "x1",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "playback-state",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/playback-pause.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "pause",
+        "paused": true,
+        "speed": 1
+      },
+      "requested_width": 1920,
+      "sha256": "ee11d52bd89a0853ed2df7645042a0a0aafcd9e823726367aba666ad382b66dd",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": true,
+      "actual_speed": "x1",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "battle-sequence",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/battle-sequence-01-pause.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "pause",
+        "paused": true,
+        "speed": 1
+      },
+      "requested_width": 1920,
+      "sequence_index": 1,
+      "sha256": "ee11d52bd89a0853ed2df7645042a0a0aafcd9e823726367aba666ad382b66dd",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": false,
+      "actual_speed": "x1",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "playback-state",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/playback-1x.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "1x",
+        "paused": false,
+        "speed": 1
+      },
+      "requested_width": 1920,
+      "sha256": "5e556ab5d90ba130cd93fce2f995811502652be725396fee1176a4e7becca394",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": false,
+      "actual_speed": "x1",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "battle-sequence",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/battle-sequence-02-1x.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "1x",
+        "paused": false,
+        "speed": 1
+      },
+      "requested_width": 1920,
+      "sequence_index": 2,
+      "sha256": "5e556ab5d90ba130cd93fce2f995811502652be725396fee1176a4e7becca394",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": false,
+      "actual_speed": "x2",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "playback-state",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/playback-2x.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "2x",
+        "paused": false,
+        "speed": 2
+      },
+      "requested_width": 1920,
+      "sha256": "36ff64b5391dd4f0ce3caa901e37e4af09d68f1acbe12bb77ff07d8e89d01c31",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": false,
+      "actual_speed": "x2",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "battle-sequence",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/battle-sequence-03-2x.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "2x",
+        "paused": false,
+        "speed": 2
+      },
+      "requested_width": 1920,
+      "sequence_index": 3,
+      "sha256": "36ff64b5391dd4f0ce3caa901e37e4af09d68f1acbe12bb77ff07d8e89d01c31",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": false,
+      "actual_speed": "x4",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "playback-state",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/playback-4x.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "4x",
+        "paused": false,
+        "speed": 4
+      },
+      "requested_width": 1920,
+      "sha256": "3e6453fcd9c721bae6e6bcf2a07fce9ae663964241fcf663940a68f2db1d0829",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "actual_paused": false,
+      "actual_speed": "x4",
+      "case": "1080p-ui100",
+      "effects": {
+        "active_damage_labels": 1,
+        "active_vfx": 4,
+        "combat_vfx_path": "res://assets/production/shared/combat_vfx.png",
+        "processed_sequences": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "spawned_by_kind": {
+          "attack": 2,
+          "floating_damage": 1,
+          "hit": 1,
+          "skill": 1
+        },
+        "status_damage_path": "res://assets/production/shared/status_damage.png"
+      },
+      "height": 1080,
+      "kind": "battle-sequence",
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/walkthrough-after/run-combat/battle-sequence-04-4x.png",
+      "requested_height": 1080,
+      "requested_state": {
+        "name": "4x",
+        "paused": false,
+        "speed": 4
+      },
+      "requested_width": 1920,
+      "sequence_index": 4,
+      "sha256": "3e6453fcd9c721bae6e6bcf2a07fce9ae663964241fcf663940a68f2db1d0829",
+      "ui_scale": 100,
+      "width": 1920
+    }
+  ]
+}

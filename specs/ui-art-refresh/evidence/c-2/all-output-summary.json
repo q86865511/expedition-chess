@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "suite": "All",
+  "exit_code": 0,
+  "verified_at_utc": "2026-08-19T15:23:50Z",
+  "gut": {
+    "scripts": 355,
+    "tests": 1493,
+    "passing_tests": 1493,
+    "assertions": 39458,
+    "warnings": 3
+  },
+  "required_runs": {
+    "Import": 0,
+    "Smoke": 0,
+    "Gut": 0,
+    "Content": 0,
+    "Canonical": 0,
+    "Combat": 0,
+    "Expedition": 0,
+    "ActEliminationGate": 0,
+    "Spec": 0
+  },
+  "smoke": {
+    "case_count": 10,
+    "failures": 0,
+    "passed": true
+  },
+  "artifact_sha256": {
+    "gut_xml": "e2f06c1c386352e6107196ad8b613cc48563292e57dc6013f350695a1d35e2a6",
+    "gut_godot_log": "7d117db8431529a1b30eac770c5ccdf51391adb9c270cf11f9596dd86f42e8b9",
+    "smoke_json": "8e5596de98dab234dfff0cdd03894dce0f314f2314a12d5d84fe076c67796aa0"
+  },
+  "source": "post-shop-revision tools/run-tests.ps1 -Suite All exit 0 plus artifacts/test/gut.xml, gut.godot.log and smoke.json read-back"
+}

@@ -27,6 +27,7 @@ const SETTLE_RETRY_INTERVAL_MS: float = 500.0
 ## 這是純 presentation 時鐘；只累積 SceneTree 傳入的 delta，不讀系統時間，
 ## 不改 canonical transcript、事件順序或 battle summary。
 const MIN_VISIBLE_PLAYBACK_MS: float = 750.0
+const COMBAT_BACKGROUND_ID: StringName = &"environment.run_combat"
 const SEMANTIC_PALETTES: Dictionary = {
 	&"default": {
 		&"ally": Color("7ee0a1"),
@@ -67,6 +68,8 @@ var _snapshot: RunPresentationSnapshot
 var _hud_shell: InRunHudShell
 var _world_snapshot_factory := WorldBoardSnapshotFactory.new()
 var _combat_world_projection := CombatWorldEventProjection.new()
+var _environment_visuals := ProductionEnvironmentVisualCatalog.new()
+var _combat_effects_renderer: CombatWorldEffectsRenderer
 var _unit_selector: ItemList
 var _selected_unit_serial: int = -1
 var _settle_requested: bool = false
@@ -110,6 +113,7 @@ func compose(
 	_combat_world_projection = CombatWorldEventProjection.new(
 		_build_summon_authority()
 	)
+	_combat_effects_renderer = null
 	var projection_error := _combat_world_projection.compose(
 		_world_snapshot_factory.build_combat(_snapshot.deep_clone())
 	)
@@ -160,6 +164,7 @@ func _process(delta: float) -> void:
 func advance_presentation_frame(delta_ms: float) -> void:
 	if _playback_port == null:
 		return
+	_advance_combat_effects(delta_ms)
 	if _settle_requested:
 		_advance_settle_retry(delta_ms)
 		return
@@ -183,7 +188,9 @@ func advance_playback_frame(delta_ms: float) -> BattleEventWindowResult:
 		return result
 	if not result.window.events.is_empty():
 		_render_damage_events(result.window.events)
-		_present_world_event_window(result.window.events)
+		var world_error := _present_world_event_window(result.window.events)
+		if world_error.is_empty():
+			_present_combat_effects(result.window.events)
 	if result.window.exhausted:
 		_settlement_pending_visibility_contract = true
 	_try_settle_after_visibility_contract()
@@ -308,6 +315,8 @@ func bind_playback_port(port: LiveScreenPlaybackPort) -> StringName:
 	if port == null:
 		return SCREEN_NOT_ACTIVE
 	_playback_port = port
+	_sync_playback_state_cue()
+	call_deferred(&"_sync_playback_state_cue")
 	return &""
 
 
@@ -331,13 +340,19 @@ func try_playback() -> BattlePlaybackStateResult:
 func set_playback_speed(multiplier: int) -> BattlePlaybackCommandResult:
 	if _playback_port == null:
 		return BattlePlaybackCommandResult.failure(_screen_not_active_error())
-	return _playback_port.set_speed(multiplier)
+	var result := _playback_port.set_speed(multiplier)
+	if result.ok:
+		_sync_playback_state_cue()
+	return result
 
 
 func set_playback_paused(paused: bool) -> BattlePlaybackCommandResult:
 	if _playback_port == null:
 		return BattlePlaybackCommandResult.failure(_screen_not_active_error())
-	return _playback_port.set_paused(paused)
+	var result := _playback_port.set_paused(paused)
+	if result.ok:
+		_sync_playback_state_cue()
+	return result
 
 
 func drain_playback_window(
@@ -350,7 +365,9 @@ func drain_playback_window(
 	if result.ok and result.window != null:
 		_render_damage_events(result.window.events)
 		if not result.window.events.is_empty():
-			_present_world_event_window(result.window.events)
+			var world_error := _present_world_event_window(result.window.events)
+			if world_error.is_empty():
+				_present_combat_effects(result.window.events)
 	return result
 
 
@@ -381,6 +398,70 @@ func _render_damage_events(events: Array) -> void:
 	)
 	if accessibility != null:
 		accessibility.render_damage_events(events)
+
+
+func _present_combat_effects(events: Array) -> void:
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen != null:
+		parent_screen.present_combat_audio(events)
+	if _combat_effects_renderer == null or not is_instance_valid(
+		_combat_effects_renderer
+	):
+		return
+	var report := _accessibility_report()
+	_combat_effects_renderer.configure_accessibility(
+		report.motion_effects_enabled if report != null and report.ok else true
+	)
+	var damage_budget := (
+		report.damage_event_budget if report != null and report.ok else 96
+	)
+	_combat_effects_renderer.present_events(
+		events,
+		_combat_world_projection.snapshot_clone(),
+		damage_budget
+	)
+
+
+func _advance_combat_effects(delta_ms: float) -> void:
+	if _combat_effects_renderer == null or not is_instance_valid(
+		_combat_effects_renderer
+	):
+		return
+	var playback := try_playback()
+	if playback == null or not playback.ok or playback.state == null:
+		return
+	if playback.state.paused:
+		return
+	var multiplier := float({
+		&"x1": 1.0,
+		&"x2": 2.0,
+		&"x4": 4.0,
+	}.get(playback.state.speed, 1.0))
+	_combat_effects_renderer.advance_playback(maxf(0.0, delta_ms) * multiplier)
+
+
+func _accessibility_report() -> AccessibilityRuntimeReport:
+	var parent_screen := get_parent() as ProductionScreen
+	var accessibility := (
+		parent_screen.get_node_or_null(^"AccessibilityRuntime")
+		as ProductionAccessibilityHost
+		if parent_screen != null
+		else null
+	)
+	return (
+		accessibility.runtime_accessibility_report()
+		if accessibility != null
+		else null
+	)
+
+
+func combat_effects_report() -> Dictionary:
+	return (
+		_combat_effects_renderer.visual_report()
+		if _combat_effects_renderer != null
+		and is_instance_valid(_combat_effects_renderer)
+		else {}
+	)
 
 
 func enemy_rows() -> Array[RunCombatIntelModel.EnemyIntelRow]:
@@ -494,7 +575,10 @@ func _build_typed_combat_controls() -> void:
 	_unit_selector.focus_mode = Control.FOCUS_ALL
 	_unit_selector.select_mode = ItemList.SELECT_SINGLE
 	_unit_selector.set_meta(&"typed_choice_kind", &"combat_unit")
-	_unit_selector.set_meta(&"accessible_text", &"combat.unit_selector")
+	_unit_selector.set_meta(
+		&"accessible_text",
+		_localized_ui_text(&"combat.inspect")
+	)
 	var inspections := _model.inspection_rows()
 	if not inspections.is_empty():
 		for row: RunCombatIntelModel.InspectionIntelRow in inspections:
@@ -521,14 +605,28 @@ func _build_typed_combat_controls() -> void:
 		else null
 	)
 	var selector_host: Control = left_stack if left_stack != null else self
+	var playback_cue := Label.new()
+	playback_cue.name = "PlaybackStateCue"
+	playback_cue.theme_type_variation = &"ExpeditionMicroLabel"
+	playback_cue.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ExpeditionLayoutMetrics.set_min(
+		playback_cue,
+		0.0,
+		ExpeditionLayoutMetrics.COMBAT_PLAYBACK_CUE_HEIGHT
+	)
+	playback_cue.set_meta(&"accessible_text", &"combat.speed")
+	selector_host.add_child(playback_cue)
 	selector_host.add_child(_unit_selector)
 
 	var panel := VBoxContainer.new()
 	panel.name = "InspectionPanel"
 	ExpeditionLayoutMetrics.set_min(panel, 0.0, 0.0)
-	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	panel.set_meta(&"accessible_text", &"combat.inspection_panel")
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	panel.set_meta(
+		&"accessible_text",
+		_localized_ui_text(&"combat.inspect")
+	)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.z_index = 2
 	for value_name: StringName in [
@@ -541,9 +639,11 @@ func _build_typed_combat_controls() -> void:
 	]:
 		var label := Label.new()
 		label.name = value_name
+		label.theme_type_variation = &"ExpeditionCombatInspection"
 		label.text = _localized_ui_text(INSPECTION_NONE_KEY)
-		label.clip_text = true
-		label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		label.clip_text = false
+		label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+		label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		panel.add_child(label)
 	var right_host := _hud_shell.host(
@@ -554,11 +654,66 @@ func _build_typed_combat_controls() -> void:
 		right_host.remove_child(common_inspector)
 		common_inspector.free()
 	right_host.add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build_semantic_controls()
 	if _unit_selector.item_count > 0:
 		_unit_selector.select(0)
 		_on_unit_selected(0)
 		_render_selected_snapshot()
+	_sync_playback_state_cue()
+
+
+func _sync_playback_state_cue() -> void:
+	var cue := find_child("PlaybackStateCue", true, false) as Label
+	if cue == null:
+		return
+	var playback := try_playback()
+	if playback == null or not playback.ok or playback.state == null:
+		cue.text = _localized_ui_text(&"combat.speed")
+		return
+	if playback.state.paused:
+		cue.text = _localized_ui_text(&"combat.pause")
+		cue.set_meta(&"playback_state", &"paused")
+	else:
+		var multiplier := String(playback.state.speed).trim_prefix("x")
+		cue.text = "%s  %s×" % [
+			_localized_ui_text(&"combat.speed"),
+			multiplier,
+		]
+		cue.set_meta(&"playback_state", playback.state.speed)
+	cue.set_meta(&"accessible_text", cue.text)
+	var parent_screen := get_parent() as ProductionScreen
+	if parent_screen == null:
+		return
+	var pause_button := _combat_action_button(parent_screen, &"combat.pause")
+	var speed_button := _combat_action_button(parent_screen, &"combat.speed")
+	if pause_button != null:
+		pause_button.text = "%s%s" % [
+			_localized_ui_text(&"combat.pause"),
+			"  ✓" if playback.state.paused else "",
+		]
+		pause_button.set_meta(&"accessible_text", pause_button.text)
+	if speed_button != null:
+		var multiplier := String(playback.state.speed).trim_prefix("x")
+		speed_button.text = "%s  %s×" % [
+			_localized_ui_text(&"combat.speed"),
+			multiplier,
+		]
+		speed_button.set_meta(&"accessible_text", speed_button.text)
+
+
+func _combat_action_button(
+	parent_screen: ProductionScreen,
+	action_id: StringName
+) -> Button:
+	for node: Node in parent_screen.find_children("*", "Button", true, false):
+		var button := node as Button
+		if (
+			button != null
+			and StringName(button.get_meta(&"action_id", &"")) == action_id
+		):
+			return button
+	return null
 
 
 func _build_semantic_controls() -> void:
@@ -883,7 +1038,8 @@ func _mount_world_board() -> void:
 			get_tree(),
 			_combat_world_projection.snapshot_clone(),
 			Callable(),
-			overlay_mount
+			overlay_mount,
+			_environment_visuals.try_texture(COMBAT_BACKGROUND_ID)
 		)
 	_world_board_mount_error = mount_error
 	if not mount_error.is_empty():
@@ -891,6 +1047,17 @@ func _mount_world_board() -> void:
 		_report_world_board_mount_error(mount_error)
 		return
 	_world_board_ready = true
+	var surfaces := get_tree().get_nodes_in_group(
+		ProductionWorldSurface.MOUNT_GROUP
+	)
+	if surfaces.size() == 1 and surfaces[0] is ProductionWorldSurface:
+		_combat_effects_renderer = (
+			(surfaces[0] as ProductionWorldSurface).combat_effects_renderer()
+		)
+		_combat_effects_renderer.set_meta(
+			&"environment_visual_id",
+			COMBAT_BACKGROUND_ID
+		)
 	_clear_owned_world_board_mount_error()
 	# Mount success is not itself a presented frame. Force a CanvasItem draw so
 	# the first-frame latch can open only after the recovered board is drawable.

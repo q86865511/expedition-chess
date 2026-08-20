@@ -1,4 +1,29 @@
 key,zh_TW,en
+accessibility.allegiance.ally,[A] 我方,[A] Ally
+accessibility.allegiance.enemy,[E] 敵方,[E] Enemy
+accessibility.bond.active,[T] 特性,[T] Trait
+accessibility.combat.damage_event,[傷害|%s] %s %d → %s,[Damage|%s] %s %d -> %s
+accessibility.combat.damage_sample_1,[DMG] 128,[DMG] 128
+accessibility.combat.damage_sample_2,[DMG] 64,[DMG] 64
+accessibility.combat.damage_sample_3,[DMG] 32,[DMG] 32
+accessibility.combat.flash,閃光效果,Flash effects
+accessibility.combat.motion,動態效果,Motion effects
+accessibility.combat.particles,粒子效果,Particle effects
+accessibility.combat.pattern_cue,[///] 傷害　[!] 危險,[///] Damage  [!] Danger
+accessibility.combat.rule_information,規則資訊會同時使用文字、圖示與圖樣提示。,"Rules use text, icons, and pattern cues together."
+accessibility.combat.rule_probe,戰鬥規則：護盾破裂後，敵方會進入第二階段。,"Battle rule: after the shield breaks, the enemy enters phase two."
+accessibility.combat.state_summary,動態：%s　閃光：%s　粒子：%s　傷害數字：%s,Motion: %s  Flash: %s  Particles: %s  Damage numbers: %s
+accessibility.damage.arcane,[DMG] 傷害,[DMG] Damage
+accessibility.danger.lethal,[!] 危險,[!] Danger
+accessibility.rarity.legendary,[*] 稀有度,[*] Rarity
+accessibility.semantic.ally,[A] 我方,[A] Ally
+accessibility.semantic.damage,[DMG] 傷害,[DMG] Damage
+accessibility.semantic.danger,[!] 危險,[!] Danger
+accessibility.semantic.enemy,[E] 敵方,[E] Enemy
+accessibility.semantic.rarity,[*] 稀有度,[*] Rarity
+accessibility.semantic.trait,[T] 特性,[T] Trait
+accessibility.state.full,完整,Full
+accessibility.state.reduced,減少,Reduced
 app.retry_route,重新載入畫面,Reload Screen
 camp.back,返回營地,Back to Camp
 camp.challenge_monument,挑戰紀念碑,Challenge Monument
@@ -112,93 +137,93 @@ error.shop.unit_rule_missing,這個棋子無法交易,That unit cannot be traded
 error.status.post_commit,已生效但畫面未更新（顯示已回退）：,"Applied, but the screen fell back: "
 error.status.pre_commit,操作未生效（尚未變更，可重試）：,"Action did not apply (nothing changed, retry): "
 loc.ability_slice_monster_00,怪物技能：Slice Monster 00,Monster Ability: Slice Monster 00
-loc.ability_slice_monster_00_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_00_description,對目前目標造成「自身攻擊力＋32」點物理傷害。,Deals physical damage equal to this unit's Attack + 32 to the current target.
 loc.ability_slice_monster_01,怪物技能：Slice Monster 01,Monster Ability: Slice Monster 01
-loc.ability_slice_monster_01_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_01_description,對目前目標造成「自身攻擊力＋35」點物理傷害。,Deals physical damage equal to this unit's Attack + 35 to the current target.
 loc.ability_slice_monster_02,怪物技能：Slice Monster 02,Monster Ability: Slice Monster 02
-loc.ability_slice_monster_02_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_02_description,對目前目標造成「自身攻擊力＋38」點物理傷害。,Deals physical damage equal to this unit's Attack + 38 to the current target.
 loc.ability_slice_monster_03,怪物技能：Slice Monster 03,Monster Ability: Slice Monster 03
-loc.ability_slice_monster_03_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_03_description,對目前目標造成「自身攻擊力＋41」點物理傷害。,Deals physical damage equal to this unit's Attack + 41 to the current target.
 loc.ability_slice_monster_04,怪物技能：Slice Monster 04,Monster Ability: Slice Monster 04
-loc.ability_slice_monster_04_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_04_description,對目前目標造成「自身攻擊力＋44」點物理傷害。,Deals physical damage equal to this unit's Attack + 44 to the current target.
 loc.ability_slice_monster_05,怪物技能：Slice Monster 05,Monster Ability: Slice Monster 05
-loc.ability_slice_monster_05_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_05_description,對目前目標造成「自身攻擊力＋47」點物理傷害。,Deals physical damage equal to this unit's Attack + 47 to the current target.
 loc.ability_slice_monster_06,怪物技能：Slice Monster 06,Monster Ability: Slice Monster 06
-loc.ability_slice_monster_06_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_06_description,對目前目標造成「自身攻擊力＋50」點物理傷害。,Deals physical damage equal to this unit's Attack + 50 to the current target.
 loc.ability_slice_monster_07,怪物技能：Slice Monster 07,Monster Ability: Slice Monster 07
-loc.ability_slice_monster_07_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_07_description,對目前目標造成「自身攻擊力＋53」點物理傷害。,Deals physical damage equal to this unit's Attack + 53 to the current target.
 loc.ability_slice_monster_08,怪物技能：Slice Monster 08,Monster Ability: Slice Monster 08
-loc.ability_slice_monster_08_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_08_description,對目前目標造成「自身攻擊力＋56」點物理傷害。,Deals physical damage equal to this unit's Attack + 56 to the current target.
 loc.ability_slice_monster_09,怪物技能：Slice Monster 09,Monster Ability: Slice Monster 09
-loc.ability_slice_monster_09_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_09_description,對目前目標造成「自身攻擊力＋59」點物理傷害。,Deals physical damage equal to this unit's Attack + 59 to the current target.
 loc.ability_slice_monster_10,怪物技能：Slice Monster 10,Monster Ability: Slice Monster 10
-loc.ability_slice_monster_10_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_10_description,對目前目標造成「自身攻擊力＋62」點物理傷害。,Deals physical damage equal to this unit's Attack + 62 to the current target.
 loc.ability_slice_monster_11,怪物技能：Slice Monster 11,Monster Ability: Slice Monster 11
-loc.ability_slice_monster_11_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_monster_11_description,對目前目標造成「自身攻擊力＋65」點物理傷害。,Deals physical damage equal to this unit's Attack + 65 to the current target.
 loc.ability_slice_player_00,棋士技能：Slice Player 00,Unit Ability: Slice Player 00
-loc.ability_slice_player_00_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_00_description,對目前目標造成「自身攻擊力＋48」點物理傷害。,Deals physical damage equal to this unit's Attack + 48 to the current target.
 loc.ability_slice_player_01,棋士技能：Slice Player 01,Unit Ability: Slice Player 01
-loc.ability_slice_player_01_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_01_description,對目前目標造成「自身攻擊力＋50」點物理傷害。,Deals physical damage equal to this unit's Attack + 50 to the current target.
 loc.ability_slice_player_02,棋士技能：Slice Player 02,Unit Ability: Slice Player 02
-loc.ability_slice_player_02_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_02_description,對目前目標造成「自身攻擊力＋52」點物理傷害。,Deals physical damage equal to this unit's Attack + 52 to the current target.
 loc.ability_slice_player_03,棋士技能：Slice Player 03,Unit Ability: Slice Player 03
-loc.ability_slice_player_03_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_03_description,對目前目標造成「自身攻擊力＋54」點物理傷害。,Deals physical damage equal to this unit's Attack + 54 to the current target.
 loc.ability_slice_player_04,棋士技能：Slice Player 04,Unit Ability: Slice Player 04
-loc.ability_slice_player_04_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_04_description,對目前目標造成「自身攻擊力＋56」點物理傷害。,Deals physical damage equal to this unit's Attack + 56 to the current target.
 loc.ability_slice_player_05,棋士技能：Slice Player 05,Unit Ability: Slice Player 05
-loc.ability_slice_player_05_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_05_description,對目前目標造成「自身攻擊力＋58」點物理傷害。,Deals physical damage equal to this unit's Attack + 58 to the current target.
 loc.ability_slice_player_06,棋士技能：Slice Player 06,Unit Ability: Slice Player 06
-loc.ability_slice_player_06_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_06_description,對目前目標造成「自身攻擊力＋60」點物理傷害。,Deals physical damage equal to this unit's Attack + 60 to the current target.
 loc.ability_slice_player_07,棋士技能：Slice Player 07,Unit Ability: Slice Player 07
-loc.ability_slice_player_07_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_07_description,對目前目標造成「自身攻擊力＋62」點物理傷害。,Deals physical damage equal to this unit's Attack + 62 to the current target.
 loc.ability_slice_player_08,棋士技能：Slice Player 08,Unit Ability: Slice Player 08
-loc.ability_slice_player_08_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_08_description,對目前目標造成「自身攻擊力＋64」點物理傷害。,Deals physical damage equal to this unit's Attack + 64 to the current target.
 loc.ability_slice_player_09,棋士技能：Slice Player 09,Unit Ability: Slice Player 09
-loc.ability_slice_player_09_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_09_description,對目前目標造成「自身攻擊力＋66」點物理傷害。,Deals physical damage equal to this unit's Attack + 66 to the current target.
 loc.ability_slice_player_10,棋士技能：Slice Player 10,Unit Ability: Slice Player 10
-loc.ability_slice_player_10_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_10_description,對目前目標造成「自身攻擊力＋68」點物理傷害。,Deals physical damage equal to this unit's Attack + 68 to the current target.
 loc.ability_slice_player_11,棋士技能：Slice Player 11,Unit Ability: Slice Player 11
-loc.ability_slice_player_11_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_11_description,對目前目標造成「自身攻擊力＋70」點物理傷害。,Deals physical damage equal to this unit's Attack + 70 to the current target.
 loc.ability_slice_player_12,棋士技能：Slice Player 12,Unit Ability: Slice Player 12
-loc.ability_slice_player_12_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_12_description,對目前目標造成「自身攻擊力＋72」點物理傷害。,Deals physical damage equal to this unit's Attack + 72 to the current target.
 loc.ability_slice_player_13,棋士技能：Slice Player 13,Unit Ability: Slice Player 13
-loc.ability_slice_player_13_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_13_description,對目前目標造成「自身攻擊力＋74」點物理傷害。,Deals physical damage equal to this unit's Attack + 74 to the current target.
 loc.ability_slice_player_14,棋士技能：Slice Player 14,Unit Ability: Slice Player 14
-loc.ability_slice_player_14_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_14_description,對目前目標造成「自身攻擊力＋76」點物理傷害。,Deals physical damage equal to this unit's Attack + 76 to the current target.
 loc.ability_slice_player_15,棋士技能：Slice Player 15,Unit Ability: Slice Player 15
-loc.ability_slice_player_15_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_15_description,對目前目標造成「自身攻擊力＋78」點物理傷害。,Deals physical damage equal to this unit's Attack + 78 to the current target.
 loc.ability_slice_player_16,棋士技能：Slice Player 16,Unit Ability: Slice Player 16
-loc.ability_slice_player_16_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_16_description,對目前目標造成「自身攻擊力＋80」點物理傷害。,Deals physical damage equal to this unit's Attack + 80 to the current target.
 loc.ability_slice_player_17,棋士技能：Slice Player 17,Unit Ability: Slice Player 17
-loc.ability_slice_player_17_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_17_description,對目前目標造成「自身攻擊力＋82」點物理傷害。,Deals physical damage equal to this unit's Attack + 82 to the current target.
 loc.ability_slice_player_18,棋士技能：Slice Player 18,Unit Ability: Slice Player 18
-loc.ability_slice_player_18_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_18_description,對目前目標造成「自身攻擊力＋84」點物理傷害。,Deals physical damage equal to this unit's Attack + 84 to the current target.
 loc.ability_slice_player_19,棋士技能：Slice Player 19,Unit Ability: Slice Player 19
-loc.ability_slice_player_19_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_19_description,對目前目標造成「自身攻擊力＋86」點物理傷害。,Deals physical damage equal to this unit's Attack + 86 to the current target.
 loc.ability_slice_player_20,棋士技能：Slice Player 20,Unit Ability: Slice Player 20
-loc.ability_slice_player_20_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_20_description,對目前目標造成「自身攻擊力＋88」點物理傷害。,Deals physical damage equal to this unit's Attack + 88 to the current target.
 loc.ability_slice_player_21,棋士技能：Slice Player 21,Unit Ability: Slice Player 21
-loc.ability_slice_player_21_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_21_description,對目前目標造成「自身攻擊力＋90」點物理傷害。,Deals physical damage equal to this unit's Attack + 90 to the current target.
 loc.ability_slice_player_22,棋士技能：Slice Player 22,Unit Ability: Slice Player 22
-loc.ability_slice_player_22_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_22_description,對目前目標造成「自身攻擊力＋92」點物理傷害。,Deals physical damage equal to this unit's Attack + 92 to the current target.
 loc.ability_slice_player_23,棋士技能：Slice Player 23,Unit Ability: Slice Player 23
-loc.ability_slice_player_23_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_23_description,對目前目標造成「自身攻擊力＋94」點物理傷害。,Deals physical damage equal to this unit's Attack + 94 to the current target.
 loc.ability_slice_player_24,棋士技能：Slice Player 24,Unit Ability: Slice Player 24
-loc.ability_slice_player_24_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_24_description,對目前目標造成「自身攻擊力＋96」點物理傷害。,Deals physical damage equal to this unit's Attack + 96 to the current target.
 loc.ability_slice_player_25,棋士技能：Slice Player 25,Unit Ability: Slice Player 25
-loc.ability_slice_player_25_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_25_description,對目前目標造成「自身攻擊力＋98」點物理傷害。,Deals physical damage equal to this unit's Attack + 98 to the current target.
 loc.ability_slice_player_26,棋士技能：Slice Player 26,Unit Ability: Slice Player 26
-loc.ability_slice_player_26_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_26_description,對目前目標造成「自身攻擊力＋100」點物理傷害。,Deals physical damage equal to this unit's Attack + 100 to the current target.
 loc.ability_slice_player_27,棋士技能：Slice Player 27,Unit Ability: Slice Player 27
-loc.ability_slice_player_27_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_27_description,對目前目標造成「自身攻擊力＋102」點物理傷害。,Deals physical damage equal to this unit's Attack + 102 to the current target.
 loc.ability_slice_player_28,棋士技能：Slice Player 28,Unit Ability: Slice Player 28
-loc.ability_slice_player_28_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_28_description,對目前目標造成「自身攻擊力＋104」點物理傷害。,Deals physical damage equal to this unit's Attack + 104 to the current target.
 loc.ability_slice_player_29,棋士技能：Slice Player 29,Unit Ability: Slice Player 29
-loc.ability_slice_player_29_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_29_description,對目前目標造成「自身攻擊力＋106」點物理傷害。,Deals physical damage equal to this unit's Attack + 106 to the current target.
 loc.ability_slice_player_30,棋士技能：Slice Player 30,Unit Ability: Slice Player 30
-loc.ability_slice_player_30_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_30_description,對目前目標造成「自身攻擊力＋108」點物理傷害。,Deals physical damage equal to this unit's Attack + 108 to the current target.
 loc.ability_slice_player_31,棋士技能：Slice Player 31,Unit Ability: Slice Player 31
-loc.ability_slice_player_31_description,對主要敵人造成依攻擊力計算的傷害。,Deals attack-scaled damage to the primary enemy.
+loc.ability_slice_player_31_description,對目前目標造成「自身攻擊力＋110」點物理傷害。,Deals physical damage equal to this unit's Attack + 110 to the current target.
 loc.audio_camp,營地音樂,Camp Music
 loc.audio_combat,戰鬥音樂,Combat Music
 loc.audio_combat_boss_warning,Boss 警示,Boss Warning
@@ -457,93 +482,93 @@ loc.effect_slice_event_gen_10,事件效果 11,Event Effect 11
 loc.effect_slice_event_gen_10_description,事件節點的既有進入效果。,Existing event-node entry effect.
 loc.effect_slice_event_gen_11,事件效果 12,Event Effect 12
 loc.effect_slice_event_gen_11_description,事件節點的既有進入效果。,Existing event-node entry effect.
-loc.effect_slice_monster_00_primary,Slice Monster 00的主要技能效果,Slice Monster 00 Primary Ability Effect
+loc.effect_slice_monster_00_primary,對目前目標造成「自身攻擊力＋32」點物理傷害。,Deals physical damage equal to this unit's Attack + 32 to the current target.
 loc.effect_slice_monster_00_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_01_primary,Slice Monster 01的主要技能效果,Slice Monster 01 Primary Ability Effect
+loc.effect_slice_monster_01_primary,對目前目標造成「自身攻擊力＋35」點物理傷害。,Deals physical damage equal to this unit's Attack + 35 to the current target.
 loc.effect_slice_monster_01_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_02_primary,Slice Monster 02的主要技能效果,Slice Monster 02 Primary Ability Effect
+loc.effect_slice_monster_02_primary,對目前目標造成「自身攻擊力＋38」點物理傷害。,Deals physical damage equal to this unit's Attack + 38 to the current target.
 loc.effect_slice_monster_02_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_03_primary,Slice Monster 03的主要技能效果,Slice Monster 03 Primary Ability Effect
+loc.effect_slice_monster_03_primary,對目前目標造成「自身攻擊力＋41」點物理傷害。,Deals physical damage equal to this unit's Attack + 41 to the current target.
 loc.effect_slice_monster_03_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_04_primary,Slice Monster 04的主要技能效果,Slice Monster 04 Primary Ability Effect
+loc.effect_slice_monster_04_primary,對目前目標造成「自身攻擊力＋44」點物理傷害。,Deals physical damage equal to this unit's Attack + 44 to the current target.
 loc.effect_slice_monster_04_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_05_primary,Slice Monster 05的主要技能效果,Slice Monster 05 Primary Ability Effect
+loc.effect_slice_monster_05_primary,對目前目標造成「自身攻擊力＋47」點物理傷害。,Deals physical damage equal to this unit's Attack + 47 to the current target.
 loc.effect_slice_monster_05_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_06_primary,Slice Monster 06的主要技能效果,Slice Monster 06 Primary Ability Effect
+loc.effect_slice_monster_06_primary,對目前目標造成「自身攻擊力＋50」點物理傷害。,Deals physical damage equal to this unit's Attack + 50 to the current target.
 loc.effect_slice_monster_06_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_07_primary,Slice Monster 07的主要技能效果,Slice Monster 07 Primary Ability Effect
+loc.effect_slice_monster_07_primary,對目前目標造成「自身攻擊力＋53」點物理傷害。,Deals physical damage equal to this unit's Attack + 53 to the current target.
 loc.effect_slice_monster_07_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_08_primary,Slice Monster 08的主要技能效果,Slice Monster 08 Primary Ability Effect
+loc.effect_slice_monster_08_primary,對目前目標造成「自身攻擊力＋56」點物理傷害。,Deals physical damage equal to this unit's Attack + 56 to the current target.
 loc.effect_slice_monster_08_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_09_primary,Slice Monster 09的主要技能效果,Slice Monster 09 Primary Ability Effect
+loc.effect_slice_monster_09_primary,對目前目標造成「自身攻擊力＋59」點物理傷害。,Deals physical damage equal to this unit's Attack + 59 to the current target.
 loc.effect_slice_monster_09_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_10_primary,Slice Monster 10的主要技能效果,Slice Monster 10 Primary Ability Effect
+loc.effect_slice_monster_10_primary,對目前目標造成「自身攻擊力＋62」點物理傷害。,Deals physical damage equal to this unit's Attack + 62 to the current target.
 loc.effect_slice_monster_10_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_monster_11_primary,Slice Monster 11的主要技能效果,Slice Monster 11 Primary Ability Effect
+loc.effect_slice_monster_11_primary,對目前目標造成「自身攻擊力＋65」點物理傷害。,Deals physical damage equal to this unit's Attack + 65 to the current target.
 loc.effect_slice_monster_11_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_00_primary,Slice Player 00的主要技能效果,Slice Player 00 Primary Ability Effect
+loc.effect_slice_player_00_primary,對目前目標造成「自身攻擊力＋48」點物理傷害。,Deals physical damage equal to this unit's Attack + 48 to the current target.
 loc.effect_slice_player_00_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_01_primary,Slice Player 01的主要技能效果,Slice Player 01 Primary Ability Effect
+loc.effect_slice_player_01_primary,對目前目標造成「自身攻擊力＋50」點物理傷害。,Deals physical damage equal to this unit's Attack + 50 to the current target.
 loc.effect_slice_player_01_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_02_primary,Slice Player 02的主要技能效果,Slice Player 02 Primary Ability Effect
+loc.effect_slice_player_02_primary,對目前目標造成「自身攻擊力＋52」點物理傷害。,Deals physical damage equal to this unit's Attack + 52 to the current target.
 loc.effect_slice_player_02_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_03_primary,Slice Player 03的主要技能效果,Slice Player 03 Primary Ability Effect
+loc.effect_slice_player_03_primary,對目前目標造成「自身攻擊力＋54」點物理傷害。,Deals physical damage equal to this unit's Attack + 54 to the current target.
 loc.effect_slice_player_03_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_04_primary,Slice Player 04的主要技能效果,Slice Player 04 Primary Ability Effect
+loc.effect_slice_player_04_primary,對目前目標造成「自身攻擊力＋56」點物理傷害。,Deals physical damage equal to this unit's Attack + 56 to the current target.
 loc.effect_slice_player_04_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_05_primary,Slice Player 05的主要技能效果,Slice Player 05 Primary Ability Effect
+loc.effect_slice_player_05_primary,對目前目標造成「自身攻擊力＋58」點物理傷害。,Deals physical damage equal to this unit's Attack + 58 to the current target.
 loc.effect_slice_player_05_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_06_primary,Slice Player 06的主要技能效果,Slice Player 06 Primary Ability Effect
+loc.effect_slice_player_06_primary,對目前目標造成「自身攻擊力＋60」點物理傷害。,Deals physical damage equal to this unit's Attack + 60 to the current target.
 loc.effect_slice_player_06_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_07_primary,Slice Player 07的主要技能效果,Slice Player 07 Primary Ability Effect
+loc.effect_slice_player_07_primary,對目前目標造成「自身攻擊力＋62」點物理傷害。,Deals physical damage equal to this unit's Attack + 62 to the current target.
 loc.effect_slice_player_07_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_08_primary,Slice Player 08的主要技能效果,Slice Player 08 Primary Ability Effect
+loc.effect_slice_player_08_primary,對目前目標造成「自身攻擊力＋64」點物理傷害。,Deals physical damage equal to this unit's Attack + 64 to the current target.
 loc.effect_slice_player_08_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_09_primary,Slice Player 09的主要技能效果,Slice Player 09 Primary Ability Effect
+loc.effect_slice_player_09_primary,對目前目標造成「自身攻擊力＋66」點物理傷害。,Deals physical damage equal to this unit's Attack + 66 to the current target.
 loc.effect_slice_player_09_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_10_primary,Slice Player 10的主要技能效果,Slice Player 10 Primary Ability Effect
+loc.effect_slice_player_10_primary,對目前目標造成「自身攻擊力＋68」點物理傷害。,Deals physical damage equal to this unit's Attack + 68 to the current target.
 loc.effect_slice_player_10_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_11_primary,Slice Player 11的主要技能效果,Slice Player 11 Primary Ability Effect
+loc.effect_slice_player_11_primary,對目前目標造成「自身攻擊力＋70」點物理傷害。,Deals physical damage equal to this unit's Attack + 70 to the current target.
 loc.effect_slice_player_11_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_12_primary,Slice Player 12的主要技能效果,Slice Player 12 Primary Ability Effect
+loc.effect_slice_player_12_primary,對目前目標造成「自身攻擊力＋72」點物理傷害。,Deals physical damage equal to this unit's Attack + 72 to the current target.
 loc.effect_slice_player_12_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_13_primary,Slice Player 13的主要技能效果,Slice Player 13 Primary Ability Effect
+loc.effect_slice_player_13_primary,對目前目標造成「自身攻擊力＋74」點物理傷害。,Deals physical damage equal to this unit's Attack + 74 to the current target.
 loc.effect_slice_player_13_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_14_primary,Slice Player 14的主要技能效果,Slice Player 14 Primary Ability Effect
+loc.effect_slice_player_14_primary,對目前目標造成「自身攻擊力＋76」點物理傷害。,Deals physical damage equal to this unit's Attack + 76 to the current target.
 loc.effect_slice_player_14_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_15_primary,Slice Player 15的主要技能效果,Slice Player 15 Primary Ability Effect
+loc.effect_slice_player_15_primary,對目前目標造成「自身攻擊力＋78」點物理傷害。,Deals physical damage equal to this unit's Attack + 78 to the current target.
 loc.effect_slice_player_15_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_16_primary,Slice Player 16的主要技能效果,Slice Player 16 Primary Ability Effect
+loc.effect_slice_player_16_primary,對目前目標造成「自身攻擊力＋80」點物理傷害。,Deals physical damage equal to this unit's Attack + 80 to the current target.
 loc.effect_slice_player_16_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_17_primary,Slice Player 17的主要技能效果,Slice Player 17 Primary Ability Effect
+loc.effect_slice_player_17_primary,對目前目標造成「自身攻擊力＋82」點物理傷害。,Deals physical damage equal to this unit's Attack + 82 to the current target.
 loc.effect_slice_player_17_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_18_primary,Slice Player 18的主要技能效果,Slice Player 18 Primary Ability Effect
+loc.effect_slice_player_18_primary,對目前目標造成「自身攻擊力＋84」點物理傷害。,Deals physical damage equal to this unit's Attack + 84 to the current target.
 loc.effect_slice_player_18_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_19_primary,Slice Player 19的主要技能效果,Slice Player 19 Primary Ability Effect
+loc.effect_slice_player_19_primary,對目前目標造成「自身攻擊力＋86」點物理傷害。,Deals physical damage equal to this unit's Attack + 86 to the current target.
 loc.effect_slice_player_19_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_20_primary,Slice Player 20的主要技能效果,Slice Player 20 Primary Ability Effect
+loc.effect_slice_player_20_primary,對目前目標造成「自身攻擊力＋88」點物理傷害。,Deals physical damage equal to this unit's Attack + 88 to the current target.
 loc.effect_slice_player_20_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_21_primary,Slice Player 21的主要技能效果,Slice Player 21 Primary Ability Effect
+loc.effect_slice_player_21_primary,對目前目標造成「自身攻擊力＋90」點物理傷害。,Deals physical damage equal to this unit's Attack + 90 to the current target.
 loc.effect_slice_player_21_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_22_primary,Slice Player 22的主要技能效果,Slice Player 22 Primary Ability Effect
+loc.effect_slice_player_22_primary,對目前目標造成「自身攻擊力＋92」點物理傷害。,Deals physical damage equal to this unit's Attack + 92 to the current target.
 loc.effect_slice_player_22_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_23_primary,Slice Player 23的主要技能效果,Slice Player 23 Primary Ability Effect
+loc.effect_slice_player_23_primary,對目前目標造成「自身攻擊力＋94」點物理傷害。,Deals physical damage equal to this unit's Attack + 94 to the current target.
 loc.effect_slice_player_23_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_24_primary,Slice Player 24的主要技能效果,Slice Player 24 Primary Ability Effect
+loc.effect_slice_player_24_primary,對目前目標造成「自身攻擊力＋96」點物理傷害。,Deals physical damage equal to this unit's Attack + 96 to the current target.
 loc.effect_slice_player_24_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_25_primary,Slice Player 25的主要技能效果,Slice Player 25 Primary Ability Effect
+loc.effect_slice_player_25_primary,對目前目標造成「自身攻擊力＋98」點物理傷害。,Deals physical damage equal to this unit's Attack + 98 to the current target.
 loc.effect_slice_player_25_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_26_primary,Slice Player 26的主要技能效果,Slice Player 26 Primary Ability Effect
+loc.effect_slice_player_26_primary,對目前目標造成「自身攻擊力＋100」點物理傷害。,Deals physical damage equal to this unit's Attack + 100 to the current target.
 loc.effect_slice_player_26_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_27_primary,Slice Player 27的主要技能效果,Slice Player 27 Primary Ability Effect
+loc.effect_slice_player_27_primary,對目前目標造成「自身攻擊力＋102」點物理傷害。,Deals physical damage equal to this unit's Attack + 102 to the current target.
 loc.effect_slice_player_27_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_28_primary,Slice Player 28的主要技能效果,Slice Player 28 Primary Ability Effect
+loc.effect_slice_player_28_primary,對目前目標造成「自身攻擊力＋104」點物理傷害。,Deals physical damage equal to this unit's Attack + 104 to the current target.
 loc.effect_slice_player_28_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_29_primary,Slice Player 29的主要技能效果,Slice Player 29 Primary Ability Effect
+loc.effect_slice_player_29_primary,對目前目標造成「自身攻擊力＋106」點物理傷害。,Deals physical damage equal to this unit's Attack + 106 to the current target.
 loc.effect_slice_player_29_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_30_primary,Slice Player 30的主要技能效果,Slice Player 30 Primary Ability Effect
+loc.effect_slice_player_30_primary,對目前目標造成「自身攻擊力＋108」點物理傷害。,Deals physical damage equal to this unit's Attack + 108 to the current target.
 loc.effect_slice_player_30_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
-loc.effect_slice_player_31_primary,Slice Player 31的主要技能效果,Slice Player 31 Primary Ability Effect
+loc.effect_slice_player_31_primary,對目前目標造成「自身攻擊力＋110」點物理傷害。,Deals physical damage equal to this unit's Attack + 110 to the current target.
 loc.effect_slice_player_31_primary_description,此數值為功能用暫定基線，尚未進行平衡調校。,This value is a functional provisional baseline and is not TUNE-balanced.
 loc.effect_trait_faction_arcane,陣營效果：Arcane,Faction Effect: Arcane
 loc.effect_trait_faction_arcane_description,陣營「Arcane」的正式階段效果。,Formal tier effect for faction Arcane.
@@ -730,29 +755,29 @@ loc.relic_verdant_accord,遺物：Verdant Accord,Relic: Verdant Accord
 loc.relic_wanderer_map,遺物：Wanderer Map,Relic: Wanderer Map
 loc.reward_table_slice_relic,遺物獎勵,Relic Rewards
 loc.reward_table_slice_standard,標準獎勵,Standard Rewards
-loc.trait_faction_arcane,陣營：Arcane,Faction: Arcane
+loc.trait_faction_arcane,秘法同調,Arcane
 loc.trait_faction_arcane_description,啟用陣營「Arcane」的階段效果。,Activates tier effects for faction Arcane.
-loc.trait_faction_ember,陣營：Ember,Faction: Ember
+loc.trait_faction_ember,餘燼之盟,Ember
 loc.trait_faction_ember_description,啟用陣營「Ember」的階段效果。,Activates tier effects for faction Ember.
-loc.trait_faction_frost,陣營：Frost,Faction: Frost
+loc.trait_faction_frost,凜霜之裔,Frost
 loc.trait_faction_frost_description,啟用陣營「Frost」的階段效果。,Activates tier effects for faction Frost.
-loc.trait_faction_iron,陣營：Iron,Faction: Iron
+loc.trait_faction_iron,鐵誓同盟,Iron
 loc.trait_faction_iron_description,啟用陣營「Iron」的階段效果。,Activates tier effects for faction Iron.
-loc.trait_faction_shadow,陣營：Shadow,Faction: Shadow
+loc.trait_faction_shadow,暮影之裔,Shadow
 loc.trait_faction_shadow_description,啟用陣營「Shadow」的階段效果。,Activates tier effects for faction Shadow.
-loc.trait_faction_verdant,陣營：Verdant,Faction: Verdant
+loc.trait_faction_verdant,翠蔭之盟,Verdant
 loc.trait_faction_verdant_description,啟用陣營「Verdant」的階段效果。,Activates tier effects for faction Verdant.
-loc.trait_role_marksman,職業：Marksman,Role: Marksman
+loc.trait_role_marksman,神射手,Marksman
 loc.trait_role_marksman_description,啟用職業「Marksman」的階段效果。,Activates tier effects for role Marksman.
-loc.trait_role_mystic,職業：Mystic,Role: Mystic
+loc.trait_role_mystic,秘術師,Mystic
 loc.trait_role_mystic_description,啟用職業「Mystic」的階段效果。,Activates tier effects for role Mystic.
-loc.trait_role_sentinel,職業：Sentinel,Role: Sentinel
+loc.trait_role_sentinel,哨衛,Sentinel
 loc.trait_role_sentinel_description,啟用職業「Sentinel」的階段效果。,Activates tier effects for role Sentinel.
-loc.trait_role_trickster,職業：Trickster,Role: Trickster
+loc.trait_role_trickster,詭術師,Trickster
 loc.trait_role_trickster_description,啟用職業「Trickster」的階段效果。,Activates tier effects for role Trickster.
-loc.trait_role_vanguard,職業：Vanguard,Role: Vanguard
+loc.trait_role_vanguard,先鋒,Vanguard
 loc.trait_role_vanguard_description,啟用職業「Vanguard」的階段效果。,Activates tier effects for role Vanguard.
-loc.trait_role_warden,職業：Warden,Role: Warden
+loc.trait_role_warden,守望者,Warden
 loc.trait_role_warden_description,啟用職業「Warden」的階段效果。,Activates tier effects for role Warden.
 loc.unit_slice_monster_00,怪物 01,Monster 01
 loc.unit_slice_monster_01,怪物 02,Monster 02
@@ -805,6 +830,9 @@ loc.unlock_slice_challenge_2,挑戰解鎖 3,Challenge Unlock 3
 loc.unlock_slice_challenge_3,挑戰解鎖 4,Challenge Unlock 4
 loc.unlock_slice_challenge_4,挑戰解鎖 5,Challenge Unlock 5
 loc.unlock_slice_challenge_5,挑戰解鎖 6,Challenge Unlock 6
+map.act.1.title,第一幕,Act I
+map.act.2.title,第二幕,Act II
+map.act.3.title,第三幕,Act III
 map.confirm,確認前進,Confirm Route
 map.node_kind.boss,首領,Boss
 map.node_kind.elite,菁英戰鬥,Elite Battle
@@ -870,6 +898,8 @@ prepare.unit,調整隊伍,Manage Party
 prepare.xp,購買經驗值,Buy XP
 results.camp,返回營地,Return to Camp
 results.menu,返回主選單,Return to Menu
+results.metric.currency_delta,本次貨幣獎勵,Expedition Currency Reward
+results.metric.profile_currency,目前持有貨幣,Current Currency
 results.outcome.abandoned,已放棄遠征,Expedition Abandoned
 results.outcome.completed,遠征完成,Expedition Completed
 results.outcome.failed,遠征失敗,Expedition Failed
@@ -930,6 +960,7 @@ settings.value.locale.zh_TW,繁體中文（台灣）,Traditional Chinese (Taiwan
 settings.value.ui_scale_percent.100,100%,100%
 settings.value.ui_scale_percent.125,125%,125%
 settings.value.ui_scale_percent.150,150%,150%
+system_menu.open,選單,Menu
 tooltip.collection_order,圖鑑順序,Collection Order
 tooltip.cost,花費,Cost
 tooltip.reward_amount,獎勵數量,Reward Amount

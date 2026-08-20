@@ -1,0 +1,198 @@
+{
+  "baseline": "ebb9858",
+  "decision": "continue C-1 implementation",
+  "driver": {
+    "completed_node_count": 2,
+    "failure_codes": [
+      "BALANCE_DIAGNOSTIC_NODE_LIMIT"
+    ]
+  },
+  "gate_pass": true,
+  "read_surface": {
+    "frontier_node_ids": [
+      "node_297a153a48963db26b030ac22c9043156f9228b786bc4fc471a4e6d23c744fa1",
+      "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993",
+      "node_775abd9f2b5aebc5a3cd1b6fad3b54b2fcff8943cac524eb3dc3d637a9cfa331"
+    ],
+    "historical_frontier_node_ids": [],
+    "reachable_nodes_alias_ids": [
+      "node_297a153a48963db26b030ac22c9043156f9228b786bc4fc471a4e6d23c744fa1",
+      "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993",
+      "node_775abd9f2b5aebc5a3cd1b6fad3b54b2fcff8943cac524eb3dc3d637a9cfa331"
+    ]
+  },
+  "run": {
+    "app_phase": "MAP",
+    "completed_node_ids": [
+      "node_c1902307b8e393535b62494e4c5d087996efe1d7c66f86198a9f14b1223c63c4",
+      "node_ec164e0494da1dacd2d7016c1f8c7d872407248385ad152b69dab8fbd8d224ac"
+    ],
+    "latest_completed_coordinate": {
+      "act_index": 1,
+      "layer_index": 1
+    }
+  },
+  "run_map_ui": {
+    "compose_error": "",
+    "enabled_historical_node_ids": [],
+    "node_selector_rows": [
+      {
+        "disabled": true,
+        "node_id": "node_ec164e0494da1dacd2d7016c1f8c7d872407248385ad152b69dab8fbd8d224ac"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_ec2e3a3694eecb5c982753d17af448ca80bec7dacd0573a3c8ea48715474feba"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_c1902307b8e393535b62494e4c5d087996efe1d7c66f86198a9f14b1223c63c4"
+      },
+      {
+        "disabled": false,
+        "node_id": "node_297a153a48963db26b030ac22c9043156f9228b786bc4fc471a4e6d23c744fa1"
+      },
+      {
+        "disabled": false,
+        "node_id": "node_c0882b60db6ae41a877269ccfe3473aa529d0ab7195b0ea5d91e2f733ae63993"
+      },
+      {
+        "disabled": false,
+        "node_id": "node_775abd9f2b5aebc5a3cd1b6fad3b54b2fcff8943cac524eb3dc3d637a9cfa331"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_5a458f5edb1360e0ca70d27611767c0f52f960ca891182eb0d23a921f91c6ebb"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_d727085c44b47696b135fbee20ec390ca28b1de0133d38c13b0d7574ed4ab9f8"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_b52c97b6bf2e4914e189ca4aa6d8c1d1b7c01c01ca888a2c7743c9b7811b82b5"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_be756abedd16fdbcb2b16b09f1e12158a828736487a426282e1b130b88e9369a"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_a5e7c3c4d25265f8caa6284ecfcefc3fcb6f156ac0fb0813e2718728ad97d4bd"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_54bcdd02bc844b2a5a085bdc32c6e90bb6a9316814b70f13fe2cc018bb1b4425"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_0f04beab9fc3b6237cbf73303b483f4e264967b8ba419f070b57093a7edb0643"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_d941ad41745c2b78023e3ca16c2379745713a20bd795b2200caa1b32cff30a61"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_05f2d41d4dbe287b474168004927af0881d44a3531187616b43a8da8567e4326"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_57e9a9068824b8f37cf83390605c6f75a575371b9335c3b9b46f49741707bcd1"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_9c73343ca26a4f8eb3aa07bfab340729629d399e68773a42bea415d79f17d1ea"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_74357efa981f427f73e1ba6505201badc4d123a780aff373d2e138867f693f94"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_d3d0c9a14f97e54351990be4964b2a388924a504dc83680d2224ea22b900eee7"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_3ebeb9d3bb8ca25c3f49a6c6fb668fd072057c303b2c38142dd0ca6af7fcbcd7"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_92c2ab4593893c0bf13e4d88643e80bf9112ff1be253abcdc0db7e232309e635"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_88c592e896ab1282a6a4da3d84499260f859fb60c8e8173b1592f68d5f78a1d8"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_2cee6ad29182645762466379e671a73b26f137aac1b266f6fd4c14d3ce122d9d"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_a69a6da0442fc5bbade4ecb48385e44f37edd0cb069ca9e3559ea06992c5f56e"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_f21f6a541699738871265aaae93ddcad22650a59545259bd80104c8c705d596f"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_4cd2de837a6d0815f1c5538365596965ff2206a4aa1123bf5144dde51a332db2"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_6b40f77e4317173340a2304f42a5471e214df48d7c2fcae5d62ec0b6fd9b76b7"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_36c9584e331acab651f2c0221964badde6f6194963f68cc8f19fbbd95480d8e4"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_7a719dccaf358c7955d94669f8757cec11741d2fc36ab3d02fa9e6066cfc325b"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_9da0a58251ef195f4167fc6615369ad4e0a48a80732322e408fcdb1739dde369"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_b3d651748dfd69fd077d29c619767bb61e1da1375f027201ee6c335b2a803086"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_1d2cd4ea1f91407aaca1ce49d700d39890ae1c1767910f80dda28df47b4afbe7"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_a1859a0fce64b4113b0e482d0b1093ce5fba2d2dcb98ff372bd719d4bd5c07a9"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_38a8cbe4fb146c6a22f78a011c69c75fae06ea2834987e5fa12a9f879f7640f6"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_e64fbffaff3e74730f5d8efef0175a44c2322262e685edfc377f2fa5d1e59d1e"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_c85a2e5a642fc8623d18b6395c4db7e2f846f0e355d488b9ce821405dd2464dc"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_b0ca36b0c029262cd8fe6337c20641847b887d56709dbd58be0a7608e585e766"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_fc2d34f4d326f6c8611add7529697c9d4e652baad77c4ee76959bbda72ebc36f"
+      },
+      {
+        "disabled": true,
+        "node_id": "node_01f8240b8690475cb8ae76e2ab6e0afe294bda4bf0cc00e37b45bac6eb758f7a"
+      }
+    ]
+  },
+  "schema_version": "c1-frontier-preflight-2"
+}

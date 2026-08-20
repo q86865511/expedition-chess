@@ -11,7 +11,8 @@ static func mount(
 	tree: SceneTree,
 	snapshot: WorldBoardSnapshot,
 	cell_validator: Callable = Callable(),
-	overlay_mount: Control = null
+	overlay_mount: Control = null,
+	background_texture: Texture2D = null
 ) -> StringName:
 	if tree == null:
 		return COORDINATOR_MISSING
@@ -31,7 +32,8 @@ static func mount(
 		snapshot.deep_clone() if snapshot != null else null,
 		mapper,
 		overlay_mount,
-		cell_validator
+		cell_validator,
+		background_texture
 	)
 
 

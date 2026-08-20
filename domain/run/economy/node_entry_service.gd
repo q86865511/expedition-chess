@@ -39,7 +39,11 @@ func enter(
 		return NodeEntryResult.failure(NodeEntryError.NODE_MISSING, &"target_node_id")
 	if node.completed or draft.map_state.completed_node_ids.has(target_node_id):
 		return NodeEntryResult.failure(NodeEntryError.NODE_COMPLETED, &"target_node_id")
-	if not _reachable(draft, node):
+	# 可進入的節點只有目前所在節點的出邊（MapFrontier）。收斂之前這裡問的是「任一
+	# 已完成節點是否指向它」，於是上一層沒選走的兄弟分支永遠受理——玩家能回頭補刷
+	# 跳過的分支，多結算一次節點收入／商店／獎勵。判準統一後，呈現層亮起的集合與
+	# 這裡受理的集合恆等。
+	if not MapFrontier.is_frontier_node(draft.map_state, node):
 		return NodeEntryResult.failure(NodeEntryError.NODE_UNREACHABLE, &"target_node_id")
 	if not draft.economy_state.shop_offers.is_empty():
 		return NodeEntryResult.failure(NodeEntryError.SHOP_LEAK, &"economy_state.shop_offers")
@@ -132,12 +136,3 @@ func _find_node(nodes: Array[MapNodeState], node_id: String) -> MapNodeState:
 		if node.node_id == node_id:
 			return node
 	return null
-
-func _reachable(run: RunState, target: MapNodeState) -> bool:
-	if run.map_state.completed_node_ids.is_empty():
-		return target.act_index == 1 and target.layer_index == 0
-	for completed_id: String in run.map_state.completed_node_ids:
-		for edge: MapEdgeState in run.map_state.edges:
-			if edge.from_node_id == completed_id and edge.to_node_id == target.node_id:
-				return true
-	return false

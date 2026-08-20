@@ -48,10 +48,26 @@ func _run() -> void:
 	)
 	driver.trace_enabled = OS.get_cmdline_user_args().has("--trace")
 	driver.diagnostic_node_limit = _integer_argument("--diagnostic-node-limit", 0)
+	var ledger := _checkpoint_ledger()
+	var shard_index := _integer_argument("--shard-index", seed_start)
+	var completed_cases := 0
+	var skipped_cases := 0
+	var paused := false
 	var strategy_ids: Array[StringName] = _strategy_ids()
 	for strategy_id: StringName in strategy_ids:
+		if paused:
+			break
 		for case_offset: int in range(seed_count):
 			var seed_index := seed_start + case_offset * seed_stride
+			# 跳過清單只決定「哪些 case 要跑」；每個 case 都由 seed_index 重建，
+			# 跳過不會改變後續 case 的 RNG（決定性不依賴行程連續性）。
+			if ledger != null and ledger.should_skip(strategy_id, seed_index):
+				skipped_cases += 1
+				continue
+			# 暫停在 case 邊界檢查：已開始的 case 一定跑完並落帳，不留半筆。
+			if ledger != null and ledger.pause_requested():
+				paused = true
+				break
 			var case_started := Time.get_ticks_msec()
 			var value: BalanceBotCaseResult = driver.run_case(strategy_id, seed_index)
 			var primary_elapsed_ms := Time.get_ticks_msec() - case_started
@@ -66,13 +82,16 @@ func _run() -> void:
 				primary_elapsed_ms, str(value.terminal),
 				str(value.failure_codes),
 			])
-			if BalanceBotReport.replay_selected(seed_index):
+			var replay_sampled := BalanceBotReport.replay_selected(seed_index)
+			var replay_elapsed_ms := 0
+			var replay_matches := false
+			if replay_sampled:
 				var replay_started := Time.get_ticks_msec()
 				var replay: BalanceBotCaseResult = driver.run_case(strategy_id, seed_index)
-				var replay_matches := replay.replay_digest == value.replay_digest
+				replay_matches = replay.replay_digest == value.replay_digest
+				replay_elapsed_ms = Time.get_ticks_msec() - replay_started
 				report.record_replay_sample(
-					strategy_id, seed_index,
-					Time.get_ticks_msec() - replay_started, replay_matches
+					strategy_id, seed_index, replay_elapsed_ms, replay_matches
 				)
 				if not replay_matches:
 					value.failure_codes.append(&"BALANCE_REPLAY_DRIFT")
@@ -80,6 +99,29 @@ func _run() -> void:
 			# on value.failure_codes before the case is committed into report.cases
 			# / case_proofs (fixes the ordering flagged by F10).
 			report.append(value)
+			if ledger != null and case_valid:
+				var append_error := ledger.append_line(report.checkpoint_line(
+					value, shard_index, primary_elapsed_ms,
+					replay_sampled, replay_elapsed_ms, replay_matches
+				))
+				if append_error != OK:
+					_finish(null, 3, [
+						"checkpoint append failed with error %d" % append_error,
+					])
+					return
+			completed_cases += 1
+	if ledger != null:
+		var status := BalanceCheckpointLedger.STATUS_PAUSED if paused \
+			else BalanceCheckpointLedger.STATUS_COMPLETED
+		var status_error := ledger.write_status(report.checkpoint_status_line(
+			status, shard_index, completed_cases, skipped_cases
+		))
+		if status_error != OK:
+			_finish(null, 3, ["checkpoint status write failed with error %d" % status_error])
+			return
+		print("BALANCE_SHARD_STATUS shard=%d status=%s completed=%d skipped=%d" % [
+			shard_index, status, completed_cases, skipped_cases,
+		])
 	_finish(report, _report_exit_code(report), [] as Array[String])
 
 
@@ -107,6 +149,32 @@ func _integer_argument(name: String, fallback: int) -> int:
 		if arguments[index] == name:
 			return int(arguments[index + 1])
 	return fallback
+
+
+## `--checkpoint-path` 存在時才啟用逐案 checkpoint（未傳＝維持舊行為，
+## run-final-cohort / run-calibration 等既有呼叫端不受影響）。
+func _checkpoint_ledger() -> BalanceCheckpointLedger:
+	var checkpoint_path := _resource_argument("--checkpoint-path")
+	if checkpoint_path.is_empty():
+		return null
+	return BalanceCheckpointLedger.new(
+		checkpoint_path,
+		_resource_argument("--skip-list-path"),
+		_resource_argument("--pause-flag-path")
+	)
+
+
+## 只接受 res://artifacts/test/ 底下的路徑（與 `--artifact-path` 同一條界線），
+## 回傳 globalize 後的絕對路徑；未傳或越界時回空字串。
+func _resource_argument(name: String) -> String:
+	var arguments := OS.get_cmdline_user_args()
+	for index: int in range(arguments.size() - 1):
+		if arguments[index] == name:
+			var candidate := arguments[index + 1]
+			if candidate.begins_with("res://artifacts/test/"):
+				return ProjectSettings.globalize_path(candidate)
+			return ""
+	return ""
 
 
 func _artifact_path() -> String:

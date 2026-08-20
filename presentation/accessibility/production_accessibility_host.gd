@@ -290,6 +290,7 @@ func _update_state_labels(snapshot: SettingsSnapshot) -> void:
 func bind_localization_catalog(catalog: LocalizationCatalog) -> void:
 	if catalog != null:
 		_catalog = catalog
+		_localization.bind_catalog(catalog)
 
 
 func _localized_density(snapshot: SettingsSnapshot) -> String:

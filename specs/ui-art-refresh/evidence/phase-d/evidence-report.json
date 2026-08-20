@@ -1,0 +1,60 @@
+{
+  "schema_version": 2,
+  "phase": "phase-d",
+  "status": "completed",
+  "catalog": {
+    "data_rows": 966,
+    "migrated_accessibility_keys": 25,
+    "finalized_faction_values": 6,
+    "finalized_ability_descriptions": 44,
+    "synchronized_detail_display_aliases": 44,
+    "new_keys_in_final_decision": 0,
+    "csv_sha256": "c3cad96d04179ea278c9138b47c69cc70f5581d2fc3c3e53bc3f870729e3ac73",
+    "raw_sha256": "c3cad96d04179ea278c9138b47c69cc70f5581d2fc3c3e53bc3f870729e3ac73",
+    "bootstrap_seal_matches": true
+  },
+  "final_decision": {
+    "faction_candidate_a_applied": 6,
+    "role_direct_translations_retained": 6,
+    "english_trait_values_changed": 0,
+    "ability_descriptions_applied": 44,
+    "numbered_unit_names_changed": 0,
+    "unit_naming_follow_up": "two_candidates_per_unit"
+  },
+  "app_guard": {
+    "modified_files": [
+      "app/content/localization_catalog.gd",
+      "app/content/project_content_bootstrap.gd"
+    ],
+    "exporter_modified": false,
+    "exporter_generated_csv_raw": true,
+    "guard_passed": true
+  },
+  "walkthrough": {
+    "locale": "zh_TW",
+    "before_png_count": 71,
+    "after_png_count": 107,
+    "final_copy_png_count": 26,
+    "total_png_count": 204,
+    "final_copy": {
+      "run_prepare_combat": {"screenshots": 23, "ok": true, "issues": 0},
+      "collection": {"screenshots": 3, "ok": true, "issues": 0}
+    },
+    "manual_review_passed": true
+  },
+  "tests": {
+    "all": {"exit_code": 0, "tests": 1510, "assertions": 41532, "failures": 0, "errors": 0, "orphans": 0},
+    "smoke": {"exit_code": 0, "cases": 10, "failures": 0},
+    "finalized_copy": {"exit_code": 0, "tests": 3, "assertions": 576},
+    "content_reseal": {"exit_code": 0, "tests": 16, "assertions": 2574},
+    "static_gate": {"exit_code": 0, "tests": 20, "assertions": 312}
+  },
+  "static_checks": {
+    "localization_reference_gate_passed": true,
+    "shop_trait_clipped_labels": 0,
+    "git_diff_check_exit_code": 0,
+    "new_theme_override_references": 0,
+    "tracked_translation_files": 0
+  },
+  "user_owned_project_godot_preserved": true
+}

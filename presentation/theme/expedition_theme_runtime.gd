@@ -24,6 +24,14 @@ const REFERENCE_SPACING_TYPES: Array[StringName] = [
 	&"ExpeditionInventoryRow",
 	&"ExpeditionBoardGrid",
 ]
+## 商店卡的 189×108 固定格仍需容納三枚徽章與底部資訊列；這四種字級
+## 屬卡片內部像素排版，不隨全域 UI scale 再放大。
+const REFERENCE_FONT_TYPES: Array[StringName] = [
+	&"ExpeditionShopTraitBadgeLabel",
+	&"ExpeditionShopCardName",
+	&"ExpeditionShopCardCost",
+	&"ExpeditionShopCoinGlyph",
+]
 const SPACING_TOKENS: Dictionary = {
 	&"space_1": 6,
 	&"space_2": 12,
@@ -76,11 +84,14 @@ func _scale_theme(runtime_theme: Theme, factor: float) -> void:
 	)
 	for type_name: StringName in BASE_THEME.get_type_list():
 		for size_name: StringName in BASE_THEME.get_font_size_list(type_name):
+			var font_factor := (
+				1.0 if type_name in REFERENCE_FONT_TYPES else factor
+			)
 			runtime_theme.set_font_size(
 				size_name,
 				type_name,
 				roundi(
-					float(BASE_THEME.get_font_size(size_name, type_name)) * factor
+					float(BASE_THEME.get_font_size(size_name, type_name)) * font_factor
 				)
 			)
 		for constant_name: StringName in BASE_THEME.get_constant_list(type_name):

@@ -434,12 +434,15 @@ func _render_top_hud() -> void:
 		return
 	var row := VBoxContainer.new()
 	row.name = "InRunProgressBar"
+	# The route title is a sibling overlay. Keep HUD metrics above its transparent
+	# layout rectangle so UI-scale minimum widths cannot mask the first metric.
+	row.z_index = 2
 	row.clip_contents = true
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	top.add_child(row)
 	var metrics := GridContainer.new()
 	metrics.name = "InRunResourceMetrics"
-	metrics.columns = 4
+	metrics.columns = 4 if _route_kind == &"RUN_PREPARE" else 3
 	metrics.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	metrics.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	metrics.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -453,7 +456,7 @@ func _render_top_hud() -> void:
 		)
 	)
 	hp.name = "ExpeditionHpValue"
-	hp.theme_type_variation = &"ExpeditionSection"
+	hp.theme_type_variation = &"ExpeditionTopMetric"
 	hp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	metrics.add_child(hp)
 	var economy_gold := (
@@ -467,7 +470,7 @@ func _render_top_hud() -> void:
 			&"prepare.resource.gold", str(economy_gold)
 		)
 		gold.name = "GoldValue"
-		gold.theme_type_variation = &"ExpeditionSection"
+		gold.theme_type_variation = &"ExpeditionTopMetric"
 		gold.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		metrics.add_child(gold)
 		var level_xp_value := ""
@@ -492,7 +495,7 @@ func _render_top_hud() -> void:
 			&"prepare.resource.level_xp", level_xp_value
 		)
 		level_xp.name = "LevelXpValue"
-		level_xp.theme_type_variation = &"ExpeditionSection"
+		level_xp.theme_type_variation = &"ExpeditionTopMetric"
 		level_xp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		metrics.add_child(level_xp)
 	if _route_kind == &"RUN_PREPARE" and _snapshot.board_validation_report != null:
@@ -507,7 +510,7 @@ func _render_top_hud() -> void:
 			]
 		)
 		population.name = "PopulationValue"
-		population.theme_type_variation = &"ExpeditionSection"
+		population.theme_type_variation = &"ExpeditionTopMetric"
 		population.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		metrics.add_child(population)
 	if _route_kind == &"RUN_PREPARE":
@@ -520,7 +523,7 @@ func _render_top_hud() -> void:
 	row.add_child(progress_row)
 	var progress := Label.new()
 	progress.name = "RunProgressTracker"
-	progress.theme_type_variation = &"ExpeditionSection"
+	progress.theme_type_variation = &"ExpeditionTopMetric"
 	progress.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	progress.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	progress.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -536,10 +539,10 @@ func _render_top_hud() -> void:
 
 
 func _render_prepare_economy_details(row: VBoxContainer) -> void:
-	var details := HBoxContainer.new()
+	var details := VBoxContainer.new()
 	details.name = "PrepareEconomyDetails"
 	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	details.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	details.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(details)
 	if _shop_economy == null:
@@ -548,23 +551,27 @@ func _render_prepare_economy_details(row: VBoxContainer) -> void:
 		)
 		unavailable.name = "ShopEconomyUnavailable"
 		unavailable.set_meta(&"quote_fail_closed", true)
+		unavailable.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		details.add_child(unavailable)
 		return
 	var win_streak := _metric(
 		&"prepare.resource.win_streak", str(_shop_economy.win_streak)
 	)
 	win_streak.name = "WinStreakValue"
+	win_streak.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(win_streak)
 	var loss_streak := _metric(
 		&"prepare.resource.loss_streak", str(_shop_economy.loss_streak)
 	)
 	loss_streak.name = "LossStreakValue"
+	loss_streak.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(loss_streak)
 	var odds := _metric(
 		&"prepare.resource.shop_odds",
 		_shop_odds_text(_shop_economy.odds_tier_basis_points)
 	)
 	odds.name = "ShopOddsValue"
+	odds.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	odds.set_meta(&"odds_level", _shop_economy.odds_level)
 	odds.set_meta(
 		&"odds_tier_basis_points",
@@ -623,15 +630,47 @@ func _render_left_hud() -> void:
 	ExpeditionLayoutMetrics.set_reference_min(stack, Vector2(left.size.x, 0.0))
 	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(stack)
+	if _route_kind == &"RUN_PREPARE":
+		var economy_details := find_child(
+			"PrepareEconomyDetails", true, false
+		) as VBoxContainer
+		if economy_details != null:
+			economy_details.get_parent().remove_child(economy_details)
+			stack.add_child(economy_details)
+			economy_details.set_meta(&"route_local_reflow", &"left_scroll")
 	stack.add_child(_heading(&"prepare.panel.synergies"))
 	var traits := ItemList.new()
 	traits.name = "TraitList"
-	ExpeditionLayoutMetrics.set_min(traits, 0.0, 150.0)
+	ExpeditionLayoutMetrics.set_min(
+		traits,
+		0.0,
+		ExpeditionLayoutMetrics.RUN_PREPARE_TRAIT_EMPTY_HEIGHT
+	)
 	traits.focus_mode = Control.FOCUS_ALL
 	traits.set_meta(&"typed_data_kind", &"trait_preview")
+	var empty_state: Label
 	if _trait_models.is_empty():
-		traits.add_item(_text(&"prepare.empty.synergies"))
+		var empty_text := _text(&"prepare.empty.synergies")
+		traits.add_item(empty_text)
 		traits.set_item_disabled(0, true)
+		traits.set_item_tooltip(0, empty_text)
+		traits.set_meta(&"accessible_text", empty_text)
+		traits.visible = false
+		traits.focus_mode = Control.FOCUS_NONE
+		empty_state = Label.new()
+		empty_state.name = "TraitEmptyState"
+		empty_state.theme_type_variation = &"ExpeditionAuxiliary"
+		empty_state.text = empty_text
+		empty_state.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		empty_state.clip_text = false
+		empty_state.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+		empty_state.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		empty_state.set_meta(&"accessible_text", empty_text)
+		ExpeditionLayoutMetrics.set_min(
+			empty_state,
+			0.0,
+			ExpeditionLayoutMetrics.RUN_PREPARE_TRAIT_EMPTY_HEIGHT
+		)
 	else:
 		for model: Dictionary in _trait_models:
 			traits.add_item(_trait_row_text(model))
@@ -645,6 +684,8 @@ func _render_left_hud() -> void:
 		traits.item_activated.connect(_show_trait_popover.bind(traits))
 		traits.gui_input.connect(_on_trait_list_gui_input.bind(traits))
 	stack.add_child(traits)
+	if empty_state != null:
+		stack.add_child(empty_state)
 	stack.add_child(_heading(&"prepare.panel.inventory"))
 	var inventory := ItemList.new()
 	inventory.name = "HudInventory"
@@ -1149,7 +1190,7 @@ func _progress_text() -> String:
 func _progress_sequence_label() -> Label:
 	var label := Label.new()
 	label.name = "RunNodeSequence"
-	label.theme_type_variation = &"ExpeditionAuxiliary"
+	label.theme_type_variation = &"ExpeditionTopMetric"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.clip_text = true
@@ -1254,10 +1295,11 @@ func _heading(key: StringName) -> Label:
 
 func _metric(key: StringName, value: String) -> Label:
 	var label := Label.new()
-	label.theme_type_variation = &"ExpeditionMetric"
+	label.theme_type_variation = &"ExpeditionTopMetric"
 	label.text = "%s  %s" % [_text(key), value]
-	label.clip_text = true
-	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.clip_text = false
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.set_meta(&"accessible_text", label.text)

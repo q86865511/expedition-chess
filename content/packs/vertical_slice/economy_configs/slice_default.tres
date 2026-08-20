@@ -168,6 +168,7 @@ loss_subsidy = Array[ExtResource("1_3yr7h")]([SubResource("Resource_ls001")])
 pool_copies_by_tier = Array[ExtResource("1_3yr7h")]([SubResource("Resource_yuetx"), SubResource("Resource_kyx4y"), SubResource("Resource_umapg"), SubResource("Resource_m33wd"), SubResource("Resource_0k3l8")])
 unit_costs_by_tier = Array[ExtResource("1_3yr7h")]([SubResource("Resource_7nome"), SubResource("Resource_4qhrn"), SubResource("Resource_tghom"), SubResource("Resource_8ugvu"), SubResource("Resource_ob2t3")])
 xp_thresholds = Array[ExtResource("1_3yr7h")]([SubResource("Resource_xp001"), SubResource("Resource_xp002"), SubResource("Resource_xp003"), SubResource("Resource_xp004"), SubResource("Resource_xp005"), SubResource("Resource_xp006"), SubResource("Resource_xp007"), SubResource("Resource_xp008")])
+interest_per_step = 2
 id = &"economy.slice_default"
 display_name_key = &"loc.economy_slice_default"
 # TUNE: layer_income/streak_rewards/loss_subsidy/xp_thresholds 為佔位數值，

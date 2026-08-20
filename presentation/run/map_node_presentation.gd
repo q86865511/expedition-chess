@@ -36,23 +36,19 @@ func _init(
 	)
 
 
-## Pure map-graph rule shared between RunPresentationSession and presentation
-## screens: a node is reachable iff it is not already completed and either it
-## is the act-1/layer-0 entry node with nothing completed yet, or an edge
-## connects it from an already-completed node. Lives here (presentation/run,
-## exempt from the PUI_SCREEN_WRITER_DEPENDENCY scan) so RunMapScreen can call
-## it without importing RunPresentationSession, which the static gate treats
-## as a canonical writer dependency for presentation/screens/*.gd.
+## 「這個節點現在可不可以選」的呈現層入口，權威判準在 domain 的 MapFrontier：
+## 自 map_state.current_node_id 出發、一步邊可達且尚未完成才成立。與 domain 的
+## NodeEntryService.enter() 同源，畫面亮起的集合因此恆等於會被受理的集合。
+##
+## 語意變更（C-1）：本方法原本判的是「拓撲可達」——任一已完成節點指向它即可。
+## 每層之間是完全二分連邊，於是上一層沒選走的兄弟分支永遠亮著且真的能進去。
+## 現在只認目前所在節點的出邊；歷史分支一律不可選。
+##
+## 仍留在 presentation/run（豁免 PUI_SCREEN_WRITER_DEPENDENCY 掃描）是為了讓
+## RunMapScreen 不必 import RunPresentationSession——後者在 presentation/screens/*.gd
+## 會被靜態閘判定為 canonical writer 相依。
 static func is_reachable(map_state: MapState, node: MapNodeState) -> bool:
-	if node.completed or map_state.completed_node_ids.has(node.node_id):
-		return false
-	if map_state.completed_node_ids.is_empty():
-		return node.act_index == 1 and node.layer_index == 0
-	for completed_id: String in map_state.completed_node_ids:
-		for edge: MapEdgeState in map_state.edges:
-			if edge.from_node_id == completed_id and edge.to_node_id == node.node_id:
-				return true
-	return false
+	return MapFrontier.is_frontier_node(map_state, node)
 
 
 static func from_state(

@@ -232,40 +232,49 @@ func test_shop_cards_relocalize_without_shadowing_exact_buy_action() -> void:
 	)
 	assert_eq(
 		(offer_card.get_node(
-			"CardContent/IdentityRow/IdentityText/UnitName"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/UnitName"
 		) as Label).text,
 		"Scout"
 	)
 	assert_eq(
 		(offer_card.get_node(
-			"CardContent/IdentityRow/IdentityText/PriceTier"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 		) as Label).text,
-		"Cost 3"
+		"3"
 	)
 	var price_label := offer_card.get_node(
-		"CardContent/IdentityRow/IdentityText/PriceTier"
+		"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 	) as Label
 	assert_eq(price_label.get_meta(&"localization_key"), &"tooltip.cost")
-	assert_eq(String(price_label.get_meta(&"accessible_text")), price_label.text)
+	assert_eq(String(price_label.get_meta(&"accessible_text")), "Cost 3")
 	assert_eq(
-		(offer_card.get_node("CardContent/Traits") as Label).text,
+		(offer_card.get_node(
+			"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/TraitBadges/TraitBadge0/BadgeContent/TraitName"
+		) as Label).text,
 		"Fire"
 	)
+	var ownership_cues := offer_card.get_node(
+		"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/OwnershipCues"
+	) as HBoxContainer
 	assert_eq(
-		(offer_card.get_node("CardContent/OwnedAndStarUp") as Label).text,
-		"Units 3 · Star"
-	)
-	var ownership_label := offer_card.get_node(
-		"CardContent/OwnedAndStarUp"
-	) as Label
-	assert_eq(
-		int(ownership_label.get_meta(&"star_up_after_purchase_value")),
+		int(ownership_cues.get_meta(&"star_up_after_purchase_value")),
 		1
 	)
 	assert_eq(
-		String(ownership_label.get_meta(&"accessible_text")),
-		ownership_label.text
+		String(ownership_cues.get_meta(&"accessible_text")),
+		"Units 3 · Star"
 	)
+	assert_eq(
+		offer_card.get_node(
+			"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/OwnershipCues/OwnedCueShapes"
+		).get_child_count(),
+		3
+	)
+	assert_eq(
+		(offer_card.get_node("CardContent/Portrait") as TextureRect).stretch_mode,
+		TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	)
+	assert_not_null(offer_card.get_node("CardContent/BottomReadabilityGradient"))
 	var en_detail := "Scout\nCost 3\nUnits 3\nFire\nStar"
 	assert_eq(offer_card.tooltip_text, en_detail)
 	assert_eq(String(offer_card.get_meta(&"accessible_text")), en_detail)
@@ -294,15 +303,21 @@ func test_shop_cards_relocalize_without_shadowing_exact_buy_action() -> void:
 	})
 	assert_eq(
 		(offer_card.get_node(
-			"CardContent/IdentityRow/IdentityText/UnitName"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/UnitName"
 		) as Label).text,
 		"斥候"
 	)
 	assert_eq(
 		(offer_card.get_node(
-			"CardContent/IdentityRow/IdentityText/PriceTier"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 		) as Label).text,
-		"花費 3"
+		"3"
+	)
+	assert_eq(
+		(offer_card.get_node(
+			"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/TraitBadges/TraitBadge0/BadgeContent/TraitName"
+		) as Label).text,
+		"烈焰"
 	)
 	var zh_detail := "斥候\n花費 3\n單位 3\n烈焰\n星級"
 	assert_eq(offer_card.tooltip_text, zh_detail)
@@ -422,37 +437,40 @@ func test_prepare_shop_five_tiers_and_both_star_results_are_explicit() -> void:
 			StringName("ExpeditionShopCardTier%d" % tier)
 		)
 		var price := card.get_node(
-			"CardContent/IdentityRow/IdentityText/PriceTier"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 		) as Label
 		assert_eq(
 			price.text,
-			"Cost 3",
+			"3",
 			"authoritative cost tier must be explicit without its border color"
 		)
 		assert_eq(price.get_meta(&"localization_key"), &"tooltip.cost")
 		assert_eq(int(price.get_meta(&"authoritative_cost")), 3)
 		assert_eq(int(price.get_meta(&"authoritative_cost_tier")), tier)
-		var tier_cues := price.get_node("TierCueShapes") as HBoxContainer
+		var tier_cues := card.get_node(
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/TierCueShapes"
+		) as HBoxContainer
 		assert_eq(tier_cues.get_child_count(), tier)
 		assert_eq(tier_cues.get_meta(&"non_color_cue"), &"tier-pips")
 		var star_up := bool(
 			card.get_meta(&"shop_star_up_after_purchase", false)
 		)
-		var ownership := (
-			card.get_node("CardContent/OwnedAndStarUp") as Label
-		).text
 		var star_cue := (
-			card.get_node("CardContent/OwnedAndStarUp/StarUpCueShape")
+			card.get_node("CardContent/ForegroundMargin/ForegroundLayout/TopInfo/OwnershipCues/StarUpCueShape")
 			as HBoxContainer
 		)
 		if star_up:
 			saw_true = true
-			assert_true(ownership.contains("Star"))
+			assert_true(card.tooltip_text.contains("Star"))
 			assert_eq(star_cue.get_meta(&"non_color_cue"), &"star-rise")
 		else:
 			saw_false = true
-			assert_false(ownership.contains("Star"))
+			assert_false(card.tooltip_text.contains("Star"))
 			assert_eq(star_cue.get_meta(&"non_color_cue"), &"star-flat")
+		assert_lte(
+			card.get_node("CardContent/ForegroundMargin/ForegroundLayout/TopInfo/TraitBadges").get_child_count(),
+			ExpeditionLayoutMetrics.SHOP_CARD_TRAIT_BADGE_MAX
+		)
 	assert_true(saw_true)
 	assert_true(saw_false)
 
@@ -488,14 +506,14 @@ func test_combat_shop_active_and_empty_cards_relocalize_read_only() -> void:
 	combat.relocalize(&"en", _shop_test_localized_text(&"en"))
 	assert_eq(
 		(active.get_node(
-			"CardContent/IdentityRow/IdentityText/PriceTier"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 		) as Label).text,
-		"Cost 3"
+		"3"
 	)
 	assert_false(active.tooltip_text.contains("Star"))
 	assert_eq(
 		active.get_node(
-			"CardContent/OwnedAndStarUp/StarUpCueShape"
+			"CardContent/ForegroundMargin/ForegroundLayout/TopInfo/OwnershipCues/StarUpCueShape"
 		).get_meta(&"non_color_cue"),
 		&"star-flat"
 	)
@@ -518,9 +536,9 @@ func test_combat_shop_active_and_empty_cards_relocalize_read_only() -> void:
 	combat.relocalize(&"zh_TW", _shop_test_localized_text(&"zh_TW"))
 	assert_eq(
 		(active.get_node(
-			"CardContent/IdentityRow/IdentityText/PriceTier"
+			"CardContent/ForegroundMargin/ForegroundLayout/BottomInfo/CostBlock/CostValue"
 		) as Label).text,
-		"花費 3"
+		"3"
 	)
 	assert_false(active.tooltip_text.contains("星級"))
 	for index: int in range(1, 5):

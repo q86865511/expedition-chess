@@ -36,14 +36,14 @@ var _status_rect := Rect2()
 
 
 ## SETTINGS 版面權威（ProductionScreen._apply_settings_layout）指定 draft
-## 驗證狀態列在 Composition 內的 rect；同步把捲動區的底部讓出來，
-## 確保訊息不被 clip_contents 剪掉、也不與內容疊字。
+## 驗證狀態列在 Composition 內的 rect。ScrollContainer 始終吃滿內容面板；
+## 狀態列只有失敗時才有文字，屆時以較高 z-index 覆疊在面板底部。
 func apply_status_rect(rect: Rect2) -> void:
 	_status_rect = rect
 	_status_view.attach(self, 1, rect)
 	var scroll := get_node_or_null(^"SettingsScroll") as ScrollContainer
-	if scroll != null and rect.size.y > 0.0:
-		scroll.offset_bottom = -rect.size.y
+	if scroll != null:
+		scroll.offset_bottom = 0.0
 
 
 func stage(
@@ -228,8 +228,6 @@ func _build_editors() -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	scroll.follow_focus = true
-	if _status_rect.size.y > 0.0:
-		scroll.offset_bottom = -_status_rect.size.y
 	add_child(scroll)
 	var rows := VBoxContainer.new()
 	rows.name = "SettingEditors"
@@ -245,6 +243,7 @@ func _build_editors() -> void:
 		["default", "protanopia", "deuteranopia", "tritanopia"],
 		String(_draft.color_vision_mode)
 	)
+	_add_section_divider(rows, &"AccessibilityDivider")
 	_add_toggle(rows, &"reduced_motion", _draft.reduced_motion)
 	_add_toggle(rows, &"reduced_flash", _draft.reduced_flash)
 	_add_toggle(rows, &"reduced_particles", _draft.reduced_particles)
@@ -254,6 +253,7 @@ func _build_editors() -> void:
 		["off", "reduced", "full"],
 		String(_draft.damage_number_density)
 	)
+	_add_section_divider(rows, &"AudioDivider")
 	_add_volume(rows, &"master.volume", _draft.master_volume_bps)
 	_add_toggle(rows, &"master.mute", _draft.master_muted)
 	_add_volume(rows, &"music.volume", _draft.music_volume_bps)
@@ -262,6 +262,17 @@ func _build_editors() -> void:
 	_add_toggle(rows, &"sfx.mute", _draft.sfx_muted)
 	_add_volume(rows, &"ui.volume", _draft.ui_volume_bps)
 	_add_toggle(rows, &"ui.mute", _draft.ui_muted)
+
+
+func _add_section_divider(parent: Control, divider_name: StringName) -> void:
+	var divider := HSeparator.new()
+	divider.name = String(divider_name)
+	divider.theme_type_variation = &"ExpeditionSettingsSectionDivider"
+	divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ExpeditionLayoutMetrics.set_fixed_min(
+		divider, 0.0, ExpeditionLayoutMetrics.SETTINGS_SECTION_GAP
+	)
+	parent.add_child(divider)
 
 
 func _add_option(
@@ -336,6 +347,8 @@ func _add_labeled_row(
 ) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.name = "%sRow" % String(setting_id).replace(".", "_").to_pascal_case()
+	row.theme_type_variation = &"ExpeditionSettingsRow"
+	ExpeditionLayoutMetrics.set_min(row, 0.0, 54.0)
 	parent.add_child(row)
 	var label := Label.new()
 	label.text = _text(_label_key(setting_id))

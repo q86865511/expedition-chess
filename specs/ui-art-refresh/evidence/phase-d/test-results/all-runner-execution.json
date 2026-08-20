@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "suite": "All",
+  "exit_code": 0,
+  "message": "Requested suites completed.",
+  "started_at_utc": "2026-08-20T12:29:29Z",
+  "finished_at_utc": "2026-08-20T12:47:30Z",
+  "toolchain": {
+    "ExitCode": 0,
+    "Message": "Toolchain lock verified.",
+    "GodotVersion": "4.7.stable.official",
+    "GodotSha256": "b2ca888d5115a6cedee564764a2ee494a625f2ec2edbabd010fe33c9a88a6bf8",
+    "GutVersion": "9.7.1",
+    "GutTreeSha256": "94cfb2346fa189bb358a499179161cabf6c3602485ce7f592683d5d3bb7f18d2",
+    "GutFileCount": 259
+  },
+  "runs": [
+    {
+      "name": "Import",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:29:30Z",
+      "finished_at_utc": "2026-08-20T12:29:35Z",
+      "arguments": [
+        "--headless",
+        "--editor",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\import.godot.log",
+        "--import",
+        "--quit"
+      ]
+    },
+    {
+      "name": "RunnerContractPass",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:29:37Z",
+      "finished_at_utc": "2026-08-20T12:29:40Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractpass.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/pass"
+      ]
+    },
+    {
+      "name": "RunnerContractPause",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:29:40Z",
+      "finished_at_utc": "2026-08-20T12:29:43Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractpause.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/pause"
+      ]
+    },
+    {
+      "name": "RunnerContractAssertion",
+      "exit_code": 2,
+      "started_at_utc": "2026-08-20T12:29:43Z",
+      "finished_at_utc": "2026-08-20T12:29:45Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractassertion.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/assertion_failure"
+      ]
+    },
+    {
+      "name": "RunnerContractPushError",
+      "exit_code": 2,
+      "started_at_utc": "2026-08-20T12:29:45Z",
+      "finished_at_utc": "2026-08-20T12:29:48Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractpusherror.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/push_error"
+      ]
+    },
+    {
+      "name": "RunnerContractEngineError",
+      "exit_code": 2,
+      "started_at_utc": "2026-08-20T12:29:48Z",
+      "finished_at_utc": "2026-08-20T12:29:51Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractengineerror.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/test_engine_error.gd"
+      ]
+    },
+    {
+      "name": "RunnerContractEngineOrphan",
+      "exit_code": 2,
+      "started_at_utc": "2026-08-20T12:29:51Z",
+      "finished_at_utc": "2026-08-20T12:29:54Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractengineorphan.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/engine_orphan"
+      ]
+    },
+    {
+      "name": "RunnerContractZeroTests",
+      "exit_code": 3,
+      "started_at_utc": "2026-08-20T12:29:54Z",
+      "finished_at_utc": "2026-08-20T12:29:57Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractzerotests.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/zero_tests"
+      ]
+    },
+    {
+      "name": "RunnerContractInfrastructure",
+      "exit_code": 3,
+      "started_at_utc": "2026-08-20T12:29:57Z",
+      "finished_at_utc": "2026-08-20T12:29:59Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractinfrastructure.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/pass",
+        "--contract-force-infrastructure-error"
+      ]
+    },
+    {
+      "name": "RunnerContractTimeout",
+      "exit_code": 124,
+      "started_at_utc": "2026-08-20T12:29:59Z",
+      "finished_at_utc": "2026-08-20T12:30:00Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontracttimeout.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/timeout"
+      ]
+    },
+    {
+      "name": "RunnerContractLoggerCleanup",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:30:00Z",
+      "finished_at_utc": "2026-08-20T12:30:03Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractloggercleanup.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/pass"
+      ]
+    },
+    {
+      "name": "RunnerContractLoggerLeak",
+      "exit_code": 3,
+      "started_at_utc": "2026-08-20T12:30:03Z",
+      "finished_at_utc": "2026-08-20T12:30:06Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\runnercontractloggerleak.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd",
+        "--",
+        "--test-path",
+        "res://runner_contract/fixtures/pass",
+        "--contract-simulate-logger-leak"
+      ]
+    },
+    {
+      "name": "Smoke",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:30:06Z",
+      "finished_at_utc": "2026-08-20T12:30:10Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\smoke.godot.log",
+        "--script",
+        "res://tests/runners/smoke_runner.gd"
+      ]
+    },
+    {
+      "name": "Gut",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:30:10Z",
+      "finished_at_utc": "2026-08-20T12:46:37Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\gut.godot.log",
+        "--script",
+        "res://tests/runners/gut_runner.gd"
+      ]
+    },
+    {
+      "name": "Content",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:46:37Z",
+      "finished_at_utc": "2026-08-20T12:46:44Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\content.godot.log",
+        "--script",
+        "res://tests/runners/content_validation_runner.gd"
+      ]
+    },
+    {
+      "name": "Canonical",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:46:44Z",
+      "finished_at_utc": "2026-08-20T12:46:46Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\canonical.godot.log",
+        "--script",
+        "res://tests/runners/canonical_runner.gd"
+      ]
+    },
+    {
+      "name": "Combat",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:46:46Z",
+      "finished_at_utc": "2026-08-20T12:47:00Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\combat.godot.log",
+        "--script",
+        "res://tests/runners/combat_runner.gd"
+      ]
+    },
+    {
+      "name": "Expedition",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:47:00Z",
+      "finished_at_utc": "2026-08-20T12:47:03Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\expedition.godot.log",
+        "--script",
+        "res://tests/runners/expedition_runner.gd"
+      ]
+    },
+    {
+      "name": "ActEliminationGate",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:47:03Z",
+      "finished_at_utc": "2026-08-20T12:47:26Z",
+      "arguments": []
+    },
+    {
+      "name": "Spec",
+      "exit_code": 0,
+      "started_at_utc": "2026-08-20T12:47:26Z",
+      "finished_at_utc": "2026-08-20T12:47:29Z",
+      "arguments": [
+        "--headless",
+        "--path",
+        "E:\\ClaudeWorkingPlace\\Game",
+        "--log-file",
+        "E:\\ClaudeWorkingPlace\\Game\\artifacts\\test\\spec.godot.log",
+        "--script",
+        "res://tests/runners/spec_contract_runner.gd"
+      ]
+    }
+  ]
+}

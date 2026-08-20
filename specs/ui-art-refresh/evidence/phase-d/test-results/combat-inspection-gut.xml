@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="74" name="GutTests" failures="0" tests="2" >
+  <testsuite name="tests/integration/presentation_ui_g2_combat_flow/test_combat_inspection_panel_is_player_readable.gd" tests="2" failures="0" skipped="0" time="8.489033" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_inspection_panel_shows_localized_values_instead_of_raw_state" assertions="23" status="pass" classname="tests/integration/presentation_ui_g2_combat_flow/test_combat_inspection_panel_is_player_readable.gd" time="4.208053" >
+      </testcase>
+      <testcase name="test_ally_enemy_and_rarity_cues_do_not_share_one_position" assertions="51" status="pass" classname="tests/integration/presentation_ui_g2_combat_flow/test_combat_inspection_panel_is_player_readable.gd" time="4.28098" >
+      </testcase>
+  </testsuite>
+</testsuites>

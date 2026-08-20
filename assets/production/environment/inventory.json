@@ -1,0 +1,56 @@
+{
+  "$schema": "environment-visual-inventory.schema.json",
+  "schema_version": 1,
+  "slice": "ui-art-refresh-c-2",
+  "status": "adopted",
+  "visuals": [
+    {
+      "visual_id": "environment.camp",
+      "kind": "environment",
+      "status": "adopted",
+      "path": "assets/production/environment/camp.png",
+      "sha256": "c986abc40e02b39eac5d09b2a711a5583d929a70848fa6620bd83deb542ecdb0",
+      "width": 1280,
+      "height": 720,
+      "source_path": "assets/production/camp_attempts/attempt-001/raw.png",
+      "source_sha256": "7ee2e12142dcdeafe25346c11d3bbe095d7a2bbc8d193b02fddeff4c27491959",
+      "source_inventory": "assets/production/inventory.json"
+    },
+    {
+      "visual_id": "key_art.menu_main",
+      "kind": "key_art",
+      "status": "adopted",
+      "path": "assets/production/key_art/menu_main.png",
+      "sha256": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37",
+      "width": 1672,
+      "height": 941,
+      "source_path": "assets/production/key_art_attempts/menu_main/attempt-001/raw.png",
+      "source_sha256": "d9489143b9147ab9586e0786c3b1047ede5cf00db13441fa89b061aecf8f3e37",
+      "provenance": "assets/production/provenance/menu_main_key_art.json"
+    },
+    {
+      "visual_id": "environment.run_map",
+      "kind": "environment",
+      "status": "adopted",
+      "path": "assets/production/environment/run_map.png",
+      "sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+      "width": 1672,
+      "height": 941,
+      "source_path": "assets/production/map_attempts/run-map-attempt-01.png",
+      "source_sha256": "70476ec7524fd444a3ff4b47feb19def7af98681d8f240f19dc86fcde8064656",
+      "provenance": "assets/production/provenance/run_map_environment.json"
+    },
+    {
+      "visual_id": "environment.run_combat",
+      "kind": "environment",
+      "status": "adopted",
+      "path": "assets/production/environment/run_combat.png",
+      "sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+      "width": 1672,
+      "height": 941,
+      "source_path": "assets/production/combat_attempts/run-combat-attempt-01.png",
+      "source_sha256": "98a2217bf74ee2a5eb1f049796066d1e4c65856b4700aad415763d91a948338d",
+      "provenance": "assets/production/provenance/run_combat_environment.json"
+    }
+  ]
+}

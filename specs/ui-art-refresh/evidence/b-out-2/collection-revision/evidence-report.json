@@ -1,0 +1,83 @@
+{
+  "actual_screenshot_count": 6,
+  "exit_code": 0,
+  "expected_screenshot_count": 6,
+  "issues": [],
+  "matrix_case_count": 6,
+  "ok": true,
+  "route_count": 1,
+  "screenshots": [
+    {
+      "case": "720p-ui125",
+      "height": 720,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/b-out-2/collection-revision/collection-720p-ui125.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "route": "collection",
+      "sha256": "4b3d1545e3f6fb0eda6f06df55a4811daeb05fc244d4201b16069237286e14f8",
+      "ui_scale": 125,
+      "width": 1280
+    },
+    {
+      "case": "720p-ui150",
+      "height": 720,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/b-out-2/collection-revision/collection-720p-ui150.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "route": "collection",
+      "sha256": "fbab6bfe021b33eb32699da4e837ef5070f074ae2b388b57275586f615f7e591",
+      "ui_scale": 150,
+      "width": 1280
+    },
+    {
+      "case": "1080p-ui125",
+      "height": 1080,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/b-out-2/collection-revision/collection-1080p-ui125.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "route": "collection",
+      "sha256": "715afffe7b8632347e525909e6955e897d5d65cfb510767a1d7eb5bb6d34ff74",
+      "ui_scale": 125,
+      "width": 1920
+    },
+    {
+      "case": "1080p-ui150",
+      "height": 1080,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/b-out-2/collection-revision/collection-1080p-ui150.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "route": "collection",
+      "sha256": "322369fcd6a76de23f696e7cda477eda400dae47b3a25d8ba828a79be4d124e3",
+      "ui_scale": 150,
+      "width": 1920
+    },
+    {
+      "case": "1440p-ui125",
+      "height": 1440,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/b-out-2/collection-revision/collection-1440p-ui125.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "route": "collection",
+      "sha256": "1eaa02fe14ba44fe8e5be772563b8bd06d7f818a7f8104ec6c5d0c1ab4b8cf63",
+      "ui_scale": 125,
+      "width": 2560
+    },
+    {
+      "case": "1440p-ui150",
+      "height": 1440,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/b-out-2/collection-revision/collection-1440p-ui150.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "route": "collection",
+      "sha256": "b6f27d5ab1af88ac2f04877db0410f0f9db12d4b923249f3b8a5a24921cc3a97",
+      "ui_scale": 150,
+      "width": 2560
+    }
+  ]
+}

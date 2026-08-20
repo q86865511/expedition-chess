@@ -1,0 +1,174 @@
+<!doctype html><html lang="zh-TW"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Screening 進度</title>
+<style>
+:root{
+  --ground:#f4f7f8; --surface:#ffffff; --surface-2:#eef3f5;
+  --ink:#0e1a1f; --ink-2:#33474f; --muted:#647a84;
+  --line:#d5e0e4; --accent:#0d6b76; --accent-wash:#dff0f2;
+  --ok:#1c7a4f; --warn:#8a5c07; --stop:#9c3129;
+  --track:#dde7ea; --fill:#0d6b76;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0b1216; --surface:#111c21; --surface-2:#16242a;
+    --ink:#e4eef1; --ink-2:#b3c6cd; --muted:#7f98a2;
+    --line:#233841; --accent:#54cdd9; --accent-wash:#0e3138;
+    --ok:#4fca8d; --warn:#e0ac52; --stop:#ef8177;
+    --track:#1e3038; --fill:#54cdd9;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  font-size:15px;line-height:1.6}
+.mono{font-family:ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px 64px}
+.mast{border-bottom:1px solid var(--line);background:var(--surface);margin-bottom:24px}
+.mast-in{max-width:980px;margin:0 auto;padding:28px 20px 20px;display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:1.6rem;margin:0;font-weight:800;letter-spacing:-.02em}
+.readout{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.readout div{flex:1 1 130px;padding:10px 16px;border-right:1px solid var(--line)}
+.readout div:last-child{border-right:0}
+.readout b{display:block;font-size:1.45rem;font-weight:700;line-height:1.2}
+.readout span{font-size:.74rem;color:var(--muted);letter-spacing:.04em}
+.gate-ok{color:var(--ok)}.gate-fail{color:var(--stop)}.gate-run{color:var(--warn)}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;padding:8px 18px;border-radius:8px;
+  border:1px solid var(--accent);background:var(--accent-wash);color:var(--accent);transition:opacity .2s}
+button:hover:not(:disabled){opacity:.75}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--accent);color:var(--surface)}
+.ctl-note{font-size:.78rem;color:var(--muted)}
+.overall{margin:18px 0 26px}
+.overall .head{display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;color:var(--ink-2)}
+.overall .track{height:16px;border-radius:6px;background:var(--track);overflow:hidden}
+.overall .track i{display:block;height:100%;width:100%;border-radius:6px;background:var(--fill);transform-origin:left;transform:scaleX(0);transition:transform .6s}
+.bars{display:flex;flex-direction:column;gap:8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.bar-row{display:grid;grid-template-columns:64px 1fr 132px;align-items:center;gap:12px;font-size:.8rem}
+.bar-row .bar{height:9px;border-radius:5px;background:var(--track);overflow:hidden}
+.bar-row .bar i{display:block;height:100%;width:100%;border-radius:5px;background:var(--fill);transform-origin:left;transform:scaleX(0);transition:transform .6s}
+.bar-row.done .bar i{background:var(--ok)}
+.bar-row.paused .bar i{background:var(--warn)}
+.bar-row .n{text-align:right;color:var(--muted)}
+.bar-row .n b{color:var(--ink)}
+h2{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:26px 0 10px;font-weight:700}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:.85rem}
+th,td{padding:8px 14px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.72rem;letter-spacing:.06em;color:var(--muted);font-weight:700;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+details{margin-top:16px;font-size:.8rem;color:var(--ink-2)}
+summary{cursor:pointer;color:var(--muted)}
+pre{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;
+  padding:10px;font-size:.72rem;overflow-x:auto;line-height:1.5}
+.foot{color:var(--muted);font-size:.78rem;margin-top:20px}
+</style></head><body>
+<header class="mast"><div class="mast-in">
+  <div class="eyebrow" id="eyebrow">平衡 screening</div>
+  <h1>Screening 進度</h1>
+  <div class="readout">
+    <div><b class="mono" id="r-cases">—</b><span>已完成 case</span></div>
+    <div><b class="mono" id="r-shards">—</b><span>分片完成</span></div>
+    <div><b class="mono" id="r-eta">—</b><span>預估剩餘</span></div>
+    <div><b id="r-gate" class="gate-run">—</b><span>gate</span></div>
+    <div><b class="mono" id="r-time">—</b><span>最後刷新</span></div>
+  </div>
+  <div class="ctl">
+    <button id="btn-pause" class="primary">暫停</button>
+    <button id="btn-resume">續跑</button>
+    <span class="ctl-note" id="ctl-note">暫停＝各分片跑完手上的 case 就收工，進度全留在 checkpoint；續跑接著跑，重開機也一樣。</span>
+  </div>
+</div></header>
+<div class="wrap">
+  <div class="overall">
+    <div class="head"><span id="o-label">全部 case</span><span class="mono" id="o-pct">0%</span></div>
+    <div class="track"><i id="o-bar"></i></div>
+  </div>
+  <div class="bars" id="rows"></div>
+  <h2>策略統計（依 checkpoint 逐案累計）</h2>
+  <table><thead><tr><th>策略</th><th>已完成 case</th><th>勝</th><th>勝率</th></tr></thead>
+  <tbody id="strategies"><tr><td colspan="4">—</td></tr></tbody></table>
+  <details><summary>本輪身分（candidate／source freeze）</summary><pre id="meta">—</pre></details>
+  <p class="foot" id="foot">進度依據：screening-checkpoint/shard-NN.jsonl 的逐案記錄（精確計數）。
+  分片尾記錄為 completed 才算完成；paused 代表停在 case 邊界、可續跑。</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let busy=false;
+async function post(path,label){
+  if(busy)return;busy=true;
+  $('btn-pause').disabled=$('btn-resume').disabled=true;
+  $('ctl-note').textContent=label+'…';
+  try{
+    const r=await fetch(path,{method:'POST'});
+    const j=await r.json();
+    $('ctl-note').textContent=(j.ok?'✓ ':'✗ ')+(j.detail||label);
+  }catch(e){$('ctl-note').textContent='✗ '+e;}
+  busy=false;await tick();
+}
+$('btn-pause').onclick=()=>post('/pause','已請求暫停');
+$('btn-resume').onclick=()=>post('/resume','已請求續跑');
+function duration(seconds){
+  if(seconds===null||seconds===undefined)return '—';
+  const h=Math.floor(seconds/3600),m=Math.round((seconds%3600)/60);
+  return h>0?h+'h'+String(m).padStart(2,'0')+'m':m+'m';
+}
+async function tick(){
+  let s;
+  try{s=await(await fetch('/status?t='+Date.now())).json();}
+  catch(e){$('ctl-note').textContent='伺服器沒有回應：'+e;return;}
+  $('r-time').textContent=new Date().toLocaleTimeString();
+  if(!s.meta){
+    $('eyebrow').textContent='尚未開跑';
+    $('rows').innerHTML='<div class="bar-row"><span>—</span><span class="bar"><i></i></span><span class="n">尚無 checkpoint</span></div>';
+    $('r-gate').textContent='—';return;
+  }
+  const m=s.meta,total=s.expected_cases||1;
+  $('eyebrow').textContent=`平衡 ${m.gate_mode} · ${m.seed_count} seeds × ${m.shard_count} shards · candidate ${String(m.candidate_id).slice(-12)}`;
+  const pct=Math.round(s.completed_cases/total*100);
+  $('o-label').textContent=`全部 case（primary，目標 ${total}）`;
+  $('o-pct').textContent=pct+'%';
+  $('o-bar').style.transform='scaleX('+(pct/100)+')';
+  $('r-cases').textContent=s.completed_cases;
+  const done=s.shards.filter(x=>x.status==='completed').length;
+  $('r-shards').textContent=done+'/'+s.shards.length;
+  $('r-eta').textContent=s.pause_flag?'已暫停':duration(s.eta_seconds);
+  let rows='';
+  for(const sh of s.shards){
+    const p=sh.expected_cases?Math.round(sh.cases/sh.expected_cases*100):0;
+    const cls=sh.status==='completed'?' done':(sh.status==='paused'?' paused':'');
+    const mark=sh.status==='completed'?' ✓':(sh.status==='paused'?' ⏸':'');
+    rows+=`<div class="bar-row${cls}"><span class="mono">shard ${String(sh.shard_index).padStart(2,'0')}</span>`+
+      `<span class="bar"><i style="transform:scaleX(${p/100})"></i></span>`+
+      `<span class="n mono"><b>${sh.cases}</b> / ${sh.expected_cases}${mark}</span></div>`;
+  }
+  $('rows').innerHTML=rows;
+  $('strategies').innerHTML=s.strategies.map(x=>{
+    const rate=x.cases?(x.wins/x.cases*100).toFixed(1)+'%':'—';
+    return `<tr><td>${x.strategy_id}</td><td class="mono">${x.cases}</td><td class="mono">${x.wins}</td><td class="mono">${rate}</td></tr>`;
+  }).join('');
+  const state=s.state?s.state.status:'unknown';
+  $('meta').textContent=
+    `state          : ${state}${s.pause_flag?' (pause flag present)':''}\n`+
+    `candidate_id   : ${m.candidate_id}\n`+
+    `tune_digest    : ${m.tune_digest}\n`+
+    `source_freeze  : ${m.source_freeze_digest}\n`+
+    `git_head       : ${m.git_head}\n`+
+    `started_at_utc : ${m.started_at_utc}   resumes: ${m.resume_count}\n`+
+    `mean case ms   : ${s.mean_elapsed_ms}`;
+  const g=$('r-gate');
+  if(s.merged){
+    const pass=s.merged.gate==='PASS';
+    g.textContent=s.merged.gate;g.className=pass?'gate-ok':'gate-fail';
+    if((s.merged.gate_reasons||[]).length)$('foot').textContent='gate_reasons: '+s.merged.gate_reasons.join(', ');
+  }else if(s.pause_flag||state==='paused'){g.textContent='已暫停';g.className='gate-run';}
+  else if(state==='running'){g.textContent='執行中';g.className='gate-run';}
+  else{g.textContent=state;g.className='gate-run';}
+  $('btn-pause').disabled=!(state==='running')||s.pause_flag;
+  $('btn-resume').disabled=(state==='running'&&!s.pause_flag)||done===s.shards.length&&!!s.merged;
+}
+tick();setInterval(tick,15000);
+</script></body></html>

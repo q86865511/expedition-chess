@@ -1,0 +1,47 @@
+{
+  "actual_screenshot_count": 3,
+  "exit_code": 0,
+  "expected_screenshot_count": 3,
+  "issues": [],
+  "matrix_case_count": 3,
+  "ok": true,
+  "route_count": 1,
+  "screenshots": [
+    {
+      "case": "720p-ui100",
+      "height": 720,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/final-copy/collection/collection-720p-ui100.png",
+      "requested_height": 720,
+      "requested_width": 1280,
+      "route": "collection",
+      "sha256": "cba0c1af187347110e045719b843ac12bd06c8d0db789224b0be717b73f8dc93",
+      "ui_scale": 100,
+      "width": 1280
+    },
+    {
+      "case": "1080p-ui100",
+      "height": 1080,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/final-copy/collection/collection-1080p-ui100.png",
+      "requested_height": 1080,
+      "requested_width": 1920,
+      "route": "collection",
+      "sha256": "dec6b0d4a0e99f9676a0396672eb0217c077d9ff56c0cba5a49f2f82e67e1cdb",
+      "ui_scale": 100,
+      "width": 1920
+    },
+    {
+      "case": "1440p-ui100",
+      "height": 1440,
+      "ok": true,
+      "path": "res://specs/ui-art-refresh/evidence/phase-d/final-copy/collection/collection-1440p-ui100.png",
+      "requested_height": 1440,
+      "requested_width": 2560,
+      "route": "collection",
+      "sha256": "4346c65e7366ef763572fb6a0975215de15e5c3754ad06c04f192cadf86ca326",
+      "ui_scale": 100,
+      "width": 2560
+    }
+  ]
+}

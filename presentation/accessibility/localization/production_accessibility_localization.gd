@@ -24,59 +24,25 @@ const SEMANTIC_KEYS: Dictionary = {
 	&"danger": &"accessibility.semantic.danger",
 	&"damage": &"accessibility.semantic.damage",
 }
-const _VALUES: Dictionary = {
-	&"zh_TW": {
-		COMBAT_RULE_KEY: "戰鬥規則：護盾破裂後，敵方會進入第二階段。",
-		SUMMARY_KEY: "動態：%s　閃光：%s　粒子：%s　傷害數字：%s",
-		RULE_INFORMATION_KEY: "規則資訊會同時使用文字、圖示與圖樣提示。",
-		PATTERN_CUE_KEY: "[///] 傷害　[!] 危險",
-		MOTION_KEY: "動態效果",
-		FLASH_KEY: "閃光效果",
-		PARTICLES_KEY: "粒子效果",
-		DAMAGE_EVENT_KEY: "[傷害|%s] %s %d → %s",
-		DAMAGE_SAMPLE_KEYS[0]: "[DMG] 128",
-		DAMAGE_SAMPLE_KEYS[1]: "[DMG] 64",
-		DAMAGE_SAMPLE_KEYS[2]: "[DMG] 32",
-		STATE_FULL_KEY: "完整",
-		STATE_REDUCED_KEY: "減少",
-		SEMANTIC_KEYS[&"ally"]: "[A] 我方",
-		SEMANTIC_KEYS[&"enemy"]: "[E] 敵方",
-		SEMANTIC_KEYS[&"trait"]: "[T] 特性",
-		SEMANTIC_KEYS[&"rarity"]: "[*] 稀有度",
-		SEMANTIC_KEYS[&"danger"]: "[!] 危險",
-		SEMANTIC_KEYS[&"damage"]: "[DMG] 傷害",
-	},
-	&"en": {
-		COMBAT_RULE_KEY: (
-			"Battle rule: after the shield breaks, the enemy enters phase two."
-		),
-		SUMMARY_KEY: "Motion: %s  Flash: %s  Particles: %s  Damage numbers: %s",
-		RULE_INFORMATION_KEY: "Rules use text, icons, and pattern cues together.",
-		PATTERN_CUE_KEY: "[///] Damage  [!] Danger",
-		MOTION_KEY: "Motion effects",
-		FLASH_KEY: "Flash effects",
-		PARTICLES_KEY: "Particle effects",
-		DAMAGE_EVENT_KEY: "[Damage|%s] %s %d -> %s",
-		DAMAGE_SAMPLE_KEYS[0]: "[DMG] 128",
-		DAMAGE_SAMPLE_KEYS[1]: "[DMG] 64",
-		DAMAGE_SAMPLE_KEYS[2]: "[DMG] 32",
-		STATE_FULL_KEY: "Full",
-		STATE_REDUCED_KEY: "Reduced",
-		SEMANTIC_KEYS[&"ally"]: "[A] Ally",
-		SEMANTIC_KEYS[&"enemy"]: "[E] Enemy",
-		SEMANTIC_KEYS[&"trait"]: "[T] Trait",
-		SEMANTIC_KEYS[&"rarity"]: "[*] Rarity",
-		SEMANTIC_KEYS[&"danger"]: "[!] Danger",
-		SEMANTIC_KEYS[&"damage"]: "[DMG] Damage",
-	},
-}
+
+var _catalog: LocalizationCatalog
+
+
+func _init(catalog: LocalizationCatalog = null) -> void:
+	bind_catalog(catalog)
+
+
+func bind_catalog(catalog: LocalizationCatalog) -> void:
+	_catalog = (
+		catalog
+		if catalog != null
+		else LocalizationCatalog.restricted_emergency_catalog()
+	)
 
 
 func resolve(locale: StringName, key: StringName) -> String:
-	var values: Variant = _VALUES.get(locale)
-	if not values is Dictionary:
-		return ""
-	return String((values as Dictionary).get(key, ""))
+	var resolved := _catalog.resolve(locale, key)
+	return resolved.value if resolved.ok else ""
 
 
 func semantic(locale: StringName, semantic: StringName) -> String:

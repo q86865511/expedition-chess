@@ -11,6 +11,13 @@ const REPLAY_SAMPLE_RATE_BPS: int = 500
 ## TUNE：低於此 cohort 樣本量時，敗局集中在單一幕視為統計噪音，per-act 淘汰 gate 不評估。
 const ACT_ELIMINATION_MIN_SEED_COUNT: int = 1000
 const ACT_INDICES: Array[int] = [1, 2, 3]
+## TUNE（g2-roadmap §6.3b 收斂判準）：三策略勝率的目標帶（含邊界）。
+const WIN_RATE_BAND_LOW_BPS: int = 4500
+const WIN_RATE_BAND_HIGH_BPS: int = 6000
+## TUNE（g2-roadmap §6.3b 收斂判準）：勝局若有此比例以上停在「本 cohort 觀測到的
+## 最高終局血量」，視為滿血通關、血量沒有分佈。報告裡沒有 max HP 欄位，觀測最高值
+## 是滿血的代理值——零損通關必然停在起始血量，故 cohort 的最高終局血量就是那條線。
+const WIN_HP_CEILING_WARN_BPS: int = 5000
 
 var candidate: BalanceCandidateDescriptor
 var cases: Array[BalanceBotCaseResult] = []
@@ -130,6 +137,131 @@ func act_curve_token() -> String:
 	return _act_curve_token(_act_curve_rows())
 
 
+## g2-roadmap §6.3b 的另兩項收斂判準（三策略勝率 45~60% 帶、勝局血量有分佈）。
+## 只發布欄位與 WARN 清單，`gate_reasons()` 不消費——迭代中期每輪必紅會讓 gate
+## 失去訊號價值（Phase 2 R0 裁決）。`tools/balance/convergence-warnings.ps1` 是逐欄位
+## 鏡射，兩份實作對同一輸入必須產出逐字相同的 token 與 WARN 清單。
+## 私有：Dictionary 形狀只允許存在於 to_json() 的 codec 邊界（spec 契約），
+## 對外的具名 API 是 convergence_token() 與 convergence_warnings()。
+func _convergence() -> Dictionary:
+	var rows := _win_rate_rows()
+	var distribution := _win_hp_distribution()
+	var warnings := _convergence_warnings(rows, distribution)
+	return {
+		"win_rate_band_low_bps": WIN_RATE_BAND_LOW_BPS,
+		"win_rate_band_high_bps": WIN_RATE_BAND_HIGH_BPS,
+		"win_hp_ceiling_warn_bps": WIN_HP_CEILING_WARN_BPS,
+		"strategy_win_rates": rows,
+		"win_hp_distribution": distribution,
+		"warnings": warnings,
+		"token": _convergence_token(rows, distribution, warnings),
+	}
+
+
+func convergence_token() -> String:
+	var rows := _win_rate_rows()
+	var distribution := _win_hp_distribution()
+	return _convergence_token(rows, distribution, _convergence_warnings(rows, distribution))
+
+
+func convergence_warnings() -> Array[String]:
+	return _convergence_warnings(_win_rate_rows(), _win_hp_distribution())
+
+
+## 勝率一律以 `won` 為準（不再過濾 terminal），讓 PowerShell 鏡射能用同一個定義，
+## 不必依賴 to_json() 既有 strategies 列的 terminal 過濾語意。
+func _win_rate_rows() -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	for strategy_id: StringName in BalanceBotStrategy.IDS:
+		var total := _strategy_total(strategy_id)
+		var wins := _count(strategy_id, false, true)
+		var rate := _rate_bps(wins, total)
+		var evaluated := total > 0
+		rows.append({
+			"strategy_id": String(strategy_id),
+			"cases": total,
+			"wins": wins,
+			"win_rate_bps": rate,
+			"evaluated": evaluated,
+			"in_band": evaluated and rate >= WIN_RATE_BAND_LOW_BPS \
+				and rate <= WIN_RATE_BAND_HIGH_BPS,
+		})
+	return rows
+
+
+func _win_hp_distribution() -> Dictionary:
+	var win_hp: Array[int] = []
+	var distinct: Array[int] = []
+	var minimum := 0
+	var maximum := 0
+	for value: BalanceBotCaseResult in cases:
+		if not value.won:
+			continue
+		if win_hp.is_empty():
+			minimum = value.ending_hp
+			maximum = value.ending_hp
+		else:
+			minimum = mini(minimum, value.ending_hp)
+			maximum = maxi(maximum, value.ending_hp)
+		win_hp.append(value.ending_hp)
+		if not distinct.has(value.ending_hp):
+			distinct.append(value.ending_hp)
+	var ceiling_wins := 0
+	for hp: int in win_hp:
+		if hp == maximum:
+			ceiling_wins += 1
+	var ceiling_rate := _rate_bps(ceiling_wins, win_hp.size())
+	var evaluated := not win_hp.is_empty()
+	return {
+		"win_case_count": win_hp.size(),
+		"distinct_hp_count": distinct.size(),
+		"min_hp": minimum,
+		"max_hp": maximum,
+		"ceiling_win_count": ceiling_wins,
+		"ceiling_win_rate_bps": ceiling_rate,
+		"evaluated": evaluated,
+		"distributed": evaluated and ceiling_rate < WIN_HP_CEILING_WARN_BPS,
+	}
+
+
+func _convergence_warnings(
+	rows: Array[Dictionary], distribution: Dictionary
+) -> Array[String]:
+	var warnings: Array[String] = []
+	for row: Dictionary in rows:
+		if bool(row["evaluated"]) and not bool(row["in_band"]):
+			warnings.append("BALANCE_WARN_%s_WIN_RATE_OUT_OF_BAND" % String(
+				row["strategy_id"]
+			).to_upper())
+	if bool(distribution["evaluated"]) and not bool(distribution["distributed"]):
+		warnings.append("BALANCE_WARN_WIN_HP_NOT_DISTRIBUTED")
+	return warnings
+
+
+func _convergence_token(
+	rows: Array[Dictionary], distribution: Dictionary, warnings: Array[String]
+) -> String:
+	var parts: Array[String] = [
+		"CONVERGENCE-V1",
+		"band=%d-%d" % [WIN_RATE_BAND_LOW_BPS, WIN_RATE_BAND_HIGH_BPS],
+	]
+	for row: Dictionary in rows:
+		parts.append("%s:%d:%d:%d:%d:%d" % [
+			String(row["strategy_id"]), int(row["cases"]), int(row["wins"]),
+			int(row["win_rate_bps"]), 1 if bool(row["evaluated"]) else 0,
+			1 if bool(row["in_band"]) else 0,
+		])
+	parts.append("hp:%d:%d:%d:%d:%d:%d:%d:%d" % [
+		int(distribution["win_case_count"]), int(distribution["distinct_hp_count"]),
+		int(distribution["min_hp"]), int(distribution["max_hp"]),
+		int(distribution["ceiling_win_count"]), int(distribution["ceiling_win_rate_bps"]),
+		1 if bool(distribution["evaluated"]) else 0,
+		1 if bool(distribution["distributed"]) else 0,
+	])
+	parts.append("warn=%s" % ",".join(warnings))
+	return "|".join(parts)
+
+
 func passed(final_gate: bool, enforce_sample_minimums: bool = false) -> bool:
 	return candidate != null and candidate.is_valid() \
 		and gate_reasons(final_gate, enforce_sample_minimums).is_empty()
@@ -186,63 +318,7 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 		replay_parts.append("%s:%d:%s" % [
 			String(value.strategy_id), value.seed_index, value.replay_digest
 		])
-		var selected_ids: Array[String] = []
-		for selected_id: StringName in value.selected_ids:
-			selected_ids.append(String(selected_id))
-		var route_ids: Array[String] = []
-		for route_id: StringName in value.route_ids:
-			route_ids.append(String(route_id))
-		var failure_codes: Array[String] = []
-		for failure_code: StringName in value.failure_codes:
-			failure_codes.append(String(failure_code))
-		var act_snapshots: Array[Dictionary] = []
-		for act_snapshot: BalanceBotActSnapshot in value.act_snapshots:
-			var stable_unit_ids: Array[String] = []
-			for unit_id: StringName in act_snapshot.stable_unit_ids:
-				stable_unit_ids.append(String(unit_id))
-			act_snapshots.append({
-				"act_index": act_snapshot.act_index,
-				"gold": act_snapshot.gold,
-				"expedition_hp": act_snapshot.expedition_hp,
-				"roster_unit_count": act_snapshot.roster_unit_count,
-				"board_unit_count": act_snapshot.board_unit_count,
-				"stable_unit_ids": stable_unit_ids,
-				"battle_wins": act_snapshot.battle_wins,
-				"battle_losses": act_snapshot.battle_losses,
-				"elimination_node_id": String(act_snapshot.elimination_node_id),
-			})
-		case_proofs.append({
-			"strategy_id": String(value.strategy_id),
-			"seed_index": value.seed_index,
-			"run_id": String(value.run_id),
-			"world_digest": value.world_digest,
-			"terminal": value.terminal,
-			"won": value.won,
-			"act_reached": value.act_reached,
-			"build_id": String(value.build_id),
-			"selected_ids": selected_ids,
-			"route_ids": route_ids,
-			"ending_gold": value.ending_gold,
-			"ending_hp": value.ending_hp,
-			"battle_wins": value.battle_wins,
-			"battle_losses": value.battle_losses,
-			"buy_unit_count": value.buy_unit_count,
-			"buy_xp_count": value.buy_xp_count,
-			"reroll_count": value.reroll_count,
-			"sell_unit_count": value.sell_unit_count,
-			"boss_retry_count": value.boss_retry_count,
-			"completed_node_count": value.completed_node_count,
-			"reload_count": value.reload_count,
-			"null_offer_rule_count": value.null_offer_rule_count,
-			"act_snapshots": act_snapshots,
-			"final_phase": String(value.final_phase),
-			"settlement_receipt_count": value.settlement_receipt_digests.size(),
-			"settlement_receipt_digests": value.settlement_receipt_digests.duplicate(),
-			"reward_receipt_count": value.reward_receipt_digests.size(),
-			"reward_receipt_digests": value.reward_receipt_digests.duplicate(),
-			"failure_codes": failure_codes,
-			"replay_digest": value.replay_digest,
-		})
+		case_proofs.append(_case_proof(value))
 		for route_id: StringName in value.route_ids:
 			var route_key := String(route_id)
 			route_counts[route_key] = int(route_counts.get(route_key, 0)) + 1
@@ -288,6 +364,7 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 		},
 		"battle_outcomes": {"wins": battle_wins, "losses": battle_losses},
 		"act_curve": _act_curve(),
+		"convergence": _convergence(),
 		"case_proofs": case_proofs,
 		"failed_seeds": failed_seeds,
 		"regression_proof": {
@@ -324,6 +401,109 @@ func to_json(final_gate: bool, enforce_sample_minimums: bool = false) -> String:
 		"gate_reasons": reason_text,
 		"ac_032": "PENDING_EXTERNAL",
 	})
+
+
+## 逐案 checkpoint 的一行 JSONL（分片模式）。內容是 `to_json()` 的 case_proofs 元素
+## 加上該 case 的執行度量，讓合併端能只靠 checkpoint 重算全部統計，不必等分片跑完
+## 才拿得到局部聚合。回傳 String 而非 Dictionary：Dictionary 形狀只允許存在於
+## codec 邊界（spec 契約），對外的具名 API 一律是字串。
+func checkpoint_line(
+	value: BalanceBotCaseResult,
+	shard_index: int,
+	primary_elapsed_ms: int,
+	replay_sampled: bool,
+	replay_elapsed_ms: int,
+	replay_matched: bool
+) -> String:
+	return JSON.stringify({
+		"schema_version": SCHEMA_VERSION,
+		"shard_index": shard_index,
+		"strategy_id": String(value.strategy_id),
+		"seed_index": value.seed_index,
+		"primary_elapsed_ms": primary_elapsed_ms,
+		"replay_sampled": replay_sampled,
+		"replay_elapsed_ms": replay_elapsed_ms,
+		"replay_matched": replay_matched,
+		"case": _case_proof(value),
+	}, "", true, true)
+
+
+## 分片尾記錄：分片是「跑完」還是「見暫停旗標停下」由本行決定，合併端不得以退出碼
+## 推測。同時帶上 candidate 身分，讓合併端能逐片比對（取代舊的分片 JSON 交叉檢查）。
+func checkpoint_status_line(
+	status: String, shard_index: int, completed_cases: int, skipped_cases: int
+) -> String:
+	return JSON.stringify({
+		"schema_version": SCHEMA_VERSION,
+		"status": status,
+		"shard_index": shard_index,
+		"completed_cases": completed_cases,
+		"skipped_cases": skipped_cases,
+		"candidate_id": String(candidate.candidate_id) if candidate != null else "",
+		"content_version": candidate.content_version if candidate != null else "",
+		"manifest_digest": candidate.manifest_digest if candidate != null else "",
+		"tune_digest": candidate.tune_digest if candidate != null else "",
+	}, "", true, true)
+
+
+func _case_proof(value: BalanceBotCaseResult) -> Dictionary:
+	var selected_ids: Array[String] = []
+	for selected_id: StringName in value.selected_ids:
+		selected_ids.append(String(selected_id))
+	var route_ids: Array[String] = []
+	for route_id: StringName in value.route_ids:
+		route_ids.append(String(route_id))
+	var failure_codes: Array[String] = []
+	for failure_code: StringName in value.failure_codes:
+		failure_codes.append(String(failure_code))
+	var act_snapshots: Array[Dictionary] = []
+	for act_snapshot: BalanceBotActSnapshot in value.act_snapshots:
+		var stable_unit_ids: Array[String] = []
+		for unit_id: StringName in act_snapshot.stable_unit_ids:
+			stable_unit_ids.append(String(unit_id))
+		act_snapshots.append({
+			"act_index": act_snapshot.act_index,
+			"gold": act_snapshot.gold,
+			"expedition_hp": act_snapshot.expedition_hp,
+			"roster_unit_count": act_snapshot.roster_unit_count,
+			"board_unit_count": act_snapshot.board_unit_count,
+			"stable_unit_ids": stable_unit_ids,
+			"battle_wins": act_snapshot.battle_wins,
+			"battle_losses": act_snapshot.battle_losses,
+			"elimination_node_id": String(act_snapshot.elimination_node_id),
+		})
+	return {
+		"strategy_id": String(value.strategy_id),
+		"seed_index": value.seed_index,
+		"run_id": String(value.run_id),
+		"world_digest": value.world_digest,
+		"terminal": value.terminal,
+		"won": value.won,
+		"act_reached": value.act_reached,
+		"build_id": String(value.build_id),
+		"selected_ids": selected_ids,
+		"route_ids": route_ids,
+		"ending_gold": value.ending_gold,
+		"ending_hp": value.ending_hp,
+		"battle_wins": value.battle_wins,
+		"battle_losses": value.battle_losses,
+		"buy_unit_count": value.buy_unit_count,
+		"buy_xp_count": value.buy_xp_count,
+		"reroll_count": value.reroll_count,
+		"sell_unit_count": value.sell_unit_count,
+		"boss_retry_count": value.boss_retry_count,
+		"completed_node_count": value.completed_node_count,
+		"reload_count": value.reload_count,
+		"null_offer_rule_count": value.null_offer_rule_count,
+		"act_snapshots": act_snapshots,
+		"final_phase": String(value.final_phase),
+		"settlement_receipt_count": value.settlement_receipt_digests.size(),
+		"settlement_receipt_digests": value.settlement_receipt_digests.duplicate(),
+		"reward_receipt_count": value.reward_receipt_digests.size(),
+		"reward_receipt_digests": value.reward_receipt_digests.duplicate(),
+		"failure_codes": failure_codes,
+		"replay_digest": value.replay_digest,
+	}
 
 
 func _count(strategy_id: StringName, require_terminal: bool, require_win: bool) -> int:

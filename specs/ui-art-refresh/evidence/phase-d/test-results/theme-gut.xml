@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="147" name="GutTests" failures="0" tests="10" >
+  <testsuite name="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" tests="10" failures="0" skipped="0" time="0.500097" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_project_uses_single_theme_with_font_tokens_and_focus_style" assertions="38" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.000842" >
+      </testcase>
+      <testcase name="test_shop_cost_tiers_have_five_distinct_authored_border_variations" assertions="13" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.000349" >
+      </testcase>
+      <testcase name="test_compact_action_bar_reuses_panel_texture_with_small_vertical_margin" assertions="12" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.002373" >
+      </testcase>
+      <testcase name="test_b1_layout_regions_stay_inside_reference_safe_area" assertions="36" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.000254" >
+      </testcase>
+      <testcase name="test_b1_layout_constants_match_the_1920_reference" assertions="12" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.000281" >
+      </testcase>
+      <testcase name="test_layout_metrics_accept_explicit_1920_reference_values" assertions="2" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.000261" >
+      </testcase>
+      <testcase name="test_runtime_scaling_is_centralized_on_a_theme_copy" assertions="5" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.003195" >
+      </testcase>
+      <testcase name="test_scale_rebuild_does_not_capture_scaled_combined_minimum" assertions="11" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.010641" >
+      </testcase>
+      <testcase name="test_button_text_contributes_to_combined_minimum_width" assertions="1" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.000435" >
+      </testcase>
+      <testcase name="test_production_viewport_paths_have_resolving_defaults" assertions="17" status="pass" classname="tests/unit/presentation_ui_theme/test_expedition_theme_contract.gd" time="0.481466" >
+      </testcase>
+  </testsuite>
+</testsuites>

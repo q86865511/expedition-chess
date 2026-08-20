@@ -21,8 +21,17 @@
 - **BalancePlaytest targeted suite**（只跑 balance_playtest 測試目錄，不含大樣本 bot 跑批）：
   `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-tests.ps1 -Suite Gut -TestPath res://tests/unit/balance_playtest`
 - **限定 GUT 目錄**：加上 `-TestPath res://tests/<path>`；canonical／content 可用 `-Case <case>`。
+- **平衡 screening 跑批（可暫停／續跑）**：`tools/balance/screening-ctl.ps1` 的四個子命令
+  （`start`／`pause`／`resume`／`status`），例：
+  `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/balance/screening-ctl.ps1 start -SeedCount 1000 -ShardCount 16`
+  （`start` 預設先跑 `-Suite All`，`-SkipAll` 才略過；`pause` 讓各分片在 case 邊界收工；
+  `resume` 從逐案 checkpoint 接著跑，**重開機後也是同一條指令**，不依賴駐留行程）。
+- **screening 進度網頁**：`python tools/balance/screening-server.py`（localhost:8765，
+  `/status`、`POST /pause`、`POST /resume`）；`/resume` 需要伺服器行程的環境有 `GODOT_BIN`。
 - Godot executable 由環境變數 `GODOT_BIN` 或 wrapper 的 `-GodotPath` 傳入；不得把本機絕對路徑寫進 repository。
 - Runner artifacts 位於 `artifacts/test/`；退出碼固定為 `0／2／3／124`。
+  screening 跑批另有 `4`＝本輪暫停（`tools/balance/run-sharded-cohort.ps1`，逐案 checkpoint
+  位於 `artifacts/test/screening-checkpoint/`）。
 
 ## 架構約定
 
@@ -78,3 +87,9 @@
   ESC 系統選單、棋子與裝備拖曳（含合成）。規格位於 `specs/in-run-hud/`
   （三件套＋`layout-reference-1920.json`）;實作交 Codex，`T01` 備戰期屬性預覽 API 由
   Claude 執行。依使用者裁決，`ui-art-refresh` Phase B1R3 樣板不再作為基線。
+- G2 `ui-art-refresh` UI 線（`codex/g2-ui-art-refresh-b`，**已收斂** 2026-08-20，
+  未 push）：Phase B-out 局外視覺重設計、Phase C 美術／音訊接線（視覺化地圖、
+  戰鬥呈現＋商店卡、production 音訊）、Phase D 中文化收尾與文案定稿
+  （25-key reseal、loc 引用 gate、OS locale、羈絆陣營候選 A＋44 技能描述）全數
+  經逐批視覺核可閘門提交，收斂於 `cd71986`（fresh All 1510/1510）。證據位於
+  `specs/ui-art-refresh/evidence/`；44 個編號單位名的正式命名候選移下一內容批次。

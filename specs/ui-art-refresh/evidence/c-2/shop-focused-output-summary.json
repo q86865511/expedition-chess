@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "suite": "shared shop card focused Gut",
+  "exit_code": 0,
+  "scripts": 1,
+  "tests": 14,
+  "passing_tests": 14,
+  "assertions": 314,
+  "covered": [
+    "PREPARE and COMBAT shared card structure",
+    "localized trait badge labels and atlas icons",
+    "cost tier pips plus ownership and star-up cues",
+    "shop intent dispatch and read-only combat behavior",
+    "relocalization and accessible copy"
+  ]
+}

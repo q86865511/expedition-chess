@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites errors="0" orphans="0" assertions="5870" name="GutTests" failures="0" tests="157" >
+  <testsuite name="tests/unit/in_run_hud/test_active_trait_progress_projection.gd" tests="3" failures="0" skipped="0" time="0.006655" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_projection_copies_active_authority_and_full_pinned_thresholds" assertions="14" status="pass" classname="tests/unit/in_run_hud/test_active_trait_progress_projection.gd" time="0.006131" >
+      </testcase>
+      <testcase name="test_manifest_mismatch_and_missing_active_rule_fail_closed" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_active_trait_progress_projection.gd" time="0.000288" >
+      </testcase>
+      <testcase name="test_snapshot_clone_isolates_nested_thresholds_and_effect_ids" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_active_trait_progress_projection.gd" time="0.000236" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_board_draft_move_adapter.gd" tests="5" failures="0" skipped="0" time="0.001284" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_board_swap_and_bench_to_board_share_one_clone_only_adapter" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_board_draft_move_adapter.gd" time="0.000333" >
+      </testcase>
+      <testcase name="test_board_to_occupied_bench_swaps_without_losing_identity" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_board_draft_move_adapter.gd" time="0.000324" >
+      </testcase>
+      <testcase name="test_bench_to_occupied_bench_swaps_without_losing_identity" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_board_draft_move_adapter.gd" time="0.000244" >
+      </testcase>
+      <testcase name="test_adapter_never_retains_callers_mutable_board_or_bench" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_board_draft_move_adapter.gd" time="0.00022" >
+      </testcase>
+      <testcase name="test_player_half_and_capacity_rejections_fail_closed" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_board_draft_move_adapter.gd" time="0.000163" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_board_draft_preview_view_model.gd" tests="5" failures="0" skipped="0" time="0.011026" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_population_matches_a_direct_validator_call_through_the_factory" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_board_draft_preview_view_model.gd" time="0.002194" >
+      </testcase>
+      <testcase name="test_over_capacity_draft_is_rejected_with_the_validators_named_issue" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_board_draft_preview_view_model.gd" time="0.002008" >
+      </testcase>
+      <testcase name="test_draft_trait_progress_differs_from_the_committed_layout" assertions="12" status="pass" classname="tests/unit/in_run_hud/test_board_draft_preview_view_model.gd" time="0.002521" >
+      </testcase>
+      <testcase name="test_incomplete_and_out_of_half_drafts_forward_validator_issues_verbatim" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_board_draft_preview_view_model.gd" time="0.002031" >
+      </testcase>
+      <testcase name="test_preview_is_read_only_for_inputs_canonical_state_and_outputs" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_board_draft_preview_view_model.gd" time="0.002272" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_board_projection_t27.gd" tests="3" failures="0" skipped="0" time="0.009031" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_all_sixty_four_cell_centers_round_trip_through_one_affine_inverse" assertions="132" status="pass" classname="tests/unit/in_run_hud/test_board_projection_t27.gd" time="0.001073" >
+      </testcase>
+      <testcase name="test_half_open_boundaries_round_to_nearest_center_and_fail_closed" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_board_projection_t27.gd" time="0.000269" >
+      </testcase>
+      <testcase name="test_screen_hit_uses_window_mapper_and_centers_land_on_integer_output_pixels" assertions="387" status="pass" classname="tests/unit/in_run_hud/test_board_projection_t27.gd" time="0.007689" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_combat_world_event_projection.gd" tests="12" failures="0" skipped="0" time="0.009687" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_after_values_and_move_destination_drive_renderer_snapshot" assertions="30" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.00197" >
+      </testcase>
+      <testcase name="test_unknown_target_rejects_whole_window_without_partial_update" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.00047" >
+      </testcase>
+      <testcase name="test_invalid_payload_type_and_move_origin_fail_closed" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000342" >
+      </testcase>
+      <testcase name="test_unknown_codec_event_is_rejected_without_touching_snapshot" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000242" >
+      </testcase>
+      <testcase name="test_death_removes_rendered_unit_by_authoritative_source_id" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000549" >
+      </testcase>
+      <testcase name="test_late_events_for_dead_rendered_id_are_no_ops_within_window" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.001104" >
+      </testcase>
+      <testcase name="test_setup_id_spawn_after_death_is_no_op_without_resurrection" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000467" >
+      </testcase>
+      <testcase name="test_setup_spawn_is_explicit_no_op_and_does_not_hide_rendered_unit" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000425" >
+      </testcase>
+      <testcase name="test_unrenderable_spawn_lifecycle_does_not_rollback_rendered_updates" assertions="26" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.002373" >
+      </testcase>
+      <testcase name="test_same_nonsetup_id_spawn_starts_new_unrenderable_lifecycle" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000646" >
+      </testcase>
+      <testcase name="test_failed_window_does_not_leak_dead_tombstone" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.00048" >
+      </testcase>
+      <testcase name="test_codec_rejects_malformed_known_event_and_rolls_back_tracking_atomically" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_combat_world_event_projection.gd" time="0.000619" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" tests="6" failures="0" skipped="0" time="0.569929" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_sequence_uses_explicit_coordinate_and_state_order" assertions="9" status="pass" classname="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" time="0.005598" >
+      </testcase>
+      <testcase name="test_each_node_kind_has_a_distinct_non_color_signal" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" time="0.005685" >
+      </testcase>
+      <testcase name="test_missing_or_mismatched_typed_data_fails_closed" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" time="0.006747" >
+      </testcase>
+      <testcase name="test_transition_banner_is_large_and_never_blocks_input" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" time="0.00398" >
+      </testcase>
+      <testcase name="test_detached_bind_arms_banner_timer_after_entering_tree" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" time="0.543368" >
+      </testcase>
+      <testcase name="test_bind_and_snapshot_clone_isolate_progress_source" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_in_run_hud_progress_t25.gd" time="0.004551" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" tests="14" failures="0" skipped="0" time="0.251271" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_drag_button_and_stable_focus_w_commit_the_same_canonical_layout" assertions="18" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.034909" >
+      </testcase>
+      <testcase name="test_keyboard_exact_board_target_matches_drag_and_supports_swap" assertions="14" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.022617" >
+      </testcase>
+      <testcase name="test_keyboard_exact_bench_slot_matches_drag_swap" assertions="11" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.023088" >
+      </testcase>
+      <testcase name="test_inventory_selector_resolves_only_canonical_inventory_membership" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.010387" >
+      </testcase>
+      <testcase name="test_real_input_delivery_w_bypasses_build_selector_search_and_guard" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.037104" >
+      </testcase>
+      <testcase name="test_real_input_delivery_w_bypasses_placement_target_search" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.020611" >
+      </testcase>
+      <testcase name="test_empty_focus_metadata_clears_stale_w_target" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.010192" >
+      </testcase>
+      <testcase name="test_w_is_blocked_by_system_menu_states_and_confirmation_modal" assertions="29" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.024167" >
+      </testcase>
+      <testcase name="test_prepare_button_preview_exposes_source_target_and_non_color_swap_cue" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.000901" >
+      </testcase>
+      <testcase name="test_typed_drop_preview_drives_population_trait_legality_and_clear" assertions="18" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.022099" >
+      </testcase>
+      <testcase name="test_preview_cache_keys_revision_target_and_authoritative_drop_recheck" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.011451" >
+      </testcase>
+      <testcase name="test_public_commit_resets_draft_cache_and_next_preview_uses_new_canonical" assertions="12" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.010842" >
+      </testcase>
+      <testcase name="test_system_menu_blocks_preview_query_clears_panel_and_never_dispatches" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.012497" >
+      </testcase>
+      <testcase name="test_preview_panel_preserves_scaled_minimum_and_clips_overflow" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_board_input_equivalence.gd" time="0.010406" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_prepare_economy_hud_t14.gd" tests="4" failures="0" skipped="0" time="0.047118" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_mapper_contains_the_complete_shop_error_table" assertions="16" status="pass" classname="tests/unit/in_run_hud/test_prepare_economy_hud_t14.gd" time="0.000474" >
+      </testcase>
+      <testcase name="test_hud_renders_max_streaks_and_five_authored_odds_from_bind_clone" assertions="32" status="pass" classname="tests/unit/in_run_hud/test_prepare_economy_hud_t14.gd" time="0.002619" >
+      </testcase>
+      <testcase name="test_revoked_supply_and_named_quotes_fail_closed_without_phase_guessing" assertions="13" status="pass" classname="tests/unit/in_run_hud/test_prepare_economy_hud_t14.gd" time="0.002215" >
+      </testcase>
+      <testcase name="test_formal_prepare_lifecycle_keeps_quotes_reasons_and_locale_coherent" assertions="30" status="pass" classname="tests/unit/in_run_hud/test_prepare_economy_hud_t14.gd" time="0.04181" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_prepare_focus_graph_covers_actions.gd" tests="3" failures="0" skipped="0" time="0.000648" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_run_prepare_focus_graph_covers_exactly_the_screen_actions" assertions="40" status="pass" classname="tests/unit/in_run_hud/test_prepare_focus_graph_covers_actions.gd" time="0.00032" >
+      </testcase>
+      <testcase name="test_run_prepare_high_cost_action_stays_at_the_end_of_the_button_run" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_prepare_focus_graph_covers_actions.gd" time="0.000215" >
+      </testcase>
+      <testcase name="test_blocked_prepare_actions_are_dropped_from_the_order" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_prepare_focus_graph_covers_actions.gd" time="0.000113" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" tests="6" failures="0" skipped="0" time="0.062347" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_one_star_unequipped_sells_without_modal" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" time="0.004306" >
+      </testcase>
+      <testcase name="test_high_value_sell_cancel_is_zero_dispatch_and_restores_background" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" time="0.004721" >
+      </testcase>
+      <testcase name="test_high_value_sell_confirm_dispatches_original_action_exactly_once" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" time="0.00377" >
+      </testcase>
+      <testcase name="test_rejected_and_unknown_quotes_keep_sell_fail_closed_with_named_copy" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" time="0.005183" >
+      </testcase>
+      <testcase name="test_formal_live_route_captures_unit_identity_and_freezes_background" assertions="17" status="pass" classname="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" time="0.026366" >
+      </testcase>
+      <testcase name="test_formal_live_route_missing_inspection_is_fail_closed" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_sell_confirmation_t17.gd" time="0.018001" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" tests="12" failures="0" skipped="0" time="0.084062" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_projection_includes_board_and_bench_with_catalog_fields" assertions="16" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.000661" >
+      </testcase>
+      <testcase name="test_manifest_mismatch_fails_closed_without_partial_rows" assertions="1" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.000216" >
+      </testcase>
+      <testcase name="test_snapshot_clone_out_isolates_nested_inspection_and_stats" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.000343" >
+      </testcase>
+      <testcase name="test_shell_renders_typed_fields_fixed_slots_stats_and_portrait_fallback" assertions="17" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.006135" >
+      </testcase>
+      <testcase name="test_empty_selection_clears_previous_inspector_state" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.005058" >
+      </testcase>
+      <testcase name="test_sell_quote_uses_authoritative_gain_and_named_rejection" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.006583" >
+      </testcase>
+      <testcase name="test_relocalize_redraws_visible_inspector_from_saved_clone_only_state" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.007669" >
+      </testcase>
+      <testcase name="test_relocalize_preserves_combat_inspector_clone_and_identity" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.00426" >
+      </testcase>
+      <testcase name="test_sell_confirmation_query_uses_inspection_snapshot_only" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.014591" >
+      </testcase>
+      <testcase name="test_prepare_composition_updates_the_single_mounted_inspector" assertions="22" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.018457" >
+      </testcase>
+      <testcase name="test_projected_hover_exit_relays_through_surface_and_restores_selector" assertions="14" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.016739" >
+      </testcase>
+      <testcase name="test_shared_hud_does_not_mislabel_trait_tier_or_relic_slots" assertions="15" status="pass" classname="tests/unit/in_run_hud/test_prepare_unit_inspection_t17.gd" time="0.00335" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_prepare_world_board_layering.gd" tests="5" failures="0" skipped="0" time="1.754853" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_prepare_world_board_is_not_covered_across_output_and_ui_scales" assertions="3483" status="pass" classname="tests/unit/in_run_hud/test_prepare_world_board_layering.gd" time="0.858767" >
+      </testcase>
+      <testcase name="test_board_routes_cap_bottom_below_projection_and_other_routes_do_not" assertions="194" status="pass" classname="tests/unit/in_run_hud/test_prepare_world_board_layering.gd" time="0.648673" >
+      </testcase>
+      <testcase name="test_prepare_keyboard_paths_survive_hidden_legacy_board_grid" assertions="61" status="pass" classname="tests/unit/in_run_hud/test_prepare_world_board_layering.gd" time="0.118831" >
+      </testcase>
+      <testcase name="test_world_unit_hover_supplies_w_target_without_click" assertions="17" status="pass" classname="tests/unit/in_run_hud/test_prepare_world_board_layering.gd" time="0.066833" >
+      </testcase>
+      <testcase name="test_world_unit_drop_commits_the_exact_projected_player_cell" assertions="18" status="pass" classname="tests/unit/in_run_hud/test_prepare_world_board_layering.gd" time="0.061749" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_progress_accessibility_states_t25.gd" tests="1" failures="0" skipped="0" time="0.003855" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_progress_accessibility_copy_localizes_all_three_node_states" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_progress_accessibility_states_t25.gd" time="0.003855" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_run_combat_screen_summon_authority_wiring.gd" tests="2" failures="0" skipped="0" time="0.02577" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_screen_injects_pinned_summon_authority_into_renderer_projection" assertions="11" status="pass" classname="tests/unit/in_run_hud/test_run_combat_screen_summon_authority_wiring.gd" time="0.020188" >
+      </testcase>
+      <testcase name="test_screen_without_supply_keeps_summon_unrenderable" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_run_combat_screen_summon_authority_wiring.gd" time="0.005582" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" tests="11" failures="0" skipped="0" time="0.03925" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_forge_inventory_components_match_forge_view_model" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.002493" >
+      </testcase>
+      <testcase name="test_forge_recipes_containing_match_forge_view_model" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.001986" >
+      </testcase>
+      <testcase name="test_forge_pair_recipe_matches_the_pinned_table_and_fails_closed" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.002164" >
+      </testcase>
+      <testcase name="test_forge_pair_recipe_rejects_unregistered_pairs_and_bound_items" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.003514" >
+      </testcase>
+      <testcase name="test_shop_quotes_match_shop_economy_view_model_and_shop_service" assertions="19" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.012315" >
+      </testcase>
+      <testcase name="test_shop_quotes_are_read_only_and_isolated_between_calls" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.008588" >
+      </testcase>
+      <testcase name="test_shop_quotes_report_named_generation_mismatch" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.001967" >
+      </testcase>
+      <testcase name="test_absent_supply_returns_empty_state_instead_of_crashing" assertions="9" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.000343" >
+      </testcase>
+      <testcase name="test_release_clears_supply_and_keeps_reads_answerable" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.001995" >
+      </testcase>
+      <testcase name="test_board_draft_and_trait_progress_forwarding_match_direct_view_models" assertions="13" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.003726" >
+      </testcase>
+      <testcase name="test_board_draft_and_trait_progress_absent_supply_fail_closed" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_run_presentation_session_supply_api.gd" time="0.000159" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_shop_economy_view_model.gd" tests="9" failures="0" skipped="0" time="0.030721" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_refresh_quote_matches_direct_quote_refresh" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.00579" >
+      </testcase>
+      <testcase name="test_refresh_quote_reports_named_gold_insufficient_but_still_prices" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.003323" >
+      </testcase>
+      <testcase name="test_buy_xp_quote_matches_domain_level_folding" assertions="12" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.002805" >
+      </testcase>
+      <testcase name="test_buy_xp_quote_reports_max_level_instead_of_a_price" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.001837" >
+      </testcase>
+      <testcase name="test_sell_quote_matches_quote_sell_and_unknown_id_is_named" assertions="11" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.00264" >
+      </testcase>
+      <testcase name="test_economy_status_projects_streaks_progress_and_authored_odds" assertions="11" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.001835" >
+      </testcase>
+      <testcase name="test_economy_status_reports_max_level_when_thresholds_are_exhausted" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.001635" >
+      </testcase>
+      <testcase name="test_quotes_never_mutate_the_run_and_snapshots_are_isolated" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.008948" >
+      </testcase>
+      <testcase name="test_catalog_generation_mismatch_is_reported_with_a_named_code" assertions="3" status="pass" classname="tests/unit/in_run_hud/test_shop_economy_view_model.gd" time="0.001908" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_system_menu_overlay.gd" tests="3" failures="0" skipped="0" time="0.054373" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_state_machine_embeds_shared_settings_and_never_routes" assertions="18" status="pass" classname="tests/unit/in_run_hud/test_system_menu_overlay.gd" time="0.007895" >
+      </testcase>
+      <testcase name="test_confirm_states_cancel_to_root_and_emit_only_after_confirm" assertions="19" status="pass" classname="tests/unit/in_run_hud/test_system_menu_overlay.gd" time="0.00378" >
+      </testcase>
+      <testcase name="test_focus_is_trapped_and_restored_across_dynamic_pages" assertions="92" status="pass" classname="tests/unit/in_run_hud/test_system_menu_overlay.gd" time="0.042698" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_trait_detail_popover_t16.gd" tests="2" failures="0" skipped="0" time="0.012242" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_supply_progress_renders_inactive_and_active_rows_with_detail_popover" assertions="31" status="pass" classname="tests/unit/in_run_hud/test_trait_detail_popover_t16.gd" time="0.009112" >
+      </testcase>
+      <testcase name="test_trait_model_builder_clones_supply_data_at_single_hook" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_trait_detail_popover_t16.gd" time="0.00313" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_trait_progress_authority.gd" tests="5" failures="0" skipped="0" time="0.00586" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_active_rows_match_compile_player_active_traits_field_by_field" assertions="12" status="pass" classname="tests/unit/in_run_hud/test_trait_progress_authority.gd" time="0.00117" >
+      </testcase>
+      <testcase name="test_inactive_traits_are_listed_with_zero_count_and_next_threshold" assertions="11" status="pass" classname="tests/unit/in_run_hud/test_trait_progress_authority.gd" time="0.000869" >
+      </testcase>
+      <testcase name="test_max_tier_row_reports_next_required_as_minus_one" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_trait_progress_authority.gd" time="0.000947" >
+      </testcase>
+      <testcase name="test_view_model_forwards_progress_and_returned_rows_are_isolated" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_trait_progress_authority.gd" time="0.002023" >
+      </testcase>
+      <testcase name="test_empty_board_and_missing_catalog_behave_explicitly" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_trait_progress_authority.gd" time="0.000851" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd" tests="5" failures="0" skipped="0" time="0.006838" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_board_unit_preview_matches_direct_compile_field_by_field" assertions="14" status="pass" classname="tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd" time="0.001461" >
+      </testcase>
+      <testcase name="test_bench_unit_gets_star_scaled_preview_although_compile_excludes_it" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd" time="0.001347" >
+      </testcase>
+      <testcase name="test_preview_reports_equipped_instance_ids_without_folding_effects_into_stats" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd" time="0.001259" >
+      </testcase>
+      <testcase name="test_mutating_returned_preview_does_not_affect_domain_or_later_reads" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd" time="0.001414" >
+      </testcase>
+      <testcase name="test_unknown_instance_id_returns_null_and_all_stats_is_deterministic" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_unit_stats_preview_view_model.gd" time="0.001357" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" tests="12" failures="0" skipped="0" time="0.097243" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_group_mount_places_fixed_pixel_hud_above_world_and_vfx" assertions="37" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.001525" >
+      </testcase>
+      <testcase name="test_overlay_placement_order_matches_renderer_logical_depth" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.000556" >
+      </testcase>
+      <testcase name="test_duplicate_logical_cells_fail_snapshot_and_overlay_closed" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.000174" >
+      </testcase>
+      <testcase name="test_health_mana_selection_and_drag_visibility_come_from_one_snapshot_clone" assertions="9" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.000535" >
+      </testcase>
+      <testcase name="test_world_overlay_is_below_transition_menu_and_modal_input_layers" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.011418" >
+      </testcase>
+      <testcase name="test_overlay_is_recreated_after_its_route_mount_is_destroyed" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.013863" >
+      </testcase>
+      <testcase name="test_persistent_surface_prepare_to_combat_reparents_and_disables_drag" assertions="16" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.013916" >
+      </testcase>
+      <testcase name="test_failed_route_reparent_rolls_overlay_back_and_disables_input" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.007476" >
+      </testcase>
+      <testcase name="test_projected_drag_uses_inverse_mapping_and_relays_one_typed_drop" assertions="15" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.007119" >
+      </testcase>
+      <testcase name="test_resize_in_place_refreshes_overlay_and_projected_drag_mapper" assertions="22" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.020207" >
+      </testcase>
+      <testcase name="test_mount_adapter_requires_exactly_one_surface_and_returns_surface_error" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.01355" >
+      </testcase>
+      <testcase name="test_mount_before_coordinator_sync_fails_with_mapper_configuration_error" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_world_board_overlay_t29.gd" time="0.006904" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_world_board_renderer_t28.gd" tests="4" failures="0" skipped="0" time="0.027247" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_renderer_preserves_native_sprite_pivot_filter_and_integer_pixels" assertions="8" status="pass" classname="tests/unit/in_run_hud/test_world_board_renderer_t28.gd" time="0.006605" >
+      </testcase>
+      <testcase name="test_depth_order_uses_projected_foot_y_then_x_for_unique_cells" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_world_board_renderer_t28.gd" time="0.007063" >
+      </testcase>
+      <testcase name="test_renderer_keeps_a_clone_instead_of_the_callers_mutable_snapshot" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_world_board_renderer_t28.gd" time="0.006638" >
+      </testcase>
+      <testcase name="test_missing_sprite_frames_or_animation_fails_closed_without_a_stale_sprite" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_world_board_renderer_t28.gd" time="0.006941" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" tests="10" failures="0" skipped="0" time="0.504716" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_prepare_mount_failure_reaches_player_visible_status" assertions="9" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.029702" >
+      </testcase>
+      <testcase name="test_prepare_detached_compose_retries_mount_when_candidate_enters_tree" assertions="13" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.034437" >
+      </testcase>
+      <testcase name="test_combat_mount_failure_reaches_player_visible_status" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.046169" >
+      </testcase>
+      <testcase name="test_persistent_surface_prepare_to_combat_uses_route_local_overlay_hosts" assertions="25" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.102453" >
+      </testcase>
+      <testcase name="test_combat_event_window_remounts_sprite_and_overlay_from_after_values" assertions="23" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.060468" >
+      </testcase>
+      <testcase name="test_map_detached_compose_retries_clear_when_candidate_enters_tree" assertions="18" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.0587" >
+      </testcase>
+      <testcase name="test_reward_detached_compose_retries_clear_when_candidate_enters_tree" assertions="18" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.04884" >
+      </testcase>
+      <testcase name="test_map_clear_missing_surface_reaches_player_visible_status" assertions="9" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.046242" >
+      </testcase>
+      <testcase name="test_reward_clear_ambiguous_surface_reaches_player_visible_status" assertions="9" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.048879" >
+      </testcase>
+      <testcase name="test_prepare_missing_values_never_render_raw_identity_or_dash" assertions="12" status="pass" classname="tests/unit/in_run_hud/test_world_board_screen_mount_error_reporting.gd" time="0.028826" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" tests="10" failures="0" skipped="0" time="0.031058" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_prepare_missing_visual_keeps_invalid_unit_and_stops_build" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.001447" >
+      </testcase>
+      <testcase name="test_combat_missing_animation_keeps_invalid_unit_and_stops_build" assertions="7" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.001335" >
+      </testcase>
+      <testcase name="test_required_null_sources_return_invalid_sentinel_snapshots" assertions="16" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.001398" >
+      </testcase>
+      <testcase name="test_prepare_null_canonical_entries_fail_the_whole_build" assertions="6" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.00134" >
+      </testcase>
+      <testcase name="test_combat_null_inspection_invalidates_prior_units_in_the_build" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.001581" >
+      </testcase>
+      <testcase name="test_combat_empty_inspections_return_invalid_typed_sentinel" assertions="5" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.001872" >
+      </testcase>
+      <testcase name="test_committed_summary_recovery_allows_a_genuinely_empty_world" assertions="2" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.001369" >
+      </testcase>
+      <testcase name="test_combat_missing_stable_presentation_identity_fails_closed" assertions="4" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.00135" >
+      </testcase>
+      <testcase name="test_invalid_factory_snapshot_clears_previous_surface_renderer" assertions="21" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.003972" >
+      </testcase>
+      <testcase name="test_complete_pinned_visuals_build_valid_prepare_and_combat_snapshots" assertions="16" status="pass" classname="tests/unit/in_run_hud/test_world_board_snapshot_factory_fail_closed.gd" time="0.015394" >
+      </testcase>
+  </testsuite>
+  <testsuite name="tests/unit/in_run_hud/test_world_board_summon_authority.gd" tests="5" failures="0" skipped="0" time="1.161291" >
+    <properties><property name="app_version" value="0.2.0"/><property name="battle_event_codec_version" value="1"/><property name="battle_result_codec_version" value="1"/><property name="content_codec_version" value="3"/><property name="engine_version" value="4.7-stable (official)"/><property name="hash_version" value="1"/><property name="rng_version" value="1"/><property name="schema_version" value="4"/><property name="simulation_version" value="1"/></properties>
+      <testcase name="test_spawned_unit_matches_pinned_domain_template_field_by_field" assertions="14" status="pass" classname="tests/unit/in_run_hud/test_world_board_summon_authority.gd" time="0.282079" >
+      </testcase>
+      <testcase name="test_missing_template_visual_or_invalid_stats_fail_closed" assertions="11" status="pass" classname="tests/unit/in_run_hud/test_world_board_summon_authority.gd" time="0.303667" >
+      </testcase>
+      <testcase name="test_authority_is_clone_isolated_from_pinned_input_and_callers" assertions="10" status="pass" classname="tests/unit/in_run_hud/test_world_board_summon_authority.gd" time="0.28113" >
+      </testcase>
+      <testcase name="test_projection_renders_summon_from_authority_and_keeps_after_values" assertions="29" status="pass" classname="tests/unit/in_run_hud/test_world_board_summon_authority.gd" time="0.286919" >
+      </testcase>
+      <testcase name="test_session_forwards_pinned_summoned_templates_clone_only" assertions="14" status="pass" classname="tests/unit/in_run_hud/test_world_board_summon_authority.gd" time="0.007496" >
+      </testcase>
+  </testsuite>
+</testsuites>

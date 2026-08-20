@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "phase": "C-3",
+  "suite": "All",
+  "exit_code": 0,
+  "started_at_utc": "2026-08-19T15:42:49Z",
+  "finished_at_utc": "2026-08-19T16:06:11Z",
+  "gut": {
+    "scripts": 356,
+    "tests": 1499,
+    "passing_tests": 1499,
+    "failures": 0,
+    "errors": 0,
+    "orphans": 0,
+    "assertions": 39746
+  },
+  "steps": {
+    "Import": 0,
+    "Smoke": 0,
+    "Gut": 0,
+    "Content": 0,
+    "Canonical": 0,
+    "Combat": 0,
+    "Expedition": 0,
+    "ActEliminationGate": 0,
+    "Spec": 0
+  },
+  "smoke": {
+    "cases": 10,
+    "failures": 0
+  },
+  "combat_acceptance": {
+    "passed": 18,
+    "total": 18,
+    "evidence_verified": true
+  },
+  "spec": {
+    "cases": 4100,
+    "failures": 0
+  },
+  "sha256": {
+    "all_runner_execution": "7ad29353284a8158812ebdd6ae96c8d7284747f4aeb5dadfc4bf087298143c20",
+    "all_gut_xml": "27e7fe45481d49ddf904ad0e08e820ecf83c9b4651c635fa72cd851606411fd8"
+  }
+}

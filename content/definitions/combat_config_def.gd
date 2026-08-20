@@ -30,7 +30,7 @@ extends ContentDefinition
 ## spec §5.13／REQ-ENEMY-003:每一幕的敵方成長乘數(基點),只作用於
 ## health/attack/armor/magic_resist。act1 恆等 10000 是固定規則,act2／act3 為 TUNE。
 @export var act1_enemy_stat_bps: int = 10000
-@export var act2_enemy_stat_bps: int = 13000
+@export var act2_enemy_stat_bps: int = 14000
 @export var act3_enemy_stat_bps: int = 16000
 
 func category_name() -> StringName:

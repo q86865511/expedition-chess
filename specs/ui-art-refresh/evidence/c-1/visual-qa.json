@@ -1,0 +1,33 @@
+{
+  "schema_version": "c-1-visual-qa-1",
+  "reviewed_by": "codex:visual-inspection",
+  "cases": [
+    "720p-ui100",
+    "720p-ui125",
+    "720p-ui150",
+    "1080p-ui100",
+    "1080p-ui125",
+    "1080p-ui150",
+    "1440p-ui100",
+    "1440p-ui125",
+    "1440p-ui150"
+  ],
+  "checks": {
+    "node_clipping": false,
+    "edge_clipping": false,
+    "node_overlap": false,
+    "background_competes_with_information": false,
+    "frontier_edges_visually_dominant": true,
+    "traversed_edge_retained": true,
+    "background_edges_subordinate": true,
+    "act_titles_localized": true,
+    "unreachable_visible_cross_prefix": false,
+    "unreachable_accessible_state_present": true,
+    "current_marker_distinct": true,
+    "three_states_non_color_distinct": true,
+    "grayscale_signal_readable": true
+  },
+  "interaction_sequence_reviewed": true,
+  "issues": [],
+  "ok": true
+}

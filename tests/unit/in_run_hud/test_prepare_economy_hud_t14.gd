@@ -15,6 +15,7 @@ const MESSAGE_KEYS := {
 	&"prepare.refresh": "Refresh",
 	&"prepare.xp": "Buy XP",
 	&"prepare.panel.synergies": "Traits",
+	&"prepare.empty.synergies": "Deploy units to show synergy details.",
 	&"prepare.panel.inventory": "Inventory",
 	&"prepare.panel.units": "Units",
 	&"prepare.panel.expedition": "Expedition",
@@ -184,6 +185,32 @@ func test_hud_renders_max_streaks_and_five_authored_odds_from_bind_clone() -> vo
 		"Shop Odds  ◆1 33.33% · ◆2 12.50% · ◆3 0.01% · ◆4 0% · ◆5 54.16%"
 	)
 	assert_eq(odds.get_meta(&"odds_tier_basis_points"), [3333, 1250, 1, 0, 5416])
+	for label: Label in [level_xp, win, loss, odds]:
+		assert_eq(label.theme_type_variation, &"ExpeditionTopMetric")
+		assert_false(label.clip_text)
+	assert_eq(level_xp.autowrap_mode, TextServer.AUTOWRAP_OFF)
+	for detail_label: Label in [win, loss, odds]:
+		assert_eq(detail_label.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART)
+	var traits := shell.find_child("TraitList", true, false) as ItemList
+	var empty_traits := shell.find_child(
+		"TraitEmptyState", true, false
+	) as Label
+	assert_not_null(traits)
+	assert_not_null(empty_traits)
+	if traits != null:
+		assert_false(traits.visible)
+		assert_eq(traits.focus_mode, Control.FOCUS_NONE)
+		assert_eq(
+			traits.get_meta(&"accessible_text"),
+			"Deploy units to show synergy details."
+		)
+	if empty_traits != null:
+		assert_eq(empty_traits.text, "Deploy units to show synergy details.")
+		assert_false(empty_traits.clip_text)
+		assert_eq(
+			empty_traits.autowrap_mode,
+			TextServer.AUTOWRAP_WORD_SMART
+		)
 
 	# bind 後改動供給端，既有 HUD 不得持有同一份 mutable snapshot。
 	supply_session.status.win_streak = 99

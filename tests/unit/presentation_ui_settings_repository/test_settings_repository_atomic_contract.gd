@@ -143,6 +143,29 @@ func before_each() -> void:
 	_signal_payloads.clear()
 
 
+func test_first_launch_uses_os_locale_and_defaults_outside_zh_tw_to_english() -> void:
+	for case: Dictionary in [
+		{"os_locale": "zh_TW", "expected": &"zh_TW"},
+		{"os_locale": "zh-Hant-HK", "expected": &"zh_TW"},
+		{"os_locale": "en_US", "expected": &"en"},
+		{"os_locale": "ja_JP", "expected": &"en"},
+		{"os_locale": "zh_CN", "expected": &"en"},
+	]:
+		var storage := FakeSettingsStorage.new()
+		var provider := func() -> String: return String(case["os_locale"])
+		var repository: Variant = _new_repository(storage, provider)
+		if repository == null:
+			return
+		var loaded: Variant = repository.call("load")
+		assert_true(_ok(loaded), "first launch must load defaults")
+		assert_eq(
+			_snapshot(loaded).locale,
+			case["expected"],
+			"OS locale %s" % String(case["os_locale"])
+		)
+		assert_false(storage.has_file(MAIN_PATH), "load must not persist defaults")
+
+
 func test_settings_repository_atomic_round_trip_and_faults() -> void:
 	var storage := FakeSettingsStorage.new()
 	var repository: Variant = _new_repository(storage)
@@ -336,7 +359,10 @@ func test_public_snapshot_results_signals_and_consumers_never_alias_repository_s
 	assert_eq((repository.call("current_snapshot") as SettingsSnapshot).ui_volume_bps, 5432)
 
 
-func _new_repository(storage: FakeSettingsStorage) -> Variant:
+func _new_repository(
+	storage: FakeSettingsStorage,
+	os_locale_provider: Callable = Callable()
+) -> Variant:
 	var source := FileAccess.get_file_as_string(REPOSITORY_PATH)
 	var required_tokens := PackedStringArray([
 		"signal settings_committed",
@@ -364,6 +390,8 @@ func _new_repository(storage: FakeSettingsStorage) -> Variant:
 		return null
 	var repository: Variant = script_resource.new(storage)
 	assert_not_null(repository)
+	if repository != null and os_locale_provider.is_valid():
+		repository.call("bind_os_locale_provider", os_locale_provider)
 	if repository is Node:
 		add_child_autofree(repository as Node)
 	return repository

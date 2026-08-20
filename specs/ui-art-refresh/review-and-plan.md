@@ -159,6 +159,30 @@
 - 驗收：All＋static gate 過；100%/125%/150% 縮放與 720p/1080p/1440p 截圖無裁切
   無重疊；零 `theme_override_*` 散落（探針類除外，列外清單）。
 
+#### 局外畫面批次
+
+- **B-out-1（2026-08-14 使用者核可）**：`MENU_MAIN` key art 直疊操作按鈕與
+  `CAMP_WORLD` 主環境／場景設施標記；18 張解析度×UI scale 證據與 All exit 0。
+- **B-out-2（2026-08-17 使用者核可，含圖鑑換行修訂）**：五設施已進
+  `ProductionLayoutShell` 的 per-route 分支；production portraits 已接圖鑑 content
+  cards，並保留搜尋／比較／focus／節點契約。54 張解析度×UI scale 證據逐張檢視、
+  `issues=[]`，fresh All exit 0。核可後另補 6 張 UI 125%／150% 圖鑑證據；190
+  reference px 卡寬讓一張指揮官資料卡與三張 portrait 卡在高縮放仍維持同列，6/6、
+  `issues=[]`，定向契約 5/5、83 assertions。
+  - `CAMP_WORLD` 中央裝飾 surface 已收斂，由環境圖框獨佔單一可見框線。
+  - 底部帶左半用途定案為目前 focus／hover 設施名稱的情境提示，沿用既有 loc。
+  - 指定修訂完成並提交後，依使用者裁決開始 B-out-3。
+- **B-out-3（2026-08-17 使用者核可，含四項修訂）**：`SETTINGS` 保留單一
+  標籤欄、縮放權威與既有節點契約後進 route-local shell；`RESULTS`／fallback
+  的硬編 offset 已收進 `ExpeditionLayoutMetrics`，五項結算資料卡片化。局外 ESC
+  allowlist、內嵌設定與雙確認契約完成；`MENU_MAIN` 維持排除。`app/main.tscn`
+  的兩個靶實查為無繪製 `Control`，無須修改。四組畫面狀態 × 9 組解析度／UI scale
+  共 36 張已逐張檢視，36/36、36 unique SHA、`issues=[]`。核可修訂補上兩張大數字卡
+  的本次獎勵／目前持有貨幣 loc 標籤、設定捲動區滿高、右上入口改標「選單」及完成橫幅
+  單框；另修正營地 metrics 與入口重疊。三組受影響尺寸 × 四狀態共 12 張補圖逐張檢視，
+  12/12、12 unique SHA、`issues=[]`。最終 All 1471/1471、39232 assertions、Spec 4096/0。
+  證據：`evidence/b-out-3/`。Phase B 完成，停止並等待下一批，不開始 Phase C。
+
 ### Phase C｜美術資產接線（讓 44 組資產上場）
 1. 單位視覺：棋盤與備戰用 SpriteFrames（idle/walk/attack 動畫）、商店卡與圖鑑
    用 portrait＋icon；星級／費用以形狀符號輔助（palette 三硬規則）。

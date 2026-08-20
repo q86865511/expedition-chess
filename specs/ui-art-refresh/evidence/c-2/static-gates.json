@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-08-19T15:25:41Z",
+  "final_import_parse": {
+    "started_at_utc": "2026-08-19T13:35:38Z",
+    "finished_at_utc": "2026-08-19T13:35:45Z",
+    "exit_code": 0
+  },
+  "combat_soak": {
+    "seed_count": 10000,
+    "case_count": 10000,
+    "failures": 0,
+    "deterministic_replay_count": 64,
+    "exit_code": 0
+  },
+  "git_diff_check": {
+    "exit_code": 0,
+    "output": ""
+  },
+  "theme_override_scan": {
+    "matches": 0
+  },
+  "gameplay_rng_scan": {
+    "patterns": ["RngService", "gameplay_stream", "gameplay stream"],
+    "scope": "added presentation source lines",
+    "matches": 0
+  },
+  "forbidden_boundary_diff": {
+    "paths": [
+      "domain/",
+      "services/",
+      "presentation/viewmodels/",
+      "presentation/run_presentation_session.gd",
+      "tests/contracts/"
+    ],
+    "matches": 0
+  },
+  "approved_app_exception": {
+    "source": "2026-08-19 explicit user approval",
+    "changed_files": [
+      "app/content/localization_catalog.gd",
+      "app/content/project_content_bootstrap.gd"
+    ],
+    "localization_display_values_changed": 12,
+    "keys_added": 0,
+    "keys_removed": 0,
+    "other_app_files_changed": 0
+  },
+  "user_owned_project_godot_preserved": true
+}

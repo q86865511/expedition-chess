@@ -45,6 +45,60 @@ func test_zh_tw_and_en_key_set_mismatch_is_named_and_fails_gate() -> void:
 	Support.assert_rejected_with(self, report, &"PUI_LOCALIZATION_KEY_PARITY")
 
 
+func test_program_referenced_localization_key_must_exist_in_catalog() -> void:
+	var candidate := Candidate.build()
+	Support.append_source(
+		candidate,
+		"res://presentation/screens/menu_main.gd",
+		(
+			"func missing_label() -> String:\n"
+			+ "\treturn _text(&\"menu.missing_fixture\")\n"
+		)
+	)
+
+	var report := Support.validate(self, candidate)
+
+	Support.assert_rejected_with(
+		self,
+		report,
+		&"PUI_LOCALIZATION_REFERENCE_MISSING"
+	)
+
+
+func test_accessibility_text_key_must_exist_in_catalog() -> void:
+	var candidate := Candidate.build()
+	Support.append_source(
+		candidate,
+		"res://presentation/accessibility/example_tokens.gd",
+		(
+			"const CUE := {\n"
+			+ "\t\"text_key\": &\"accessibility.missing_fixture\",\n"
+			+ "}\n"
+		)
+	)
+
+	var report := Support.validate(self, candidate)
+
+	Support.assert_rejected_with(
+		self,
+		report,
+		&"PUI_LOCALIZATION_REFERENCE_MISSING"
+	)
+
+
+func test_non_localization_stable_ids_do_not_trip_reference_gate() -> void:
+	var candidate := Candidate.build()
+	Support.append_source(
+		candidate,
+		"res://presentation/screens/menu_main.gd",
+		"const UNIT_ID: StringName = &\"unit.slice.player.00\"\n"
+	)
+
+	var report := Support.validate(self, candidate)
+
+	assert_true(bool(report.get("ok", false)), str(report.get("issues", [])))
+
+
 func test_missing_referenced_asset_is_named_and_fails_gate() -> void:
 	var candidate := Candidate.build()
 	candidate["asset_paths"] = PackedStringArray()

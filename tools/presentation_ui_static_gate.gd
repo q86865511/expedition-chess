@@ -36,6 +36,7 @@ const CUSTOM_MINIMUM_SIZE_TOKEN := "custom_minimum_size"
 const DEV_REFERENCE := &"PUI_DEV_REFERENCE"
 const HARDCODED_PLAYER_TEXT := &"PUI_HARDCODED_PLAYER_TEXT"
 const LOCALIZATION_KEY_PARITY := &"PUI_LOCALIZATION_KEY_PARITY"
+const LOCALIZATION_REFERENCE_MISSING := &"PUI_LOCALIZATION_REFERENCE_MISSING"
 const ASSET_REFERENCE_MISSING := &"PUI_ASSET_REFERENCE_MISSING"
 const FOCUS_GRAPH_INVALID := &"PUI_FOCUS_GRAPH_INVALID"
 const VIEWPORT_POLICY_INVALID := &"PUI_VIEWPORT_POLICY_INVALID"
@@ -63,7 +64,11 @@ func validate_candidate(candidate: Dictionary) -> Dictionary:
 	var sources := _production_sources(candidate)
 	_validate_source_dependencies(sources, issues)
 	_validate_layout_metric_assignments(sources, issues)
-	_validate_localization(candidate, issues)
+	var localization_reference_count := _validate_localization(
+		candidate,
+		sources,
+		issues
+	)
 	_validate_asset_references(candidate, sources, issues)
 	_validate_focus_graphs(candidate, issues)
 	_validate_system_menu_contract(candidate, issues)
@@ -82,6 +87,7 @@ func validate_candidate(candidate: Dictionary) -> Dictionary:
 		"exit_code": 0 if issues.is_empty() else 1,
 		"issues": issues,
 		"accessibility_binding_count": accessibility_binding_count,
+		"localization_reference_count": localization_reference_count,
 	}
 
 
@@ -110,6 +116,27 @@ func validate_project(root_path: String = "res://") -> Dictionary:
 		},
 	}
 	return validate_candidate(candidate)
+
+
+func validate_localization_project(root_path: String = "res://") -> Dictionary:
+	var issues: Array[Dictionary] = []
+	var candidate := {"localization": _collect_localization(root_path)}
+	var reference_count := _validate_localization(
+		candidate,
+		_production_sources({
+			"production_roots": PRODUCTION_ROOTS.duplicate(),
+			"ignored_roots": IGNORED_ROOTS.duplicate(),
+			"sources": _collect_project_sources(root_path),
+		}),
+		issues
+	)
+	issues.sort_custom(_issue_less)
+	return {
+		"ok": issues.is_empty(),
+		"exit_code": 0 if issues.is_empty() else 1,
+		"issues": issues,
+		"localization_reference_count": reference_count,
+	}
 
 
 func _production_sources(candidate: Dictionary) -> Dictionary:
@@ -192,8 +219,9 @@ func _validate_layout_metric_assignments(
 
 func _validate_localization(
 	candidate: Dictionary,
+	sources: Dictionary,
 	issues: Array[Dictionary]
-) -> void:
+) -> int:
 	var value: Variant = candidate.get("localization", {})
 	if not value is Dictionary:
 		_append_issue(
@@ -202,7 +230,7 @@ func _validate_localization(
 			"localization",
 			"localization catalog is missing"
 		)
-		return
+		return 0
 	var localization := value as Dictionary
 	var zh_value: Variant = localization.get("zh_TW")
 	var en_value: Variant = localization.get("en")
@@ -213,7 +241,7 @@ func _validate_localization(
 			"localization",
 			"zh_TW and en catalogs are required"
 		)
-		return
+		return 0
 	var zh := zh_value as Dictionary
 	var en := en_value as Dictionary
 	var zh_keys := _variant_keys(zh)
@@ -230,6 +258,141 @@ func _validate_localization(
 			"localization/zh_TW|en",
 			"locale key sets differ or contain an empty player-visible value"
 		)
+		return 0
+	return _validate_localization_references(zh, en, sources, issues)
+
+
+func _validate_localization_references(
+	zh: Dictionary,
+	en: Dictionary,
+	sources: Dictionary,
+	issues: Array[Dictionary]
+) -> int:
+	var references: Dictionary = {}
+	for path: String in _sorted_keys(sources):
+		if _path_holds_localization_values(path):
+			continue
+		var source := String(sources[path])
+		for key: String in _localization_reference_literals(path, source, zh):
+			var reference_id := "%s|%s" % [path, key]
+			if references.has(reference_id):
+				continue
+			references[reference_id] = true
+			if zh.has(key) and en.has(key):
+				continue
+			_append_issue(
+				issues,
+				LOCALIZATION_REFERENCE_MISSING,
+				path,
+				"referenced localization key is missing: %s" % key
+			)
+	return references.size()
+
+
+func _localization_reference_literals(
+	path: String,
+	source: String,
+	catalog: Dictionary
+) -> Array[String]:
+	var references: Dictionary = {}
+	var recent_lines: Array[String] = []
+	for line_value: Variant in source.split("\n"):
+		var line := String(line_value)
+		recent_lines.append(line)
+		if recent_lines.size() > 3:
+			recent_lines.pop_front()
+		var context := "\n".join(recent_lines)
+		for literal: String in _gdscript_string_literals(line):
+			if not _looks_like_localization_key(literal):
+				continue
+			if catalog.has(literal) or _is_explicit_localization_context(
+				path,
+				context,
+				literal
+			):
+				references[literal] = true
+	return _sorted_keys(references)
+
+
+func _gdscript_string_literals(line: String) -> Array[String]:
+	var literals: Array[String] = []
+	var index := 0
+	while index < line.length():
+		if line[index] == "#":
+			break
+		if line[index] != "\"":
+			index += 1
+			continue
+		index += 1
+		var literal := ""
+		var escaped := false
+		while index < line.length():
+			var character := line[index]
+			if escaped:
+				literal += character
+				escaped = false
+			elif character == "\\":
+				escaped = true
+			elif character == "\"":
+				literals.append(literal)
+				index += 1
+				break
+			else:
+				literal += character
+			index += 1
+	return literals
+
+
+func _looks_like_localization_key(value: String) -> bool:
+	if (
+		value.is_empty()
+		or value.contains("%")
+		or not value.contains(".")
+		or value.begins_with(".")
+		or value.ends_with(".")
+	):
+		return false
+	for segment: String in value.split("."):
+		if segment.is_empty():
+			return false
+	for character: String in value:
+		if not (
+			(character >= "a" and character <= "z")
+			or (character >= "0" and character <= "9")
+			or character in ["_", ".", "-"]
+		):
+			return false
+	return true
+
+
+func _is_explicit_localization_context(
+	path: String,
+	context: String,
+	key: String
+) -> bool:
+	if (
+		path == "res://presentation/common/presentation_error_mapper.gd"
+		and key.begins_with("error.")
+	):
+		return true
+	var current_line := context.get_slice(
+		"\n",
+		context.get_slice_count("\n") - 1
+	)
+	if current_line.contains("\"text_key\": &\""):
+		return true
+	for marker: String in [
+		"_text(&\"",
+		"_content(&\"",
+		"resolve_text(&\"",
+		"_localized_ui_text(&\"",
+		"_localized_content_text(&\"",
+		"localized_ui_text(&\"",
+		"localized_content_text(&\"",
+	]:
+		if context.contains(marker):
+			return true
+	return false
 
 
 func _validate_asset_references(
@@ -708,30 +871,30 @@ func _collect_all_files(
 func _collect_localization(root_path: String) -> Dictionary:
 	var source_path := _project_path(
 		root_path,
-		"app/content/localization_catalog.gd"
+		"localization/catalog.v2.csv.raw"
 	)
 	if not FileAccess.file_exists(source_path):
 		return {}
-	var source := FileAccess.get_file_as_string(source_path)
-	var keys: Dictionary = {}
-	var offset := 0
-	while true:
-		var marker := source.find("_register(&\"", offset)
-		if marker < 0:
-			break
-		var key_start := marker + "_register(&\"".length()
-		var key_end := source.find("\"", key_start)
-		if key_end < 0:
-			break
-		keys[source.substr(key_start, key_end - key_start)] = "registered"
-		offset = key_end + 1
-	# The catalog's single _register API writes both locales atomically. Generated
-	# families are represented by their shared registration call and therefore
-	# cannot create a locale-only key.
-	return {
-		"zh_TW": keys.duplicate(),
-		"en": keys.duplicate(),
-	}
+	var file := FileAccess.open(source_path, FileAccess.READ)
+	if file == null:
+		return {}
+	var header := file.get_csv_line()
+	if header != PackedStringArray(["key", "zh_TW", "en"]):
+		file.close()
+		return {}
+	var zh: Dictionary = {}
+	var en: Dictionary = {}
+	while not file.eof_reached():
+		var row := file.get_csv_line()
+		if row.size() == 1 and row[0].is_empty():
+			continue
+		if row.size() != 3 or row[0].is_empty():
+			file.close()
+			return {}
+		zh[row[0]] = row[1]
+		en[row[0]] = row[2]
+	file.close()
+	return {"zh_TW": zh, "en": en}
 
 
 func _collect_focus_graphs(root_path: String) -> Array[Dictionary]:

@@ -77,9 +77,11 @@
   重寫走正式 RunController 鏈路、51 檔 content 修正、3k screening #2 gate PASS、
   Phase 0 雙審雙 APPROVED（含 BP-SI-007 StringName 排序決定性修正）。大樣本依裁決
   延後至 Phase 2。Phase 0~3 roadmap 見 `specs/g2-roadmap.md` §9。
-- G2 `difficulty-curve`（`codex/g2-difficulty-curve`，進行中）:幕間難度縮放、三幕
-  Boss 差異化、多敵遭遇、trait 門檻階梯、tier-1 池重標、challenge run-op 回鏈;
-  規格位於 `specs/difficulty-curve/`。
+- G2 `difficulty-curve`：**已完成**（2026-08-20 T11 Git gate 裁決放行，含 DC-REQ-006
+  scoped 禁令與 Acceptance 7 可達化兩項規格修訂核准）:幕間難度縮放、三幕 Boss
+  差異化、多敵遭遇、trait 門檻階梯、tier-1 池重標、challenge run-op 回鏈；雙審閉環
+  （最終 HEAD `8a8d0d0` fresh All 1196/1196＋10k soak），實體已隨 PR #12 入 master。
+  規格位於 `specs/difficulty-curve/`；act2 白給幕等 Phase 2 訊號見其 evidence-index。
 - G2 `in-run-hud`（`codex/g2-ui-art-refresh-b`，**已完成** 2026-08-13：T31 收斂
   `7ff8db9`、T32 APPROVED，台帳 PASS 17／PARTIAL 0／BLOCKED 0；REWARD 依裁決
   接受 typed fixture）:局內四個
@@ -87,8 +89,8 @@
   ESC 系統選單、棋子與裝備拖曳（含合成）。規格位於 `specs/in-run-hud/`
   （三件套＋`layout-reference-1920.json`）;實作交 Codex，`T01` 備戰期屬性預覽 API 由
   Claude 執行。依使用者裁決，`ui-art-refresh` Phase B1R3 樣板不再作為基線。
-- G2 `ui-art-refresh` UI 線（`codex/g2-ui-art-refresh-b`，**已收斂** 2026-08-20，
-  未 push）：Phase B-out 局外視覺重設計、Phase C 美術／音訊接線（視覺化地圖、
+- G2 `ui-art-refresh` UI 線（**已合併** PR #13 → `master@763cf73`，
+  2026-08-20）：Phase B-out 局外視覺重設計、Phase C 美術／音訊接線（視覺化地圖、
   戰鬥呈現＋商店卡、production 音訊）、Phase D 中文化收尾與文案定稿
   （25-key reseal、loc 引用 gate、OS locale、羈絆陣營候選 A＋44 技能描述）全數
   經逐批視覺核可閘門提交，收斂於 `cd71986`（fresh All 1510/1510）。證據位於

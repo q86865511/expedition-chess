@@ -4,12 +4,21 @@
 
 ## 目前狀態
 
-UI 線（`codex/g2-ui-art-refresh-b`）Phase B-out／C／D 全數核可收斂於 `cd71986`
-（fresh All 1510/1510、Smoke 10/10），未 push；44 單位正式命名候選移下一內容批次。
-G2 `difficulty-curve`（`codex/g2-difficulty-curve`）Phase 1 實作完成、3k screening
-gate PASS，T11 停 Git gate 待裁決；平衡 Phase 2 依裁決延後至專案最後期。
+UI 線與 `difficulty-curve` 均已入 master（PR #13 → `763cf73`、PR #12 → `95e1d82`；
+T11 Git gate 與兩項規格修訂於 2026-08-20 核准）。進行中：Codex 44 單位命名候選批
+（純提案、停裁決）；其後 `performance-release`，平衡 Phase 2 依裁決在專案最後期。
 
 ## 已完成
+
+- [2026-08-20] ✅ UI 線 PR #13 合併＋`difficulty-curve` T11 Git gate 裁決放行 —
+  UI 線 17 commits（R0/R1 平衡工具輪、B-out 三批、C 三批、Phase D、文件收斂）以
+  PR #13 合入 `master@763cf73`，`project.godot` 編輯器同步一併納入。T11 雙審
+  （reviewer A 閉環 APPROVED、reviewer B 條件式）之兩項 merge 前必辦（N1 文件對齊、
+  最終 HEAD fresh All 1196/1196）已由 `3f30b3b`／`8a8d0d0` 完成；使用者核准
+  DC-REQ-006 scoped 禁令與 Acceptance 7 可達化兩項規格修訂後放行。盤點確認
+  `difficulty-curve` 實體早已隨 PR #12 入 master（`ui-art-refresh-b` 自其 HEAD
+  `8a8d0d0` 分出，`merge-base --is-ancestor` 驗證），無需另行 merge；master 的
+  fresh All 1510/1510 已涵蓋其全部內容。
 
 - [2026-08-20] ✅ UI Phase D 中文化收尾與最終文案裁決完成 — 全畫面
   `zh_TW` 實機走查修正 RUN 頂欄、PREPARE 空羈絆提示與 RUN_COMBAT 檢視器在窄畫布／
@@ -464,10 +473,8 @@ gate PASS，T11 停 Git gate 待裁決；平衡 Phase 2 依裁決延後至專案
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
-  鎖定，停 Git gate 待使用者裁決。
-- UI 線已於 2026-08-20 收斂（`cd71986`，未 push）；剩餘追蹤項只有 44 單位正式
-  命名候選（下一內容批次，未經裁決不寫回 catalog）。
+- Codex 44 單位正式命名候選批：純提案（每單位兩候選，依 faction／role／cost／
+  戰鬥定位／視覺稿），產物只落 evidence，未經使用者裁決不寫回 catalog。
 
 ## 待辦
 
@@ -493,6 +500,16 @@ gate PASS，T11 停 Git gate 待裁決；平衡 Phase 2 依裁決延後至專案
 - `artifacts/test/` 是本機驗證輸出，不是正式遊戲資料；清理或重建不影響 canonical source。
 
 ## 重要決策紀錄
+
+- [2026-08-20] `difficulty-curve` T11 Git gate 裁決：使用者核准兩項規格修訂——
+  (1) DC-REQ-006 由「challenge 禁令皆不得放寬」改為 scoped 判準（`encounter_affix`
+  類別無條件禁止攜帶 RunOperation；challenge 來源僅在同時帶 battle_operations 時
+  拒絕，純 run_operations 詞綴是 challenge 回鏈成立的前提）；(2) Acceptance 7 由
+  「opaque 計數為 0」改為可達語意（有 content_id 必記 stable ID；GOLD／EVENT 結構上
+  無 content ID，記 `reward.kind.N` 佔位且計入 opaque、fail-visible；offer／
+  reservation 類 opaque=0）。兩項均經雙審對實資料獨立驗算成立。Phase 2 已知訊號
+  記錄在案：act2 為白給幕（entered 2,600、淘汰 0、敗場 0，經 partition-sum 驗證為
+  真實訊號非歸因假影）、三策略勝率 23.5%～84.1% 未收斂、單 case 耗時 ~159s。
 
 - [2026-08-20] UI Phase D 最終文案裁決：六個 faction 採候選 A（秘法同調、餘燼之盟、
   凜霜之裔、鐵誓同盟、暮影之裔、翠蔭之盟）；六個 role 與十二個英文羈絆名不變。

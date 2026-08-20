@@ -504,6 +504,12 @@ T11 Git gate 與兩項規格修訂於 2026-08-20 核准）。進行中：Codex 4
 
 ## 重要決策紀錄
 
+- [2026-08-20] 44 單位正式命名裁決：整批採候選 1（外觀職能辨識系，含秘法先鋒線
+  晶苔衛→稜晶衛→星環衛→星圖重衛→晶甲龜衛→天碑巨像費用階梯），唯
+  `loc.unit_slice_player_26` 採候選 2「蝕霧術師／Caustic Savant」（候選 1「煙爐鍊金」
+  稱謂斷句不成立）。候選表見 `specs/ui-art-refresh/evidence/naming-batch/
+  unit-naming-proposals.md`；落地併入 Phase E 單次 reseal。
+
 - [2026-08-20] `difficulty-curve` T11 Git gate 裁決：使用者核准兩項規格修訂——
   (1) DC-REQ-006 由「challenge 禁令皆不得放寬」改為 scoped 判準（`encounter_affix`
   類別無條件禁止攜帶 RunOperation；challenge 來源僅在同時帶 battle_operations 時

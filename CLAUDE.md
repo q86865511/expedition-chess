@@ -87,3 +87,9 @@
   ESC 系統選單、棋子與裝備拖曳（含合成）。規格位於 `specs/in-run-hud/`
   （三件套＋`layout-reference-1920.json`）;實作交 Codex，`T01` 備戰期屬性預覽 API 由
   Claude 執行。依使用者裁決，`ui-art-refresh` Phase B1R3 樣板不再作為基線。
+- G2 `ui-art-refresh` UI 線（`codex/g2-ui-art-refresh-b`，**已收斂** 2026-08-20，
+  未 push）：Phase B-out 局外視覺重設計、Phase C 美術／音訊接線（視覺化地圖、
+  戰鬥呈現＋商店卡、production 音訊）、Phase D 中文化收尾與文案定稿
+  （25-key reseal、loc 引用 gate、OS locale、羈絆陣營候選 A＋44 技能描述）全數
+  經逐批視覺核可閘門提交，收斂於 `cd71986`（fresh All 1510/1510）。證據位於
+  `specs/ui-art-refresh/evidence/`；44 個編號單位名的正式命名候選移下一內容批次。

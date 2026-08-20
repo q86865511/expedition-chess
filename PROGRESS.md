@@ -4,12 +4,10 @@
 
 ## 目前狀態
 
-G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/PR）Phase 1
-實作完成：六項機制（act 縮放、三幕 Boss、多敵編成、trait 階梯、池重標、challenge
-回鏈）＋觀測性＋per-act gate 全數落地；3k screening fresh gate **PASS**（candidate
-`balance.g2.041458b08bb5`、勝率 tempo 65.7%／economy 23.5%／synergy 84.1%、act1/act3
-皆有淘汰）、fresh All 1,193/1,193、10k soak passed。T11 雙 fresh reviewer 進行中；
-大樣本（10k/30k）依裁決屬 Phase 2。AC-032 維持 `PENDING_EXTERNAL`。
+UI 線（`codex/g2-ui-art-refresh-b`）Phase B-out／C／D 全數核可收斂於 `cd71986`
+（fresh All 1510/1510、Smoke 10/10），未 push；44 單位正式命名候選移下一內容批次。
+G2 `difficulty-curve`（`codex/g2-difficulty-curve`）Phase 1 實作完成、3k screening
+gate PASS，T11 停 Git gate 待裁決；平衡 Phase 2 依裁決延後至專案最後期。
 
 ## 已完成
 
@@ -466,15 +464,10 @@ G2 `difficulty-curve`（`codex/g2-difficulty-curve`，本地 commits、未 push/
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- UI 線 Phase C 已全數核可提交；Phase D 已完成最終裁決與驗收，UI 線收斂。
-
 - G2 `difficulty-curve` T11：兩份獨立 implementation review、finding closure 與證據
   鎖定，停 Git gate 待使用者裁決。
-- UI `ui-art-refresh` Phase D：Theme 與內嵌字型保留有效；**B1R3 視覺樣板依使用者
-  2026-08-09 裁決不再作為基線**，局內版面改由 `in-run-hud` 承接，原視覺核可閘門
-  對局內畫面解除。Phase B／C 已核可封存；Phase D 的 25-key reseal、loc reference gate、
-  OS locale、`.translation` 政策、中文實機走查與最終羈絆／技能文案均完成。44 個單位
-  正式命名候選移至下一內容批次，不阻擋 UI 線收斂。
+- UI 線已於 2026-08-20 收斂（`cd71986`，未 push）；剩餘追蹤項只有 44 單位正式
+  命名候選（下一內容批次，未經裁決不寫回 catalog）。
 
 ## 待辦
 

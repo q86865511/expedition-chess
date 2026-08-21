@@ -55,7 +55,12 @@ func test_inspection_panel_shows_localized_values_instead_of_raw_state() -> void
 		str(inspected.target_serial),
 		"the target column must not be the bare internal unit serial"
 	)
-	assert_false(target.text.strip_edges().is_empty())
+	if inspected.target_serial > 0:
+		assert_true(target.visible)
+		assert_false(target.text.strip_edges().is_empty())
+	else:
+		assert_false(target.visible)
+		assert_true(target.text.strip_edges().is_empty())
 	assert_eq(
 		stats.text.find("{"),
 		-1,
@@ -66,6 +71,19 @@ func test_inspection_panel_shows_localized_values_instead_of_raw_state() -> void
 		stats.text.contains(str(inspected.stats.get("health", -1))),
 		"the stats column must still show the committed values"
 	)
+	assert_true(stats.text.contains("\n"), "stats must render as labeled rows")
+	assert_false(stats.text.contains("千分比"))
+	assert_false(stats.text.to_lower().contains("milli"))
+	assert_false(stats.text.strip_edges() == "無")
+	if inspected.stats.has("attack_speed_milli"):
+		assert_true(stats.text.contains("×"))
+	for optional_name: StringName in [
+		&"TargetValue", &"EquipmentValue", &"TraitsValue", &"StatusesValue",
+	]:
+		var optional := panel.get_node_or_null(NodePath(String(optional_name))) as Label
+		assert_not_null(optional)
+		if optional != null and optional.visible:
+			assert_ne(optional.text.strip_edges(), "無")
 
 
 func test_ally_enemy_and_rarity_cues_do_not_share_one_position() -> void:

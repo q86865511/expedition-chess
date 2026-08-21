@@ -18,7 +18,6 @@ const INSPECTION_STAT_ORDER: Array[String] = [
 	"move_speed_milli",
 ]
 const STAT_TEXT_KEY_PREFIX: String = "combat.stat."
-const INSPECTION_NONE_KEY: StringName = &"combat.inspection.none"
 const PLAYBACK_NOT_AVAILABLE: StringName = &"PLAYBACK_NOT_AVAILABLE"
 ## G2 F3：SETTLE 失敗後的重試間隔（presentation 節奏，不是 gameplay entropy）。
 ## 沒有間隔就會每一影格重送一次被拒絕的命令。
@@ -618,8 +617,9 @@ func _build_typed_combat_controls() -> void:
 	selector_host.add_child(playback_cue)
 	selector_host.add_child(_unit_selector)
 
-	var panel := VBoxContainer.new()
+	var panel := GridContainer.new()
 	panel.name = "InspectionPanel"
+	panel.columns = 2
 	ExpeditionLayoutMetrics.set_min(panel, 0.0, 0.0)
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -629,18 +629,30 @@ func _build_typed_combat_controls() -> void:
 	)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.z_index = 2
-	for value_name: StringName in [
-		&"SourceValue",
-		&"TargetValue",
-		&"StatsValue",
-		&"EquipmentValue",
-		&"TraitsValue",
-		&"StatusesValue",
+	for field: Dictionary in [
+		{"name": &"SourceValue", "label": &"prepare.panel.units", "prefix": ""},
+		{"name": &"TargetValue", "label": &"combat.inspect", "prefix": "→ "},
+		{"name": &"StatsValue", "label": &"combat.inspect", "prefix": "Σ "},
+		{"name": &"EquipmentValue", "label": &"loc.audio_equip", "prefix": ""},
+		{"name": &"TraitsValue", "label": &"accessibility.semantic.trait", "prefix": ""},
+		{"name": &"StatusesValue", "label": &"combat.inspect", "prefix": "◌ "},
 	]:
+		var value_name := StringName(field["name"])
+		var heading := Label.new()
+		heading.name = String(value_name).trim_suffix("Value") + "Label"
+		heading.theme_type_variation = &"ExpeditionMicroLabel"
+		heading.text = "%s%s" % [
+			String(field["prefix"]),
+			_localized_ui_text(StringName(field["label"])),
+		]
+		heading.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+		heading.set_meta(&"localization_key", StringName(field["label"]))
+		heading.set_meta(&"accessible_text", heading.text)
+		panel.add_child(heading)
 		var label := Label.new()
 		label.name = value_name
 		label.theme_type_variation = &"ExpeditionCombatInspection"
-		label.text = _localized_ui_text(INSPECTION_NONE_KEY)
+		label.text = ""
 		label.clip_text = false
 		label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 		label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
@@ -857,23 +869,28 @@ func _render_inspection(
 	)
 	_set_inspection_text(
 		^"InspectionPanel/TargetValue",
-		_target_text(snapshot.target_serial)
+		_target_text(snapshot.target_serial),
+		true
 	)
 	_set_inspection_text(
 		^"InspectionPanel/StatsValue",
-		_stats_text(snapshot.stats)
+		_stats_text(snapshot.stats),
+		true
 	)
 	_set_inspection_text(
 		^"InspectionPanel/EquipmentValue",
-		_join_names(snapshot.equipment_ids)
+		_join_names(snapshot.equipment_ids),
+		true
 	)
 	_set_inspection_text(
 		^"InspectionPanel/TraitsValue",
-		_join_names(snapshot.trait_ids)
+		_join_names(snapshot.trait_ids),
+		true
 	)
 	_set_inspection_text(
 		^"InspectionPanel/StatusesValue",
-		_join_names(snapshot.status_ids)
+		_join_names(snapshot.status_ids),
+		true
 	)
 
 
@@ -886,19 +903,26 @@ func _clear_inspection_panel() -> void:
 		^"InspectionPanel/TraitsValue",
 		^"InspectionPanel/StatusesValue",
 	]:
-		_set_inspection_text(path, _localized_ui_text(INSPECTION_NONE_KEY))
+		_set_inspection_text(path, "", true)
 
 
-func _set_inspection_text(path: NodePath, value: String) -> void:
+func _set_inspection_text(
+	path: NodePath,
+	value: String,
+	hide_when_empty: bool = false
+) -> void:
 	var label := find_child(
 		String(path.get_name(path.get_name_count() - 1)), true, false
 	) as Label
-	if label != null:
-		label.text = (
-			value
-			if not value.is_empty()
-			else _localized_ui_text(INSPECTION_NONE_KEY)
-		)
+	if label == null:
+		return
+	var empty := value.strip_edges().is_empty()
+	label.text = value if not empty else ""
+	label.visible = not (hide_when_empty and empty)
+	var heading_name := String(label.name).trim_suffix("Value") + "Label"
+	var heading := find_child(heading_name, true, false) as Label
+	if heading != null:
+		heading.visible = label.visible
 
 
 ## 目標欄呈現目標單位的在地化名稱，不倒出內部 serial。
@@ -907,7 +931,7 @@ func _target_text(target_serial: int) -> String:
 		for row: RunCombatIntelModel.InspectionIntelRow in _model.inspection_rows():
 			if row.unit_serial == target_serial:
 				return _localized_content_text(row.source_id)
-	return _localized_ui_text(INSPECTION_NONE_KEY)
+	return ""
 
 
 ## 數值欄以在地化欄位名＋數值呈現，不倒出 Dictionary 字面值。
@@ -916,15 +940,25 @@ func _stats_text(stats: Dictionary) -> String:
 	for stat_key: String in INSPECTION_STAT_ORDER:
 		if not stats.has(stat_key):
 			continue
-		entries.append("%s %d" % [
-			_localized_ui_text(StringName(STAT_TEXT_KEY_PREFIX + stat_key)),
-			int(stats[stat_key]),
+		entries.append("%s　%s" % [
+			_player_facing_stat_label(stat_key),
+			_format_stat_value(stat_key, int(stats[stat_key])),
 		])
-	return (
-		", ".join(entries)
-		if not entries.is_empty()
-		else _localized_ui_text(INSPECTION_NONE_KEY)
-	)
+	return "\n".join(entries)
+
+
+func _player_facing_stat_label(stat_key: String) -> String:
+	return _localized_ui_text(
+		StringName(STAT_TEXT_KEY_PREFIX + stat_key)
+	).replace("（千分比）", "").replace(" (milli)", "")
+
+
+func _format_stat_value(stat_key: String, value: int) -> String:
+	if stat_key == "attack_speed_milli":
+		return "%.2f×" % (float(value) / 1000.0)
+	if stat_key == "move_speed_milli":
+		return "%.2f" % (float(value) / 1000.0)
+	return str(value)
 
 
 func _localized_ui_text(text_key: StringName) -> String:

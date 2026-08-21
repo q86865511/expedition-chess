@@ -5,9 +5,11 @@ extends RefCounted
 ## same ProfileState value but never retain the caller's mutable domain object.
 
 var _projection_digest: String
-var _last_commander_id: StringName
+var _last_selection: ProfileLastSelectionState
 var _commander_ids: Array[StringName] = []
 var _discovered_ids: Array[StringName] = []
+var _unlocked_ids: Array[StringName] = []
+var _challenge_records: Array[CommanderChallengeRecordState] = []
 var _workshop_currency: int
 var _highest_challenge_level: int
 
@@ -19,15 +21,18 @@ func _init(profile: ProfileState) -> void:
 	var snapshot: ProfileState = profile.deep_clone()
 	var view_model := CampViewModel.new(snapshot)
 	var last_selection := view_model.expedition_gate_last_selection()
-	_last_commander_id = (
-		last_selection.commander_id
-		if last_selection != null
-		else &""
+	_last_selection = (
+		last_selection.deep_clone() if last_selection != null else null
 	)
 	_commander_ids.assign(
 		view_model.commander_hall_unlocked_commander_ids()
 	)
 	_discovered_ids.assign(snapshot.discovered_content_ids)
+	_unlocked_ids.assign(view_model.unlock_workshop_unlocked_content_ids())
+	for record: CommanderChallengeRecordState in (
+		view_model.challenge_monument_records()
+	):
+		_challenge_records.append(record.deep_clone())
 	_workshop_currency = view_model.unlock_workshop_currency()
 	_highest_challenge_level = (
 		view_model.challenge_monument_highest_challenge_level()
@@ -40,7 +45,15 @@ func projection_digest() -> String:
 
 
 func expedition_last_commander() -> StringName:
-	return _last_commander_id
+	return (
+		_last_selection.commander_id
+		if _last_selection != null
+		else &""
+	)
+
+
+func expedition_last_selection() -> ProfileLastSelectionState:
+	return _last_selection.deep_clone() if _last_selection != null else null
 
 
 func commander_ids() -> Array[StringName]:
@@ -52,6 +65,19 @@ func commander_ids() -> Array[StringName]:
 func discovered_ids() -> Array[StringName]:
 	var result: Array[StringName] = []
 	result.assign(_discovered_ids)
+	return result
+
+
+func unlocked_ids() -> Array[StringName]:
+	var result: Array[StringName] = []
+	result.assign(_unlocked_ids)
+	return result
+
+
+func challenge_records() -> Array[CommanderChallengeRecordState]:
+	var result: Array[CommanderChallengeRecordState] = []
+	for record: CommanderChallengeRecordState in _challenge_records:
+		result.append(record.deep_clone())
 	return result
 
 

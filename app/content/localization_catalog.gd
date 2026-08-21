@@ -88,7 +88,7 @@ func resolve(locale: StringName, key: StringName) -> LocalizationResolveResult:
 
 
 func _register_fixed_keys() -> void:
-	_register(&"screen.menu_main.title", "遠征主選單", "Expedition Menu")
+	_register(&"screen.menu_main.title", "遠征棋", "Expedition Chess")
 	_register(&"screen.settings.title", "設定", "Settings")
 	_register(&"screen.camp_world.title", "遠征營地", "Expedition Camp")
 	_register(&"screen.facility_expedition_gate.title", "遠征之門", "Expedition Gate")
@@ -695,7 +695,21 @@ func _register_generated_keys() -> void:
 			"指揮官的固定被動效果。",
 			"Commander's persistent passive effect."
 		)
-	for index: int in range(12):
+	var monster_names: Array = [
+		["根牙野豬", "Roottusk Boar"],
+		["瓶花蟹", "Pitcher Crab"],
+		["稜光母體", "Prism Matriarch"],
+		["熔甲巨獸", "Lavashell Brute"],
+		["冰冠梟皇", "Icequill Sovereign"],
+		["闇燭蛞蝓", "Gloomwax Slug"],
+		["廢鐵爐甲", "Scrapfurnace Beetle"],
+		["弩臂螳螂", "Boltarm Mantis"],
+		["晶燈洞蛾", "Lanternmoth"],
+		["骨冠泥魁", "Bonecrown Brute"],
+		["齒脊箭豬", "Gearspine Porcupine"],
+		["星籠觸妖", "Starcage Horror"],
+	]
+	for index: int in range(monster_names.size()):
 		_register_indexed("loc.effect_slice_event_gen_", index, "事件效果", "Event Effect")
 		_register(
 			StringName("loc.effect_slice_event_gen_%02d_description" % index),
@@ -703,15 +717,57 @@ func _register_generated_keys() -> void:
 			"Existing event-node entry effect."
 		)
 		_register_indexed("loc.map_node_slice_event_", index, "事件節點", "Event Node")
-		_register_indexed("loc.unit_slice_monster_", index, "怪物", "Monster")
+		_register(
+			StringName("loc.unit_slice_monster_%02d" % index),
+			String(monster_names[index][0]),
+			String(monster_names[index][1])
+		)
 		_register_formal_unit_content(
 			"slice_monster_%02d" % index,
 			"怪物技能",
 			"Monster Ability",
 			32 + index * 3
 		)
-	for index: int in range(32):
-		_register_indexed("loc.unit_slice_player_", index, "遠征棋士", "Expedition Unit")
+	var player_names: Array = [
+		["晶苔衛", "Gemmoss Guard"],
+		["燼藤弩", "Embervine Arbalist"],
+		["冰焰使", "Frostfire Adept"],
+		["霜鐵衛", "Frostiron Guard"],
+		["齒輪客", "Chakram Tinker"],
+		["幽燈守", "Gloamlight Warden"],
+		["稜晶衛", "Facetshield"],
+		["暮棘弓手", "Duskthorn Archer"],
+		["窯環侍", "Kilnring Acolyte"],
+		["雪履衛", "Snowshoe Guard"],
+		["銅籌客", "Coinwheel Rogue"],
+		["蝕鐘僧", "Eclipse Monk"],
+		["星環衛", "Orrery Guard"],
+		["菇冠吹手", "Sporepipe Scout"],
+		["熔鏈先知", "Molten Oracle"],
+		["冰甲水手", "Icecarapace Sailor"],
+		["磁軌匠", "Lodestone Tinker"],
+		["蛾燈葬士", "Mothlight Reaper"],
+		["星圖重衛", "Starchart Bulwark"],
+		["葦弓獵手", "Reedbow Hunter"],
+		["爐扇舞者", "Furnace Dancer"],
+		["海象盾衛", "Walrus Guard"],
+		["發條信使", "Clockwork Courier"],
+		["黑鏡守騎", "Blackmirror Knight"],
+		["晶甲龜衛", "Crystal Tortoise"],
+		["蜂巢獵手", "Hivebow Ranger"],
+		["蝕霧術師", "Caustic Savant"],
+		["寒潛重衛", "Frostdiver Guard"],
+		["鋼索舞槍", "Wiregun Dancer"],
+		["鴉獄典守", "Raven Gaoler"],
+		["天碑巨像", "Runestone Colossus"],
+		["冠林翔弓", "Canopy Windbow"],
+	]
+	for index: int in range(player_names.size()):
+		_register(
+			StringName("loc.unit_slice_player_%02d" % index),
+			String(player_names[index][0]),
+			String(player_names[index][1])
+		)
 		_register_formal_unit_content(
 			"slice_player_%02d" % index,
 			"棋士技能",

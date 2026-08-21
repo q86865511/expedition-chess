@@ -33,7 +33,7 @@ func compose(
 	_snapshot = owned_snapshot
 	_set_localized_text(localized_text)
 	_configure_visuals()
-	_set_value(^"ReceiptValue", String(_snapshot.receipt_id), &"receipt")
+	_hide_value(^"ReceiptValue")
 	_set_value(
 		^"OutcomeValue",
 		_outcome_text(_snapshot.receipt.outcome),
@@ -89,17 +89,15 @@ func refresh_layout_rects() -> void:
 		ExpeditionLayoutMetrics.RESULTS_AUDIT_CARD_HEIGHT,
 		maxf(0.0, size.y - audit_top)
 	)
-	var receipt := Rect2(0.0, audit_top, primary_width, audit_height)
 	var digest := Rect2(
-		primary_width + gap,
+		0.0,
 		audit_top,
-		primary_width,
+		size.x,
 		audit_height
 	)
 	_place_card(&"OutcomeValue", hero)
 	_place_card(&"RewardValue", reward)
 	_place_card(&"ProfileValue", profile)
-	_place_card(&"ReceiptValue", receipt)
 	_place_card(&"DigestValue", digest)
 
 
@@ -222,6 +220,20 @@ func _set_value(path: NodePath, value: String, kind: StringName) -> void:
 		)
 	else:
 		label.set_meta(&"accessible_text", value)
+
+
+func _hide_value(path: NodePath) -> void:
+	var label := get_node_or_null(path) as Label
+	if label == null:
+		return
+	label.text = ""
+	label.visible = false
+	label.set_meta(&"typed_data_kind", &"receipt_hidden")
+	label.set_meta(&"accessible_text", "")
+	var panel_name := "%sCard" % String(label.name).trim_suffix("Value")
+	var panel := get_node_or_null(NodePath(panel_name)) as PanelContainer
+	if panel != null:
+		panel.visible = false
 
 
 func _outcome_text(outcome: SettlementReceiptState.Outcome) -> String:

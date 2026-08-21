@@ -783,9 +783,6 @@ func _build_prepare_controls() -> void:
 			issues.add_item(_localized_ui_text(issue_message_keys[index]))
 			issues.set_item_metadata(issues.item_count - 1, issue_codes[index])
 		right.add_child(issues)
-	if snapshot == null or snapshot.node_choice_overlay == null:
-		right.add_child(_heading(&"prepare.panel.expedition"))
-		right.add_child(_empty_label(&"prepare.empty.expedition"))
 	_build_node_choice_overlay(snapshot, right)
 	_refresh_draft_selectors()
 	# 建構期間 shell 可能尚未套用目前 UI 縮放（consumer 的 apply 是
@@ -1529,8 +1526,18 @@ func _refresh_bench_row(snapshot: RunPresentationSnapshot) -> void:
 			else ""
 		)
 		cell.set_meta(&"unit_instance_id", unit_id)
-		cell.text = _unit_display_name(unit_id, snapshot) if not unit_id.is_empty() else ""
-		cell.tooltip_text = cell.text
+		var occupied := not unit_id.is_empty()
+		cell.text = _unit_display_name(unit_id, snapshot) if occupied else "◇"
+		cell.self_modulate.a = (
+			1.0 if occupied else ExpeditionLayoutMetrics.BENCH_EMPTY_ALPHA
+		)
+		cell.tooltip_text = cell.text if occupied else ""
+		cell.set_meta(
+			&"accessible_text",
+			cell.text if occupied else "%s %d" % [
+				_localized_ui_text(&"prepare.panel.bench"), index + 1
+			]
+		)
 
 
 func _refresh_keyboard_placement_targets(

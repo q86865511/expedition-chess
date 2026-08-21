@@ -120,6 +120,32 @@ func test_camp_facilities_share_one_profile_projection_and_round_trip() -> void:
 		):
 			return
 		assert_eq(contract[0].call(contract[1]), contract[2])
+	for route: StringName in [
+		&"FACILITY_EXPEDITION_GATE",
+		&"FACILITY_COMMANDER_HALL",
+		&"FACILITY_UNLOCK_WORKSHOP",
+		&"FACILITY_CHALLENGE_MONUMENT",
+	]:
+		var facility := roots[route] as Node
+		assert_not_null(facility.get_node_or_null(
+			^"FacilityContent/FacilityStatCard"
+		), String(route))
+		assert_not_null(facility.get_node_or_null(
+			^"FacilityContent/FacilityData"
+		), String(route))
+		assert_not_null(facility.get_node_or_null(
+			^"FacilityContent/FacilityEmptyState"
+		), String(route))
+	var workshop_data := workshop.get_node_or_null(
+		^"FacilityContent/FacilityData"
+	) as ItemList
+	assert_not_null(workshop_data)
+	if workshop_data != null and workshop_data.item_count > 0:
+		assert_true(workshop_data.get_item_text(0).begins_with("✓ "))
+		var workshop_metadata: Variant = workshop_data.get_item_metadata(0)
+		assert_true(workshop_metadata is Dictionary)
+		if workshop_metadata is Dictionary:
+			assert_eq(workshop_metadata.get("lock_state"), &"unlocked")
 	assert_true(collection.has_method(&"return_to_camp"))
 	var collection_entries := collection.get_node_or_null(
 		^"EntrySelector"

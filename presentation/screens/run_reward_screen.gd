@@ -8,6 +8,7 @@ var _presenter: RunScreenPresenter
 var _selected_reward_id: String = ""
 var _offer_selector: ItemList
 var _hud_shell: InRunHudShell
+var _visuals := ProductionUnitVisualCatalog.new()
 var _world_board_clear_error: StringName = &""
 var _world_board_clear_deferred_pending: bool = false
 
@@ -203,6 +204,10 @@ func _build_offer_selector() -> void:
 	_offer_selector.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_offer_selector.focus_mode = Control.FOCUS_ALL
 	_offer_selector.select_mode = ItemList.SELECT_SINGLE
+	_offer_selector.icon_mode = ItemList.ICON_MODE_LEFT
+	_offer_selector.fixed_icon_size = Vector2i.ONE * roundi(
+		ExpeditionLayoutMetrics.RUN_LIST_ICON_SIZE
+	)
 	_offer_selector.set_meta(&"typed_choice_kind", &"reward_offer")
 	_offer_selector.set_meta(&"semantic_kind", &"rarity")
 	_offer_selector.set_meta(
@@ -216,7 +221,8 @@ func _build_offer_selector() -> void:
 	for offer: RewardOfferState in _model.offers():
 		var offer_id := offer.choice_id
 		_offer_selector.add_item(
-			_reward_offer_text(offer)
+			_reward_offer_badged_text(offer),
+			_reward_offer_icon(offer)
 		)
 		var index := _offer_selector.item_count - 1
 		_offer_selector.set_item_metadata(index, offer_id)
@@ -319,6 +325,44 @@ func _reward_offer_text(offer: RewardOfferState) -> String:
 	):
 		return _localized_content_text(offer.content_id.value)
 	return _localized_ui_text(&"loc.reward_table_slice_standard")
+
+
+func _reward_offer_badged_text(offer: RewardOfferState) -> String:
+	var badges := {
+		RewardOfferState.RewardKind.UNIT: "♙",
+		RewardOfferState.RewardKind.ITEM: "◆",
+		RewardOfferState.RewardKind.RELIC: "✦",
+		RewardOfferState.RewardKind.GOLD: "●",
+		RewardOfferState.RewardKind.EVENT: "◇",
+	}
+	return "%s  %s" % [
+		String(badges.get(offer.reward_kind, "◇")),
+		_reward_offer_text(offer),
+	]
+
+
+func _reward_offer_icon(offer: RewardOfferState) -> Texture2D:
+	if offer.content_id != null and not offer.content_id.value.is_empty():
+		var portrait := _visuals.try_portrait(offer.content_id.value)
+		if portrait != null:
+			return portrait
+	var colors := {
+		RewardOfferState.RewardKind.UNIT: Color("4f8a72"),
+		RewardOfferState.RewardKind.ITEM: Color("547da1"),
+		RewardOfferState.RewardKind.RELIC: Color("8b72bf"),
+		RewardOfferState.RewardKind.GOLD: Color("c89445"),
+		RewardOfferState.RewardKind.EVENT: Color("b55f62"),
+	}
+	var color: Color = colors.get(offer.reward_kind, Color("69737f"))
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([color.lightened(0.2), color])
+	var texture := GradientTexture2D.new()
+	texture.width = roundi(ExpeditionLayoutMetrics.RUN_LIST_ICON_SIZE)
+	texture.height = roundi(ExpeditionLayoutMetrics.RUN_LIST_ICON_SIZE)
+	texture.gradient = gradient
+	texture.fill_from = Vector2(0.2, 0.2)
+	texture.fill_to = Vector2(0.8, 0.8)
+	return texture
 
 
 func _hud_region_rect(region: StringName) -> Rect2:

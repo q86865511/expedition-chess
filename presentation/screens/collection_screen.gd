@@ -7,15 +7,6 @@ const CATEGORY_ORDER: Array[StringName] = [
 	CollectionBrowserViewModel.KIND_RECIPE,
 	CollectionBrowserViewModel.KIND_GLOSSARY,
 ]
-const TOOLBAR_HEIGHT: float = 72.0
-const TOOLBAR_GAP: float = 18.0
-const CATEGORY_WIDTH: float = 300.0
-# Collection 的 content 列含一張無 portrait 的指揮官資料卡與三張單位卡；190 在
-# 150% 時仍能讓四欄留在同列，同時容納 168px 圖像與 icon margin。
-const CARD_WIDTH: float = 190.0
-const CARD_ICON_SIZE: float = 168.0
-const COMPARE_RESULT_HEIGHT: float = 144.0
-
 var _view_model: CollectionBrowserViewModel
 var _navigation_port: LiveScreenNavigationPort
 var _localized_text: Dictionary[StringName, String] = {}
@@ -165,9 +156,15 @@ func refresh_layout_rects() -> void:
 	if center.size.x <= 0.0 or center.size.y <= 0.0:
 		return
 	var factor := float(_ui_scale_percent) / 100.0
-	var toolbar_height := ceilf(TOOLBAR_HEIGHT * factor)
-	var toolbar_gap := ceilf(TOOLBAR_GAP * factor)
-	var category_width := roundf(CATEGORY_WIDTH * factor)
+	var toolbar_height := ceilf(
+		ExpeditionLayoutMetrics.COLLECTION_TOOLBAR_HEIGHT * factor
+	)
+	var toolbar_gap := ceilf(
+		ExpeditionLayoutMetrics.COLLECTION_TOOLBAR_GAP * factor
+	)
+	var category_width := roundf(
+		ExpeditionLayoutMetrics.COLLECTION_CATEGORY_WIDTH * factor
+	)
 	var category := get_node_or_null(^"CategorySelector") as OptionButton
 	var search := get_node_or_null(^"SearchInput") as LineEdit
 	var entries := get_node_or_null(^"EntrySelector") as ItemList
@@ -196,19 +193,20 @@ func refresh_layout_rects() -> void:
 		)
 	if right.size.x <= 0.0 or right.size.y <= 0.0:
 		return
-	var result_height := ceilf(COMPARE_RESULT_HEIGHT * factor)
+	var result_height := ceilf(
+		ExpeditionLayoutMetrics.COLLECTION_COMPARE_RESULT_HEIGHT * factor
+	)
+	if result != null:
+		result.position = right.position
+		result.size = Vector2(right.size.x, result_height)
 	if compare != null:
-		compare.position = right.position
+		compare.position = Vector2(
+			right.position.x, right.position.y + result_height + toolbar_gap
+		)
 		compare.size = Vector2(
 			right.size.x,
 			maxf(0.0, right.size.y - result_height - toolbar_gap)
 		)
-	if result != null:
-		result.position = Vector2(
-			right.position.x,
-			right.end.y - result_height
-		)
-		result.size = Vector2(right.size.x, result_height)
 
 
 func _configure_visual_controls() -> void:
@@ -221,6 +219,10 @@ func _configure_visual_controls() -> void:
 		category.theme_type_variation = &"ExpeditionCollectionCategory"
 	if search != null:
 		search.theme_type_variation = &"ExpeditionCollectionSearch"
+		search.placeholder_text = "⌕ %s" % _text(
+			&"collection.category.content"
+		)
+		search.set_meta(&"placeholder_localization_key", &"collection.category.content")
 	if entries != null:
 		entries.theme_type_variation = &"ExpeditionCollectionCardGrid"
 		entries.icon_mode = ItemList.ICON_MODE_TOP
@@ -244,9 +246,11 @@ func _apply_card_metrics() -> void:
 	var entries := get_node_or_null(^"EntrySelector") as ItemList
 	var compare := get_node_or_null(^"CompareSelector") as ItemList
 	if entries != null:
-		entries.fixed_column_width = roundi(CARD_WIDTH * factor)
+		entries.fixed_column_width = roundi(
+			ExpeditionLayoutMetrics.COLLECTION_CARD_WIDTH * factor
+		)
 		entries.fixed_icon_size = Vector2i.ONE * roundi(
-			CARD_ICON_SIZE * factor
+			ExpeditionLayoutMetrics.COLLECTION_CARD_ICON_SIZE * factor
 		)
 	if compare != null:
 		compare.fixed_icon_size = Vector2i.ONE * roundi(48.0 * factor)

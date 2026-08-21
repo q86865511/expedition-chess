@@ -22,7 +22,9 @@ func visual_ids() -> Array[StringName]:
 	var result: Array[StringName] = []
 	for visual_id: StringName in _texture_paths:
 		result.append(visual_id)
-	result.sort()
+	result.sort_custom(func(left: StringName, right: StringName) -> bool:
+		return String(left) < String(right)
+	)
 	return result
 
 

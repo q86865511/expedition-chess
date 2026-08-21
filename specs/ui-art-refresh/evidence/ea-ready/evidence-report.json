@@ -1,0 +1,132 @@
+{
+  "schema_version": "ea-ready-evidence-1",
+  "generated_at_utc": "2026-08-20T16:11:15Z",
+  "branch": "codex/g2-content-naming",
+  "source_head": "a6bd988ea4879089f8c47947aae83d81fe294da5",
+  "working_tree_state": "uncommitted_visual_approval_gate",
+  "single_source_of_truth": "res://specs/ui-art-refresh/ea-ready-batch.md",
+  "required_matrix": {
+    "route_count": 15,
+    "cases": [
+      {
+        "name": "1080p-ui100",
+        "width": 1920,
+        "height": 1080,
+        "ui_scale": 100
+      },
+      {
+        "name": "720p-ui150",
+        "width": 1280,
+        "height": 720,
+        "ui_scale": 150
+      }
+    ],
+    "before": {
+      "path": "res://specs/ui-art-refresh/evidence/ea-ready/before",
+      "screenshot_count": 30,
+      "dimension_readback_ok": true,
+      "manifest_sha256": "b4aac4563708ed31809e4f5a2fd0d9d7b804006cfcebd030a2c5cfe05a78a1ab"
+    },
+    "after": {
+      "path": "res://specs/ui-art-refresh/evidence/ea-ready/after",
+      "screenshot_count": 30,
+      "dimension_readback_ok": true,
+      "manifest_sha256": "bde91177fb52b41f741da2d1104b20df9daac4bfb81de6e07c561b8afe304ca4"
+    }
+  },
+  "route_evidence": [
+    {"slug": "menu-main", "after_directory": "core-routes"},
+    {"slug": "camp", "after_directory": "outgame"},
+    {"slug": "expedition-gate", "after_directory": "outgame"},
+    {"slug": "commander-hall", "after_directory": "outgame"},
+    {"slug": "collection", "after_directory": "outgame"},
+    {"slug": "unlock-workshop", "after_directory": "outgame"},
+    {"slug": "challenge-monument", "after_directory": "outgame"},
+    {"slug": "settings", "after_directory": "system-results"},
+    {"slug": "camp-system-menu", "after_directory": "system-results"},
+    {"slug": "results", "after_directory": "system-results"},
+    {"slug": "results-fallback", "after_directory": "system-results"},
+    {"slug": "prepare", "after_directory": "core-routes"},
+    {"slug": "run-map", "after_directory": "run-map"},
+    {"slug": "run-combat", "after_directory": "run-combat"},
+    {"slug": "reward", "after_directory": "core-routes"}
+  ],
+  "generated_runner_reports": [
+    {
+      "path": "res://specs/ui-art-refresh/evidence/ea-ready/after/outgame/evidence-report.json",
+      "ok": true,
+      "screenshot_count": 54,
+      "issues": []
+    },
+    {
+      "path": "res://specs/ui-art-refresh/evidence/ea-ready/after/system-results/evidence-report.json",
+      "ok": true,
+      "screenshot_count": 36,
+      "issues": []
+    },
+    {
+      "path": "res://specs/ui-art-refresh/evidence/ea-ready/after/run-map/evidence-report.json",
+      "ok": true,
+      "screenshot_count": 12,
+      "issues": []
+    },
+    {
+      "path": "res://specs/ui-art-refresh/evidence/ea-ready/after/run-combat/evidence-report.json",
+      "ok": true,
+      "screenshot_count": 23,
+      "issues": []
+    }
+  ],
+  "acceptance_checks": [
+    {"id": "P0-1", "status": "pass", "note": "四個設施共用統計卡、資料清單與空狀態；指揮官卡使用 presentation-only 原創像素剪影。"},
+    {"id": "P0-2", "status": "pass", "note": "結算主畫面不再顯示 settlement receipt hash。"},
+    {"id": "P0-3", "status": "pass", "note": "戰鬥詳情採標籤和值分欄，攻速與移速轉為倍數，空選填欄位不顯示裸「無」。"},
+    {"id": "P0-4", "status": "pass", "note": "44 個單位名依裁決落地；player_26 使用蝕霧術師／Caustic Savant。"},
+    {"id": "P1-1", "status": "pass", "note": "備戰底部操作於 720p／150% 可捲動存取，重複遠征資訊列已移除。"},
+    {"id": "P1-2", "status": "pass", "note": "地圖清單去除重複種類文案、加入語意圖示並縮減底部操作列。"},
+    {"id": "P1-3", "status": "pass", "note": "獎勵列顯示內容縮圖與類型徽章。"},
+    {"id": "P1-4", "status": "pass", "note": "備戰與戰鬥 bench 空槽改為框線及淡化菱形提示。"},
+    {"id": "P1-5", "status": "pass", "note": "圖鑑具搜尋 placeholder、緊湊卡片格與整合式比較提示。"},
+    {"id": "P1-6", "status": "pass", "note": "主選單標題為遠征棋／Expedition Chess。"},
+    {"id": "P1-7", "status": "pass", "note": "營地設施標籤縮小並改為半透明描邊。"},
+    {"id": "P1-8", "status": "pass", "note": "營地 ESC overlay 頂欄與貨幣列無重疊。"}
+  ],
+  "localization_reseal": {
+    "exporter_run_count": 1,
+    "csv_raw_byte_identical": true,
+    "accepted_unit_name_count": 44,
+    "proposal_match_count": 44,
+    "duplicate_zh_tw_count": 0,
+    "duplicate_en_count": 0,
+    "menu_title_zh_tw": "遠征棋",
+    "menu_title_en": "Expedition Chess",
+    "bootstrap_sha256": "8645ce27e3333ea1610d397733df9ed8e3e737857f6ca3cb4341a83ec9894805"
+  },
+  "validation": {
+    "facility_focused": {"tests": 6, "assertions": 92, "failures": 0, "errors": 0, "orphans": 0},
+    "localization_parity": {"tests": 2, "assertions": 7, "failures": 0, "errors": 0, "orphans": 0},
+    "localization_reference_gate": {"tests": 2, "assertions": 29, "failures": 0, "errors": 0, "orphans": 0},
+    "smoke": {"exit_code": 0},
+    "expedition_soak": {
+      "exit_code": 0,
+      "seed_count": 10000,
+      "case_count": 10000,
+      "deterministic_replay_count": 64,
+      "pool_conservation_checks": 10000,
+      "failures": 0,
+      "finished_at_utc": "2026-08-20T15:52:05Z"
+    },
+    "fresh_all": {
+      "exit_code": 0,
+      "gut_tests": 1513,
+      "gut_assertions": 41634,
+      "gut_failures": 0,
+      "gut_errors": 0,
+      "gut_orphans": 0,
+      "expedition_evidence_verified": true,
+      "finished_at_utc": "2026-08-20T16:10:52Z"
+    },
+    "git_diff_check": "pass"
+  },
+  "issues": []
+}

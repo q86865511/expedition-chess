@@ -293,16 +293,40 @@ func _validate_facility(
 	if (
 		cards.theme_type_variation != &"ExpeditionFacilityCardGrid"
 		or cards.icon_mode != ItemList.ICON_MODE_TOP
-		or cards.focus_mode != Control.FOCUS_ALL
+		or cards.focus_mode != (
+			Control.FOCUS_ALL if cards.item_count > 0 else Control.FOCUS_NONE
+		)
 		or cards.get_meta(&"portrait_catalog_error", &"invalid") != &""
 	):
 		_issues.append("facility_card_contract:%s:%s" % [route, case_name])
+	var empty_state := screen.find_child(
+		"FacilityEmptyState", true, false
+	) as Label
+	if (
+		empty_state == null
+		or empty_state.visible != (cards.item_count == 0)
+	):
+		_issues.append("facility_empty_state_contract:%s:%s" % [route, case_name])
 	var center := shell.current_content_rect(ProductionLayoutShell.REGION_CENTER)
 	if not center.encloses(cards.get_global_rect()):
 		_issues.append("facility_cards_out_of_bounds:%s:%s" % [route, case_name])
-	var expected_icon := roundi(144.0 * float(ui_scale) / 100.0)
+	var expected_icon := roundi(
+		ExpeditionLayoutMetrics.FACILITY_CARD_ICON_SIZE
+		* float(ui_scale) / 100.0
+	)
 	if cards.fixed_icon_size != Vector2i.ONE * expected_icon:
 		_issues.append("facility_card_scale:%s:%s" % [route, case_name])
+	if route in [
+		&"FACILITY_COMMANDER_HALL",
+		&"FACILITY_EXPEDITION_GATE",
+	]:
+		if cards.item_count == 0:
+			_issues.append("commander_cards_empty:%s:%s" % [route, case_name])
+		for index: int in cards.item_count:
+			if cards.get_item_icon(index) == null:
+				_issues.append("commander_portrait_missing:%s:%s:%d" % [
+					route, case_name, index,
+				])
 
 
 func _validate_collection(
@@ -342,7 +366,10 @@ func _validate_collection(
 			portrait_count += 1
 	if portrait_count == 0:
 		_issues.append("collection_portraits_missing:%s" % case_name)
-	var expected_icon := roundi(168.0 * float(ui_scale) / 100.0)
+	var expected_icon := roundi(
+		ExpeditionLayoutMetrics.COLLECTION_CARD_ICON_SIZE
+		* float(ui_scale) / 100.0
+	)
 	if entries.fixed_icon_size != Vector2i.ONE * expected_icon:
 		_issues.append("collection_card_scale:%s" % case_name)
 

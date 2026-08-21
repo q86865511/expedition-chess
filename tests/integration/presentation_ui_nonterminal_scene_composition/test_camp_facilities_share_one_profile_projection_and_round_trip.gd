@@ -174,6 +174,46 @@ func test_camp_facilities_share_one_profile_projection_and_round_trip() -> void:
 	assert_eq(navigated.size(), before_stale)
 
 
+func test_empty_challenge_monument_uses_none_in_stat_and_empty_state() -> void:
+	var challenge := Support.instantiate_scene(
+		self,
+		Support.CAMP_SCENES[&"FACILITY_CHALLENGE_MONUMENT"],
+		Support.CAMP_FACILITY_SCREEN_PATH
+	) as CampFacilityScreen
+	assert_not_null(challenge)
+	if challenge == null:
+		return
+	var registry := LiveScreenLeaseRegistry.new()
+	var lease := registry.activate(AppStateMachine.State.CAMP, 81)
+	var port := LiveScreenNavigationPort.new(
+		lease,
+		registry,
+		func(_route: StringName) -> AppActionResult:
+			return AppActionResult.success(false)
+	)
+	var profile := Support.profile_fixture()
+	profile.highest_challenge_level = 0
+	profile.commander_challenge_records.clear()
+	assert_eq(challenge.compose(profile, port), &"")
+	var stat := challenge.get_node_or_null(
+		^"FacilityContent/FacilityStatCard/FacilityStatValue"
+	) as Label
+	var empty := challenge.get_node_or_null(
+		^"FacilityContent/FacilityEmptyState"
+	) as Label
+	assert_not_null(stat)
+	assert_not_null(empty)
+	if stat == null or empty == null:
+		return
+	var none_text := String(challenge.call(
+		&"_localized_ui_text", &"combat.inspection.none"
+	))
+	assert_true(stat.text.contains(none_text))
+	assert_false(stat.text.ends_with("  0"))
+	assert_true(empty.visible)
+	assert_true(empty.text.contains(none_text))
+
+
 func test_camp_unlocks_challenge_one_after_clearing_challenge_zero() -> void:
 	var camp: Object = Support.instantiate_scene(
 		self,

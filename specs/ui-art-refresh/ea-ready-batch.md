@@ -44,7 +44,12 @@
 
 ## 上板檢查表（批次完成後）
 
-- [ ] P0-1～P0-4 視覺核可
-- [ ] P1-1～P1-8 視覺核可（個別項可依裁決降級為「接受現狀」）
-- [ ] fresh All＋10k soak（若涉 save/catalog）綠
-- [ ] PROGRESS／roadmap 收斂，UI 線凍結
+- [x] P0-1～P0-4 視覺核可
+- [x] P1-1～P1-8 視覺核可（個別項可依裁決降級為「接受現狀」）
+- [x] fresh All＋10k soak（若涉 save/catalog）綠
+- [x] PROGRESS／roadmap 收斂，UI 線凍結
+
+> 2026-08-21 視覺閘門核可後，另完成 R1 備戰商店捲動邊界、R2 挑戰紀念碑
+> 「無」語意統一、R3 戰鬥詳情節標記去重；四張補驗圖與 report 見
+> `evidence/ea-ready/after/post-approval-revision/`。修訂未觸及 loc/catalog，依裁決只重跑
+> focused＋Smoke，未重跑 All／soak。

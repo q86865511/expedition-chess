@@ -142,11 +142,16 @@ func _build_facility_data() -> void:
 		&"COLLECTION":
 			values.assign(discovered_ids())
 		&"FACILITY_CHALLENGE_MONUMENT":
-			stat_value.text = "%s  %d" % [
-				_localized_ui_text(&"camp.resource.challenge"),
-				highest_challenge_level(),
+			var records := challenge_records()
+			var challenge_value := (
+				_localized_ui_text(&"combat.inspection.none")
+				if records.is_empty()
+				else str(highest_challenge_level())
+			)
+			stat_value.text = "%s  %s" % [
+				_localized_ui_text(&"camp.resource.challenge"), challenge_value,
 			]
-			for record: CommanderChallengeRecordState in challenge_records():
+			for record: CommanderChallengeRecordState in records:
 				data.add_item("%s  ·  %s %d" % [
 					_localized_content_text(record.commander_id),
 					_localized_ui_text(&"camp.resource.challenge"),

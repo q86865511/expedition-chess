@@ -77,6 +77,18 @@ func test_inspection_panel_shows_localized_values_instead_of_raw_state() -> void
 	assert_false(stats.text.strip_edges() == "無")
 	if inspected.stats.has("attack_speed_milli"):
 		assert_true(stats.text.contains("×"))
+	for heading_name: StringName in [
+		&"TargetLabel", &"StatsLabel", &"StatusesLabel",
+	]:
+		var heading := panel.get_node_or_null(
+			NodePath(String(heading_name))
+		) as Label
+		assert_not_null(heading)
+		if heading != null:
+			assert_true(
+				heading.text.strip_edges().is_empty(),
+				"inspection data rows must not repeat the generic section title"
+			)
 	for optional_name: StringName in [
 		&"TargetValue", &"EquipmentValue", &"TraitsValue", &"StatusesValue",
 	]:

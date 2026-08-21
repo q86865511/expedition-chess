@@ -5,10 +5,21 @@
 ## 目前狀態
 
 UI 線與 `difficulty-curve` 均已入 master（PR #13 → `763cf73`、PR #12 → `95e1d82`；
-T11 Git gate 與兩項規格修訂於 2026-08-20 核准）。進行中：Codex 44 單位命名候選批
-（純提案、停裁決）；其後 `performance-release`，平衡 Phase 2 依裁決在專案最後期。
+T11 Git gate 與兩項規格修訂於 2026-08-20 核准）。Phase E 體驗版整備與 44 單位命名
+落地已完成並通過視覺核可，UI 線凍結、只留 bug 修；下一片為 `performance-release`，
+平衡 Phase 2 依裁決在專案最後期。
 
 ## 已完成
+
+- [2026-08-21] ✅ UI Phase E 體驗版整備、命名 reseal 與核可後修訂收斂 — 44 個單位
+  依裁決落地（唯 `loc.unit_slice_player_26` 採「蝕霧術師／Caustic Savant」），主選單改名
+  「遠征棋／Expedition Chess」，沿用 exporter＋bootstrap 單次 reseal，最終 seal
+  `8645ce27...94805`；catalog parity、引用 gate、fresh All 1513／1513（41634 assertions）
+  與 10k Expedition soak 全綠。P0 四項、P1 八項完成後，1080p ui100 全 route＋720p
+  ui150 抽驗證據獲使用者視覺核可，核可基線提交為 `f2da559`。隨後完成 R1 商店動作
+  明確捲動邊界、R2 未通關挑戰統一顯示「無」、R3 戰鬥詳情重複節標記移除；四張補驗圖
+  逐張檢視，三組 focused 與 Smoke exit 0。修訂未觸及 loc/catalog，依裁決未重跑 All／
+  soak。證據見 `specs/ui-art-refresh/evidence/ea-ready/`；上板檢查表全勾，UI 線凍結。
 
 - [2026-08-20] ✅ UI 線 PR #13 合併＋`difficulty-curve` T11 Git gate 裁決放行 —
   UI 線 17 commits（R0/R1 平衡工具輪、B-out 三批、C 三批、Phase D、文件收斂）以
@@ -473,23 +484,9 @@ T11 Git gate 與兩項規格修訂於 2026-08-20 核准）。進行中：Codex 4
 - **平衡 Phase 2：依使用者 2026-08-15 裁決整段延後至專案最後期**（UI 線與
   performance-release 之後）。R1 TUNE 與暫停續跑系統已入版封存，重啟用
   `screening-ctl.ps1 start`。詳見 specs/balance-playtest/phase2-iteration-log.md。
-- Codex 44 單位正式命名候選批：純提案（每單位兩候選，依 faction／role／cost／
-  戰鬥定位／視覺稿），產物只落 evidence，未經使用者裁決不寫回 catalog。
-- Phase E 體驗版整備批已立項（2026-08-20 美術上板審核：條件性可上板，P0 四項＋
-  P1 八項，設施頁採補內容框架、P0＋P1 全收同一批）；範圍與驗收見
-  `specs/ui-art-refresh/ea-ready-batch.md`，命名裁決後與命名 reseal 併批啟動。
 
 ## 待辦
 
-- UI／美術／中文化整修（交 Codex）：Phase A 已合併（PR #11 → master@823869a，
-  2026-08-07）；B-out-1 已於 2026-08-14 使用者核可。Phase A
-  三項移交追蹤均已關閉：(1) locale-aware glyph probe 與實機常駐 viewport probe
-  均已修，留存真實 Windows before/after evidence；
-  (2) `EXPEDITION_CHALLENGE_PREREQUISITE_UNMET` 已有 zh_TW/en 具名文案；
-  (3) `tools/run-isolated-ui-evidence.ps1` 強制 repo 內 APPDATA／LOCALAPPDATA。
-  局內版面已改由 `in-run-hud` 承接（見下）；Phase B／C／D 均完成，UI 線收斂。後續
-  內容批次依 44 單位的 faction／role／cost／戰鬥定位／視覺稿各提兩個正式名候選，
-  未經下一次使用者裁決不寫回 catalog。
 - Phase 2：平衡迭代迴圈（TUNE 迭代＋每輪 3k screening）至收斂判準達標，之後跑
   大樣本（10k/30k × 24 分片，規模屆時裁決）作正式平衡基線。
 - Phase 3：`performance-release`（效能／migration bridge／90 場真人 release gate）。

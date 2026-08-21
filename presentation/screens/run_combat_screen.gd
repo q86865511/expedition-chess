@@ -631,22 +631,26 @@ func _build_typed_combat_controls() -> void:
 	panel.z_index = 2
 	for field: Dictionary in [
 		{"name": &"SourceValue", "label": &"prepare.panel.units", "prefix": ""},
-		{"name": &"TargetValue", "label": &"combat.inspect", "prefix": "→ "},
-		{"name": &"StatsValue", "label": &"combat.inspect", "prefix": "Σ "},
+		{"name": &"TargetValue", "label": &"", "prefix": ""},
+		{"name": &"StatsValue", "label": &"", "prefix": ""},
 		{"name": &"EquipmentValue", "label": &"loc.audio_equip", "prefix": ""},
 		{"name": &"TraitsValue", "label": &"accessibility.semantic.trait", "prefix": ""},
-		{"name": &"StatusesValue", "label": &"combat.inspect", "prefix": "◌ "},
+		{"name": &"StatusesValue", "label": &"", "prefix": ""},
 	]:
 		var value_name := StringName(field["name"])
+		var label_key := StringName(field["label"])
 		var heading := Label.new()
 		heading.name = String(value_name).trim_suffix("Value") + "Label"
 		heading.theme_type_variation = &"ExpeditionMicroLabel"
-		heading.text = "%s%s" % [
-			String(field["prefix"]),
-			_localized_ui_text(StringName(field["label"])),
-		]
+		heading.text = (
+			"%s%s" % [
+				String(field["prefix"]), _localized_ui_text(label_key),
+			]
+			if not label_key.is_empty()
+			else ""
+		)
 		heading.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-		heading.set_meta(&"localization_key", StringName(field["label"]))
+		heading.set_meta(&"localization_key", label_key)
 		heading.set_meta(&"accessible_text", heading.text)
 		panel.add_child(heading)
 		var label := Label.new()

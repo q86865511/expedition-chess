@@ -1,9 +1,9 @@
 {
   "schema_version": "ea-ready-evidence-1",
-  "generated_at_utc": "2026-08-20T16:11:15Z",
+  "generated_at_utc": "2026-08-21T06:09:02Z",
   "branch": "codex/g2-content-naming",
-  "source_head": "a6bd988ea4879089f8c47947aae83d81fe294da5",
-  "working_tree_state": "uncommitted_visual_approval_gate",
+  "source_head": "f2da5598f70577a2a9f97f5ae8416c12eb5d0c3a",
+  "working_tree_state": "post_approval_revision_ready_for_commit",
   "single_source_of_truth": "res://specs/ui-art-refresh/ea-ready-batch.md",
   "required_matrix": {
     "route_count": 15,
@@ -91,6 +91,18 @@
     {"id": "P1-7", "status": "pass", "note": "營地設施標籤縮小並改為半透明描邊。"},
     {"id": "P1-8", "status": "pass", "note": "營地 ESC overlay 頂欄與貨幣列無重疊。"}
   ],
+  "post_approval_revision": {
+    "status": "pass",
+    "visual_approval": "approved",
+    "report": "res://specs/ui-art-refresh/evidence/ea-ready/after/post-approval-revision/evidence-report.json",
+    "screenshot_count": 4,
+    "items": [
+      {"id": "R1", "status": "pass", "note": "備戰商店動作改為一個完整按鈕高度的內層捲動視窗；1080p ui100 與 720p ui150 均無半截按鈕。"},
+      {"id": "R2", "status": "pass", "note": "未通關時，挑戰紀念碑統計卡與空狀態一致顯示無。"},
+      {"id": "R3", "status": "pass", "note": "戰鬥右欄移除目標、數值與狀態列的重複檢視單位節標記。"}
+    ],
+    "localization_catalog_changed": false
+  },
   "localization_reseal": {
     "exporter_run_count": 1,
     "csv_raw_byte_identical": true,
@@ -106,7 +118,12 @@
     "facility_focused": {"tests": 6, "assertions": 92, "failures": 0, "errors": 0, "orphans": 0},
     "localization_parity": {"tests": 2, "assertions": 7, "failures": 0, "errors": 0, "orphans": 0},
     "localization_reference_gate": {"tests": 2, "assertions": 29, "failures": 0, "errors": 0, "orphans": 0},
-    "smoke": {"exit_code": 0},
+    "smoke": {"exit_code": 0, "post_approval_finished_at_utc": "2026-08-21T06:09:02Z"},
+    "post_approval_revision_focused": {
+      "r1": {"exit_code": 0},
+      "r2": {"exit_code": 0},
+      "r3": {"exit_code": 0}
+    },
     "expedition_soak": {
       "exit_code": 0,
       "seed_count": 10000,

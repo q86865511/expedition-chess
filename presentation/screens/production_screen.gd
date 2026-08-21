@@ -1475,12 +1475,31 @@ func _build_prepare_shop_controls(
 	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cards_column.add_child(cards)
 	_build_shop_card_row(cards, snapshot, true)
+	var shop_action_scroll := ScrollContainer.new()
+	shop_action_scroll.name = "PrepareShopActionsScroll"
+	shop_action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	shop_action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	shop_action_scroll.follow_focus = true
+	shop_action_scroll.clip_contents = true
+	ExpeditionLayoutMetrics.set_min(
+		shop_action_scroll,
+		ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_VIEWPORT_WIDTH,
+		ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_VIEWPORT_HEIGHT
+	)
+	# 一次只露出一個完整動作列；其餘動作由明確的垂直捲動邊界承接，
+	# 避免底帶裁出下一顆按鈕的半截。
+	shop_action_scroll.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	shop_shell.add_child(shop_action_scroll)
 	var shop_actions := GridContainer.new()
 	shop_actions.name = "PrepareShopActions"
 	shop_actions.columns = 1
-	ExpeditionLayoutMetrics.set_fixed_min(shop_actions, 210.0, 0.0)
+	ExpeditionLayoutMetrics.set_min(
+		shop_actions,
+		ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_CONTENT_WIDTH,
+		0.0
+	)
 	shop_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	shop_shell.add_child(shop_actions)
+	shop_action_scroll.add_child(shop_actions)
 	for action_id: StringName in [
 		&"prepare.refresh", &"prepare.xp",
 	]:
@@ -1490,7 +1509,11 @@ func _build_prepare_shop_controls(
 			# staged bind 尚未取得 live supply；報價套用前先 fail-closed。
 			action.disabled = true
 			action.set_meta(&"shop_quote_owned", true)
-			ExpeditionLayoutMetrics.set_fixed_min(action, 210.0, 72.0)
+			ExpeditionLayoutMetrics.set_min(
+				action,
+				ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_CONTENT_WIDTH,
+				ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_VIEWPORT_HEIGHT
+			)
 			shop_actions.add_child(action)
 			var reason := Label.new()
 			reason.name = (

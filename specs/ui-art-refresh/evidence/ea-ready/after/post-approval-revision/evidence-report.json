@@ -1,0 +1,74 @@
+{
+  "schema_version": "ea-ready-post-approval-revision-1",
+  "generated_at_utc": "2026-08-21T06:09:02Z",
+  "branch": "codex/g2-content-naming",
+  "base_head": "f2da5598f70577a2a9f97f5ae8416c12eb5d0c3a",
+  "working_tree_state": "post_approval_revision_ready_for_commit",
+  "scope": ["R1", "R2", "R3"],
+  "screenshots": [
+    {
+      "requirement": "R1",
+      "path": "r1-prepare-1080p-ui100.png",
+      "width": 1920,
+      "height": 1080,
+      "ui_scale": 100,
+      "sha256": "19c52228b1f512e765a4dc8a32f3c42a3972c6e5b02251054ce9f387a2e60493",
+      "visual_check": "pass: one complete shop action is visible and the remaining actions have an explicit vertical scroll boundary"
+    },
+    {
+      "requirement": "R1",
+      "path": "r1-prepare-720p-ui150.png",
+      "width": 1280,
+      "height": 720,
+      "ui_scale": 150,
+      "sha256": "f54c5579f8efaa985abca33c858d4d183b7dc4f4a432371b2dab8081eec4ca2a",
+      "visual_check": "pass: the high-scale shop viewport exposes no partial button and retains a visible scroll boundary"
+    },
+    {
+      "requirement": "R2",
+      "path": "r2-challenge-monument-1080p-ui100.png",
+      "width": 1920,
+      "height": 1080,
+      "ui_scale": 100,
+      "sha256": "0341d8bcdcaebac874834dda5514693a0bc5ec832ff42ff907b11a58968a0d6c",
+      "visual_check": "pass: both the statistic card and empty state use the no-clear value 無"
+    },
+    {
+      "requirement": "R3",
+      "path": "r3-run-combat-1080p-ui100.png",
+      "width": 1920,
+      "height": 1080,
+      "ui_scale": 100,
+      "sha256": "8f693265c2debd5ec0432ad75ccf4bd9979553d2e0e7ac1429396c33b212f24c",
+      "visual_check": "pass: the right inspector has no repeated Sigma or status inspection-unit section markers"
+    }
+  ],
+  "validation": {
+    "focused": [
+      {
+        "requirement": "R1",
+        "test_path": "res://tests/unit/in_run_hud/test_prepare_world_board_layering.gd",
+        "exit_code": 0
+      },
+      {
+        "requirement": "R2",
+        "test_path": "res://tests/integration/presentation_ui_nonterminal_scene_composition/test_camp_facilities_share_one_profile_projection_and_round_trip.gd",
+        "exit_code": 0
+      },
+      {
+        "requirement": "R3",
+        "test_path": "res://tests/integration/presentation_ui_g2_combat_flow/test_combat_inspection_panel_is_player_readable.gd",
+        "exit_code": 0
+      }
+    ],
+    "smoke": {
+      "exit_code": 0,
+      "finished_at_utc": "2026-08-21T06:09:02Z"
+    },
+    "fresh_all_rerun": false,
+    "soak_rerun": false,
+    "extended_gate_note": "Not rerun by post-approval instruction because R1-R3 do not modify localization/catalog, domain, save, or content."
+  },
+  "localization_catalog_changed": false,
+  "issues": []
+}

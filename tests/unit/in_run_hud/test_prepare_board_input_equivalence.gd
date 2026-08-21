@@ -385,6 +385,13 @@ func test_empty_focus_metadata_clears_stale_w_target() -> void:
 	assert_not_null(empty)
 	if occupied == null or empty == null:
 		return
+	assert_eq(empty.text, "◇")
+	assert_almost_eq(
+		empty.self_modulate.a,
+		ExpeditionLayoutMetrics.BENCH_EMPTY_ALPHA,
+		0.001
+	)
+	assert_ne(empty.text, "無")
 	occupied.focus_entered.emit()
 	empty.focus_entered.emit()
 	var toggle := InputEventAction.new()

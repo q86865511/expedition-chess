@@ -87,6 +87,15 @@ func test_combat_keeps_shop_and_bench_as_read_only_snapshot_surfaces() -> void:
 	assert_eq(bench_slots.size(), 9, "COMBAT must retain all nine bench slots")
 	_assert_slot_order(shop_cards, &"shop_slot_index", 5)
 	_assert_slot_order(bench_slots, &"bench_slot", 9)
+	for bench_slot: Button in bench_slots:
+		if String(bench_slot.get_meta(&"unit_instance_id", "")).is_empty():
+			assert_eq(bench_slot.text, "◇")
+			assert_almost_eq(
+				bench_slot.self_modulate.a,
+				ExpeditionLayoutMetrics.BENCH_EMPTY_ALPHA,
+				0.001
+			)
+			assert_ne(bench_slot.text, "無")
 	if shop_cards.size() == 5:
 		var active_card := shop_cards[1]
 		_assert_shop_semantic_cues(

@@ -168,6 +168,14 @@ func test_reward_offer_and_combat_inspection_are_real_typed_controls() -> void:
 			String(offers.get_item_metadata(index)),
 			"choice.%d" % index
 		)
+		assert_not_null(
+			offers.get_item_icon(index),
+			"each reward row needs a portrait or typed fallback icon"
+		)
+		assert_true(
+			offers.get_item_text(index).begins_with("♙  "),
+			"the UNIT fixture must retain its visible reward-kind badge"
+		)
 	var chosen_index := 2
 	offers.select(chosen_index)
 	offers.item_selected.emit(chosen_index)
@@ -304,6 +312,14 @@ func test_reward_offer_and_combat_inspection_are_real_typed_controls() -> void:
 		var label := combat_screen.find_child(
 			control_name, true, false
 		) as Label
-		assert_not_null(label, "%s must be player-visible" % control_name)
+		assert_not_null(label, "%s must keep its typed field" % control_name)
 		if label != null:
-			assert_false(label.text.strip_edges().is_empty())
+			if control_name in ["SourceValue", "StatsValue"]:
+				assert_true(label.visible)
+				assert_false(label.text.strip_edges().is_empty())
+			else:
+				assert_eq(
+					label.visible,
+					not label.text.strip_edges().is_empty(),
+					"optional fields must hide instead of rendering a bare empty token"
+				)

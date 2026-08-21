@@ -32,6 +32,54 @@ const ROLE_EN := {
 	&"vanguard": "Vanguard",
 	&"warden": "Warden",
 }
+const MONSTER_NAMES: Array[Array] = [
+	["根牙野豬", "Roottusk Boar"],
+	["瓶花蟹", "Pitcher Crab"],
+	["稜光母體", "Prism Matriarch"],
+	["熔甲巨獸", "Lavashell Brute"],
+	["冰冠梟皇", "Icequill Sovereign"],
+	["闇燭蛞蝓", "Gloomwax Slug"],
+	["廢鐵爐甲", "Scrapfurnace Beetle"],
+	["弩臂螳螂", "Boltarm Mantis"],
+	["晶燈洞蛾", "Lanternmoth"],
+	["骨冠泥魁", "Bonecrown Brute"],
+	["齒脊箭豬", "Gearspine Porcupine"],
+	["星籠觸妖", "Starcage Horror"],
+]
+const PLAYER_NAMES: Array[Array] = [
+	["晶苔衛", "Gemmoss Guard"],
+	["燼藤弩", "Embervine Arbalist"],
+	["冰焰使", "Frostfire Adept"],
+	["霜鐵衛", "Frostiron Guard"],
+	["齒輪客", "Chakram Tinker"],
+	["幽燈守", "Gloamlight Warden"],
+	["稜晶衛", "Facetshield"],
+	["暮棘弓手", "Duskthorn Archer"],
+	["窯環侍", "Kilnring Acolyte"],
+	["雪履衛", "Snowshoe Guard"],
+	["銅籌客", "Coinwheel Rogue"],
+	["蝕鐘僧", "Eclipse Monk"],
+	["星環衛", "Orrery Guard"],
+	["菇冠吹手", "Sporepipe Scout"],
+	["熔鏈先知", "Molten Oracle"],
+	["冰甲水手", "Icecarapace Sailor"],
+	["磁軌匠", "Lodestone Tinker"],
+	["蛾燈葬士", "Mothlight Reaper"],
+	["星圖重衛", "Starchart Bulwark"],
+	["葦弓獵手", "Reedbow Hunter"],
+	["爐扇舞者", "Furnace Dancer"],
+	["海象盾衛", "Walrus Guard"],
+	["發條信使", "Clockwork Courier"],
+	["黑鏡守騎", "Blackmirror Knight"],
+	["晶甲龜衛", "Crystal Tortoise"],
+	["蜂巢獵手", "Hivebow Ranger"],
+	["蝕霧術師", "Caustic Savant"],
+	["寒潛重衛", "Frostdiver Guard"],
+	["鋼索舞槍", "Wiregun Dancer"],
+	["鴉獄典守", "Raven Gaoler"],
+	["天碑巨像", "Runestone Colossus"],
+	["冠林翔弓", "Canopy Windbow"],
+]
 
 
 func test_finalized_trait_display_copy_matches_phase_d_decision() -> void:
@@ -52,22 +100,23 @@ func test_all_44_ability_descriptions_match_approved_effect_values() -> void:
 		_assert_ability_description(catalog, "player", index, 48 + index * 2)
 
 
-func test_unit_names_remain_numbered_until_the_follow_up_naming_decision() -> void:
+func test_phase_e_unit_names_match_the_approved_naming_decision() -> void:
 	var catalog := LocalizationCatalog.restricted_emergency_catalog()
-	for index: int in range(12):
+	for index: int in range(MONSTER_NAMES.size()):
 		_assert_copy(
 			catalog,
 			StringName("loc.unit_slice_monster_%02d" % index),
-			"怪物 %02d" % (index + 1),
-			"Monster %02d" % (index + 1)
+			String(MONSTER_NAMES[index][0]),
+			String(MONSTER_NAMES[index][1])
 		)
-	for index: int in range(32):
+	for index: int in range(PLAYER_NAMES.size()):
 		_assert_copy(
 			catalog,
 			StringName("loc.unit_slice_player_%02d" % index),
-			"遠征棋士 %02d" % (index + 1),
-			"Expedition Unit %02d" % (index + 1)
+			String(PLAYER_NAMES[index][0]),
+			String(PLAYER_NAMES[index][1])
 		)
+	_assert_copy(catalog, &"screen.menu_main.title", "遠征棋", "Expedition Chess")
 
 
 func _assert_ability_description(

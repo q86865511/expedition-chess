@@ -676,7 +676,16 @@ func _bind_localized_controls() -> void:
 		for action_id: StringName in action_ids:
 			var action := _new_action_button(action_id)
 			action.theme_type_variation = &"ExpeditionBottomAction"
-			action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			if route_kind == &"RUN_MAP":
+				ExpeditionLayoutMetrics.set_fixed_min(
+					action,
+					ExpeditionLayoutMetrics.RUN_MAP_BOTTOM_ACTION_SIZE.x,
+					ExpeditionLayoutMetrics.RUN_MAP_BOTTOM_ACTION_SIZE.y
+				)
+				action.size_flags_horizontal = Control.SIZE_SHRINK_END
+				action.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			else:
+				action.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			controls.add_child(action)
 	else:
 		var uses_outgame_shell := route_kind in [
@@ -1208,7 +1217,9 @@ func _build_prepare_action_controls(
 
 	var secondary := VBoxContainer.new()
 	secondary.name = "PrepareSecondaryActions"
-	ExpeditionLayoutMetrics.set_fixed_min(secondary, 309.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		secondary, ExpeditionLayoutMetrics.PREPARE_ACTION_COLUMN_WIDTH, 0.0
+	)
 	secondary.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(secondary)
 	_prepare_action_group_selector = OptionButton.new()
@@ -1217,7 +1228,9 @@ func _build_prepare_action_controls(
 	_prepare_action_group_selector.theme_type_variation = &"ExpeditionBottomAction"
 	_prepare_action_group_selector.allow_reselect = true
 	ExpeditionLayoutMetrics.set_fixed_min(
-		_prepare_action_group_selector, 0.0, 72.0
+		_prepare_action_group_selector,
+		0.0,
+		ExpeditionLayoutMetrics.PREPARE_ACTION_ROW_HEIGHT
 	)
 	_prepare_action_group_selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_prepare_action_group_selector.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -1242,7 +1255,9 @@ func _build_prepare_action_controls(
 	# The selector and page share a secondary column. Reserve one authored
 	# action row for the inner viewport so a focused button always fits fully;
 	# the outer BottomContentScroll absorbs the combined column height.
-	ExpeditionLayoutMetrics.set_fixed_min(page_scroll, 0.0, 72.0)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		page_scroll, 0.0, ExpeditionLayoutMetrics.PREPARE_ACTION_ROW_HEIGHT
+	)
 	page_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	secondary.add_child(page_scroll)
 	# Keep the authored column width independent from localized text minima.
@@ -1251,7 +1266,9 @@ func _build_prepare_action_controls(
 	# follows theme-scale and localization changes without widening the band.
 	var pages := Control.new()
 	pages.name = "PrepareActionGroupPages"
-	ExpeditionLayoutMetrics.set_fixed_min(pages, 309.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		pages, ExpeditionLayoutMetrics.PREPARE_ACTION_COLUMN_WIDTH, 0.0
+	)
 	pages.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page_scroll.add_child(pages)
@@ -1272,7 +1289,9 @@ func _build_prepare_action_controls(
 			if action_ids.has(action_id):
 				var action := _new_action_button(action_id)
 				action.theme_type_variation = &"ExpeditionBottomAction"
-				action.set_meta(&"expedition_theme_fixed_minimum", true)
+				ExpeditionLayoutMetrics.set_fixed_min(
+					action, 0.0, ExpeditionLayoutMetrics.PREPARE_ACTION_ROW_HEIGHT
+				)
 				# The column is intentionally fixed at 309 reference pixels. Preserve
 				# the complete localized label for tooltip/accessibility while allowing
 				# an ellipsis to prevent a long translation from widening the HBox.
@@ -1294,14 +1313,18 @@ func _build_prepare_action_controls(
 
 	var pinned := VBoxContainer.new()
 	pinned.name = "PinnedActions"
-	ExpeditionLayoutMetrics.set_fixed_min(pinned, 270.0, 0.0)
+	ExpeditionLayoutMetrics.set_fixed_min(
+		pinned, ExpeditionLayoutMetrics.PREPARE_PINNED_COLUMN_WIDTH, 0.0
+	)
 	pinned.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	controls.add_child(pinned)
 	for action_id: StringName in PREPARE_PINNED_ACTIONS:
 		if action_ids.has(action_id):
 			var action := _new_action_button(action_id)
 			action.theme_type_variation = &"ExpeditionBottomAction"
-			action.set_meta(&"expedition_theme_fixed_minimum", true)
+			ExpeditionLayoutMetrics.set_fixed_min(
+				action, 0.0, ExpeditionLayoutMetrics.PREPARE_ACTION_ROW_HEIGHT
+			)
 			pinned.add_child(action)
 	_prepare_action_group_selector.item_selected.connect(
 		_on_prepare_action_group_selected
@@ -1375,9 +1398,10 @@ func _build_combat_snapshot_controls(
 			else ""
 		)
 		var display_text := _combat_bench_unit_text(roster, unit_instance_id)
+		var occupied := not unit_instance_id.is_empty()
 		var cell := Button.new()
 		cell.name = "CombatBenchSlot%d" % slot_index
-		cell.text = display_text
+		cell.text = display_text if occupied else "◇"
 		cell.theme_type_variation = &"ExpeditionGridCell"
 		cell.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cell.disabled = true
@@ -1386,8 +1410,16 @@ func _build_combat_snapshot_controls(
 		cell.set_meta(&"typed_data_kind", &"combat_bench_slot")
 		cell.set_meta(&"bench_slot", slot_index)
 		cell.set_meta(&"unit_instance_id", unit_instance_id)
-		cell.set_meta(&"accessible_text", display_text)
-		cell.tooltip_text = display_text
+		cell.self_modulate.a = (
+			1.0 if occupied else ExpeditionLayoutMetrics.BENCH_EMPTY_ALPHA
+		)
+		cell.set_meta(
+			&"accessible_text",
+			display_text if occupied else "%s %d" % [
+				_context.resolve_text(&"prepare.panel.bench"), slot_index + 1
+			]
+		)
+		cell.tooltip_text = display_text if occupied else ""
 		ExpeditionLayoutMetrics.set_fixed_cell(cell, 180.0, 48.0)
 		bench_row.add_child(cell)
 
@@ -1404,7 +1436,7 @@ func _combat_bench_unit_text(
 					_context.resolve_text(&"combat.stat.star"),
 					unit.star,
 				]
-	return _context.resolve_text(&"combat.inspection.none")
+	return ""
 
 
 func _build_prepare_shop_controls(
@@ -1443,12 +1475,31 @@ func _build_prepare_shop_controls(
 	cards.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	cards_column.add_child(cards)
 	_build_shop_card_row(cards, snapshot, true)
+	var shop_action_scroll := ScrollContainer.new()
+	shop_action_scroll.name = "PrepareShopActionsScroll"
+	shop_action_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	shop_action_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	shop_action_scroll.follow_focus = true
+	shop_action_scroll.clip_contents = true
+	ExpeditionLayoutMetrics.set_min(
+		shop_action_scroll,
+		ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_VIEWPORT_WIDTH,
+		ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_VIEWPORT_HEIGHT
+	)
+	# 一次只露出一個完整動作列；其餘動作由明確的垂直捲動邊界承接，
+	# 避免底帶裁出下一顆按鈕的半截。
+	shop_action_scroll.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	shop_shell.add_child(shop_action_scroll)
 	var shop_actions := GridContainer.new()
 	shop_actions.name = "PrepareShopActions"
 	shop_actions.columns = 1
-	ExpeditionLayoutMetrics.set_fixed_min(shop_actions, 210.0, 0.0)
+	ExpeditionLayoutMetrics.set_min(
+		shop_actions,
+		ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_CONTENT_WIDTH,
+		0.0
+	)
 	shop_actions.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	shop_shell.add_child(shop_actions)
+	shop_action_scroll.add_child(shop_actions)
 	for action_id: StringName in [
 		&"prepare.refresh", &"prepare.xp",
 	]:
@@ -1458,7 +1509,11 @@ func _build_prepare_shop_controls(
 			# staged bind 尚未取得 live supply；報價套用前先 fail-closed。
 			action.disabled = true
 			action.set_meta(&"shop_quote_owned", true)
-			ExpeditionLayoutMetrics.set_fixed_min(action, 210.0, 72.0)
+			ExpeditionLayoutMetrics.set_min(
+				action,
+				ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_CONTENT_WIDTH,
+				ExpeditionLayoutMetrics.PREPARE_SHOP_ACTION_VIEWPORT_HEIGHT
+			)
 			shop_actions.add_child(action)
 			var reason := Label.new()
 			reason.name = (
@@ -2435,7 +2490,10 @@ func _refresh_prepare_action_pages_minimum() -> void:
 	# base metric or the next theme apply would scale a measured value again.
 	ExpeditionLayoutMetrics.set_runtime_min(
 		pages,
-		Vector2(309.0, visible_page.get_combined_minimum_size().y)
+		Vector2(
+			ExpeditionLayoutMetrics.PREPARE_ACTION_COLUMN_WIDTH,
+			visible_page.get_combined_minimum_size().y
+		)
 	)
 	var action_row_height := 0.0
 	for child: Node in visible_page.get_children():

@@ -18,7 +18,6 @@ const METRIC_WIDTH: float = 216.0
 ## The button itself is owned by ProductionScreen; this reservation prevents the
 ## third metric from rendering underneath it at every supported UI scale.
 const SYSTEM_MENU_RESERVE_WIDTH: float = 294.0
-const FACILITY_MARKER_SIZE: Vector2 = Vector2(270.0, 72.0)
 const FACILITY_MARKERS: Array[Dictionary] = [
 	{
 		"name": "FacilityExpeditionGate",
@@ -266,7 +265,9 @@ func _add_facility_marker(canvas: Control, marker_spec: Dictionary) -> void:
 	marker.mouse_filter = Control.MOUSE_FILTER_STOP
 	marker.z_index = 2
 	ExpeditionLayoutMetrics.set_min(
-		marker, FACILITY_MARKER_SIZE.x, FACILITY_MARKER_SIZE.y
+		marker,
+		ExpeditionLayoutMetrics.CAMP_FACILITY_MARKER_SIZE.x,
+		ExpeditionLayoutMetrics.CAMP_FACILITY_MARKER_SIZE.y
 	)
 	marker.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	marker.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -276,10 +277,10 @@ func _add_facility_marker(canvas: Control, marker_spec: Dictionary) -> void:
 	marker.anchor_right = anchor.x
 	marker.anchor_top = anchor.y
 	marker.anchor_bottom = anchor.y
-	marker.offset_left = -FACILITY_MARKER_SIZE.x * 0.5
-	marker.offset_right = FACILITY_MARKER_SIZE.x * 0.5
-	marker.offset_top = -FACILITY_MARKER_SIZE.y * 0.5
-	marker.offset_bottom = FACILITY_MARKER_SIZE.y * 0.5
+	marker.offset_left = -ExpeditionLayoutMetrics.CAMP_FACILITY_MARKER_SIZE.x * 0.5
+	marker.offset_right = ExpeditionLayoutMetrics.CAMP_FACILITY_MARKER_SIZE.x * 0.5
+	marker.offset_top = -ExpeditionLayoutMetrics.CAMP_FACILITY_MARKER_SIZE.y * 0.5
+	marker.offset_bottom = ExpeditionLayoutMetrics.CAMP_FACILITY_MARKER_SIZE.y * 0.5
 	marker.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	marker.grow_vertical = Control.GROW_DIRECTION_BOTH
 	marker.set_meta(&"facility_localization_key", localization_key)

@@ -115,6 +115,7 @@ func test_prepare_world_board_is_not_covered_across_output_and_ui_scales() -> vo
 				mapper,
 				context
 			)
+			await _assert_prepare_shop_action_scroll(screen, context)
 			await _assert_bottom_focus_scroll(screen, context)
 
 
@@ -803,6 +804,58 @@ func _assert_bottom_focus_scroll(
 		"%s: bottom scroll %s must reveal focused %s" % [
 			context, scroll.get_global_rect(), deepest.get_global_rect(),
 		]
+	)
+
+
+func _assert_prepare_shop_action_scroll(
+	screen: ProductionScreen,
+	context: String
+) -> void:
+	var scroll := screen.find_child(
+		"PrepareShopActionsScroll", true, false
+	) as ScrollContainer
+	var actions := screen.find_child(
+		"PrepareShopActions", true, false
+	) as GridContainer
+	assert_not_null(scroll, "%s: shop action viewport must exist" % context)
+	assert_not_null(actions, "%s: shop action content must exist" % context)
+	if scroll == null or actions == null:
+		return
+	assert_true(scroll.is_ancestor_of(actions))
+	assert_eq(
+		scroll.horizontal_scroll_mode,
+		ScrollContainer.SCROLL_MODE_DISABLED
+	)
+	assert_eq(
+		scroll.vertical_scroll_mode,
+		ScrollContainer.SCROLL_MODE_AUTO
+	)
+	assert_true(scroll.follow_focus)
+	scroll.scroll_vertical = 0
+	await wait_process_frames(2)
+	var viewport := scroll.get_global_rect()
+	var visible_buttons := 0
+	for node: Node in actions.find_children("*", "Button", true, false):
+		var button := node as Button
+		if button == null or not button.is_visible_in_tree():
+			continue
+		var button_rect := button.get_global_rect()
+		var intersection := viewport.intersection(button_rect)
+		if intersection.size.y <= 0.5:
+			continue
+		visible_buttons += 1
+		assert_true(
+			viewport.grow(1.0).encloses(button_rect),
+			"%s: shop viewport must never expose a partial button" % context
+		)
+	assert_eq(
+		visible_buttons,
+		1,
+		"%s: the bounded shop viewport starts on one complete action" % context
+	)
+	assert_true(
+		scroll.get_v_scroll_bar().visible,
+		"%s: additional shop actions need an explicit scroll boundary" % context
 	)
 
 

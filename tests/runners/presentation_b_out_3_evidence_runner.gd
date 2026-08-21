@@ -327,6 +327,18 @@ func _validate_results(
 		var label := composition.get_node_or_null(
 			NodePath("%sValue" % String(value_name))
 		) as Label
+		if value_name == &"Receipt":
+			if (
+				card == null
+				or label == null
+				or card.visible
+				or label.visible
+				or not label.text.is_empty()
+			):
+				_issues.append("results_receipt_not_hidden:%s:%s" % [
+					route, case_name,
+				])
+			continue
 		if card == null or label == null or label.text.is_empty():
 			_issues.append("results_card_missing:%s:%s:%s" % [
 				route, case_name, value_name,

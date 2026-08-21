@@ -5,8 +5,9 @@ extends GutTest
 ## unreachable-but-not-yet-completed nodes stayed selectable even though
 ## RunPresentationSession already carried a reachability rule
 ## (node_is_reachable, formerly _node_is_reachable) that the screen never
-## used. This locks the fix: unreachable nodes must be disabled too, and node
-## kind text must resolve through localization instead of the raw enum token.
+## used. Phase E P1-2 additionally keeps the visible row concise: node kind
+## stays available in the localized tooltip and semantic icon, but is not
+## repeated beside the localized node name.
 
 const REACHABLE_NODE_ID := "node.reachable"
 const UNREACHABLE_NODE_ID := "node.unreachable"
@@ -76,11 +77,15 @@ func test_run_map_disables_unreachable_nodes_and_localizes_kind_text() -> void:
 	)
 
 	assert_string_contains(selector.get_item_text(reachable_index), "測試據點A")
-	assert_string_contains(selector.get_item_text(reachable_index), "一般戰鬥")
+	assert_false(selector.get_item_text(reachable_index).contains("一般戰鬥"))
+	assert_string_contains(selector.get_item_tooltip(reachable_index), "一般戰鬥")
+	assert_not_null(selector.get_item_icon(reachable_index))
 	assert_false(selector.get_item_text(reachable_index).contains("normal"))
 
 	assert_string_contains(selector.get_item_text(unreachable_index), "測試據點B")
-	assert_string_contains(selector.get_item_text(unreachable_index), "菁英戰鬥")
+	assert_false(selector.get_item_text(unreachable_index).contains("菁英戰鬥"))
+	assert_string_contains(selector.get_item_tooltip(unreachable_index), "菁英戰鬥")
+	assert_not_null(selector.get_item_icon(unreachable_index))
 	assert_false(selector.get_item_text(unreachable_index).contains("elite"))
 
 	composition.call(&"_on_node_selected", unreachable_index)

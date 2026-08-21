@@ -213,15 +213,22 @@ func _build_node_selector() -> void:
 	_node_selector.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_node_selector.focus_mode = Control.FOCUS_ALL
 	_node_selector.select_mode = ItemList.SELECT_SINGLE
+	_node_selector.icon_mode = ItemList.ICON_MODE_LEFT
+	_node_selector.fixed_icon_size = Vector2i.ONE * roundi(
+		ExpeditionLayoutMetrics.RUN_LIST_ICON_SIZE
+	)
 	_node_selector.set_meta(&"typed_choice_kind", &"map_node")
 	_node_selector.set_meta(&"accessible_text", _localized_ui_text(&"map.select"))
 	if _snapshot != null and _snapshot.map != null:
 		for node: MapNodeState in _snapshot.map.nodes:
 			if node == null or node.node_id.is_empty():
 				continue
-			_node_selector.add_item(_node_selector_text(node))
+			_node_selector.add_item(
+				_node_selector_text(node), _node_kind_icon(node.node_kind)
+			)
 			var index := _node_selector.item_count - 1
 			_node_selector.set_item_metadata(index, node.node_id)
+			_node_selector.set_item_tooltip(index, _node_text(node))
 			_node_selector.set_item_disabled(
 				index,
 				not MapNodePresentation.is_reachable(_snapshot.map, node)
@@ -426,18 +433,39 @@ func _node_selector_text(node: MapNodeState) -> String:
 		)
 		else ""
 	)
-	var kind_signal := String(
-		InRunHudShell.NODE_KIND_SIGNALS.get(
-			MapNodeState.node_kind_to_token(node.node_kind),
-			"?"
-		)
-	)
-	return "%s %s %s  %s" % [
+	return "%s %s  %s  ·  %d-%d" % [
 		current_signal,
 		state_signal,
-		kind_signal,
-		_node_text(node),
+		_localized_content_text(node.def_id),
+		node.act_index,
+		node.layer_index,
 	]
+
+
+func _node_kind_icon(kind: MapNodeState.NodeKind) -> Texture2D:
+	var colors := {
+		MapNodeState.NodeKind.NORMAL: Color("55758f"),
+		MapNodeState.NodeKind.ELITE: Color("b55f62"),
+		MapNodeState.NodeKind.EVENT: Color("8b72bf"),
+		MapNodeState.NodeKind.MERCHANT: Color("c89445"),
+		MapNodeState.NodeKind.REST: Color("5f9d82"),
+		MapNodeState.NodeKind.TREASURE: Color("d6ad58"),
+		MapNodeState.NodeKind.BOSS: Color("b33f49"),
+	}
+	var color: Color = colors.get(kind, Color("69737f"))
+	return _semantic_icon(color)
+
+
+func _semantic_icon(color: Color) -> Texture2D:
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([color.lightened(0.18), color])
+	var texture := GradientTexture2D.new()
+	texture.width = roundi(ExpeditionLayoutMetrics.RUN_LIST_ICON_SIZE)
+	texture.height = roundi(ExpeditionLayoutMetrics.RUN_LIST_ICON_SIZE)
+	texture.gradient = gradient
+	texture.fill_from = Vector2(0.2, 0.2)
+	texture.fill_to = Vector2(0.8, 0.8)
+	return texture
 
 
 func _localized_node_kind_text(kind: MapNodeState.NodeKind) -> String:

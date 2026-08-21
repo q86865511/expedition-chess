@@ -11,10 +11,10 @@ func test_catalog_loads_the_adopted_environment_visuals() -> void:
 	assert_eq(
 		catalog.visual_ids(),
 		[
-			&"environment.run_combat",
 			&"environment.camp",
-			&"key_art.menu_main",
+			&"environment.run_combat",
 			&"environment.run_map",
+			&"key_art.menu_main",
 		]
 	)
 	var camp := catalog.try_texture(&"environment.camp")

@@ -135,6 +135,17 @@ func test_results_offsets_live_in_metrics_and_values_render_as_cards() -> void:
 					metric_label.get_global_rect()
 				)
 			)
+	var receipt_card := composition.get_node_or_null(^"ReceiptCard") as Control
+	var receipt_value := composition.get_node_or_null(^"ReceiptValue") as Label
+	var digest_card := composition.get_node_or_null(^"DigestCard") as Control
+	assert_not_null(receipt_card)
+	assert_not_null(receipt_value)
+	assert_not_null(digest_card)
+	if receipt_card != null and receipt_value != null and digest_card != null:
+		assert_false(receipt_card.visible)
+		assert_false(receipt_value.visible)
+		assert_true(receipt_value.text.is_empty())
+		assert_true(digest_card.visible)
 	var theme := load("res://theme/expedition_theme.tres") as Theme
 	var outcome_style := theme.get_stylebox(
 		&"panel", &"ExpeditionResultsOutcomeCard"

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=33 format=3]
+[gd_resource type="Theme" load_steps=37 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/noto-sans-tc/NotoSansTC-wght.ttf" id="1_font"]
 [ext_resource type="Texture2D" path="res://theme/ui-panel-frame.svg" id="2_panel"]
@@ -109,6 +109,70 @@ content_margin_left = 18.0
 content_margin_top = 12.0
 content_margin_right = 18.0
 content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_camp_marker_normal"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.28)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.843137, 0.764706, 0.603922, 0.78)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_camp_marker_hover"]
+bg_color = Color(0.184314, 0.603922, 0.588235, 0.5)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_camp_marker_pressed"]
+bg_color = Color(0.843137, 0.607843, 0.227451, 0.62)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0.941176, 0.87451, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_camp_marker_disabled"]
+bg_color = Color(0.0784314, 0.14902, 0.227451, 0.18)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.411765, 0.443137, 0.482353, 0.72)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 12.0
+content_margin_top = 6.0
+content_margin_right = 12.0
+content_margin_bottom = 6.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_compact_button_normal"]
 bg_color = Color(0.0784314, 0.14902, 0.227451, 1)
@@ -666,10 +730,10 @@ ExpeditionCampMapFrame/styles/panel = SubResource("StyleBoxTexture_panel")
 ExpeditionCampFacilityMarker/base_type = &"Button"
 ExpeditionCampFacilityMarker/fonts/font = SubResource("FontVariation_regular")
 ExpeditionCampFacilityMarker/font_sizes/font_size = 21
-ExpeditionCampFacilityMarker/styles/normal = SubResource("StyleBoxFlat_button_normal")
-ExpeditionCampFacilityMarker/styles/hover = SubResource("StyleBoxFlat_button_hover")
-ExpeditionCampFacilityMarker/styles/pressed = SubResource("StyleBoxFlat_button_pressed")
-ExpeditionCampFacilityMarker/styles/disabled = SubResource("StyleBoxFlat_button_disabled")
+ExpeditionCampFacilityMarker/styles/normal = SubResource("StyleBoxFlat_camp_marker_normal")
+ExpeditionCampFacilityMarker/styles/hover = SubResource("StyleBoxFlat_camp_marker_hover")
+ExpeditionCampFacilityMarker/styles/pressed = SubResource("StyleBoxFlat_camp_marker_pressed")
+ExpeditionCampFacilityMarker/styles/disabled = SubResource("StyleBoxFlat_camp_marker_disabled")
 ExpeditionCampFacilityMarker/styles/focus = SubResource("StyleBoxTexture_focus")
 ExpeditionCampMetrics/base_type = &"HBoxContainer"
 ExpeditionCampMetrics/constants/separation = 12
@@ -732,6 +796,8 @@ ExpeditionFacilityCardGrid/styles/panel = SubResource("StyleBoxEmpty_collection_
 ExpeditionFacilityCardGrid/styles/focus = SubResource("StyleBoxTexture_focus")
 ExpeditionFacilityCardGrid/styles/selected = SubResource("StyleBoxFlat_selected")
 ExpeditionFacilityCardGrid/styles/selected_focus = SubResource("StyleBoxFlat_selected")
+ExpeditionFacilityContent/base_type = &"VBoxContainer"
+ExpeditionFacilityContent/constants/separation = 18
 ExpeditionCollectionCategory/base_type = &"OptionButton"
 ExpeditionCollectionCategory/fonts/font = SubResource("FontVariation_regular")
 ExpeditionCollectionCategory/font_sizes/font_size = 21
@@ -748,9 +814,9 @@ ExpeditionCollectionSearch/styles/focus = SubResource("StyleBoxTexture_focus")
 ExpeditionCollectionCardGrid/base_type = &"ItemList"
 ExpeditionCollectionCardGrid/fonts/font = SubResource("FontVariation_regular")
 ExpeditionCollectionCardGrid/font_sizes/font_size = 21
-ExpeditionCollectionCardGrid/constants/h_separation = 18
-ExpeditionCollectionCardGrid/constants/v_separation = 18
-ExpeditionCollectionCardGrid/constants/icon_margin = 12
+ExpeditionCollectionCardGrid/constants/h_separation = 12
+ExpeditionCollectionCardGrid/constants/v_separation = 12
+ExpeditionCollectionCardGrid/constants/icon_margin = 9
 ExpeditionCollectionCardGrid/styles/panel = SubResource("StyleBoxEmpty_collection_surface")
 ExpeditionCollectionCardGrid/styles/focus = SubResource("StyleBoxTexture_focus")
 ExpeditionCollectionCardGrid/styles/selected = SubResource("StyleBoxFlat_selected")

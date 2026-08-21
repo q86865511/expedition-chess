@@ -93,5 +93,8 @@
   2026-08-20）：Phase B-out 局外視覺重設計、Phase C 美術／音訊接線（視覺化地圖、
   戰鬥呈現＋商店卡、production 音訊）、Phase D 中文化收尾與文案定稿
   （25-key reseal、loc 引用 gate、OS locale、羈絆陣營候選 A＋44 技能描述）全數
-  經逐批視覺核可閘門提交，收斂於 `cd71986`（fresh All 1510/1510）。證據位於
-  `specs/ui-art-refresh/evidence/`；44 個編號單位名的正式命名候選移下一內容批次。
+  經逐批視覺核可閘門提交，收斂於 `cd71986`（fresh All 1510/1510）。Phase E 體驗版
+  整備（`codex/g2-content-naming`，**已完成** 2026-08-21）：44 單位正式命名落地
+  （候選 1×43＋蝕霧術師）、設施頁內容框架、結算／戰鬥詳情去 dev 化、P1 打磨八項與
+  核可後 R1~R3 修訂，收斂於 `ec48568`（fresh All 1513/1513＋10k soak）。證據位於
+  `specs/ui-art-refresh/evidence/`（Phase E 為 `evidence/ea-ready/`）。

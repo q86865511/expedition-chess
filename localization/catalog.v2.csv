@@ -779,50 +779,50 @@ loc.trait_role_vanguard,先鋒,Vanguard
 loc.trait_role_vanguard_description,啟用職業「Vanguard」的階段效果。,Activates tier effects for role Vanguard.
 loc.trait_role_warden,守望者,Warden
 loc.trait_role_warden_description,啟用職業「Warden」的階段效果。,Activates tier effects for role Warden.
-loc.unit_slice_monster_00,怪物 01,Monster 01
-loc.unit_slice_monster_01,怪物 02,Monster 02
-loc.unit_slice_monster_02,怪物 03,Monster 03
-loc.unit_slice_monster_03,怪物 04,Monster 04
-loc.unit_slice_monster_04,怪物 05,Monster 05
-loc.unit_slice_monster_05,怪物 06,Monster 06
-loc.unit_slice_monster_06,怪物 07,Monster 07
-loc.unit_slice_monster_07,怪物 08,Monster 08
-loc.unit_slice_monster_08,怪物 09,Monster 09
-loc.unit_slice_monster_09,怪物 10,Monster 10
-loc.unit_slice_monster_10,怪物 11,Monster 11
-loc.unit_slice_monster_11,怪物 12,Monster 12
-loc.unit_slice_player_00,遠征棋士 01,Expedition Unit 01
-loc.unit_slice_player_01,遠征棋士 02,Expedition Unit 02
-loc.unit_slice_player_02,遠征棋士 03,Expedition Unit 03
-loc.unit_slice_player_03,遠征棋士 04,Expedition Unit 04
-loc.unit_slice_player_04,遠征棋士 05,Expedition Unit 05
-loc.unit_slice_player_05,遠征棋士 06,Expedition Unit 06
-loc.unit_slice_player_06,遠征棋士 07,Expedition Unit 07
-loc.unit_slice_player_07,遠征棋士 08,Expedition Unit 08
-loc.unit_slice_player_08,遠征棋士 09,Expedition Unit 09
-loc.unit_slice_player_09,遠征棋士 10,Expedition Unit 10
-loc.unit_slice_player_10,遠征棋士 11,Expedition Unit 11
-loc.unit_slice_player_11,遠征棋士 12,Expedition Unit 12
-loc.unit_slice_player_12,遠征棋士 13,Expedition Unit 13
-loc.unit_slice_player_13,遠征棋士 14,Expedition Unit 14
-loc.unit_slice_player_14,遠征棋士 15,Expedition Unit 15
-loc.unit_slice_player_15,遠征棋士 16,Expedition Unit 16
-loc.unit_slice_player_16,遠征棋士 17,Expedition Unit 17
-loc.unit_slice_player_17,遠征棋士 18,Expedition Unit 18
-loc.unit_slice_player_18,遠征棋士 19,Expedition Unit 19
-loc.unit_slice_player_19,遠征棋士 20,Expedition Unit 20
-loc.unit_slice_player_20,遠征棋士 21,Expedition Unit 21
-loc.unit_slice_player_21,遠征棋士 22,Expedition Unit 22
-loc.unit_slice_player_22,遠征棋士 23,Expedition Unit 23
-loc.unit_slice_player_23,遠征棋士 24,Expedition Unit 24
-loc.unit_slice_player_24,遠征棋士 25,Expedition Unit 25
-loc.unit_slice_player_25,遠征棋士 26,Expedition Unit 26
-loc.unit_slice_player_26,遠征棋士 27,Expedition Unit 27
-loc.unit_slice_player_27,遠征棋士 28,Expedition Unit 28
-loc.unit_slice_player_28,遠征棋士 29,Expedition Unit 29
-loc.unit_slice_player_29,遠征棋士 30,Expedition Unit 30
-loc.unit_slice_player_30,遠征棋士 31,Expedition Unit 31
-loc.unit_slice_player_31,遠征棋士 32,Expedition Unit 32
+loc.unit_slice_monster_00,根牙野豬,Roottusk Boar
+loc.unit_slice_monster_01,瓶花蟹,Pitcher Crab
+loc.unit_slice_monster_02,稜光母體,Prism Matriarch
+loc.unit_slice_monster_03,熔甲巨獸,Lavashell Brute
+loc.unit_slice_monster_04,冰冠梟皇,Icequill Sovereign
+loc.unit_slice_monster_05,闇燭蛞蝓,Gloomwax Slug
+loc.unit_slice_monster_06,廢鐵爐甲,Scrapfurnace Beetle
+loc.unit_slice_monster_07,弩臂螳螂,Boltarm Mantis
+loc.unit_slice_monster_08,晶燈洞蛾,Lanternmoth
+loc.unit_slice_monster_09,骨冠泥魁,Bonecrown Brute
+loc.unit_slice_monster_10,齒脊箭豬,Gearspine Porcupine
+loc.unit_slice_monster_11,星籠觸妖,Starcage Horror
+loc.unit_slice_player_00,晶苔衛,Gemmoss Guard
+loc.unit_slice_player_01,燼藤弩,Embervine Arbalist
+loc.unit_slice_player_02,冰焰使,Frostfire Adept
+loc.unit_slice_player_03,霜鐵衛,Frostiron Guard
+loc.unit_slice_player_04,齒輪客,Chakram Tinker
+loc.unit_slice_player_05,幽燈守,Gloamlight Warden
+loc.unit_slice_player_06,稜晶衛,Facetshield
+loc.unit_slice_player_07,暮棘弓手,Duskthorn Archer
+loc.unit_slice_player_08,窯環侍,Kilnring Acolyte
+loc.unit_slice_player_09,雪履衛,Snowshoe Guard
+loc.unit_slice_player_10,銅籌客,Coinwheel Rogue
+loc.unit_slice_player_11,蝕鐘僧,Eclipse Monk
+loc.unit_slice_player_12,星環衛,Orrery Guard
+loc.unit_slice_player_13,菇冠吹手,Sporepipe Scout
+loc.unit_slice_player_14,熔鏈先知,Molten Oracle
+loc.unit_slice_player_15,冰甲水手,Icecarapace Sailor
+loc.unit_slice_player_16,磁軌匠,Lodestone Tinker
+loc.unit_slice_player_17,蛾燈葬士,Mothlight Reaper
+loc.unit_slice_player_18,星圖重衛,Starchart Bulwark
+loc.unit_slice_player_19,葦弓獵手,Reedbow Hunter
+loc.unit_slice_player_20,爐扇舞者,Furnace Dancer
+loc.unit_slice_player_21,海象盾衛,Walrus Guard
+loc.unit_slice_player_22,發條信使,Clockwork Courier
+loc.unit_slice_player_23,黑鏡守騎,Blackmirror Knight
+loc.unit_slice_player_24,晶甲龜衛,Crystal Tortoise
+loc.unit_slice_player_25,蜂巢獵手,Hivebow Ranger
+loc.unit_slice_player_26,蝕霧術師,Caustic Savant
+loc.unit_slice_player_27,寒潛重衛,Frostdiver Guard
+loc.unit_slice_player_28,鋼索舞槍,Wiregun Dancer
+loc.unit_slice_player_29,鴉獄典守,Raven Gaoler
+loc.unit_slice_player_30,天碑巨像,Runestone Colossus
+loc.unit_slice_player_31,冠林翔弓,Canopy Windbow
 loc.unlock_slice_base_profile,基礎解鎖,Base Unlocks
 loc.unlock_slice_challenge_0,挑戰解鎖 1,Challenge Unlock 1
 loc.unlock_slice_challenge_1,挑戰解鎖 2,Challenge Unlock 2
@@ -919,7 +919,7 @@ screen.facility_challenge_monument.title,挑戰紀念碑,Challenge Monument
 screen.facility_commander_hall.title,指揮官大廳,Commander Hall
 screen.facility_expedition_gate.title,遠征之門,Expedition Gate
 screen.facility_unlock_workshop.title,解鎖工坊,Unlock Workshop
-screen.menu_main.title,遠征主選單,Expedition Menu
+screen.menu_main.title,遠征棋,Expedition Chess
 screen.results.title,遠征結算,Results
 screen.results_fallback.title,結算顯示修復,Results Recovery
 screen.run_combat.title,戰鬥,Combat

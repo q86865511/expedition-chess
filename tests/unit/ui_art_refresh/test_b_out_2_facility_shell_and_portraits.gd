@@ -6,6 +6,9 @@ const Support = preload(
 )
 const THEME_PATH := "res://theme/expedition_theme.tres"
 const COLLECTION_SCENE_PATH := "res://scenes/production/collection.tscn"
+const COMMANDER_VISUALS = preload(
+	"res://presentation/viewport/production_commander_visual_catalog.gd"
+)
 const FACILITY_ROUTES: Array[StringName] = [
 	&"FACILITY_EXPEDITION_GATE",
 	&"FACILITY_COMMANDER_HALL",
@@ -109,6 +112,23 @@ func test_production_portrait_catalog_resolves_adopted_unit_portraits() -> void:
 	)
 
 
+func test_commander_portrait_cues_are_distinct_from_unit_portraits() -> void:
+	var catalog := COMMANDER_VISUALS.new()
+	var portraits: Array[Texture2D] = []
+	for commander_id: StringName in [
+		&"commander.slice_c0",
+		&"commander.slice_c1",
+		&"commander.slice_c2",
+	]:
+		var portrait := catalog.try_portrait(commander_id)
+		assert_not_null(portrait, "%s needs a facility portrait cue" % commander_id)
+		if portrait != null:
+			assert_eq(portrait.get_size(), Vector2(96.0, 96.0))
+			portraits.append(portrait)
+	assert_eq(portraits.size(), 3)
+	assert_null(catalog.try_portrait(&"commander.unknown"))
+
+
 func test_collection_content_entries_become_portrait_cards_without_node_drift() -> void:
 	var packed := load(COLLECTION_SCENE_PATH) as PackedScene
 	assert_not_null(packed)
@@ -154,8 +174,9 @@ func test_collection_content_entries_become_portrait_cards_without_node_drift() 
 	assert_not_null(entries)
 	assert_not_null(compare)
 	assert_not_null(result)
-	if entries == null or compare == null:
+	if search == null or entries == null or compare == null:
 		return
+	assert_true(search.placeholder_text.begins_with("⌕ "))
 	assert_eq(entries.item_count, 2)
 	assert_eq(compare.item_count, 2)
 	assert_eq(entries.icon_mode, ItemList.ICON_MODE_TOP)
@@ -169,13 +190,13 @@ func test_collection_content_entries_become_portrait_cards_without_node_drift() 
 		&"unit.slice_player_00"
 	)
 	collection.apply_theme_scale_layout(150)
-	assert_eq(entries.fixed_column_width, 285)
+	assert_eq(entries.fixed_column_width, 264)
 	var shell := ProductionLayoutShell.new()
 	shell.build(&"COLLECTION")
 	var available_width := shell.current_content_rect(
 		ProductionLayoutShell.REGION_CENTER
 	).size.x
-	var four_card_width := entries.fixed_column_width * 4 + roundi(18.0 * 1.5) * 3
+	var four_card_width := entries.fixed_column_width * 4 + roundi(12.0 * 1.5) * 3
 	assert_lte(
 		four_card_width,
 		roundi(available_width),
